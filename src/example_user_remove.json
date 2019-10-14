@@ -1,0 +1,7 @@
+{
+    "dn": "uid=un1,cn=users,dc=uni,dc=dtr",
+    "id": "f7061be4-2d23-1039-8327-017f09f6212b",
+    "object": null, 
+    "options": null, 
+    "udm_object_type": "users/user"
+}

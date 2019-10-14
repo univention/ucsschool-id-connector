@@ -1,0 +1,28 @@
+#!/sbin/openrc-run
+
+command=/id-sync/venv/bin/uvicorn
+command_args="--reload --host 0.0.0.0 --port 8911 id_sync.http_api:app"
+name=id-sync-rest-api
+description="ID Sync REST API (ASGI server)"
+
+start() {
+    ebegin "Starting ID Sync REST API"
+    start-stop-daemon --start --background --name id-sync-rest-api --exec $command -- $command_args
+    eend $?
+}
+
+stop() {
+    ebegin "Stopping ID Sync REST API"
+    pkill -INT -f multiprocessing || true
+    pkill -INT -f /id-sync/venv/bin/uvicorn || true
+    eend $?
+}
+status () {
+    if pgrep -f /id-sync/venv/bin/uvicorn > /dev/null; then
+        einfo "status: started"
+        return 0
+    else
+        einfo "status: stopped"
+        return 3
+    fi
+}

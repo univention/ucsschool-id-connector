@@ -1,0 +1,5 @@
+#!/usr/share/ucs-test/runner bash
+## desc: In-container unittests
+## exposure: safe
+
+univention-app shell id-sync /id-sync/venv/bin/python -m pytest -l -v /id-sync/src/unittests

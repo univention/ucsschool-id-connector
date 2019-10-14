@@ -1,0 +1,5 @@
+#!/usr/share/ucs-test/runner bash
+## desc: In-container integration tests
+## exposure: dangerous
+
+univention-app shell id-sync /id-sync/venv/bin/python -m pytest -l -v /id-sync/src/integration_tests

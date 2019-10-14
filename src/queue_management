@@ -1,0 +1,181 @@
+#!/id-sync/venv/bin/python3
+# -*- coding: utf-8 -*-
+
+# TODO: adapt path of hashbang, when project gets renamed
+
+# Copyright 2019 Univention GmbH
+#
+# http://www.univention.de/
+#
+# All rights reserved.
+#
+# The source code of this program is made available
+# under the terms of the GNU Affero General Public License version 3
+# (GNU AGPL V3) as published by the Free Software Foundation.
+#
+# Binary versions of this program provided by Univention to you as
+# well as other copyrighted, protected or trademarked materials like
+# Logos, graphics, fonts, specific documentations and configurations,
+# cryptographic keys etc. are subject to a license agreement between
+# you and Univention and not subject to the GNU AGPL V3.
+#
+# In the case you use this program under the terms of the GNU AGPL V3,
+# the program is provided in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public
+# License with the Debian GNU/Linux or Univention distribution in file
+# /usr/share/common-licenses/AGPL-3; if not, see
+# <http://www.gnu.org/licenses/>.
+
+import asyncio
+import datetime
+import json
+import signal
+import sys
+import time
+from pathlib import Path
+from typing import List
+
+import aiojobs
+from service import Service
+
+from id_sync import __version__
+from id_sync.constants import IN_QUEUE_DIR, LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
+from id_sync.queues import InQueue, OutQueue, get_out_queue_dirs
+from id_sync.rpc import SimpleRPCServer
+from id_sync.school_auth_configuration import Configuration
+from id_sync.utils import ConsoleAndFileLogging, close_ucr_cache
+
+
+class IDSyncService(Service):
+    out_queues: List[OutQueue]
+    in_queue: InQueue
+    rpc_server: SimpleRPCServer
+
+    def __init__(self, *args, **kwargs):
+        super(IDSyncService, self).__init__(*args, **kwargs)
+        self.files_preserve.extend(
+            (sys.stderr.fileno(), sys.stderr.fileno())
+        )  # doesn't work :/
+        self.logger = ConsoleAndFileLogging.get_logger(
+            self.__class__.__name__, LOG_FILE_PATH_QUEUES
+        )
+
+    def run(self) -> None:
+        self.logger.info("%s %s starting...", SERVICE_NAME, __version__)
+        asyncio.run(self.manage_queues())
+        self.logger.info("%s %s stopped.", SERVICE_NAME, __version__)
+
+    async def manage_queues(self) -> None:
+        scheduler = await aiojobs.create_scheduler()
+        InQueue.scheduler = scheduler
+        OutQueue.scheduler = scheduler
+        self.out_queues = sorted(
+            [
+                OutQueue.from_school_authority(school_authority)
+                async for school_authority in Configuration.load_school_authorities()
+            ],
+            key=lambda x: x.name,
+        )
+        out_queue_dirs = [q.path for q in self.out_queues]
+        abandoned_out_queue_dirs = [
+            path.name
+            async for path in get_out_queue_dirs()
+            if path not in out_queue_dirs
+        ]
+        if abandoned_out_queue_dirs:
+            self.logger.warning(
+                "Found abandoned out queue directories: %r", abandoned_out_queue_dirs
+            )
+        self.in_queue = InQueue(out_queues=self.out_queues)
+        if list(self.out_queues):
+            self.logger.info("Running initial distribution of in-queue...")
+            await self.in_queue.distribute()
+        self.logger.info("Starting in-queue background task...")
+        await self.in_queue.start_task("distribute_loop", ignore_inactive=True)
+        for out_queue in self.out_queues:
+            if out_queue.school_authority.active:
+                self.logger.info(
+                    "Starting out queue background task for school authority %r...",
+                    out_queue.school_authority.name,
+                )
+                await out_queue.start_task("scan")
+            else:
+                self.logger.info(
+                    "Not starting out queue task for deactivated school authority %r.",
+                    out_queue.school_authority.name,
+                )
+        self.logger.info("Starting RPC server task...")
+        self.rpc_server = SimpleRPCServer(
+            addr=RPC_ADDR, in_queue=self.in_queue, out_queues=self.out_queues
+        )
+        self.rpc_server.task = await scheduler.spawn(
+            self.rpc_server.simple_rpc_server()
+        )
+        self.logger.info("Started %d background tasks.", len(scheduler))
+        self.logger.info("Sleeping until shutdown is requested (SIGTERM).")
+        while not self.got_sigterm():  # sleep until SIGTERM
+            await asyncio.sleep(1)
+        self.logger.info("Shutting down all outgoing connections...")
+        for out_queue in self.out_queues:
+            await out_queue.user_handler.shutdown()
+        await asyncio.sleep(0.25)  # allow aiohttp SSL connections to close gracefully
+        self.logger.info("Shutting down all running tasks...")
+        await scheduler.close()
+        self.logger.info("Closing cache and DB connections...")
+        await close_ucr_cache()
+        self.in_queue.old_date_db.close()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        sys.exit("Syntax: %s <start|stop|restart|status|test>" % sys.argv[0])
+
+    cmd = sys.argv[1].lower()
+    service = IDSyncService(SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1])
+
+    def _start():
+        service.start()
+        while not service.is_running():
+            time.sleep(0.1)
+        print(f"Started {SERVICE_NAME} daemon.")
+
+    def _stop():
+        service.stop()
+        while service.is_running():
+            time.sleep(0.1)
+        print(f"Stopped {SERVICE_NAME} daemon.")
+
+    if cmd == "start":
+        _start()
+    elif cmd == "stop":
+        _stop()
+    elif cmd == "restart":
+        _stop()
+        _start()
+    elif cmd == "status":
+        if service.is_running():
+            print(f"Service {SERVICE_NAME} is running.")
+        else:
+            print(f"Service {SERVICE_NAME} is not running.")
+    elif cmd == "test":  # TODO: remove section, we have better tests now
+        example_file = Path("/id-sync/src/example_user.json")
+        try:
+            with open(example_file, "r") as fp:
+                txt = fp.read()
+            print(f"Loaded example user from {example_file}.")
+        except (IOError, OSError):
+            txt = json.dumps(
+                {"dn": "uid=foo", "id": "bar", "object": {"username": "goo"}}
+            )
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
+        path = Path(IN_QUEUE_DIR, f"{timestamp}.json")
+        with open(path, "w") as fp:
+            fp.write(txt)
+        print(f"Created {timestamp}.json.")
+    else:
+        print(f"Unknown command {cmd!r}.")
+        sys.exit(1)

@@ -1,0 +1,27 @@
+{
+  "name": "St67",
+  "url": "https://10.200.3.67/api-bb/",
+  "password": "a938a6624f4421d851be980c28a79bf0c3a66339",
+  "active": true,
+  "mapping": {
+    "firstname": "firstname",
+    "lastname": "lastname",
+    "username": "name",
+    "disabled": "disabled",
+    "mailPrimaryAddress": "email",
+    "e-mail": "email",
+    "birthday": "birthday",
+    "password": "password",
+    "school": "school",
+    "schools": "schools",
+    "school_classes": "school_classes",
+    "source_uid": "source_uid",
+    "TODO": "roles",
+    "title": "title",
+    "displayName": "displayName",
+    "userexpiry": "userexpiry",
+    "phone": "phone",
+    "record_uid": "record_uid"
+  },
+  "passwords_target_attribute": "id_sync_pw"
+}

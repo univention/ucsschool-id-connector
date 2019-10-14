@@ -1,0 +1,31 @@
+{
+    "dn": "uid=un1,cn=users,dc=uni,dc=dtr", 
+    "id": "f7061be4-2d23-1039-8327-017f09f6212b", 
+    "object": {
+        "disabled": "0", 
+        "displayName": "fn1 ln1",
+        "e-mail": ["un1@example.com", "un1-1@example.com"],
+        "firstname": "fn1", 
+        "gecos": "fn1 ln1", 
+        "gidNumber": "5001", 
+        "groups": ["cn=Domain Users,cn=groups,dc=uni,dc=dtr"],
+        "lastname": "ln1",
+        "locked": "0", 
+        "lockedTime": "0", 
+        "mailForwardCopyToSelf": "0", 
+        "mailUserQuota": "0",
+        "password": "{crypt}$6$PHNzGeWYEDELE2km$0.MZqUmEEvDzCKGCyrb9Wrq3n3g3flTm8nFRwtx1/O0iXY7KhM48WssN0.y2WmBHSQ2CRmm2de9fGYevqQDxA1",
+        "passwordexpiry": null, 
+        "phone": ["FooBar.99"],
+        "primaryGroup": "cn=Domain Users,cn=groups,dc=uni,dc=dtr", 
+        "sambaRID": "5052", 
+        "shell": "/bin/bash", 
+        "uidNumber": "2026", 
+        "unixhome": "/home/un1", 
+        "unlockTime": "", 
+        "userexpiry": null, 
+        "username": "un1"
+    },
+    "options": ["default"],
+    "udm_object_type": "users/user"
+}

@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+# Copyright 2019 Univention GmbH
+#
+# http://www.univention.de/
+#
+# All rights reserved.
+#
+# The source code of this program is made available
+# under the terms of the GNU Affero General Public License version 3
+# (GNU AGPL V3) as published by the Free Software Foundation.
+#
+# Binary versions of this program provided by Univention to you as
+# well as other copyrighted, protected or trademarked materials like
+# Logos, graphics, fonts, specific documentations and configurations,
+# cryptographic keys etc. are subject to a license agreement between
+# you and Univention and not subject to the GNU AGPL V3.
+#
+# In the case you use this program under the terms of the GNU AGPL V3,
+# the program is provided in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public
+# License with the Debian GNU/Linux or Univention distribution in file
+# /usr/share/common-licenses/AGPL-3; if not, see
+# <http://www.gnu.org/licenses/>.
+
+APP_ID="id-sync"
+APP_VERSION="$(cd src; python3 -B -c 'import id_sync; print(id_sync.__version__)')"
+UCS_VERSION="4.4"
+APP="${UCS_VERSION}/${APP_ID}=${APP_VERSION}"
+UPLOAD_DIR="appcenter_scripts"
+UAC_PATH="/tmp/univention-appcenter-control"
+UAC_URL="https://provider-portal.software-univention.de/appcenter-selfservice/univention-appcenter-control"
+
+download_univention-appcenter-control() {
+	if ! [[ -x "$UAC_PATH" ]]; then
+		curl -s -o "$UAC_PATH" "$UAC_URL"
+		chmod +x "$UAC_PATH"
+	fi
+}
+
+while [[ $# -gt 1 ]]; do
+	case $1 in
+		--username)
+			UAPPUSER="$2"
+			shift
+			;;
+		*)
+			echo "Unknown option $1."
+			exit 1
+			;;
+	esac
+	shift
+done
+
+echo "App version in source code is: '$APP_VERSION'."
+echo "This suggests the app version string '$APP'."
+
+echo -e "\nFiles to upload:"
+echo "-------------------------------------------------------------------------------"
+find "$UPLOAD_DIR" -type f | sort
+echo
+
+read -n1 -r -p "Press any key to continue or Ctrl-C to abort."
+echo
+
+download_univention-appcenter-control
+
+if ! [[ -e "$HOME/.univention-appcenter-user" ]] || ! [[ -e "$HOME/.univention-appcenter-pwd" ]]; then
+  echo -e "\nTo upload the files to the test appcenter you will now be asked for your"
+  echo "username and password. Hint: create ~/.univention-appcenter-user and"
+  echo "~/.univention-appcenter-pwd to skip the question."
+fi
+
+"$UAC_PATH" upload $UAPPUSERCMD "$APP" $(find "$UPLOAD_DIR" -type f | sort)
