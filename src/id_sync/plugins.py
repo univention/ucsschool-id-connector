@@ -27,48 +27,22 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import asyncio
-import random
-import string
-from functools import partial
-from unittest.mock import MagicMock
+import pluggy
 
-import pytest
-import ujson
+from .constants import PLUGIN_NAMESPACE
 
+__all__ = ["hook_impl", "plugin_manager"]
 
-@pytest.fixture
-def random_name():
-    def _func(ints=True):
-        name = list(string.ascii_letters)
-        if ints:
-            name.extend(list(string.digits))
-        random.shuffle(name)
-        return "".join(name[: random.randint(8, 12)])
-
-    return _func
+hook_impl = pluggy.HookimplMarker(PLUGIN_NAMESPACE)
+hook_spec = pluggy.HookspecMarker(PLUGIN_NAMESPACE)
+plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
 
-@pytest.fixture
-def random_int():
-    def _func(start=0, end=12):
-        return random.randint(start, end)
-
-    return _func
-
-
-@asyncio.coroutine
-def recv_string(obj):
-    yield from asyncio.sleep(0.1)
-    return ujson.dumps(obj)
+# TODO: remove example when actual plugin is added
+class ExamplePluginSpec:
+    @hook_spec(firstresult=True)  # return only 1 result, not list of results
+    def example_func(self, arg1, arg2):
+        """An example hook."""
 
 
-@pytest.fixture
-def zmq_socket():
-    def _func(recv_string_args):
-        socket = MagicMock()
-        socket.send_string.return_value = {}
-        socket.recv_string = partial(recv_string, recv_string_args)
-        return socket
-
-    return _func
+plugin_manager.add_hookspecs(ExamplePluginSpec)

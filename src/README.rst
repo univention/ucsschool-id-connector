@@ -367,6 +367,106 @@ To run integration tests (*not safe, will modify source and target systems!*), r
     /id-sync/src # exit
 
 
+Plugins
+-------
+
+The code of the `ID Sync` app can be adapted through plugins. The `pluggy`_ plugin system is used to define, implement and call plugins. To share code between plugins additional Python packages can be installed. The following demonstrates a simple example of a custom Python packages and a plugin for `ID Sync`.
+
+All plugin *specifications* (function signatures) are defined in ``src/id_sync/plugins.py``.
+
+The directory structure for custom plugins and packages can be found in the host system below ``/var/lib/univention-appcenter/apps/id-sync/conf/``::
+
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/custom/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/custom/packages/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/custom/plugins/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/default/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/default/packages/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/default/plugins/
+
+Do **not** add, edit or remove files below ``.../plugins/default``. Those are supplied by Univention, are required for proper operations and will be overwritten upon update.
+
+An example plugin specification::
+
+    class DummyPluginSpec:
+        @hook_spec(firstresult=True)
+        def dummy_func(self, arg1, arg2):
+            """An example hook."""
+
+
+A directory structure for a custom plugin ``dummy`` and custom package ``example_package`` below ``/var/lib/univention-appcenter/apps/id-sync/conf/``::
+
+    .../plugins/
+    .../plugins/custom
+    .../plugins/custom/packages
+    .../plugins/custom/packages/example_package
+    .../plugins/custom/packages/example_package/__init__.py
+    .../plugins/custom/packages/example_package/example_module.py
+    .../plugins/custom/plugins
+    .../plugins/custom/plugins/dummy.py
+    .../plugins/default/...
+
+
+Content of ``plugins/custom/plugins/dummy.py``::
+
+    #
+    # An example plugin that will be usable as "plugin_manager.hook.dummy_func()".
+    # It uses a class from a module in a custom package:
+    # plugins/custom/packages/example_package/example_module.py
+    #
+    # The plugin specifications are in src/id_sync/plugins.py
+    #
+
+    from id_sync.utils import ConsoleAndFileLogging
+    from id_sync.plugins import hook_impl, plugin_manager
+    from example_package.example_module import ExampleClass
+
+    logger = ConsoleAndFileLogging.get_logger(__name__)
+
+
+    class DummyPlugin:
+        @hook_impl
+        def dummy_func(self, arg1, arg2):  # <-- this must match the specification!
+            """
+            Example plugin function.
+
+            Returns the sum of its arguments.
+            Uses a class from a custom package.
+            """
+            logger.info("Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
+            example_obj = ExampleClass()
+            res = example_obj.add(arg1, arg2)
+            assert res == arg1 + arg2
+            return res
+
+
+    # register plugins
+    plugin_manager.register(DummyPlugin())
+
+Content of ``plugins/custom/packages/example_package/example_module.py``::
+
+    #
+    # An example Python module that will be loadable as "example_package.example_module"
+    # if stored in 'plugins/custom/packages/example_package/example_module.py'.
+    # Do not forget to create 'plugins/custom/packages/example_package/__init__.py'.
+    #
+
+    from id_sync.utils import ConsoleAndFileLogging
+
+    logger = ConsoleAndFileLogging.get_logger(__name__)
+
+
+    class ExampleClass:
+        def add(self, arg1, arg2):
+            logger.info("Running ExampleClass.add() with arg1=%r arg2=%r.", arg1, arg2)
+            return arg1 + arg2
+
+When the app starts, all plugins will be discovered and logged::
+
+    ... INFO  [id_sync.plugins.load_plugins:83] Loaded plugins: {.., <dummy.DummyPlugin object at 0x7fa5284a9240>}
+    ... INFO  [id_sync.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
+
+
 TODOs
 -----
 
@@ -388,3 +488,4 @@ TODOs
     :alt: Diagram with an overview of the master 2 master sync
 .. |diagram_details| image:: /id-sync/api/v1/static/M2M-Sync_details.png
     :alt: Diagram with the technical details of the master 2 master sync
+.. _pluggy: https://pluggy.readthedocs.io/

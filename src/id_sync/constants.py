@@ -33,6 +33,7 @@ from pathlib import Path
 APP_ID = "id-sync"
 SERVICE_NAME = "IDSyncService"
 APP_BASE_PATH = Path("/var/lib/univention-appcenter/apps", APP_ID)
+APP_SRC_PATH = Path("/id-sync/src")
 APPCENTER_LISTENER_PATH = Path("/var/lib/univention-appcenter/listener", APP_ID)
 APP_CONFIG_BASE_PATH = Path(APP_BASE_PATH, "conf")
 APP_DATA_BASE_PATH = Path(APP_BASE_PATH, "data")
@@ -91,3 +92,12 @@ MACHINE_PASSWORD_FILE = "/etc/machine.secret"
 HTTP_CLIENT_TIMEOUT = 60
 HISTORY_FILE = "HISTORY.html"
 README_FILE = "README.html"
+PLUGIN_NAMESPACE = "id_sync"
+PLUGIN_PACKAGE_DIRS = (
+    APP_SRC_PATH / "plugins/packages",
+    APP_CONFIG_BASE_PATH / "plugins/packages",
+)
+PLUGIN_DIRS = (
+    APP_SRC_PATH / "plugins/plugins",
+    APP_CONFIG_BASE_PATH / "plugins/plugins",
+)

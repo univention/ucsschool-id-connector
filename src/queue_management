@@ -44,6 +44,8 @@ from service import Service
 
 from id_sync import __version__
 from id_sync.constants import IN_QUEUE_DIR, LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
+from id_sync.plugin_loader import load_plugins
+from id_sync.plugins import plugin_manager
 from id_sync.queues import InQueue, OutQueue, get_out_queue_dirs
 from id_sync.rpc import SimpleRPCServer
 from id_sync.school_auth_configuration import Configuration
@@ -70,6 +72,14 @@ class IDSyncService(Service):
         self.logger.info("%s %s stopped.", SERVICE_NAME, __version__)
 
     async def manage_queues(self) -> None:
+        load_plugins()
+
+        # TODO: remove example when actual plugin is added
+        res = plugin_manager.hook.example_func(
+            arg1=3, arg2=7
+        )  # must use named parameters
+        assert res == 10
+
         scheduler = await aiojobs.create_scheduler()
         InQueue.scheduler = scheduler
         OutQueue.scheduler = scheduler
