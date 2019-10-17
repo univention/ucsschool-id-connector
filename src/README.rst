@@ -111,6 +111,21 @@ A HTTP-API is required for the integration tests (running in the container) to b
     $ univention-install -y ucs-school-http-api-bb
 
 
+Using devsync with running app container
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sync your working copy into the running container, enter it and restart the services::
+
+    [test VM] $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' "$(ucr get appcenter/apps/id-sync/container)"
+    → /var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged
+    [developer machine] ~/git/id-sync $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/id-sync/
+    [test VM] $ univention-app shell id-sync
+    [in container] $ /etc/init.d/id-sync restart
+    [in container] $ /etc/init.d/id-sync-rest-api stop
+    [in container] $ /etc/init.d/id-sync-rest-api-dev start
+    #                       auto-reload HTTP-API ^^^^
+
+
 Build release
 -------------
 
