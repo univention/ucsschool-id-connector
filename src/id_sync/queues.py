@@ -38,11 +38,9 @@ import aiofiles
 import ujson
 from aiojobs._job import Job
 from aiojobs._scheduler import Scheduler
-from pydantic import ValidationError
 
 from .constants import (
     API_COMMUNICATION_ERROR_WAIT,
-    BB_API_MAIN_ATTRIBUTES,
     IN_QUEUE_DIR,
     LOG_FILE_PATH_QUEUES,
     OUT_QUEUE_TOP_DIR,
@@ -51,12 +49,15 @@ from .constants import (
 )
 from .ldap_access import LDAPAccess
 from .models import (
+    ListenerAddModifyObject,
     ListenerObject,
     ListenerOldDataEntry,
     ListenerRemoveObject,
+    ListenerUserAddModifyObject,
     QueueModel,
     SchoolAuthorityConfiguration,
 )
+from .plugins import plugin_manager
 from .user_handler import (
     APICommunicationError,
     ServerError,
@@ -236,30 +237,38 @@ class FileQueue:
         except (FileNotFoundError, IOError, OSError) as exc:
             self.logger.error("Moving the file to 'keep' directory: %s", exc)
 
-    async def load_listener_file(
-        self, path: Path
-    ) -> Union[ListenerObject, ListenerRemoveObject]:
+    async def load_listener_file(self, path: Path) -> ListenerObject:
         try:
             async with aiofiles.open(path, "r") as fp:
                 obj_dict = ujson.loads(await fp.read())
         except (IOError, OSError, ValueError) as exc:
             self.logger.error("Loading %s: %s", path, exc)
-            raise ListenerLoadingError(f"{path.name} -> {exc}")
-        # self.logger.debug("*** obj_dict=%r", obj_dict)
-        try:
-            if obj_dict.get("object") is None:
-                return ListenerRemoveObject(**obj_dict)
-            else:
-                return ListenerObject(**obj_dict)
-        except ValidationError as exc:
-            self.logger.error("Invalid listener file: %s", exc)
-            raise ListenerLoadingError(f"{path.name} -> {exc!s}")
+            raise ListenerLoadingError(f"Loading {path.name} -> {exc}")
+        listener_objects = plugin_manager.hook.get_listener_object(obj_dict=obj_dict)
+        self.logger.debug(
+            "Results from 'get_listener_object' hooks: %r", listener_objects
+        )
+        for obj in listener_objects:
+            if obj:
+                return obj
+        else:
+            raise ListenerLoadingError(
+                "No result from 'get_listener_object' hook (listener_objects=%r) "
+                "for obj_dict=%r",
+                listener_objects,
+                obj_dict,
+            )
 
-    async def save_listener_file(
-        self, obj: Union[ListenerObject, ListenerRemoveObject], path: Path
-    ) -> None:
+    async def save_listener_file(self, obj: ListenerObject, path: Path) -> None:
+        # try:
+        #     path = plugin_manager.hook.save_listener_object(obj=obj, path=path)
+        # except (OSError, ValueError) as exc:
+        #     self.logger.exception(
+        #         "Saving obj to %s: %s\nobj=%r", path.name, exc, obj.dict()
+        #     )
+        #     raise ListenerSavingError(f"{path.name} -> {exc}")
         try:
-            if isinstance(obj, ListenerObject):
+            if isinstance(obj, ListenerUserAddModifyObject):
                 json_text = ujson.dumps(
                     obj.dict_krb5_key_base64_encoded(), sort_keys=True, indent=4
                 )
@@ -316,7 +325,7 @@ class InQueue(FileQueue):
             raise InvalidListenerFile(str(exc))
 
         # TODO: hook start
-        if isinstance(obj, ListenerObject):
+        if isinstance(obj, ListenerAddModifyObject):
             await self.preprocess_add_mod_object(obj, path)
 
         if isinstance(obj, ListenerRemoveObject):
@@ -329,18 +338,21 @@ class InQueue(FileQueue):
         path.rename(new_path)
         return new_path
 
-    async def preprocess_add_mod_object(self, obj: ListenerObject, path: Path) -> None:
+    async def preprocess_add_mod_object(
+        self, obj: ListenerAddModifyObject, path: Path
+    ) -> None:
         """
         Preprocessing of create/modify-objects.
 
         Store (TODO: source_uid & record_uid?) in DB, so we can use it later when a user is
         modified or deleted (see `preprocess_remove_object()` and
-        `distribute()`), because the ListenerObject has no user data.
+        `distribute()`), because the ListenerAddModifyObject has no user data.
         """
         self.logger.debug("Preprocessing add/modify %r (%r)...", obj.dn, obj.id)
         # get old / store new data in (ListenerOldDataEntry) in self.old_date_db
-        # get passwords from ldap in case of UserListenerObject
-        # obj.user_passwords = await self.ldap_access.get_passwords(obj.username)
+        if isinstance(obj, ListenerUserAddModifyObject):
+            # get passwords from ldap in case of ListenerUserAddModifyObject
+            obj.user_passwords = await self.ldap_access.get_passwords(obj.username)
         try:
             await self.save_listener_file(obj, path)
         except ListenerSavingError as exc:
@@ -451,7 +463,7 @@ class InQueue(FileQueue):
 
             # add deleted school authorities, so the change/deletion will be
             # distributed by the respective out queues
-            if isinstance(obj, ListenerObject):
+            if isinstance(obj, ListenerAddModifyObject):
                 # old_s_a = obj.old_data
                 msg = "removed from user"
             else:
@@ -601,7 +613,7 @@ class OutQueue(FileQueue):
             return
         # TODO: hook start (handle listener obj)
         try:
-            if isinstance(obj, ListenerObject):
+            if isinstance(obj, ListenerAddModifyObject):
                 await self.user_handler.handle_create_or_update(obj)
             else:
                 await self.user_handler.handle_remove(obj)

@@ -43,7 +43,7 @@ from .constants import (
     LOG_FILE_PATH_QUEUES,
 )
 from .models import (
-    ListenerObject,
+    ListenerAddModifyObject,
     ListenerRemoveObject,
     SchoolAuthorityConfiguration,
     UserPasswords,
@@ -111,7 +111,7 @@ class UserHandler:
         """Clean shutdown procedure."""
         await self._session.close()
 
-    async def handle_create_or_update(self, obj: ListenerObject) -> None:
+    async def handle_create_or_update(self, obj: ListenerAddModifyObject) -> None:
         """Create or modify user."""
         if not True:  # TODO
             self.logger.info(
@@ -331,11 +331,11 @@ class UserHandler:
             self.logger.info("User not found, finished.")
 
     @staticmethod
-    async def map_role(obj: ListenerObject) -> str:
+    async def map_role(obj: ListenerAddModifyObject) -> str:
         """Get role (student / teacher) of user."""
         return obj.role
 
-    async def map_attributes(self, obj: ListenerObject) -> Dict[str, Any]:
+    async def map_attributes(self, obj: ListenerAddModifyObject) -> Dict[str, Any]:
         """Create dict representing the user."""
         res = {}
         # set attributes configured in mapping
@@ -353,7 +353,7 @@ class UserHandler:
             _handle_attr_method_name = f"_handle_attr_{key_here}"
             if hasattr(self, _handle_attr_method_name):
                 # handling of special attributes: try using a _handle_attr_* method
-                meth: Callable[[ListenerObject], Any] = getattr(
+                meth: Callable[[ListenerAddModifyObject], Any] = getattr(
                     self, _handle_attr_method_name
                 )
                 value_here = await meth(obj)
@@ -384,13 +384,13 @@ class UserHandler:
         return res
 
     @staticmethod
-    async def _handle_attr_password(obj: ListenerObject) -> str:
+    async def _handle_attr_password(obj: ListenerAddModifyObject) -> str:
         """Generate a random password."""
         pw = list(string.ascii_letters + string.digits + ".-_")
         random.shuffle(pw)
         return "".join(pw[:15])
 
-    async def _handle_attr_school(self, obj: ListenerObject) -> str:
+    async def _handle_attr_school(self, obj: ListenerAddModifyObject) -> str:
         """
         Get URL of primary school for this school authority.
         If it is in our school authority, use the 'main school' (Stammdienststelle).
@@ -403,7 +403,7 @@ class UserHandler:
             school_names = []
             return self.api_schools_cache[sorted(school_names)[0]]
 
-    async def _handle_attr_schools(self, obj: ListenerObject) -> List[str]:
+    async def _handle_attr_schools(self, obj: ListenerAddModifyObject) -> List[str]:
         """
         Get URLs of all schools in our school authority that the user is
         currently a member of.
@@ -412,13 +412,13 @@ class UserHandler:
         return [self.api_schools_cache[school] for school in school_names]
 
     async def _handle_attr_school_classes(
-        self, obj: ListenerObject
+        self, obj: ListenerAddModifyObject
     ) -> Dict[str, List[str]]:
         """Get school classes the user is in this school authority."""
         school_classes = {}
         return school_classes
 
     @staticmethod
-    async def _handle_attr_source_uid(obj: ListenerObject) -> str:
+    async def _handle_attr_source_uid(obj: ListenerAddModifyObject) -> str:
         """Get a source_uid."""
         return await get_source_uid()

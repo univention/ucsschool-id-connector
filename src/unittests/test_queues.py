@@ -36,7 +36,6 @@ import id_sync.models
 import id_sync.queues
 
 
-@pytest.mark.skip  # TODO: loading of ListenerObject subclass
 @pytest.mark.asyncio
 async def test_load_listener_file_example_user(monkeypatch):
     monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
@@ -46,7 +45,7 @@ async def test_load_listener_file_example_user(monkeypatch):
     obj = await inqueue.load_listener_file(
         Path(__file__).parent.parent / "example_user.json"
     )
-    assert isinstance(obj, id_sync.models.ListenerObject)
+    assert isinstance(obj, id_sync.models.ListenerUserAddModifyObject)
 
 
 @pytest.mark.asyncio

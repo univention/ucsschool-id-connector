@@ -97,7 +97,7 @@ Models
 The classes in the ``mv_idm_gw.models`` module are the foundation of all data passing happening in the queueing system and the HTTP-API.
 They have been written for the MV project and some have to be adapted.
 
-* ``ListenerObject``: Python representation of a JSON dump made by the listener.
+* ``ListenerAddModifyObject``: Python representation of a JSON dump made by the listener.
 
   * It currently has an attribute ``user_passwords`` (of type ``UserPasswords``) that contains the password hashes of the user currently being created/modified. That will be required in both projects, but as in SH also groups will be synchronized it must be moved to a subclass for user objects or must be associated more loosely.
   * The property ``role`` should return the UCS\@school role (``staff``, ``student`` or ``teacher``). How the role is determined is is dofferent in MV (from property ``mvStaffType``) and SH (from UCS\@school ``roles`` property or UDM objects ``options``).

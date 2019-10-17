@@ -30,7 +30,7 @@
 import base64
 import logging
 from enum import Enum
-from typing import Any, Dict, List, Set, Type, Union
+from typing import Any, Dict, List, Set, Union
 
 import lazy_object_proxy
 from pydantic import BaseModel, PydanticValueError, SecretStr, UrlStr, validator
@@ -89,26 +89,36 @@ class UserPasswords(BaseModel):
         return res
 
 
+class ListenerActionEnum(str, Enum):
+    add_mod = "add_mod"
+    delete = "delete"
+
+
 class ListenerObject(BaseModel):
     dn: str
     id: str
-    object: Dict[str, Any]
-    options: List[str]
     udm_object_type: str
+    uuid: str = None
+    action: ListenerActionEnum = None
 
     def __hash__(self):
         return hash(self.id)
+
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.udm_object_type}, {self.dn})"
+
+
+class ListenerAddModifyObject(ListenerObject):
+    object: Dict[str, Any]
+    options: List[str]
+    action = ListenerActionEnum.add_mod
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
         raise NotImplementedError("Implement this in an object specific subclass.")
 
-    @property
-    def uuid(self) -> str:
-        return self.object["UUID"]
 
-
-class UserListenerObject(ListenerObject):
+class ListenerUserAddModifyObject(ListenerAddModifyObject):
     user_passwords: UserPasswords = None
 
     @validator("udm_object_type")
@@ -151,14 +161,8 @@ class UserListenerObject(ListenerObject):
         return res
 
 
-class ListenerRemoveObject(BaseModel):
-    dn: str
-    id: str
-    udm_object_type: str
-    uuid: str = None
-
-    def __hash__(self):
-        return hash(self.id)
+class ListenerRemoveObject(ListenerObject):
+    action = ListenerActionEnum.delete
 
 
 class SchoolAuthorityConfiguration(BaseModel):
