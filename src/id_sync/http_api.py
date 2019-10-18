@@ -47,6 +47,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
     HTTP_404_NOT_FOUND,
+    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
 from . import __version__
@@ -64,6 +65,7 @@ from .models import (
     QueueModel,
     RPCCommand,
     RPCRequest,
+    School2SchoolAuthorityMapping,
     SchoolAuthorityConfiguration,
     SchoolAuthorityConfigurationPatchDocument,
     Token,
@@ -77,6 +79,37 @@ zmq_context = zmq.asyncio.Context()
 ConsoleAndFileLogging.get_logger("uvicorn", LOG_FILE_PATH_HTTP)
 logger = ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_HTTP)
 ldap_auth_instance: LDAPAccess = lazy_object_proxy.Proxy(LDAPAccess)
+
+
+@router.get("/school_to_authority_mapping", tags=["school_to_authority_mapping"])
+async def read_school_to_school_authority_mapping(
+    current_user: User = Depends(get_current_active_user)
+) -> School2SchoolAuthorityMapping:
+    res = await query_service(cmd="get_school_to_authority_mapping")
+    if res.get("errors"):
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=res["errors"]
+        )
+    return School2SchoolAuthorityMapping(**res["result"])
+
+
+@router.put("/school_to_authority_mapping", tags=["school_to_authority_mapping"])
+async def put_school_to_school_authority_mapping(
+    school_to_authority_mapping: School2SchoolAuthorityMapping,
+    current_user: User = Depends(get_current_active_user),
+) -> School2SchoolAuthorityMapping:
+    logger.info(
+        "User %r modifying school to school authority mapping...", current_user.username
+    )
+    res = await query_service(
+        cmd="put_school_to_authority_mapping",
+        school_to_authority_mapping=school_to_authority_mapping,
+    )
+    if res.get("errors"):
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=res["errors"]
+        )
+    return School2SchoolAuthorityMapping(**res["result"])
 
 
 @router.get("/queues", response_model=List[QueueModel], tags=["queues"])
@@ -135,8 +168,7 @@ async def read_school_authority(
     res = await query_service(cmd="get_school_authority", name=name)
     if res.get("errors"):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=res["errors"])
-    ret = SchoolAuthorityConfiguration(**res["result"])
-    return ret
+    return SchoolAuthorityConfiguration(**res["result"])
 
 
 @router.delete(
@@ -187,6 +219,7 @@ def query_service(
     school_authority: Union[
         SchoolAuthorityConfiguration, SchoolAuthorityConfigurationPatchDocument
     ] = None,
+    school_to_authority_mapping: School2SchoolAuthorityMapping = None,
 ) -> Coroutine[Dict[str, Any], None, None]:
     request_kwargs = {"cmd": RPCCommand(cmd)}
     if name is not None:
@@ -197,6 +230,10 @@ def query_service(
             request_kwargs["school_authority"][
                 "password"
             ] = school_authority.password.get_secret_value()
+    if school_to_authority_mapping is not None:
+        request_kwargs[
+            "school_to_authority_mapping"
+        ] = school_to_authority_mapping.dict()
     request = RPCRequest(**request_kwargs)
     # logger.debug("Querying queue daemon: %r", request.dict())
     socket = zmq_context.socket(zmq.REQ)
@@ -204,8 +241,7 @@ def query_service(
     yield from socket.send_string(request.json())
     response = yield from socket.recv_string()
     # logger.debug("Received response: %r", response)
-    res = ujson.loads(response)
-    return res
+    return ujson.loads(response)
 
 
 app = FastAPI(

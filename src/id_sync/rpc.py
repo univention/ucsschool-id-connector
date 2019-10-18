@@ -47,6 +47,7 @@ from .models import (
     RPCCommand,
     RPCRequest,
     RPCResponseModel,
+    School2SchoolAuthorityMapping,
     SchoolAuthorityConfiguration,
     SchoolAuthorityConfigurationPatchDocument,
 )
@@ -152,6 +153,25 @@ class SimpleRPCServer:
                 f"Unknown RPC command {request.cmd!r} in request {request!r}."
             )
         return await method(request)
+
+    async def get_school_to_authority_mapping(
+        self, request: RPCRequest
+    ) -> RPCResponseModel:
+        mapping_dict = await self.in_queue.school_authority_mapping
+        return RPCResponseModel(
+            result=School2SchoolAuthorityMapping(mapping=mapping_dict)
+        )
+
+    async def put_school_to_authority_mapping(
+        self, request: RPCRequest
+    ) -> RPCResponseModel:
+        obj = School2SchoolAuthorityMapping(**request.school_to_authority_mapping)
+        await ConfigurationStorage.save_school2target_mapping(obj)
+        mapping_dict = await self.in_queue.school_authority_mapping
+        # update class attribute inplace
+        mapping_dict.clear()
+        mapping_dict.update(request.school_to_authority_mapping["mapping"])
+        return RPCResponseModel(result=obj)
 
     async def get_queues(self, request: RPCRequest) -> RPCResponseModel:
         return RPCResponseModel(

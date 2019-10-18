@@ -32,13 +32,15 @@ import datetime
 import os
 import shutil
 from pathlib import Path
-from typing import AsyncIterator, Iterator, List, Optional, Set, TypeVar, Union
+from typing import AsyncIterator, Dict, Iterator, List, Optional, Set, TypeVar
 
 import aiofiles
 import ujson
 from aiojobs._job import Job
 from aiojobs._scheduler import Scheduler
+from async_property import async_property
 
+from .config_storage import ConfigurationStorage
 from .constants import (
     API_COMMUNICATION_ERROR_WAIT,
     IN_QUEUE_DIR,
@@ -289,6 +291,7 @@ class FileQueue:
 class InQueue(FileQueue):
     name = "InQueue"
     path = IN_QUEUE_DIR
+    _school_authority_mapping: Dict[str, str] = {}
 
     def __init__(
         self,
@@ -304,8 +307,15 @@ class InQueue(FileQueue):
         self.ldap_access = LDAPAccess()
 
     @property
-    def school_authority_names(self):
+    def school_authority_names(self) -> List[str]:
         return [q.school_authority.name for q in self.out_queues]
+
+    @async_property
+    async def school_authority_mapping(self) -> Dict[str, str]:
+        if not self._school_authority_mapping:
+            mapping_obj = await ConfigurationStorage.load_school2target_mapping()
+            self._school_authority_mapping.update(mapping_obj.mapping)
+        return self._school_authority_mapping
 
     async def preprocess_file(self, path: Path) -> Path:
         """

@@ -277,6 +277,11 @@ class SchoolAuthorityConfigurationPatchDocument(BaseModel):
     """attribute on the target system to write password hashes object to"""
 
 
+class School2SchoolAuthorityMapping(BaseModel):
+    mapping: Dict[str, str]
+    """Keys are OUs, values are `name` of SchoolAuthorityConfiguration objects"""
+
+
 class QueueModel(BaseModel):
     name: str
     head: str
@@ -294,9 +299,11 @@ class RPCCommand(str, Enum):
     get_queues = "get_queues"
     get_school_authority = "get_school_authority"
     get_school_authorities = "get_school_authorities"
+    get_school_to_authority_mapping = "get_school_to_authority_mapping"
     create_school_authority = "create_school_authority"
     delete_school_authority = "delete_school_authority"
     patch_school_authority = "patch_school_authority"
+    put_school_to_authority_mapping = "put_school_to_authority_mapping"
 
 
 RPCCommandsRequiredArgs = {
@@ -305,6 +312,7 @@ RPCCommandsRequiredArgs = {
     RPCCommand.create_school_authority: ("school_authority",),
     RPCCommand.delete_school_authority: ("name",),
     RPCCommand.patch_school_authority: ("name", "school_authority"),
+    RPCCommand.put_school_to_authority_mapping: ("school_to_authority_mapping",),
 }
 
 
@@ -312,6 +320,7 @@ class RPCRequest(BaseModel):
     cmd: RPCCommand
     name: str = ""
     school_authority: Dict[str, Any] = {}
+    school_to_authority_mapping: Dict[str, Any] = {}
 
     @validator("name", "school_authority", always=True, whole=True)
     def required_args_present(cls, value, values, config, field, **kwargs):

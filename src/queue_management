@@ -33,6 +33,7 @@
 import asyncio
 import datetime
 import json
+import pprint
 import signal
 import sys
 import time
@@ -94,6 +95,11 @@ class IDSyncService(Service):
                 "Found abandoned out queue directories: %r", abandoned_out_queue_dirs
             )
         self.in_queue = InQueue(out_queues=self.out_queues)
+        # preload and print mapping
+        self.logger.info(
+            "Loaded school to school authority mapping:\n%s",
+            pprint.pformat(await self.in_queue.school_authority_mapping),
+        )
         if list(self.out_queues):
             self.logger.info("Running initial distribution of in-queue...")
             await self.in_queue.distribute()
@@ -164,21 +170,6 @@ if __name__ == "__main__":
             print(f"Service {SERVICE_NAME} is running.")
         else:
             print(f"Service {SERVICE_NAME} is not running.")
-    elif cmd == "test":  # TODO: remove section, we have better tests now
-        example_file = Path("/id-sync/src/example_user.json")
-        try:
-            with open(example_file, "r") as fp:
-                txt = fp.read()
-            print(f"Loaded example user from {example_file}.")
-        except (IOError, OSError):
-            txt = json.dumps(
-                {"dn": "uid=foo", "id": "bar", "object": {"username": "goo"}}
-            )
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
-        path = Path(IN_QUEUE_DIR, f"{timestamp}.json")
-        with open(path, "w") as fp:
-            fp.write(txt)
-        print(f"Created {timestamp}.json.")
     else:
         print(f"Unknown command {cmd!r}.")
         sys.exit(1)
