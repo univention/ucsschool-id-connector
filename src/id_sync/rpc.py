@@ -157,9 +157,8 @@ class SimpleRPCServer:
     async def get_school_to_authority_mapping(
         self, request: RPCRequest
     ) -> RPCResponseModel:
-        mapping_dict = await self.in_queue.school_authority_mapping
         return RPCResponseModel(
-            result=School2SchoolAuthorityMapping(mapping=mapping_dict)
+            result=School2SchoolAuthorityMapping(mapping=self.in_queue.school_authority_mapping)
         )
 
     async def put_school_to_authority_mapping(
@@ -167,10 +166,9 @@ class SimpleRPCServer:
     ) -> RPCResponseModel:
         obj = School2SchoolAuthorityMapping(**request.school_to_authority_mapping)
         await ConfigurationStorage.save_school2target_mapping(obj)
-        mapping_dict = await self.in_queue.school_authority_mapping
         # update class attribute inplace
-        mapping_dict.clear()
-        mapping_dict.update(request.school_to_authority_mapping["mapping"])
+        self.in_queue.school_authority_mapping.clear()
+        self.in_queue.school_authority_mapping.update(request.school_to_authority_mapping["mapping"])
         return RPCResponseModel(result=obj)
 
     async def get_queues(self, request: RPCRequest) -> RPCResponseModel:
