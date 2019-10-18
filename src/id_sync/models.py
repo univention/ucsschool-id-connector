@@ -29,6 +29,7 @@
 
 import base64
 import logging
+import re
 from enum import Enum
 from typing import Any, Dict, List, Set, Union
 
@@ -47,6 +48,17 @@ class ListenerFileAttributeError(PydanticValueError):
     code = "invalid_listener_file"
     msg_template = 'Missing or empty value in listener file: "{key}"="{value}"'
 
+    def __init__(self, *args, **kwargs):
+        try:
+            self.code = kwargs.pop("code")
+        except KeyError:
+            pass
+        try:
+            self.msg_template = kwargs.pop("msg_template")
+        except KeyError:
+            pass
+        super().__init__(*args, **kwargs)
+
 
 class MissingArgumentError(PydanticValueError):
     code = "missing_argument"
@@ -61,6 +73,18 @@ class NoObjectError(PydanticValueError):
 class ObjectExistsError(PydanticValueError):
     code = "object_exists"
     msg_template = 'object with "{key}"="{value}" already exists'
+
+
+class SchoolUserRole(str, Enum):
+    staff = "staff"
+    student = "student"
+    teacher = "teacher"
+
+
+class UnknownSchoolUserRole(Exception):
+    def __init__(self, *args, roles: List[str] = None, **kwargs):
+        self.roles = roles
+        super().__init__(*args, **kwargs)
 
 
 class UserPasswords(BaseModel):
@@ -98,7 +122,6 @@ class ListenerObject(BaseModel):
     dn: str
     id: str
     udm_object_type: str
-    uuid: str = None
     action: ListenerActionEnum = None
 
     def __hash__(self):
@@ -124,14 +147,75 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
         if value != "users/user":
-            raise ListenerFileAttributeError(key="udm_object_type", value=value)
+            raise ListenerFileAttributeError(
+                key="udm_object_type",
+                value=value,
+                msg_template='Unsupported UDM object type: "{key}"="{value}"',
+            )
+        return value
+
+    @validator("options", whole=True)
+    def has_required_oc(cls, value):
+        options = set(value)
+        if not {"default"}.intersection(options):
+            raise ListenerFileAttributeError(key="options", value=value)
+        if not {"ucsschoolStaff", "ucsschoolStudent", "ucsschoolTeacher"}.intersection(
+            options
+        ):
+            raise ListenerFileAttributeError(
+                key="options",
+                value=value,
+                msg_template='No UCS@school user object class: "{key}"="{value}"',
+            )
+        return value
+
+    @validator("object", whole=True)
+    def has_required_attrs(cls, value):
+        if not value.get("school"):
+            raise ListenerFileAttributeError(
+                key="object",
+                value=value,
+                msg_template='Missing or empty "school" attribute: "{key}"="{value}"',
+            )
         return value
 
     @property
-    def role(self) -> str:
-        # TODO: plugin start
-        return "teacher"
-        # TODO: plugin end
+    def school(self) -> str:
+        try:
+            ou_from_dn = re.match(r".+,ou=(.+?),dc=.+", self.dn).groups()[0]
+        except (AttributeError, IndexError):
+            logger.error("Failed to find OU in dn %r.", self.dn)
+        else:
+            if ou_from_dn in self.object["school"]:
+                return ou_from_dn
+            else:
+                logger.error(
+                    "OU found in DN (%r) not in 'school' attribute (%r) of user with DN %r.",
+                    ou_from_dn,
+                    self.object["school"],
+                    self.dn,
+                )
+        return sorted(self.object["school"])[0]
+
+    @property
+    def schools(self) -> str:
+        return self.object["school"]
+
+    @property
+    def school_user_roles(self) -> List[SchoolUserRole]:
+        options = set(self.options)
+        if options >= {"ucsschoolTeacher", "ucsschoolStaff"}:
+            return [SchoolUserRole.staff, SchoolUserRole.teacher]
+        if "ucsschoolTeacher" in options:
+            return [SchoolUserRole.teacher]
+        if "ucsschoolStaff" in options:
+            return [SchoolUserRole.staff]
+        if "ucsschoolStudent" in options:
+            return [SchoolUserRole.student]
+        # administrator and exam_user are not supported
+        raise UnknownSchoolUserRole(
+            f"Unknown or missing school user type in options: {self.options!r}"
+        )
 
     @property
     def username(self) -> str:

@@ -72,7 +72,7 @@ format: ## format source code (requires Python interpreter activated from venv)
 test: ## run tests with the Python interpreter from 'venv'
 	. venv/bin/activate && cd src && python -m pytest -l -v  unittests
 
-src/.coverage: src/*.py src/*/*.py
+src/.coverage: src/*.json src/*.py src/*/*.py
 	. venv/bin/activate && cd src && coverage run --source integration_tests,unittests,id_sync -m pytest
 	. venv/bin/activate && cd src && coverage report -m
 

@@ -61,8 +61,8 @@ from .plugins import plugin_manager
 from .user_handler import (
     APICommunicationError,
     ServerError,
-    UnknownRole,
     UnknownSchool,
+    UnknownSchoolUserRole,
     UserHandler,
 )
 from .utils import ConsoleAndFileLogging, KeyValueDB
@@ -245,9 +245,6 @@ class FileQueue:
             self.logger.error("Loading %s: %s", path, exc)
             raise ListenerLoadingError(f"Loading {path.name} -> {exc}")
         listener_objects = plugin_manager.hook.get_listener_object(obj_dict=obj_dict)
-        self.logger.debug(
-            "Results from 'get_listener_object' hooks: %r", listener_objects
-        )
         for obj in listener_objects:
             if obj:
                 return obj
@@ -492,7 +489,7 @@ class InQueue(FileQueue):
             # copy listener file to out queues for affected school authorities
             if not s_a_names:
                 self.logger.info(
-                    "Ignoring user without current or previous 'TODO... schools?' entries."
+                    "Ignoring user without current or previous ... entries. *TODO*: school -> authority mapping'"
                 )
             for out_queue in [
                 out_queue
@@ -617,7 +614,7 @@ class OutQueue(FileQueue):
                 await self.user_handler.handle_create_or_update(obj)
             else:
                 await self.user_handler.handle_remove(obj)
-        except (UnknownSchool, UnknownRole) as exc:
+        except (UnknownSchool, UnknownSchoolUserRole) as exc:
             self.logger.error(exc)
             self.discard_file(path)
         # TODO: hook end

@@ -6,6 +6,8 @@ async-property
 click
 colorlog
 diskcache
+factory_boy
+faker
 fastapi==0.42.0
 lazy-object-proxy
 ldap3

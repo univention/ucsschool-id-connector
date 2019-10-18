@@ -28,7 +28,6 @@
 # <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
-import tempfile
 from unittest.mock import patch
 
 import pytest

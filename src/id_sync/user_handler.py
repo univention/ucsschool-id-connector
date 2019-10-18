@@ -45,7 +45,10 @@ from .constants import (
 from .models import (
     ListenerAddModifyObject,
     ListenerRemoveObject,
+    ListenerUserAddModifyObject,
     SchoolAuthorityConfiguration,
+    SchoolUserRole,
+    UnknownSchoolUserRole,
     UserPasswords,
 )
 from .utils import ConsoleAndFileLogging, get_source_uid
@@ -73,12 +76,6 @@ class ServerError(APICommunicationError):
         super().__init__(*args, **kwargs)
 
 
-class UnknownRole(Exception):
-    def __init__(self, *args, role: str, **kwargs):
-        self.role = role
-        super().__init__(*args, **kwargs)
-
-
 class UnknownSchool(Exception):
     def __init__(self, *args, school: str, **kwargs):
         self.school = school
@@ -94,12 +91,16 @@ class UserHandler:
     """
 
     _password_attributes = set(UserPasswords.__fields__.keys())
+    school_role_to_bb_api_role = {
+        SchoolUserRole.staff: "staff",
+        SchoolUserRole.student: "student",
+        SchoolUserRole.teacher: "teacher",
+    }
 
     def __init__(self, school_authority: SchoolAuthorityConfiguration):
         self.school_authority = school_authority
         self.logger = ConsoleAndFileLogging.get_logger(
-            f"{self.__class__.__name__}({self.school_authority.name})",
-            LOG_FILE_PATH_QUEUES,
+            f"{self.__class__.__name__}({self.school_authority.name})"
         )
         self.api_roles_cache: Dict[str, str] = {}
         self.api_schools_cache: Dict[str, str] = {}
@@ -113,7 +114,7 @@ class UserHandler:
 
     async def handle_create_or_update(self, obj: ListenerAddModifyObject) -> None:
         """Create or modify user."""
-        if not True:  # TODO
+        if not True:  # TODO: implement
             self.logger.info(
                 "All TODO entries of user %r for school authority %r have been "
                 "removed or are in the past, deleting user from school authority.",
@@ -123,7 +124,7 @@ class UserHandler:
             await self._do_remove(obj.uuid)
             return
 
-        if True:  # TODO
+        if True:  # TODO: implement
             # user has currently active entries for this school authority,
             # construct data from them
             self.logger.info(
@@ -132,9 +133,6 @@ class UserHandler:
                 self.school_authority.name,
             )
 
-        ucsschool_role = await self.map_role(obj)
-        await self.check_role(ucsschool_role)
-        await self.check_schools([])  # TODO: don't stop if at least 1 school is known
         request_body = await self.map_attributes(obj)
         await self._do_create_or_update(request_body)
 
@@ -164,15 +162,20 @@ class UserHandler:
                     f"School unknown on API server: {school!r}.", school=school
                 )
 
-    async def check_role(self, role: str) -> None:
-        """Verify that `role` is known by the target system."""
+    async def school_roles_to_target_roles(self, roles: List[str]) -> List[str]:
+        """Convert UCS@school role IDs to target API IDs."""
+        # TODO: this should be in a plugin
         if not self.api_roles_cache:
             await self.fetch_roles()
             self.logger.debug(
                 "Roles known by API server: %s", ", ".join(self.api_roles_cache.keys())
             )
-        if role not in self.api_roles_cache:
-            raise UnknownRole(f"Role unknown on API server: {role!r}.", role=role)
+        try:
+            return [self.api_roles_cache[role] for role in roles]
+        except KeyError:
+            raise UnknownSchoolUserRole(
+                f"Role(s) unknown on API server: {roles!r}.", roles=roles
+            )
 
     @staticmethod
     async def _get_error_msg(
@@ -185,6 +188,7 @@ class UserHandler:
 
     async def fetch_roles(self) -> None:
         """Fetch all roles from API of school authority."""
+        # TODO: this should be in a plugin
         url = f"{self.school_authority.url}/roles/"
         status, json_resp = await self.http_get(url)
         for role in json_resp["results"]:
@@ -330,13 +334,9 @@ class UserHandler:
             # nothing to do
             self.logger.info("User not found, finished.")
 
-    @staticmethod
-    async def map_role(obj: ListenerAddModifyObject) -> str:
-        """Get role (student / teacher) of user."""
-        return obj.role
-
     async def map_attributes(self, obj: ListenerAddModifyObject) -> Dict[str, Any]:
         """Create dict representing the user."""
+        # TODO: this should be in a plugin
         res = {}
         # set attributes configured in mapping
         for key_here, key_there in self.school_authority.mapping.items():
@@ -371,54 +371,71 @@ class UserHandler:
             else:
                 res.setdefault("udm_properties", {})[key_there] = value_here
 
-        # set password hashes
-        if self.school_authority.passwords_target_attribute:
-            pw_hashes = obj.user_passwords.dict()
-            # hashes are already base64 encoded by inqueue->prepare->save
-            # but have been made bytes by the pydantic Model definition
-            pw_hashes["krb5Key"] = [k.decode("ascii") for k in pw_hashes["krb5Key"]]
-            res.setdefault("udm_properties", {})[
-                self.school_authority.passwords_target_attribute
-            ] = pw_hashes
+        if isinstance(obj, ListenerUserAddModifyObject):
+            # set password hashes
+            if self.school_authority.passwords_target_attribute:
+                pw_hashes = obj.user_passwords.dict()
+                # hashes are already base64 encoded by inqueue->prepare->save
+                # but have been made bytes by the pydantic Model definition
+                pw_hashes["krb5Key"] = [k.decode("ascii") for k in pw_hashes["krb5Key"]]
+                res.setdefault("udm_properties", {})[
+                    self.school_authority.passwords_target_attribute
+                ] = pw_hashes
 
         return res
 
     @staticmethod
-    async def _handle_attr_password(obj: ListenerAddModifyObject) -> str:
+    async def _handle_attr_password(obj: ListenerUserAddModifyObject) -> str:
         """Generate a random password."""
         pw = list(string.ascii_letters + string.digits + ".-_")
         random.shuffle(pw)
         return "".join(pw[:15])
 
-    async def _handle_attr_school(self, obj: ListenerAddModifyObject) -> str:
+    async def _handle_attr_roles(self, obj: ListenerUserAddModifyObject) -> List[str]:
         """
-        Get URL of primary school for this school authority.
-        If it is in our school authority, use the 'main school' (Stammdienststelle).
+        `roles` attribute of UCS@school users is determined by their
+        objectClasses / UDM options. Return URLs of ucsschool role in servers
+        API.
         """
-        main_school = []
-        if main_school:
-            return self.api_schools_cache[main_school[0].school]
-        else:
-            # no main school, use first alphabetical
-            school_names = []
-            return self.api_schools_cache[sorted(school_names)[0]]
+        # TODO: this should be in a plugin
+        try:
+            bb_api_roles = (
+                self.school_role_to_bb_api_role[role] for role in obj.school_user_roles
+            )
+        except KeyError:
+            raise UnknownSchoolUserRole(
+                f"Role unknown in internal mapping: {obj.school_user_roles!r}.",
+                roles=[role.name for role in obj.school_user_roles],
+            )
+        return [self.api_roles_cache[role] for role in bb_api_roles]
 
-    async def _handle_attr_schools(self, obj: ListenerAddModifyObject) -> List[str]:
+    async def _handle_attr_school(self, obj: ListenerUserAddModifyObject) -> str:
+        """
+        Get URL of primary school for this user.
+        """
+        try:
+            return self.api_schools_cache[obj.school]
+        except KeyError:
+            raise UnknownSchool(
+                f"School {obj.school!r} unknown on target server.", school=obj.school
+            )
+
+    async def _handle_attr_schools(self, obj: ListenerUserAddModifyObject) -> List[str]:
         """
         Get URLs of all schools in our school authority that the user is
         currently a member of.
         """
-        school_names = []
-        return [self.api_schools_cache[school] for school in school_names]
+        return [self.api_schools_cache[school] for school in obj.schools]
 
     async def _handle_attr_school_classes(
-        self, obj: ListenerAddModifyObject
+        self, obj: ListenerUserAddModifyObject
     ) -> Dict[str, List[str]]:
         """Get school classes the user is in this school authority."""
+        # TODO implement
         school_classes = {}
         return school_classes
 
     @staticmethod
-    async def _handle_attr_source_uid(obj: ListenerAddModifyObject) -> str:
+    async def _handle_attr_source_uid(obj: ListenerUserAddModifyObject) -> str:
         """Get a source_uid."""
         return await get_source_uid()
