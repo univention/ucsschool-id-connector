@@ -125,6 +125,16 @@ class SchoolAuthorityConfigurationFactory(factory.Factory):
     passwords_target_attribute = "id_sync_pw"
 
 
+class School2SchoolAuthorityMappingFactory(factory.Factory):
+    class Meta:
+        model = id_sync.models.School2SchoolAuthorityMapping
+
+    mapping = factory.LazyFunction(lambda: dict(
+        (fake.domain_word(), fake.domain_word())
+        for _ in range(fake.pyint(2, 10))
+    ))
+
+
 def _listener_dump_user_object(
     base_dn: str = None,
     ou: str = None,
@@ -251,7 +261,7 @@ def school_authority_configuration():
 
 @pytest.fixture
 def random_name():
-    def _func(ints=True):
+    def _func(ints=True) -> str:
         name = list(string.ascii_letters)
         if ints:
             name.extend(list(string.digits))
@@ -263,8 +273,8 @@ def random_name():
 
 @pytest.fixture
 def random_int():
-    def _func(start=0, end=12):
-        return random.randint(start, end)
+    def _func(start=0, end=12) -> int:
+        return fake.pyint(start, end)
 
     return _func
 
@@ -284,3 +294,8 @@ def zmq_socket():
         return socket
 
     return _func
+
+
+@pytest.fixture
+def school2school_authority_mapping():
+    return lambda: School2SchoolAuthorityMappingFactory()
