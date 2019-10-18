@@ -38,6 +38,7 @@ from aiojobs._job import Job
 from pydantic import DictError, ValidationError
 from pydantic.error_wrappers import ErrorWrapper
 
+from .config_storage import ConfigurationStorage
 from .constants import LOG_FILE_PATH_QUEUES
 from .models import (
     AllQueues,
@@ -50,7 +51,6 @@ from .models import (
     SchoolAuthorityConfigurationPatchDocument,
 )
 from .queues import InQueue, OutQueue
-from .school_auth_configuration import Configuration
 from .utils import ConsoleAndFileLogging
 
 
@@ -100,7 +100,7 @@ class SimpleRPCServer:
             "Saving school authority configuration %r...",
             out_queue.school_authority.name,
         )
-        await Configuration.save_school_authorities([out_queue.school_authority])
+        await ConfigurationStorage.save_school_authorities([out_queue.school_authority])
 
     @asyncio.coroutine
     def simple_rpc_server(self) -> None:
@@ -228,7 +228,7 @@ class SimpleRPCServer:
                 self.out_queues.remove(out_queue)
                 await out_queue.stop_task()
                 await out_queue.delete_queue()
-                await Configuration.delete_school_authority(
+                await ConfigurationStorage.delete_school_authority(
                     out_queue.school_authority.name
                 )
                 return RPCResponseModel()

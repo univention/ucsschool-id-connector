@@ -30,6 +30,7 @@
 import logging
 import os
 import pprint
+from pathlib import Path
 from typing import AsyncIterator, Iterable, Iterator
 
 import aiofiles
@@ -37,12 +38,20 @@ import lazy_object_proxy
 import ujson
 from pydantic import ValidationError
 
-from .constants import LOG_FILE_PATH_QUEUES, SCHOOL_AUTHORITIES_CONFIG_PATH
-from .models import SchoolAuthorityConfiguration
+from .constants import (
+    LOG_FILE_PATH_QUEUES,
+    SCHOOL_AUTHORITIES_CONFIG_PATH,
+    SCHOOLS_TO_AUTHORITIES_MAPPING_PATH,
+)
+from .models import School2SchoolAuthorityMapping, SchoolAuthorityConfiguration
 from .utils import ConsoleAndFileLogging
 
 
-class Configuration:
+class SchoolMappingLoadingError(Exception):
+    pass
+
+
+class ConfigurationStorage:
     logger: logging.Logger = lazy_object_proxy.Proxy(
         lambda: ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_QUEUES)
     )
@@ -54,7 +63,7 @@ class Configuration:
         cls.logger.debug(
             "Looking for configuration in %s...", SCHOOL_AUTHORITIES_CONFIG_PATH
         )
-        cls.mkdir_config_path()
+        cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
         with os.scandir(
             SCHOOL_AUTHORITIES_CONFIG_PATH
         ) as dir_entries:  # type: Iterator[os.DirEntry]
@@ -73,7 +82,7 @@ class Configuration:
                     school_authority = SchoolAuthorityConfiguration.parse_obj(obj)
                     school_authority.url.rstrip("/")
                     cls.logger.info(
-                        "Loaded SchoolAuthorityConfiguration:\n%s",
+                        "Loaded school authority configuration:\n%s",
                         pprint.pformat(school_authority.dict()),
                     )
                     yield school_authority
@@ -87,7 +96,7 @@ class Configuration:
     async def save_school_authorities(
         cls, school_authority_configs: Iterable[SchoolAuthorityConfiguration]
     ) -> None:
-        cls.mkdir_config_path()
+        cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
         for config in school_authority_configs:
             config.url.rstrip("/")
             path = SCHOOL_AUTHORITIES_CONFIG_PATH / f"{config.name}.json"
@@ -95,11 +104,11 @@ class Configuration:
             config_as_dict = config.dict()
             config_as_dict["password"] = config.password.get_secret_value()
             async with aiofiles.open(path, "w") as fp:
-                await fp.write(ujson.dumps(config_as_dict, indent=4))
+                await fp.write(ujson.dumps(config_as_dict, sort_keys=True, indent=4))
 
     @classmethod
     async def delete_school_authority(cls, name: str) -> None:
-        cls.mkdir_config_path()
+        cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
         path = SCHOOL_AUTHORITIES_CONFIG_PATH / f"{name}.json"
         if path.exists() and not path.is_file():
             cls.logger.error("Not a file: %s", path)
@@ -113,8 +122,33 @@ class Configuration:
                 cls.logger.error("Error deleting configuration file %s: %s", path, exc)
 
     @classmethod
-    def mkdir_config_path(cls):
+    async def load_school2target_mapping(
+        cls, path: Path = SCHOOLS_TO_AUTHORITIES_MAPPING_PATH
+    ) -> School2SchoolAuthorityMapping:
+        cls.mkdir_p(path.parent)
+        if not path.exists():
+            return School2SchoolAuthorityMapping(mapping={})
         try:
-            SCHOOL_AUTHORITIES_CONFIG_PATH.mkdir(mode=0o750, parents=True)
+            async with aiofiles.open(path, "r") as fp:
+                obj_dict = ujson.loads(await fp.read())
+            return School2SchoolAuthorityMapping(**obj_dict)
+        except (IOError, OSError, ValidationError, ValueError) as exc:
+            raise SchoolMappingLoadingError(f"Loading {path.name} -> {exc}") from exc
+
+    @classmethod
+    async def save_school2target_mapping(
+        cls,
+        obj: School2SchoolAuthorityMapping,
+        path: Path = SCHOOLS_TO_AUTHORITIES_MAPPING_PATH,
+    ) -> None:
+        cls.mkdir_p(path.parent)
+        cls.logger.info("Writing school to school authority mapping to %s...", path)
+        async with aiofiles.open(path, "w") as fp:
+            await fp.write(ujson.dumps(obj.dict(), sort_keys=True, indent=4))
+
+    @staticmethod
+    def mkdir_p(path):
+        try:
+            path.mkdir(mode=0o750, parents=True)
         except FileExistsError:
             pass

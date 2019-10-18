@@ -43,12 +43,12 @@ import aiojobs
 from service import Service
 
 from id_sync import __version__
+from id_sync.config_storage import ConfigurationStorage
 from id_sync.constants import IN_QUEUE_DIR, LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
 from id_sync.plugin_loader import load_plugins
 from id_sync.plugins import plugin_manager
 from id_sync.queues import InQueue, OutQueue, get_out_queue_dirs
 from id_sync.rpc import SimpleRPCServer
-from id_sync.school_auth_configuration import Configuration
 from id_sync.utils import ConsoleAndFileLogging, close_ucr_cache
 
 
@@ -79,7 +79,7 @@ class IDSyncService(Service):
         self.out_queues = sorted(
             [
                 OutQueue.from_school_authority(school_authority)
-                async for school_authority in Configuration.load_school_authorities()
+                async for school_authority in ConfigurationStorage.load_school_authorities()
             ],
             key=lambda x: x.name,
         )
