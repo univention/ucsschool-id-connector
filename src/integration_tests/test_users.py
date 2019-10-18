@@ -30,11 +30,24 @@
 import pytest
 import requests
 import time
+from typing import Dict, Any
 from urllib.parse import urljoin
 from urllib3.exceptions import InsecureRequestWarning
 
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
+
+def compare_dict(source: Dict[str, Any], other: Dict[str, Any]):
+    """
+    This function compares two dictionaries. Specifically it checks if all key-value pairs from the source
+    also exist in the other dictionary. It does not assert all key-value pairs from the other dictionary
+    to be in the source!
+    :param source: The original dictionary
+    :param other: The dictionary to check against the original source
+    """
+    for key in source.keys():
+        assert source[key] == other[key]
 
 
 def wait_for_status_code(method, url, status_code, headers=None, json=None, timeout=10):
@@ -76,9 +89,7 @@ async def test_create_user(make_school_authority, make_host_user, headers, schoo
     assert result[0]
     user_remote = result[1].json()
     # TODO: check all attributes!
-    assert user_remote.name == user['name']
-    assert user_remote.resource_uid == user['resource_uid']
-    assert user_remote.source_uid == user['source_uid']
+    compare_dict(user, user_remote)
     result = wait_for_status_code(requests.get, auth2_url, 404,
                                   headers=headers(school_auth2.password.get_secret_value()))
     assert result[0]

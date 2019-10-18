@@ -235,7 +235,7 @@ async def make_host_user(host_bb_token: str, random_name, random_int, resource_u
         Creates a user on the hosts UCS system via BB-API
         :param roles: The new users roles
         :param ous: The new users ous
-        :return: The json returned by the POST request
+        :return: The json used to create the user via the API
         """
         user_data = {
             'name': 'test{}'.format(random_name()),
@@ -262,7 +262,7 @@ async def make_host_user(host_bb_token: str, random_name, random_int, resource_u
         assert resp.status_code == 201
         response_user = resp.json()
         created_users.append(response_user)
-        return response_user
+        return user_data
 
     yield _make_host_user
 
