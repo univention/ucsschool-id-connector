@@ -102,7 +102,7 @@ There you can use the virtual envs Python::
 Install BB-API on sender for integration tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A HTTP-API is required for the integration tests (running in the container) to be able to create/modify/delete users in the host::
+A HTTP-API is required for the integration tests (running in the container) to be able to create/modify/delete users in the host and the target systems::
 
     $ ucr set bb/http_api/users/django_debug=yes bb/http_api/users/wsgi_server_capture_output=yes bb/http_api/users/wsgi_server_loglevel=debug bb/http_api/users/enable_session_authentication=yes
     $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json /var/lib/ucs-school-import/configs/user_import.json
@@ -110,6 +110,13 @@ A HTTP-API is required for the integration tests (running in the container) to b
     $ echo -e "deb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/all/\ndeb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/amd64/" > /etc/apt/sources.list.d/30_BB.list
     $ univention-install -y ucs-school-http-api-bb
 
+To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses and authentication tokens (To be executed on the sender system)::
+
+    $ /usr/share/pyshared/bb/http_api/users/manage.py shell -c "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)" > /var/www/bb-api-key_sender.txt
+    $ ssh IP_TRAEGER1 '/usr/share/pyshared/bb/http_api/users/manage.py shell -c "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)"' > /var/www/bb-api-key_traeger1.txt
+    $ ssh IP_TRAEGER2 '/usr/share/pyshared/bb/http_api/users/manage.py shell -c "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)"' > /var/www/bb-api-key_traeger2.txt
+    $ echo IP_TRAEGER1 > /var/www/bb-api-IP_traeger1.txt
+    $ echo IP_TRAEGER2 > /var/www/bb-api-IP_traeger2.txt
 
 Using devsync with running app container
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
