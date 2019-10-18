@@ -27,6 +27,8 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+from unittest.mock import patch
+
 import pytest
 from faker import Faker
 
@@ -44,11 +46,18 @@ async def test_map_attributes(
     s_a_config = school_authority_configuration()
     user_handler = id_sync.user_handler.UserHandler(s_a_config)
     user_obj: id_sync.models.ListenerUserAddModifyObject = listener_user_add_modify_object()
-    user_handler.api_schools_cache = dict((ou, fake.uri()) for ou in user_obj.object["school"])
+    user_handler.api_schools_cache = dict(
+        (ou, fake.uri()) for ou in user_obj.object["school"]
+    )
     user_handler.api_roles_cache = dict(
         (role.name, fake.uri()) for role in user_obj.school_user_roles
     )
-    res = await user_handler.map_attributes(user_obj)
+
+    async def get_source_uid():
+        return "TESTID"
+
+    with patch.object(id_sync.user_handler, "get_source_uid", get_source_uid):
+        res = await user_handler.map_attributes(user_obj)
     school = [ou for ou in user_obj.object["school"] if ou in user_obj.dn][0]
     school_uri = user_handler.api_schools_cache[school]
     assert res == {

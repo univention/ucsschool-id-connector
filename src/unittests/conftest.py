@@ -35,9 +35,9 @@ from typing import Any, Dict, List
 from unittest.mock import MagicMock
 
 import factory
-from faker import Faker
 import pytest
 import ujson
+from faker import Faker
 
 import id_sync.models
 
