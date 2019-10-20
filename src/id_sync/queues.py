@@ -258,23 +258,9 @@ class FileQueue:
             )
 
     async def save_listener_file(self, obj: ListenerObject, path: Path) -> None:
-        # try:
-        #     path = plugin_manager.hook.save_listener_object(obj=obj, path=path)
-        # except (OSError, ValueError) as exc:
-        #     self.logger.exception(
-        #         "Saving obj to %s: %s\nobj=%r", path.name, exc, obj.dict()
-        #     )
-        #     raise ListenerSavingError(f"{path.name} -> {exc}")
         try:
-            if isinstance(obj, ListenerUserAddModifyObject):
-                json_text = ujson.dumps(
-                    obj.dict_krb5_key_base64_encoded(), sort_keys=True, indent=4
-                )
-            else:
-                json_text = ujson.dumps(obj.dict(), sort_keys=True, indent=4)
-            async with aiofiles.open(path, "w") as fp:
-                await fp.write(json_text)
-        except Exception as exc:
+            path = await plugin_manager.hook.save_listener_object(obj=obj, path=path)
+        except (OSError, ValueError) as exc:
             self.logger.exception(
                 "Saving obj to %s: %s\nobj=%r", path.name, exc, obj.dict()
             )

@@ -46,32 +46,32 @@ class ListenerObjectHandler:
             logger.exception("Loading obj_dict=%r : %s", obj_dict, exc)
             return None
 
-    # @hook_impl
-    # def save_listener_object(self, obj: ListenerObject, path: Path) -> bool:
-    #     """
-    #     Store `obj` JSON encoded into file at `path`.
-    #
-    #     :param ListenerObject obj: instance of a subclass of `ListenerObject`
-    #     :param Path path: filesystem path to save to
-    #     :return: whether the file was saved (False to let the default plugin handle it)
-    #     :rtype: bool
-    #     :raises ValueError: JSON encoding error
-    #     :raises OSError: (FileNotFoundError etc)
-    #     """
-    #     if obj.udm_object_type != "users/user":
-    #         logger.debug("Ignoring %r object.", obj.udm_object_type)
-    #         return False
-    #
-    #     if isinstance(obj, ListenerUserAddModifyObject):
-    #         json_text = ujson.dumps(
-    #             obj.dict_krb5_key_base64_encoded(), sort_keys=True, indent=4
-    #         )
-    #     else:
-    #         json_text = ujson.dumps(obj.dict(), sort_keys=True, indent=4)
-    #
-    #     async with aiofiles.open(path, "w") as fp:
-    #         await fp.write(json_text)
-    #     return True
+    @hook_impl
+    async def save_listener_object(self, obj: ListenerObject, path: Path) -> bool:
+        """
+        Store `obj` JSON encoded into file at `path`.
+
+        :param ListenerObject obj: instance of a subclass of `ListenerObject`
+        :param Path path: filesystem path to save to
+        :return: whether the file was saved (False to let the default plugin handle it)
+        :rtype: bool
+        :raises ValueError: JSON encoding error
+        :raises OSError: (FileNotFoundError etc)
+        """
+        if obj.udm_object_type != "users/user":
+            logger.debug("Ignoring %r object.", obj.udm_object_type)
+            return False
+
+        if isinstance(obj, ListenerUserAddModifyObject):
+            json_text = ujson.dumps(
+                obj.dict_krb5_key_base64_encoded(), sort_keys=True, indent=4
+            )
+        else:
+            json_text = ujson.dumps(obj.dict(), sort_keys=True, indent=4)
+
+        async with aiofiles.open(path, "w") as fp:
+            await fp.write(json_text)
+        return True
 
 
 # register plugin
