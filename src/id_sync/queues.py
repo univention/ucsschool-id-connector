@@ -46,13 +46,10 @@ from .constants import (
     LOG_FILE_PATH_QUEUES,
     OUT_QUEUE_TOP_DIR,
     OUT_QUEUE_TRASH_DIR,
-    UUID_DB_PATH,
 )
-from .ldap_access import LDAPAccess
 from .models import (
     ListenerAddModifyObject,
     ListenerObject,
-    ListenerOldDataEntry,
     ListenerRemoveObject,
     ListenerUserAddModifyObject,
     QueueModel,
@@ -66,7 +63,7 @@ from .user_handler import (
     UnknownSchoolUserRole,
     UserHandler,
 )
-from .utils import ConsoleAndFileLogging, KeyValueDB
+from .utils import ConsoleAndFileLogging
 
 FileQueueTV = TypeVar("FileQueueTV", bound="FileQueue")
 
@@ -81,22 +78,6 @@ class ListenerLoadingError(Exception):
 
 class ListenerSavingError(Exception):
     pass
-
-
-class OldDataDB(KeyValueDB):
-    """Typed wrapper of KeyValueDB"""
-
-    def __getitem__(self, key: str) -> ListenerOldDataEntry:
-        return ListenerOldDataEntry(**super().__getitem__(key))
-
-    def __setitem__(self, key: str, value: ListenerOldDataEntry):
-        return super().__setitem__(key, value.dict())
-
-    def get(self, key, default=None, *args, **kwargs) -> ListenerOldDataEntry:
-        return ListenerOldDataEntry(**super().get(key, default, *args, **kwargs))
-
-    def set(self, key, value, *args, **kwargs):
-        return super().set(key, value.dict(), *args, **kwargs)
 
 
 class FileQueue:
@@ -288,8 +269,6 @@ class InQueue(FileQueue):
         self.logger.name = self.name
         self.out_queues = out_queues or []
         self._old_out_queues = {q.name for q in self.out_queues}
-        self.old_date_db = OldDataDB(UUID_DB_PATH)
-        self.ldap_access = LDAPAccess()
 
     @property
     def school_authority_names(self) -> List[str]:
@@ -315,66 +294,25 @@ class InQueue(FileQueue):
         except ListenerLoadingError as exc:
             raise InvalidListenerFile(str(exc))
 
-        # TODO: hook start
+        changed = False
         if isinstance(obj, ListenerAddModifyObject):
-            await self.preprocess_add_mod_object(obj, path)
+            changed |= any(await plugin_manager.hook.preprocess_add_mod_object(obj=obj))
 
         if isinstance(obj, ListenerRemoveObject):
-            await self.preprocess_remove_object(obj, path)
-        # TODO: hook end
+            changed |= any(await plugin_manager.preprocess_remove_object(obj=obj))
+
+        if changed:
+            try:
+                self.logger.debug("A preprocessing hook modified 'obj', saving it back to JSON...")
+                await self.save_listener_file(obj, path)
+            except ListenerSavingError as exc:
+                raise InvalidListenerFile(str(exc))
 
         *dirs, name = path.parts
         name = name.rsplit(".", 1)[0]
         new_path = Path(*dirs, f"{name}_ready.json")
         path.rename(new_path)
         return new_path
-
-    async def preprocess_add_mod_object(
-        self, obj: ListenerAddModifyObject, path: Path
-    ) -> None:
-        """
-        Preprocessing of create/modify-objects.
-
-        Store (TODO: source_uid & record_uid?) in DB, so we can use it later when a user is
-        modified or deleted (see `preprocess_remove_object()` and
-        `distribute()`), because the ListenerAddModifyObject has no user data.
-        """
-        self.logger.debug("Preprocessing add/modify %r (%r)...", obj.dn, obj.id)
-        # get old / store new data in (ListenerOldDataEntry) in self.old_date_db
-        if isinstance(obj, ListenerUserAddModifyObject):
-            # get passwords from ldap in case of ListenerUserAddModifyObject
-            obj.user_passwords = await self.ldap_access.get_passwords(obj.username)
-        try:
-            await self.save_listener_file(obj, path)
-        except ListenerSavingError as exc:
-            raise InvalidListenerFile(str(exc))
-
-    async def preprocess_remove_object(
-        self, obj: ListenerRemoveObject, path: Path
-    ) -> None:
-        """
-        Preprocessing of remove-objects.
-
-        Get the users UUID from the DB.
-        """
-        self.logger.debug("Preprocessing remove %r (%r)...", obj.dn, obj.id)
-        try:
-            old_data = self.old_date_db[obj.id]
-        except KeyError:
-            self.logger.error("*** CANNOT DELETE USER FROM TARGET SYSTEM(S)! ***")
-            self.logger.error(
-                "No UUID stored for DN %r (entryUUID %r).", obj.dn, obj.id
-            )
-            raise InvalidListenerFile
-        # User will be deleted, so data is useless now. Delete in 1 week (not
-        # now), in case there was a problem and the data is still needed.
-        self.old_date_db.touch(obj.id, expire=7 * 24 * 3600)
-        # store old data in listener file
-        # TODO: record_uid / source_uid ?
-        try:
-            await self.save_listener_file(obj, path)
-        except ListenerSavingError as exc:
-            raise InvalidListenerFile(str(exc))
 
     async def distribute_loop(self) -> None:
         """

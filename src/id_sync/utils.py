@@ -147,6 +147,7 @@ class ConsoleAndFileLogging:
 
 
 class KeyValueDB:
+    """Interface for concrete DB backend."""
     def __init__(self, datebase_dir: Path):
         if not datebase_dir.exists():
             datebase_dir.mkdir(mode=0o750, parents=True)
@@ -175,3 +176,19 @@ class KeyValueDB:
 
     def touch(self, *args, **kwargs):
         return self._cache.touch(*args, **kwargs)
+
+
+class OldDataDB(KeyValueDB):
+    """Typed wrapper of KeyValueDB"""
+
+    def __getitem__(self, key: str) -> ListenerOldDataEntry:
+        return ListenerOldDataEntry(**super().__getitem__(key))
+
+    def __setitem__(self, key: str, value: ListenerOldDataEntry):
+        return super().__setitem__(key, value.dict())
+
+    def get(self, key, default=None, *args, **kwargs) -> ListenerOldDataEntry:
+        return ListenerOldDataEntry(**super().get(key, default, *args, **kwargs))
+
+    def set(self, key, value, *args, **kwargs):
+        return super().set(key, value.dict(), *args, **kwargs)

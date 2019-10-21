@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import abc
 import base64
 import logging
 import re
@@ -131,18 +132,20 @@ class ListenerObject(BaseModel):
         return f"{self.__class__.__name__}({self.udm_object_type}, {self.dn})"
 
 
-class ListenerAddModifyObject(ListenerObject):
+class ListenerAddModifyObject(ListenerObject, abc.ABC):
     object: Dict[str, Any]
     options: List[str]
     action = ListenerActionEnum.add_mod
+    old_data: "ListenerOldDataEntry" = None
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
-        raise NotImplementedError("Implement this in an object specific subclass.")
+        raise NotImplementedError("Implement this in a subclass specific for each UDM object type.")
 
 
 class ListenerUserAddModifyObject(ListenerAddModifyObject):
     user_passwords: UserPasswords = None
+    old_data: "ListenerUserOldDataEntry" = None
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
@@ -247,6 +250,11 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
 
 class ListenerRemoveObject(ListenerObject):
     action = ListenerActionEnum.delete
+
+
+class ListenerUserRemoveObject(ListenerObject):
+    action = ListenerActionEnum.delete
+    old_data: "ListenerUserOldDataEntry" = None
 
 
 class SchoolAuthorityConfiguration(BaseModel):
@@ -370,9 +378,11 @@ class TokenData(BaseModel):
     username: str = None
 
 
-class ListenerOldDataEntry(BaseModel):
-    uuid: str
-    # TODO: generic attribute(s) possible?
-    # source_uid: str ?
-    # record_uid: str ?
-    # unique_identifiers: List[Tuple[str, str]]  e.g.: [("source_uid", "abc"), ("record_uid", "xyz")]
+class ListenerOldDataEntry(BaseModel, abc.ABC):
+    ...
+
+
+class ListenerUserOldDataEntry(ListenerOldDataEntry):
+    schools: List[str]
+    record_uid: str = None
+    source_uid: str = None

@@ -33,7 +33,7 @@ from typing import Any, Dict, Optional
 import pluggy
 
 from .constants import PLUGIN_NAMESPACE
-from .models import ListenerObject
+from .models import ListenerObject, ListenerAddModifyObject, ListenerRemoveObject
 
 __all__ = ["hook_impl", "plugin_manager"]
 
@@ -47,12 +47,15 @@ plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
 
 class ListenerObjectHandler:
-    @hook_spec  # return a list of results
+    @hook_spec
     def get_listener_object(self, obj_dict: Dict[str, Any]) -> Optional[ListenerObject]:
         """
         Analyse `obj_dict` and return an instance of a subclass of
         `ListenerObject`. If the type cannot by recognized or should be
         handled by the default code, return `None`.
+
+        Multiple `get_listener_object` hook implementations may run, until one
+        returns an object.
 
         :param dict obj_dict: dictionary loaded from the appcenter listener
             converters JSON file
@@ -65,12 +68,56 @@ class ListenerObjectHandler:
         """
         Store `obj` JSON encoded into file at `path`.
 
+        Only one `save_listener_object` hook implementation will be executed.
+
         :param ListenerObject obj: instance of a subclass of `ListenerObject`
         :param Path path: filesystem path to save to
         :return: whether the file was saved (False to let the default plugin handle it)
         :rtype: bool
         :raises ValueError: JSON encoding error
         :raises OSError: (FileNotFoundError etc)
+        """
+
+    @hook_spec
+    async def preprocess_add_mod_object(self, obj: ListenerAddModifyObject) -> bool:
+        """
+        Preprocessing of create/modify-objects in the in queue.
+
+        For example store data in a DB, that will not be available in the
+        delete operation (use it in `preprocess_remove_object()`), because the
+        ListenerRemoveObject has no object data, just the objects `id`. Or
+        load additional data missing in the `obj.object`.
+
+        If `obj` was modified and the out queues should see that modification,
+        return `True`, so it gets saved to disk.
+
+        All `preprocess_add_mod_object` hook implementations will be executed.
+
+        :param ListenerAddModifyObject obj: instance of a concrete subclass
+            of ListenerAddModifyObject
+        :return: whether `obj` was modified and it should be written back to
+            the listener file, so out queues can load it.
+        :rtype: bool
+        """
+
+    @hook_spec
+    async def preprocess_remove_object(self, obj: ListenerRemoveObject) -> bool:
+        """
+        Preprocessing of remove-objects in the in queue.
+
+        For example get the users previous IDs etc from a DB, as the
+        ListenerRemoveObject has no object data.
+
+        If `obj` was modified and the out queues should see that modification,
+        return `True`, so it gets saved to disk.
+
+        All `preprocess_remove_object` hook implementations will be executed.
+
+        :param ListenerRemoveObject obj: instance of a concrete subclass
+            of ListenerAddModifyObject
+        :return: whether `obj` was modified and it should be written back to
+            the listener file, so out queues can load it.
+        :rtype: bool
         """
 
 
