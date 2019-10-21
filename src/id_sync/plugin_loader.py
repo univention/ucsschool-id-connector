@@ -36,7 +36,13 @@ from id_sync.plugins import plugin_manager
 from id_sync.utils import ConsoleAndFileLogging
 
 
-def load_plugins():
+__plugins_loaded = False
+
+
+def load_plugins() -> None:
+    global __plugins_loaded
+    if __plugins_loaded:
+        return
     logger = ConsoleAndFileLogging.get_logger(__name__)
     for package_dir in PLUGIN_PACKAGE_DIRS:
         logger.debug("Adding directory to Python path: '%s'...", package_dir)
@@ -70,3 +76,4 @@ def load_plugins():
         [h for h in dir(plugin_manager.hook) if not h.startswith("_")],
     )
     logger.info("Loaded plugins: %r", plugin_manager.get_plugins())
+    __plugins_loaded = True

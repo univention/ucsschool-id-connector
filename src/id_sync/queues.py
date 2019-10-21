@@ -296,10 +296,12 @@ class InQueue(FileQueue):
 
         changed = False
         if isinstance(obj, ListenerAddModifyObject):
-            changed |= any(await plugin_manager.hook.preprocess_add_mod_object(obj=obj))
+            results = plugin_manager.hook.preprocess_add_mod_object(obj=obj)
+            changed |= any([await r for r in results])
 
         if isinstance(obj, ListenerRemoveObject):
-            changed |= any(await plugin_manager.preprocess_remove_object(obj=obj))
+            results = plugin_manager.preprocess_remove_object(obj=obj)
+            changed |= any([await r for r in results])
 
         if changed:
             try:
