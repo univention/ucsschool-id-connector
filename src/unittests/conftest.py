@@ -28,20 +28,64 @@
 # <http://www.gnu.org/licenses/>.
 
 import asyncio
+import shutil
 import random
 import string
 from functools import partial
+from pathlib import Path
+from tempfile import mkdtemp
 from typing import Any, Dict, List
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import factory
 import pytest
 import ujson
 from faker import Faker
 
+import id_sync.constants
 import id_sync.models
+import id_sync.plugin_loader
+import id_sync.plugins
 
 fake = Faker()
+
+
+DEFAULT_DUMMY_PLUGIN = """
+from id_sync.utils import ConsoleAndFileLogging
+from id_sync.plugins import hook_impl, plugin_manager
+logger = ConsoleAndFileLogging.get_logger(__name__)
+class DefaultDummyPlugin:
+    @hook_impl
+    def dummy_func(self, arg1, arg2):
+        logger.info("Running DefaultDummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
+        return arg1 - arg2
+plugin_manager.register(DefaultDummyPlugin())
+"""
+
+CUSTOM_DUMMY_PLUGIN = """
+from id_sync.utils import ConsoleAndFileLogging
+from id_sync.plugins import hook_impl, plugin_manager
+from {package_name}.{module_name} import ExampleTestClass
+logger = ConsoleAndFileLogging.get_logger(__name__)
+class DummyPlugin:
+    @hook_impl
+    def dummy_func(self, arg1, arg2):
+        logger.info("Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
+        example_obj = ExampleTestClass()
+        res = example_obj.add(arg1, arg2)
+        assert res == arg1 + arg2
+        return res
+plugin_manager.register(DummyPlugin())
+"""
+
+CUSTOM_TEST_MODULE_IN_PACKAGE = """
+from id_sync.utils import ConsoleAndFileLogging
+logger = ConsoleAndFileLogging.get_logger(__name__)
+class ExampleTestClass:
+    def add(self, arg1, arg2):
+        logger.info("Running ExampleTestClass.example_func() with arg1=%r arg2=%r.", arg1, arg2)
+        return arg1 + arg2
+"""
 
 
 class UserPasswordsFactory(factory.Factory):
@@ -299,3 +343,80 @@ def zmq_socket():
 @pytest.fixture
 def school2school_authority_mapping():
     return lambda: School2SchoolAuthorityMappingFactory()
+
+
+class DummyPluginSpec:
+    @id_sync.plugins.hook_spec(firstresult=True)
+    def dummy_func(self, arg1, arg2):
+        """An example hook."""
+
+
+@pytest.fixture(scope="session")
+def mock_plugin_impls():
+    # replace /var/lib/univention-appcenter/apps/id-sync with path below /tmp
+    # and /id-sync/src with ../..
+    tmp_dir = Path(mkdtemp(dir="/tmp"))
+    default_package_dir = Path(__file__).parent.parent / "plugins/packages"
+    custom_package_base_dir = tmp_dir / "plugins/packages"
+    custom_package_base_dir.mkdir(parents=True)
+    mock_package_dirs = (default_package_dir, custom_package_base_dir)
+    default_plugin_dir = Path(__file__).parent.parent / "plugins/plugins"
+    custom_plugin_dir = tmp_dir / "plugins/plugins"
+    custom_plugin_dir.mkdir(parents=True)
+    mock_plugin_dirs = (default_plugin_dir, custom_plugin_dir)
+
+    custom_package_name = fake.safe_color_name()
+    custom_package_dir = custom_package_base_dir / custom_package_name
+    custom_package_dir.mkdir(parents=True)
+    custom_module_name = fake.safe_color_name()
+    custom_module_path = custom_package_dir / f"{custom_module_name}.py"
+    with open(custom_module_path, "w") as fp:
+        fp.write(CUSTOM_TEST_MODULE_IN_PACKAGE)
+    custom_plugin_name = fake.safe_color_name()
+    custom_plugin_path = custom_plugin_dir / f"{custom_plugin_name}.py"
+    with open(custom_plugin_path, "w") as fp:
+        fp.write(
+            CUSTOM_DUMMY_PLUGIN.format(
+                module_name=custom_module_name, package_name=custom_package_name
+            )
+        )
+    default_plugin_name = fake.safe_color_name()
+    default_plugin_path = default_plugin_dir / f"{default_plugin_name}.py"
+    with open(default_plugin_path, "w") as fp:
+        fp.write(DEFAULT_DUMMY_PLUGIN)
+
+    yield mock_plugin_dirs, mock_package_dirs
+
+    id_sync.plugins.plugin_manager.unregister("DummyPlugin")
+    id_sync.plugins.plugin_manager.unregister("DefaultDummyPlugin")
+    shutil.rmtree(tmp_dir)
+    default_plugin_path.unlink()
+    for path in (default_plugin_dir / "__pycache__").glob(
+        f"{default_plugin_name}.*.pyc"
+    ):
+        path.unlink()
+    try:
+        (default_plugin_dir / "__pycache__").rmdir()
+    except OSError:
+        pass
+
+
+@pytest.fixture(scope="session")
+def mock_plugin_spec():
+    id_sync.plugins.plugin_manager.add_hookspecs(DummyPluginSpec)
+
+
+@pytest.fixture
+def mock_plugins(monkeypatch, mock_plugin_impls, mock_plugin_spec):
+    mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
+    db_path = Path(mkdtemp(dir="/tmp"))
+    monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
+    monkeypatch.setenv("ldap_server_name", "localhost")
+    monkeypatch.setenv("ldap_server_port", "7389")
+    with patch.object(
+        id_sync.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
+    ), patch.object(id_sync.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs),\
+            patch.object(id_sync.constants, "OLD_DATA_DB_PATH", db_path):
+        id_sync.plugin_loader.load_plugins()
+
+    yield mock_plugin_impls, db_path

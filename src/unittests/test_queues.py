@@ -37,7 +37,7 @@ import id_sync.queues
 
 
 @pytest.mark.asyncio
-async def test_load_listener_file_example_user(monkeypatch):
+async def test_load_listener_file_example_user(monkeypatch, mock_plugins):
     monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
     monkeypatch.setenv("ldap_server_name", "localhost")
     monkeypatch.setenv("ldap_server_port", "7389")
@@ -50,7 +50,7 @@ async def test_load_listener_file_example_user(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_load_listener_file_example_user_remove(monkeypatch):
+async def test_load_listener_file_example_user_remove(monkeypatch, mock_plugins):
     monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
     monkeypatch.setenv("ldap_server_name", "localhost")
     monkeypatch.setenv("ldap_server_port", "7389")
