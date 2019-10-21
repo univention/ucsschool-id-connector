@@ -46,6 +46,7 @@ import id_sync.constants
 import id_sync.models
 import id_sync.plugin_loader
 import id_sync.plugins
+import id_sync.utils
 
 fake = Faker()
 
@@ -86,6 +87,23 @@ class ExampleTestClass:
         logger.info("Running ExampleTestClass.example_func() with arg1=%r arg2=%r.", arg1, arg2)
         return arg1 + arg2
 """
+
+# Monkey patch get_logger() here, so it won't have to be included as a
+# fixture everywhere.
+_ori_get_logger = id_sync.utils.ConsoleAndFileLogging.get_logger
+
+
+def utils_get_logger(
+    name: str = None, path: Path = id_sync.constants.LOG_FILE_PATH_QUEUES
+):
+    log_dir = Path(mkdtemp())
+    if path:
+        path = log_dir / path.name
+    print(f"\n **** log directory is: {path} ****")
+    return _ori_get_logger(name, path)
+
+
+id_sync.utils.ConsoleAndFileLogging.get_logger = utils_get_logger
 
 
 class UserPasswordsFactory(factory.Factory):
