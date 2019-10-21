@@ -48,6 +48,13 @@ plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
 class ListenerObjectHandler:
     @hook_spec
+    def shutdown(self) -> None:
+        """
+        Called when the daemon is shutting down. Close database and network
+        connections.
+        """
+
+    @hook_spec
     def get_listener_object(self, obj_dict: Dict[str, Any]) -> Optional[ListenerObject]:
         """
         Analyse `obj_dict` and return an instance of a subclass of

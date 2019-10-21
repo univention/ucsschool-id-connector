@@ -136,7 +136,7 @@ class IDSyncService(Service):
         await scheduler.close()
         self.logger.info("Closing cache and DB connections...")
         await close_ucr_cache()
-        self.in_queue.old_date_db.close()
+        plugin_manager.hook.shutdown()
 
 
 if __name__ == "__main__":

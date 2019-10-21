@@ -30,6 +30,14 @@ class ListenerObjectHandler:
         self.ldap_access = LDAPAccess()
 
     @hook_impl
+    def shutdown(self) -> None:
+        """
+        Called when the daemon is shutting down. Close database and network
+        connections.
+        """
+        self.old_data_db.close()
+
+    @hook_impl
     def get_listener_object(self, obj_dict: Dict[str, Any]) -> Optional[ListenerObject]:
         """
         Analyse `obj_dict` and return an instance of a subclass of
