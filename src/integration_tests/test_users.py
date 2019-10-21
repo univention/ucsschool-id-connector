@@ -74,71 +74,194 @@ def wait_for_status_code(method, url, status_code, headers=None, json=None, time
 
 
 @pytest.mark.asyncio
-async def test_create_user(make_school_authority, make_host_user, headers, school_auth_config):
+async def test_create_user(make_school_authority, make_host_user, req_headers, school_auth_config, save_mapping,
+                           create_schools, bb_api_url):
     """
     Tests if id_sync distributes a newly created User to the correct school authorities.
     """
     school_auth1 = make_school_authority(**school_auth_config(1))
     school_auth2 = make_school_authority(**school_auth_config(2))
-    # TODO: Setup mapping (DEMOSCHOOL to authority1)
-    user = make_host_user()
-    auth1_url = urljoin(urljoin(school_auth1.url, 'users'), user['name'])
-    auth2_url = urljoin(urljoin(school_auth2.url, 'users'), user['name'])
-    result = wait_for_status_code(requests.get, auth1_url, 200,
-                                  headers=headers(school_auth1.password.get_secret_value()))
-    assert result[0]
-    user_remote = result[1].json()
-    # TODO: check all attributes!
-    compare_dict(user, user_remote)
-    result = wait_for_status_code(requests.get, auth2_url, 404,
-                                  headers=headers(school_auth2.password.get_secret_value()))
-    assert result[0]
+    auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
+    ou_auth1 = auth_school_mapping[school_auth1.name][0]
+    ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
+    ou_auth2 = auth_school_mapping[school_auth2.name][0]
+    save_mapping({
+        ou_auth1: school_auth1.name,
+        ou_auth1_2: school_auth1.name,
+        ou_auth2: school_auth2.name
+    })
+    for ous in ((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)):
+        user = make_host_user(ous=ous)
+        auth1_url = bb_api_url(school_auth1.url, 'users', user['name'])
+        auth2_url = bb_api_url(school_auth2.url, 'users', user['name'])
+        result = wait_for_status_code(requests.get, auth1_url, 200,
+                                      headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                          content_type='application/json'))
+        assert result[0]
+        user_remote = result[1].json()
+        # TODO: check all attributes!
+        compare_dict(user, user_remote)
+        if ou_auth2 in ous:
+            result = wait_for_status_code(requests.get, auth2_url, 200,
+                                          headers=req_headers(token=school_auth2.password.get_secret_value(),
+                                                              content_type='application/json'))
+            assert result[0]
+            user_remote = result[1].json()
+            # TODO: check all attributes!
+            compare_dict(user, user_remote)
+        else:
+            result = wait_for_status_code(requests.get, auth2_url, 404,
+                                          headers=req_headers(token=school_auth2.password.get_secret_value(),
+                                                              content_type='application/json'))
+            assert result[0]
 
 
 @pytest.mark.asyncio
-async def test_delete_user(make_school_authority, make_host_user, resource_url, host_bb_token, headers,
-                           school_auth_config):
+async def test_delete_user(make_school_authority, make_host_user, host_bb_token, req_headers,
+                           school_auth_config, save_mapping, create_schools, bb_api_url, docker_hostname):
     """
     Tests if id_sync distributes the deletion of an existing user correctly.
     """
     school_auth1 = make_school_authority(**school_auth_config(1))
     school_auth2 = make_school_authority(**school_auth_config(2))
-    # TODO: Setup mapping (DEMOSCHOOL to authority1)
-    user = make_host_user()
-    auth1_url = urljoin(urljoin(school_auth1.url, 'users'), user['name'])
-    result = wait_for_status_code(requests.get, auth1_url, 200,
-                                  headers=headers(school_auth1.password.get_secret_value()))
-    assert result[0]
-    result = requests.delete(urljoin(resource_url('users'), user['name']),
-                             headers=headers(host_bb_token), verify=False)
-    assert result.status_code == 204
-    result = wait_for_status_code(requests.get, auth1_url, 404,
-                                  headers=headers(school_auth1.password.get_secret_value()))
-    assert result[0]
+    auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
+    ou_auth1 = auth_school_mapping[school_auth1.name][0]
+    ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
+    ou_auth2 = auth_school_mapping[school_auth2.name][0]
+    save_mapping({
+        ou_auth1: school_auth1.name,
+        ou_auth1_2: school_auth1.name,
+        ou_auth2: school_auth2.name
+    })
+    user = make_host_user(ous=(ou_auth1, ou_auth2))
+    auth1_url = bb_api_url(school_auth1.url, 'users', user['name'])
+    auth2_url = bb_api_url(school_auth2.url, 'users', user['name'])
+    response = wait_for_status_code(requests.get, auth1_url, 200,
+                                    headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                        content_type='application/json'))
+    assert response[0]
+    response = wait_for_status_code(requests.get, auth2_url, 200,
+                                    headers=req_headers(token=school_auth2.password.get_secret_value(),
+                                                        content_type='application/json'))
+    assert response[0]
+    response = requests.delete(bb_api_url(docker_hostname, 'users', user['name']),
+                               headers=req_headers(token=host_bb_token, content_type='application/json'), verify=False)
+    assert response.status_code == 204
+    response = wait_for_status_code(requests.get, auth1_url, 404,
+                                    headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                        content_type='application/json'))
+    assert response[0]
+    response = wait_for_status_code(requests.get, auth2_url, 404,
+                                    headers=req_headers(token=school_auth2.password.get_secret_value(),
+                                                        content_type='application/json'))
+    assert response[0]
 
 
 @pytest.mark.asyncio
-async def test_modify_user(make_school_authority, make_host_user, headers, resource_url, host_bb_token,
-                           school_auth_config):
+async def test_modify_user(make_school_authority, make_host_user, req_headers, bb_api_url, host_bb_token,
+                           school_auth_config, save_mapping, create_schools, docker_hostname):
     """
     Tests if the modification of a user is properly distributed to the school authority
     """
     school_auth1 = make_school_authority(**school_auth_config(1))
     school_auth2 = make_school_authority(**school_auth_config(2))
-    # TODO: Setup mapping (DEMOSCHOOL to authority1)
-    user = make_host_user()
-    auth1_url = urljoin(urljoin(school_auth1.url, 'users'), user['name'])
+    auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
+    ou_auth1 = auth_school_mapping[school_auth1.name][0]
+    ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
+    ou_auth2 = auth_school_mapping[school_auth2.name][0]
+    save_mapping({
+        ou_auth1: school_auth1.name,
+        ou_auth1_2: school_auth1.name,
+        ou_auth2: school_auth2.name
+    })
+    user = make_host_user(ous=[ou_auth1])
+    auth1_url = bb_api_url(school_auth1.url, 'users', user['name'])
     result = wait_for_status_code(requests.get, auth1_url, 200,
-                                  headers=headers(school_auth1.password.get_secret_value()))
+                                  headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                      content_type='application/json'))
     assert result[0]
     # Modify user
-    resp = requests.patch(urljoin(resource_url('users'), user['name'] + '/'), verify=False,
-                          headers=headers(host_bb_token), json={'disabled': not user['disabled']})
+    resp = requests.patch(bb_api_url(docker_hostname, 'users', user['name']), verify=False,
+                          headers=req_headers(token=host_bb_token, content_type='application/json'),
+                          json={'disabled': not user['disabled']})
     # Check if user was modified
     time.sleep(10)
     auth1_url = urljoin(urljoin(school_auth1.url, 'users'), user['name'])
     result = wait_for_status_code(requests.get, auth1_url, 200,
-                                  headers=headers(school_auth1.password.get_secret_value()))
+                                  headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                      content_type='application/json'))
     assert result[0]
     remote_user = result[1].json()
-    assert remote_user.disabled != user.disabled  # Just an example to check
+    assert remote_user['disabled'] != user['disabled']  # Just an example to check
+
+
+@pytest.mark.asyncio
+async def test_class_change(make_school_authority, school_auth_config, create_schools, save_mapping, make_host_user,
+                            bb_api_url, req_headers, docker_hostname, host_bb_token, random_name):
+    """
+    Tests if the modification of a users class is properly distributed by id-sync.
+    """
+    school_auth1 = make_school_authority(**school_auth_config(1))
+    auth_school_mapping = create_schools([(school_auth1, 1)])
+    ou_auth1 = auth_school_mapping[school_auth1.name][0]
+    save_mapping({
+        ou_auth1: school_auth1.name,
+    })
+    user = make_host_user(ous=[ou_auth1])
+    auth1_url = bb_api_url(school_auth1.url, 'users', user['name'])
+    result = wait_for_status_code(requests.get, auth1_url, 200,
+                                  headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                      content_type='application/json'))
+    assert result[0]
+    new_value = {'school_classes': {ou_auth1: [random_name()]}}
+    response = requests.patch(bb_api_url(docker_hostname, 'users', user['name']), verify=False,
+                              headers=req_headers(token=host_bb_token, content_type='application/json'),
+                              json=new_value)
+    time.sleep(10)
+    auth1_url = bb_api_url(school_auth1.url, 'users', user['name'])
+    result = wait_for_status_code(requests.get, auth1_url, 200,
+                                  headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                      content_type='application/json'))
+    assert result[0]
+    remote_user = result[1].json()
+    assert remote_user['school_classes'] == new_value
+
+
+@pytest.mark.asyncio
+async def test_school_change(make_school_authority, school_auth_config, create_schools, save_mapping, make_host_user,
+                             bb_api_url, req_headers, docker_hostname, host_bb_token, random_name):
+    """
+    Tests if the modification of a users school is properly distributed by id-sync.
+    """
+    school_auth1 = make_school_authority(**school_auth_config(1))
+    auth_school_mapping = create_schools([(school_auth1, 2)])
+    ou_auth1 = auth_school_mapping[school_auth1.name][0]
+    ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
+    save_mapping({
+        ou_auth1: school_auth1.name,
+        ou_auth1_2: school_auth1.name
+    })
+    user = make_host_user(ous=[ou_auth1])
+    auth1_url = bb_api_url(school_auth1.url, 'users', user['name'])
+    result = wait_for_status_code(requests.get, auth1_url, 200,
+                                  headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                      content_type='application/json'))
+    assert result[0]
+    new_value = {
+        'school_classes': {ou_auth1_2: [random_name()]},
+        'school': bb_api_url(docker_hostname, 'schools', ou_auth1_2),
+        'schools': [bb_api_url(docker_hostname, 'schools', ou_auth1_2)]
+    }
+    response = requests.patch(bb_api_url(docker_hostname, 'users', user['name']), verify=False,
+                              headers=req_headers(token=host_bb_token, content_type='application/json'),
+                              json=new_value)
+    time.sleep(10)
+    auth1_url = bb_api_url(school_auth1.url, 'users', user['name'])
+    result = wait_for_status_code(requests.get, auth1_url, 200,
+                                  headers=req_headers(token=school_auth1.password.get_secret_value(),
+                                                      content_type='application/json'))
+    assert result[0]
+    remote_user = result[1].json()
+    assert remote_user['school'] == new_value['school']
+    assert remote_user['school_classes'] == new_value['school_classes']
+    assert remote_user['schools'] == new_value['schools']

@@ -27,15 +27,16 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-from typing import Any, Dict, Callable
+from typing import Any, Dict, List
 from urllib.parse import urljoin
 
 import pytest
 import os
+import json
 import string
 import random
 import requests
-from pydantic import SecretStr, UrlStr
+from pydantic import UrlStr
 
 from id_sync.models import SchoolAuthorityConfiguration
 from id_sync.utils import get_ucrv
@@ -47,6 +48,10 @@ requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 @pytest.fixture(scope='session')
 def school_auth_config(docker_hostname: str):
+    """
+    Fixture to create configurations for school authorities. It expects a specific environment for the integration
+    tests and can provide a maximum of two distinct configurations.
+    """
     requested_data = dict()
     for fnf in ('bb-api-IP_traeger', 'bb-api-key_traeger'):
         for i in ('1', '2'):
@@ -54,11 +59,16 @@ def school_auth_config(docker_hostname: str):
             assert resp.status_code == 200
             requested_data[fnf + i] = resp.text.strip('\n')
 
-    def _school_auth_config(auth_nr: int):
+    def _school_auth_config(auth_nr: int) -> Dict[str, str]:
+        """
+        Generates a configuration for a school authority.
+        :param auth_nr: Request the config for either school authority auth1 or school authority auth2
+        :return: The school authority configuration in dictionary form
+        """
         assert 0 < auth_nr < 3
         config = {
             'name': 'auth' + str(auth_nr),
-            'url': 'https://' + requested_data['bb-api-IP_traeger' + str(auth_nr)] + '/api-bb',
+            'url': 'https://' + requested_data['bb-api-IP_traeger' + str(auth_nr)] + '/api-bb/',
             'password': requested_data['bb-api-key_traeger' + str(auth_nr)],
             'mapping': {
                 'firstname': 'firstname',
@@ -88,6 +98,10 @@ def school_auth_config(docker_hostname: str):
 
 @pytest.fixture
 def random_name():
+    """
+    TODO: Replace with Faker
+    """
+
     def _func(ints=True):
         name = list(string.ascii_letters)
         if ints:
@@ -100,6 +114,10 @@ def random_name():
 
 @pytest.fixture
 def random_int():
+    """
+    TODO: Replace with Faker
+    """
+
     def _func(start=0, end=12):
         return random.randint(start, end)
 
@@ -107,65 +125,85 @@ def random_int():
 
 
 @pytest.fixture()
-def headers():
+def req_headers():
     """
-    Fixture that creates the headers dict for requests to the BB-API for you.
+    Fixture to create request headers for BB-API and id-sync-API requests
     """
 
-    def _headers(secret: str, auth_type: str = 'Token') -> Dict[str, str]:
+    def _req_headers(token: str = '', bearer: str = '', accept: str = '', content_type: str = '') -> Dict[str, str]:
         """
-        Create the headers dict for the BB-API
-        :param secret: The secret to put into the Authorization header. Token: is prepended.
-        :param auth_type: The type of authentication token to specify in Authorization header.
-        :return: The header dict
+        Creates a dictionary containing the specified headers
+        :param token: The secret for creating the Authorization: Token header
+        :param bearer: The secret for creating the Authorization: Bearer header. Overrides Token if both are present
+        :param accept: The value of the accept header
+        :param content_type: The value of the Content-Type header
+        :return: The dict containing all specified headers
         """
-        return {
-            'Authorization': auth_type + ' ' + secret,
-            'Content-Type': 'application/json'
-        }
+        headers = dict()
+        if token:
+            headers['Authorization'] = 'Token {}'.format(token)
+        if bearer:
+            headers['Authorization'] = 'Bearer {}'.format(bearer)
+        if accept:
+            headers['accept'] = accept
+        if content_type:
+            headers['Content-Type'] = content_type
+        return headers
 
-    return _headers
+    return _req_headers
 
 
 @pytest.fixture()
-async def resource_url(docker_hostname: str):
-    def _resource_url(resource: str) -> str:
-        """
-        Returns a resource URL for the docker containers hosts BB-API
-        :param resource: The resource to generate the URL for
-        :return: The resource endpoint URL
-        """
-        api_root = urljoin('https://' + docker_hostname, 'api-bb/')
-        return urljoin(api_root, resource) + '/'
+def bb_api_url():
+    """
+    Fixture to create BB-API resource URLs.
+    """
 
-    return _resource_url
+    def _bb_api_url(hostname: str, resource: str, entity: str = '') -> str:
+        """
+        Creates a BB-API resource URL
+        :param hostname: The APIs hostname
+        :param resource: The resource to query (schools, users, roles)
+        :param entity: If given it builds the URL for the specific resource entity
+        :return: The BB-API URL
+        """
+        if hostname.endswith('api-bb/'):
+            return urljoin(hostname, '{}/{}'.format(resource, entity))
+        return urljoin('https://{}/api-bb/'.format(hostname), '{}/{}/'.format(resource, entity))
+
+    return _bb_api_url
 
 
 @pytest.fixture(scope='session')
 def docker_hostname():
+    """
+    The hostname of the docker containers host system.
+    """
     return os.environ['docker_host_name']
 
 
 @pytest.fixture()
-async def source_uid():
+async def source_uid() -> str:
+    """
+    The source UID as specified in the id-sync App settings.
+    """
     return await get_ucrv('id-sync/source_uid')
 
 
 @pytest.fixture(scope='session')
-def host_bb_token(docker_hostname):
+def host_bb_token(docker_hostname: str) -> str:
     """
     Returns a valid token for the BB-API of the containers host system.
-    :return: A valid API token
     """
-    resp = requests.get(urljoin('http://' + docker_hostname, 'bb-api-key_sender.txt'))
+    resp = requests.get(urljoin('http://' + docker_hostname + '/', 'bb-api-key_sender.txt'))
     assert resp.status_code == 200
     return resp.text.strip('\n')
 
 
 @pytest.fixture(scope='session')
-def host_id_sync_token(docker_hostname):
+def host_id_sync_token(docker_hostname: str) -> str:
     """
-    Returns a valid token for the id-sync HTTP-API
+    Returns a valid token for the id-sync HTTP-API.
     """
     req_headers = {'accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded'}
     response = requests.post(urljoin('https://' + docker_hostname, 'id-sync/api/token'), verify=False,
@@ -176,19 +214,16 @@ def host_id_sync_token(docker_hostname):
 
 
 @pytest.fixture()
-async def make_school_authority(host_id_sync_token: str, docker_hostname: str, headers):
+async def make_school_authority(host_id_sync_token: str, docker_hostname: str,
+                                req_headers) -> SchoolAuthorityConfiguration:
     """
     Fixture factory to create (and at the same time save) school authorities.
     They will be deleted automatically when the fixture goes out of scope
     """
     created_authorities = list()
-    req_headers = {
-        'Authorization': 'Bearer ' + host_id_sync_token,
-        'accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
+    headers = req_headers(bearer=host_id_sync_token, accept='application/json', content_type='application/json')
 
-    def _make_school_authority(name: str, url: UrlStr, password: SecretStr,
+    def _make_school_authority(name: str, url: UrlStr, password: str,
                                mapping: Dict[str, Any]) -> SchoolAuthorityConfiguration:
         """
         Creates and saves a school authority
@@ -207,7 +242,7 @@ async def make_school_authority(host_id_sync_token: str, docker_hostname: str, h
             'passwords_target_attribute': 'id_sync_pw'
         }
         resp = requests.post(urljoin('https://' + docker_hostname, 'id-sync/api/v1/school_authorities'),
-                             verify=False, json=json_data, headers=req_headers)
+                             verify=False, json=json_data, headers=headers)
         assert resp.status_code == 201
         school_authority = SchoolAuthorityConfiguration(name=name, url=url, password=password, mapping=mapping,
                                                         password_target_attribute='id_sync_pw')
@@ -219,11 +254,85 @@ async def make_school_authority(host_id_sync_token: str, docker_hostname: str, h
     for school_authority_name in created_authorities:
         response = requests.delete(
             urljoin('https://' + docker_hostname, 'id-sync/api/v1/school_authorities/' + school_authority_name),
-            verify=False, headers=req_headers)
+            verify=False, headers=headers)
 
 
 @pytest.fixture()
-async def make_host_user(host_bb_token: str, random_name, random_int, resource_url: Callable[[str], str], source_uid: str, headers):
+def save_mapping(docker_hostname: str, req_headers, host_id_sync_token: str):
+    """
+    Fixture to save a ou to school authority mapping in id-sync. Mapping gets deleted if the fixture goes out of scope
+    """
+    headers = req_headers(bearer=host_id_sync_token, accept='application/json', content_type='application/json')
+
+    def _save_mapping(mapping: Dict[str, str]):
+        """
+        Saves the specified mapping via HTTP-API
+        :param mapping: The mapping
+        """
+        response = requests.put(
+            urljoin('https://{}'.format(docker_hostname), 'id-sync/api/v1/school_to_authority_mapping'),
+            verify=False, json=dict(mapping=mapping),
+            headers=headers)
+        assert response.json() == dict(mapping=mapping)
+
+    yield _save_mapping
+
+    response = requests.put(urljoin('https://{}'.format(docker_hostname), 'id-sync/api/v1/school_to_authority_mapping'),
+                            verify=False, json=dict(mapping=dict()),
+                            headers=headers)
+    assert response.json() == dict(mapping=dict())
+
+
+@pytest.fixture()
+def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_headers):
+    """
+    Fixture factory to create OUs. The OUs are cached during multiple test runs to save development time.
+    """
+    mapping_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'auth-school-mapping.json')
+    auth_school_mapping = dict()
+    if os.path.exists(mapping_file):
+        with open(mapping_file, 'r') as fp:
+            auth_school_mapping = json.load(fp)
+    else:
+        os.mknod(mapping_file)
+
+    def _create_schools(school_authorities: [(SchoolAuthorityConfiguration, int)]) -> Dict[str, List[str]]:
+        """
+        Creates a number of OUs per school authority as specified. If OUs are present already they are reused.
+        The OUs are created on the host system as well as the specified authority.
+        :param school_authorities: A list of (school_authority, amount of OUs) tuples.
+        :return: The mapping from school_authority to OUs
+        """
+        for auth, amount in school_authorities:
+            ous = list()
+            if auth.name in auth_school_mapping:
+                ous = ['testou-{}'.format(random_name()) for i in
+                       range(amount - len(auth_school_mapping[auth.name]))]
+            else:
+                ous = ['testou-{}'.format(random_name()) for i in range(amount)]
+                auth_school_mapping[auth.name] = list()
+            for ou in ous:
+                resp = requests.post(bb_api_url(docker_hostname, 'schools'), verify=False,
+                                     headers=req_headers(token=host_bb_token, content_type='application/json'),
+                                     json={'name': ou, 'display_name': ou})
+                assert resp.status_code == 201
+                resp = requests.post(bb_api_url(auth.url, 'schools'), verify=False,
+                                     headers=req_headers(token=auth.password.get_secret_value(),
+                                                         content_type='application/json'),
+                                     json={'name': ou, 'display_name': ou})
+                assert resp.status_code == 201
+                auth_school_mapping[auth.name].append(ou)
+        with open(mapping_file, 'w') as fp:
+            fp.truncate()
+            json.dump(auth_school_mapping, fp)
+        return auth_school_mapping
+
+    return _create_schools
+
+
+@pytest.fixture()
+async def make_host_user(host_bb_token: str, random_name, random_int, bb_api_url,
+                         source_uid: str, req_headers, docker_hostname: str):
     """
     Fixture factory to create users on the host system. They are created via the BB-API and
     automatically removed when the fixture goes out of scope.
@@ -249,16 +358,19 @@ async def make_host_user(host_bb_token: str, random_name, random_int, resource_u
             'firstname': random_name(),
             'lastname': random_name(),
             'record_uid': random_name(),
-            'roles': [urljoin(resource_url('roles'), role + "/") for role in roles],
-            'school': urljoin(resource_url('schools'), ous[0] + "/"),
+            'roles': [bb_api_url(docker_hostname, 'roles', role) for role in roles],
+            'school': bb_api_url(docker_hostname, 'schools', ous[0]),
             'school_classes': {} if roles == ('staff',) else dict(
                 (ou, sorted([random_name(4), random_name(4)]))
                 for ou in ous
             ),
-            'schools': [urljoin(resource_url('schools'), ou + "/") for ou in ous],
+            'schools': [bb_api_url(docker_hostname, 'schools', ou) for ou in ous],
             'source_uid': source_uid,
         }
-        resp = requests.post(resource_url('users'), headers=headers(host_bb_token), json=user_data, verify=False)
+        resp = requests.post(bb_api_url(docker_hostname, 'users'),
+                             headers=req_headers(token=host_bb_token, content_type='application/json'), json=user_data,
+                             verify=False)
+        print(resp.json())
         assert resp.status_code == 201
         response_user = resp.json()
         created_users.append(response_user)
@@ -267,5 +379,5 @@ async def make_host_user(host_bb_token: str, random_name, random_int, resource_u
     yield _make_host_user
 
     for user in created_users:
-        requests.delete(urljoin(resource_url('users'), user['name']),
-                        headers={'Authorization': 'Token ' + host_bb_token}, verify=False)
+        requests.delete(bb_api_url(docker_hostname, 'users', user['name']),
+                        headers=req_headers(token=host_bb_token), verify=False)
