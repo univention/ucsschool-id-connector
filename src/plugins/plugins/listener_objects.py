@@ -14,9 +14,10 @@ from id_sync.models import (
     ListenerOldDataEntry,
 )
 from id_sync.constants import OLD_DATA_DB_PATH
+from id_sync.db import OldDataDB
 from id_sync.ldap_access import LDAPAccess
 from id_sync.plugins import hook_impl, plugin_manager
-from id_sync.utils import ConsoleAndFileLogging, OldDataDB
+from id_sync.utils import ConsoleAndFileLogging
 
 logger = ConsoleAndFileLogging.get_logger("plugins." + __name__)
 

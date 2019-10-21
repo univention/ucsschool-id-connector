@@ -36,7 +36,6 @@ from typing import TextIO, Union
 import aiofiles
 import colorlog
 from async_lru import alru_cache
-from diskcache import Cache
 
 from .constants import (
     DOCKER_LOG_FD,
@@ -144,51 +143,3 @@ class ConsoleAndFileLogging:
         handler = colorlog.StreamHandler()
         handler.setFormatter(colorlog.ColoredFormatter(LOG_ENTRY_CMDLINE_FORMAT))
         logger.addHandler(handler)
-
-
-class KeyValueDB:
-    """Interface for concrete DB backend."""
-    def __init__(self, datebase_dir: Path):
-        if not datebase_dir.exists():
-            datebase_dir.mkdir(mode=0o750, parents=True)
-        self._cache = Cache(str(datebase_dir))
-
-    def __contains__(self, key):
-        return self._cache.__contains__(key)
-
-    def __delitem__(self, key):
-        return self._cache.__delitem__(key)
-
-    def __getitem__(self, key):
-        return self._cache.__getitem__(key)
-
-    def __setitem__(self, key, value):
-        return self._cache.__setitem__(key, value)
-
-    def close(self, *args, **kwargs):
-        return self._cache.close()
-
-    def get(self, key, default=None, *args, **kwargs):
-        return self._cache.get(key, default, *args, **kwargs)
-
-    def set(self, key, value, *args, **kwargs):
-        return self._cache.set(key, value, *args, **kwargs)
-
-    def touch(self, *args, **kwargs):
-        return self._cache.touch(*args, **kwargs)
-
-
-class OldDataDB(KeyValueDB):
-    """Typed wrapper of KeyValueDB"""
-
-    def __getitem__(self, key: str) -> ListenerOldDataEntry:
-        return ListenerOldDataEntry(**super().__getitem__(key))
-
-    def __setitem__(self, key: str, value: ListenerOldDataEntry):
-        return super().__setitem__(key, value.dict())
-
-    def get(self, key, default=None, *args, **kwargs) -> ListenerOldDataEntry:
-        return ListenerOldDataEntry(**super().get(key, default, *args, **kwargs))
-
-    def set(self, key, value, *args, **kwargs):
-        return super().set(key, value.dict(), *args, **kwargs)

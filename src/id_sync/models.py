@@ -88,6 +88,16 @@ class UnknownSchoolUserRole(Exception):
         super().__init__(*args, **kwargs)
 
 
+class ListenerOldDataEntry(BaseModel, abc.ABC):
+    ...
+
+
+class ListenerUserOldDataEntry(ListenerOldDataEntry):
+    schools: List[str]
+    record_uid: str = None
+    source_uid: str = None
+
+
 class UserPasswords(BaseModel):
     userPassword: List[str]
     sambaNTPassword: str
@@ -136,7 +146,7 @@ class ListenerAddModifyObject(ListenerObject, abc.ABC):
     object: Dict[str, Any]
     options: List[str]
     action = ListenerActionEnum.add_mod
-    old_data: "ListenerOldDataEntry" = None
+    old_data: ListenerOldDataEntry = None
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
@@ -145,7 +155,7 @@ class ListenerAddModifyObject(ListenerObject, abc.ABC):
 
 class ListenerUserAddModifyObject(ListenerAddModifyObject):
     user_passwords: UserPasswords = None
-    old_data: "ListenerUserOldDataEntry" = None
+    old_data: ListenerUserOldDataEntry = None
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
@@ -376,13 +386,3 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str = None
-
-
-class ListenerOldDataEntry(BaseModel, abc.ABC):
-    ...
-
-
-class ListenerUserOldDataEntry(ListenerOldDataEntry):
-    schools: List[str]
-    record_uid: str = None
-    source_uid: str = None
