@@ -213,7 +213,9 @@ def test_create_school_authorities(
 
 
 @patch("id_sync.http_api.zmq_context")
-def test_read_school_to_school_authority_mapping(zmq_context_mock, zmq_socket, school2school_authority_mapping):
+def test_read_school_to_school_authority_mapping(
+    zmq_context_mock, zmq_socket, school2school_authority_mapping
+):
     school_to_authority_mapping = school2school_authority_mapping()
     socket = zmq_socket({"result": school_to_authority_mapping.dict()})
     zmq_context_mock.socket.return_value = socket
@@ -235,7 +237,11 @@ def test_read_school_to_school_authority_mapping(zmq_context_mock, zmq_socket, s
 
 @patch("id_sync.http_api.zmq_context")
 def test_create_school_to_school_authority_mapping(
-    zmq_context_mock, random_name, random_int, zmq_socket, school2school_authority_mapping
+    zmq_context_mock,
+    random_name,
+    random_int,
+    zmq_socket,
+    school2school_authority_mapping,
 ):
     school_to_authority_mapping = school2school_authority_mapping()
     socket = zmq_socket({"result": school_to_authority_mapping.dict()})

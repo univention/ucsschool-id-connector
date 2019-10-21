@@ -303,7 +303,9 @@ class InQueue(FileQueue):
 
         if changed:
             try:
-                self.logger.debug("A preprocessing hook modified 'obj', saving it back to JSON...")
+                self.logger.debug(
+                    "A preprocessing hook modified 'obj', saving it back to JSON..."
+                )
                 await self.save_listener_file(obj, path)
             except ListenerSavingError as exc:
                 raise InvalidListenerFile(str(exc))
@@ -373,10 +375,6 @@ class InQueue(FileQueue):
             self.head = path.name
             try:
                 obj = await self.load_listener_file(path)
-                # distribute to school authorities
-                # TODO: hook start (which school_authorities have to be contacted to handle this file?)
-                s_a_names: Set[str] = set([])
-                # await self.verify_school_authorities_are_known(s_a_names)
             except (ListenerLoadingError, InvalidListenerFile) as exc:
                 # this shouldn't happen, as file has already been validated
                 # except if not all school authorities are known...
@@ -389,6 +387,20 @@ class InQueue(FileQueue):
                 # TODO: don't remove if at least 1 known s_a
                 self.discard_file(path)
                 continue
+
+            # distribute to school authorities
+            # TODO: hook start (which school_authorities have to be contacted to
+            #  handle this file?)
+            s_a_names: Set[str] = set()
+            if isinstance(obj, ListenerUserAddModifyObject):
+                for school in obj.schools:
+                    try:
+                        s_a_names.add(self.school_authority_mapping[school])
+                    except KeyError:
+                        self.logger.error(
+                            "School missing in school authority mapping, ignoring: %r",
+                            school,
+                        )
 
             # add deleted school authorities, so the change/deletion will be
             # distributed by the respective out queues
@@ -452,19 +464,6 @@ class InQueue(FileQueue):
         if added_queues:
             self.logger.debug("Out queues have been added: %s", ", ".join(added_queues))
         self._old_out_queues = current_queues
-
-    # TODO: warning instead of error?
-    async def verify_school_authorities_are_known(self, s_a_names: Set[str]) -> None:
-        """
-        :raises InvalidListenerFile: if file contains invalid/incomplete data
-        """
-        unknown_school_authority_names = s_a_names - set(self.school_authority_names)
-        if unknown_school_authority_names:
-            self.logger.error(
-                "Unknown school authorities found: %r",
-                sorted(unknown_school_authority_names),
-            )
-            raise InvalidListenerFile
 
 
 class OutQueue(FileQueue):

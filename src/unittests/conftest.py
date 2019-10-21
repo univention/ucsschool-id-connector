@@ -28,12 +28,12 @@
 # <http://www.gnu.org/licenses/>.
 
 import asyncio
-import shutil
 import random
+import shutil
 import string
 from functools import partial
 from pathlib import Path
-from tempfile import mkdtemp, NamedTemporaryFile, TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory, mkdtemp
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
@@ -173,10 +173,11 @@ class School2SchoolAuthorityMappingFactory(factory.Factory):
     class Meta:
         model = id_sync.models.School2SchoolAuthorityMapping
 
-    mapping = factory.LazyFunction(lambda: dict(
-        (fake.domain_word(), fake.domain_word())
-        for _ in range(fake.pyint(2, 10))
-    ))
+    mapping = factory.LazyFunction(
+        lambda: dict(
+            (fake.domain_word(), fake.domain_word()) for _ in range(fake.pyint(2, 10))
+        )
+    )
 
 
 def _listener_dump_user_object(
@@ -412,7 +413,9 @@ def db_path():
 
 
 @pytest.fixture
-def mock_plugins(monkeypatch, mock_plugin_impls, mock_plugin_spec, user_passwords_object, db_path):
+def mock_plugins(
+    monkeypatch, mock_plugin_impls, mock_plugin_spec, user_passwords_object, db_path
+):
     mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
     fake_user_passwords_object = user_passwords_object()
 
@@ -426,9 +429,13 @@ def mock_plugins(monkeypatch, mock_plugin_impls, mock_plugin_spec, user_password
 
     with patch.object(
         id_sync.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
-    ), patch.object(id_sync.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs),\
-            patch.object(id_sync.constants, "OLD_DATA_DB_PATH", db_path),\
-            patch("id_sync.ldap_access.LDAPAccess", LDAPAccess):
+    ), patch.object(
+        id_sync.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs
+    ), patch.object(
+        id_sync.constants, "OLD_DATA_DB_PATH", db_path
+    ), patch(
+        "id_sync.ldap_access.LDAPAccess", LDAPAccess
+    ):
 
         id_sync.plugin_loader.load_plugins()
 
@@ -448,18 +455,24 @@ def example_user_remove_json_path_real():
 @pytest.fixture
 def example_user_json_path_copy(example_user_json_path_real):
     def _func(temp_dir):
-        with NamedTemporaryFile(delete=False, dir=str(temp_dir), suffix=".json") as fpw, open(example_user_json_path_real, "rb") as fpr:
+        with NamedTemporaryFile(
+            delete=False, dir=str(temp_dir), suffix=".json"
+        ) as fpw, open(example_user_json_path_real, "rb") as fpr:
             fpw.write(fpr.read())
             fpw.flush()
         return Path(fpw.name)
+
     return _func
 
 
 @pytest.fixture
 def example_user_remove_json_path_copy(example_user_remove_json_path_real):
     def _func(temp_dir):
-        with NamedTemporaryFile(delete=False, dir=str(temp_dir), suffix=".json") as fpw, open(example_user_remove_json_path_real, "rb") as fpr:
+        with NamedTemporaryFile(
+            delete=False, dir=str(temp_dir), suffix=".json"
+        ) as fpw, open(example_user_remove_json_path_real, "rb") as fpr:
             fpw.write(fpr.read())
             fpw.flush()
         return Path(fpw.name)
+
     return _func

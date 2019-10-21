@@ -29,14 +29,19 @@
 
 from pathlib import Path
 from typing import Type, TypeVar
+
 from diskcache import Cache
+
 from .models import ListenerOldDataEntry
 
-ListenerOldDataEntryType = TypeVar("ListenerOldDataEntryType", bound=ListenerOldDataEntry)
+ListenerOldDataEntryType = TypeVar(
+    "ListenerOldDataEntryType", bound=ListenerOldDataEntry
+)
 
 
 class KeyValueDB:
     """Interface for concrete DB backend."""
+
     def __init__(self, datebase_dir: Path):
         if not datebase_dir.exists():
             datebase_dir.mkdir(mode=0o750, parents=True)

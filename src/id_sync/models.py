@@ -153,7 +153,9 @@ class ListenerAddModifyObject(ListenerObject, abc.ABC):
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
-        raise NotImplementedError("Implement this in a subclass specific for each UDM object type.")
+        raise NotImplementedError(
+            "Implement this in a subclass specific for each UDM object type."
+        )
 
 
 class ListenerUserAddModifyObject(ListenerAddModifyObject):

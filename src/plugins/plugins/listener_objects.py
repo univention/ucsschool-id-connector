@@ -5,17 +5,17 @@ import aiofiles
 import ujson
 from pydantic import ValidationError
 
-from id_sync.models import (
-    ListenerObject,
-    ListenerAddModifyObject,
-    ListenerRemoveObject,
-    ListenerUserAddModifyObject,
-    ListenerUserRemoveObject,
-    ListenerUserOldDataEntry,
-)
 from id_sync.constants import OLD_DATA_DB_PATH
 from id_sync.db import OldDataDB
 from id_sync.ldap_access import LDAPAccess
+from id_sync.models import (
+    ListenerAddModifyObject,
+    ListenerObject,
+    ListenerRemoveObject,
+    ListenerUserAddModifyObject,
+    ListenerUserOldDataEntry,
+    ListenerUserRemoveObject,
+)
 from id_sync.plugins import hook_impl, plugin_manager
 from id_sync.utils import ConsoleAndFileLogging
 
@@ -76,7 +76,9 @@ class ListenerObjectHandler:
             obj_as_dict = obj.dict_krb5_key_base64_encoded()
         else:
             obj_as_dict = obj.dict()
-        if isinstance(obj, ListenerUserAddModifyObject) or isinstance(obj, ListenerUserRemoveObject):
+        if isinstance(obj, ListenerUserAddModifyObject) or isinstance(
+            obj, ListenerUserRemoveObject
+        ):
             if obj_as_dict.get("old_data") == {}:
                 # prevent validation error when loading into
                 # ListenerUserAddModifyObject or ListenerUserRemoveObject
@@ -152,7 +154,9 @@ class ListenerObjectHandler:
             except KeyError:
                 logger.error("*** CANNOT DELETE USER FROM TARGET SYSTEM(S)! ***")
                 logger.error(
-                    "No previous schools etc. stored for DN %r (entryUUID %r).", obj.dn, obj.id
+                    "No previous schools etc. stored for DN %r (entryUUID %r).",
+                    obj.dn,
+                    obj.id,
                 )
             else:
                 # User will be deleted, so data is useless now. Delete in 1 week (not

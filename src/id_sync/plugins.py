@@ -33,7 +33,7 @@ from typing import Any, Dict, Optional
 import pluggy
 
 from .constants import PLUGIN_NAMESPACE
-from .models import ListenerObject, ListenerAddModifyObject, ListenerRemoveObject
+from .models import ListenerAddModifyObject, ListenerObject, ListenerRemoveObject
 
 __all__ = ["hook_impl", "plugin_manager"]
 

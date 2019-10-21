@@ -35,7 +35,6 @@ from id_sync.constants import PLUGIN_DIRS, PLUGIN_PACKAGE_DIRS
 from id_sync.plugins import plugin_manager
 from id_sync.utils import ConsoleAndFileLogging
 
-
 __plugins_loaded = False
 
 
