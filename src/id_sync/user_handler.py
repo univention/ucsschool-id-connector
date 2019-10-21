@@ -298,7 +298,7 @@ class UserHandler:
     async def _do_create_or_update(self, data: Dict[str, Any]) -> None:
         # check if user exists, search using the UUID
         params = [
-            ("record_uid", str(data["record_uid"])),
+            ("record_uid", str(data.get("record_uid"))),
             ("source_uid", await get_source_uid()),
         ]
         url = f"{self.school_authority.url}/users/"

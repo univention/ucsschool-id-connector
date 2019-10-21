@@ -52,6 +52,7 @@ from .models import (
     ListenerObject,
     ListenerRemoveObject,
     ListenerUserAddModifyObject,
+    ListenerUserRemoveObject,
     QueueModel,
     SchoolAuthorityConfiguration,
 )
@@ -334,8 +335,8 @@ class InQueue(FileQueue):
                 p for p in self.queue_files() if not p.name.endswith("_ready.json")
             ):
                 try:
-                    await self.preprocess_file(path)
-                    self.logger.info("%s preprocessed.", path.name)
+                    new_path = await self.preprocess_file(path)
+                    self.logger.info("%s preprocessed -> %s.", path.name, new_path.name)
                 except InvalidListenerFile as exc:
                     self.logger.info("Discarding invalid file %r: %s", path.name, exc)
                     self.discard_file(path)
@@ -349,7 +350,6 @@ class InQueue(FileQueue):
                         "During preprocessing of file %r: %s", path.name, exc
                     )
                     raise InvalidListenerFile("Error during preprocessing.") from exc
-
             self.log_queue_changes()
             if self.out_queues:
                 # Distribute only if out queues exist. Prevents deleting queue
@@ -371,6 +371,9 @@ class InQueue(FileQueue):
         queue_paths = queue_paths or (
             p for p in self.queue_files() if p.name.endswith("_ready.json")
         )
+        s_a_name_to_out_queue = dict(
+            (q.school_authority.name, q) for q in self.out_queues
+        )
         for path in queue_paths:
             self.head = path.name
             try:
@@ -388,9 +391,10 @@ class InQueue(FileQueue):
                 self.discard_file(path)
                 continue
 
-            # distribute to school authorities
             # TODO: hook start (which school_authorities have to be contacted to
             #  handle this file?)
+
+            # distribute to school authorities
             s_a_names: Set[str] = set()
             if isinstance(obj, ListenerUserAddModifyObject):
                 for school in obj.schools:
@@ -404,42 +408,45 @@ class InQueue(FileQueue):
 
             # add deleted school authorities, so the change/deletion will be
             # distributed by the respective out queues
-            if isinstance(obj, ListenerAddModifyObject):
-                # old_s_a = obj.old_data
-                msg = "removed from user"
-            else:
-                # old_s_a = obj.new_data
-                msg = "for removed user"
-            deleted_s_a: Set["TODO"] = set([])
-            if deleted_s_a:
-                self.logger.debug(
-                    "Found stored 'TODO' entries %s %r: %r",
-                    msg,
-                    obj.username,
-                    deleted_s_a,
-                )
-            deleted_s_a_names = {s.school_authority for s in deleted_s_a}
-            try:
-                await self.verify_school_authorities_are_known(deleted_s_a_names)
-                s_a_names.update(deleted_s_a_names)
-            except InvalidListenerFile:
-                self.logger.warning(
-                    "Ignoring school authorities %r without out queue, found in removed "
-                    "'TODO' entry.",
-                    deleted_s_a_names,
-                )
+            if isinstance(obj, ListenerUserAddModifyObject) or isinstance(
+                obj, ListenerUserRemoveObject
+            ):
+                if obj.old_data:
+                    old_schools = obj.old_data.schools
+                else:
+                    old_schools = []
+                for school in old_schools:
+                    try:
+                        s_a_names.add(self.school_authority_mapping[school])
+                    except KeyError:
+                        self.logger.error(
+                            "School from 'old_data_ missing in school authority"
+                            " mapping, ignoring: %r",
+                            school,
+                        )
             # TODO: hook end
 
             # copy listener file to out queues for affected school authorities
             if not s_a_names:
                 self.logger.info(
-                    "Ignoring user without current or previous ... entries. *TODO*: school -> authority mapping'"
+                    "Ignoring user without current or previous school authority entries "
+                    "(DN: %r entryUUID: %r).",
+                    obj.dn,
+                    obj.id,
                 )
-            for out_queue in [
-                out_queue
-                for out_queue in self.out_queues
-                if out_queue.school_authority.name in s_a_names
-            ]:
+                self.discard_file(path)
+                continue
+            for s_a_name in s_a_names:
+                try:
+                    out_queue = s_a_name_to_out_queue[s_a_name]
+                except KeyError:
+                    self.logger.warning(
+                        "Ignoring unknown school authority %r for DN %r (%r).",
+                        s_a_name,
+                        obj.dn,
+                        obj.id,
+                    )
+                    continue
                 shutil.copy2(str(path), str(out_queue.path))
                 self.logger.debug(
                     "Copied %r to out queue %r (%s).",
@@ -525,6 +532,8 @@ class OutQueue(FileQueue):
                         except FileNotFoundError:
                             pass
                 if api_error:
+                    # TODO: limit on number of retries, just delete job for now
+                    self.keep_file(path)
                     break
                 self.head = ""
                 await asyncio.sleep(1)
