@@ -97,6 +97,9 @@ class ListenerUserOldDataEntry(ListenerOldDataEntry):
     record_uid: str = None
     source_uid: str = None
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(school={self.schools!r}, record_uid={self.record_uid!r}, source_uid={self.source_uid!r})"
+
 
 class UserPasswords(BaseModel):
     userPassword: List[str]
@@ -262,8 +265,7 @@ class ListenerRemoveObject(ListenerObject):
     action = ListenerActionEnum.delete
 
 
-class ListenerUserRemoveObject(ListenerObject):
-    action = ListenerActionEnum.delete
+class ListenerUserRemoveObject(ListenerRemoveObject):
     old_data: "ListenerUserOldDataEntry" = None
 
 

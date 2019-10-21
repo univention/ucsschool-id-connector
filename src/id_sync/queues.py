@@ -232,10 +232,8 @@ class FileQueue:
                 return obj
         else:
             raise ListenerLoadingError(
-                "No result from 'get_listener_object' hook (listener_objects=%r) "
-                "for obj_dict=%r",
-                listener_objects,
-                obj_dict,
+                f"No result from 'get_listener_object' hook (listener_objects="
+                f"{listener_objects!r}) for obj_dict={obj_dict!r}."
             )
 
     async def save_listener_file(self, obj: ListenerObject, path: Path) -> None:
@@ -300,7 +298,7 @@ class InQueue(FileQueue):
             changed |= any([await r for r in results])
 
         if isinstance(obj, ListenerRemoveObject):
-            results = plugin_manager.preprocess_remove_object(obj=obj)
+            results = plugin_manager.hook.preprocess_remove_object(obj=obj)
             changed |= any([await r for r in results])
 
         if changed:

@@ -28,8 +28,11 @@
 # <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
+from typing import Type, TypeVar
 from diskcache import Cache
 from .models import ListenerOldDataEntry
+
+ListenerOldDataEntryType = TypeVar("ListenerOldDataEntryType", bound=ListenerOldDataEntry)
 
 
 class KeyValueDB:
@@ -67,14 +70,18 @@ class KeyValueDB:
 class OldDataDB(KeyValueDB):
     """Typed wrapper of KeyValueDB"""
 
-    def __getitem__(self, key: str) -> ListenerOldDataEntry:
-        return ListenerOldDataEntry(**super().__getitem__(key))
+    def __init__(self, datebase_dir: Path, data_type: Type[ListenerOldDataEntryType]):
+        super().__init__(datebase_dir)
+        self._data_type = data_type
 
-    def __setitem__(self, key: str, value: ListenerOldDataEntry):
+    def __getitem__(self, key: str) -> ListenerOldDataEntryType:
+        return self._data_type(**super().__getitem__(key))
+
+    def __setitem__(self, key: str, value: ListenerOldDataEntryType):
         return super().__setitem__(key, value.dict())
 
-    def get(self, key, default=None, *args, **kwargs) -> ListenerOldDataEntry:
-        return ListenerOldDataEntry(**super().get(key, default, *args, **kwargs))
+    def get(self, key, default=None, *args, **kwargs) -> ListenerOldDataEntryType:
+        return self._data_type(**super().get(key, default, *args, **kwargs))
 
     def set(self, key, value, *args, **kwargs):
         return super().set(key, value.dict(), *args, **kwargs)

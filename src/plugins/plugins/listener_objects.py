@@ -11,7 +11,7 @@ from id_sync.models import (
     ListenerRemoveObject,
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
-    ListenerOldDataEntry,
+    ListenerUserOldDataEntry,
 )
 from id_sync.constants import OLD_DATA_DB_PATH
 from id_sync.db import OldDataDB
@@ -26,7 +26,7 @@ class ListenerObjectHandler:
     """Handle loading and saving of listener files."""
 
     def __init__(self):
-        self.old_data_db = OldDataDB(OLD_DATA_DB_PATH)
+        self.old_data_db = OldDataDB(OLD_DATA_DB_PATH, ListenerUserOldDataEntry)
         self.ldap_access = LDAPAccess()
 
     @hook_impl
@@ -49,7 +49,7 @@ class ListenerObjectHandler:
 
         try:
             if obj_dict.get("object") is None:
-                return ListenerRemoveObject(**obj_dict)
+                return ListenerUserRemoveObject(**obj_dict)
             else:
                 return ListenerUserAddModifyObject(**obj_dict)
         except ValidationError as exc:
@@ -73,11 +73,15 @@ class ListenerObjectHandler:
             return False
 
         if isinstance(obj, ListenerUserAddModifyObject):
-            json_text = ujson.dumps(
-                obj.dict_krb5_key_base64_encoded(), sort_keys=True, indent=4
-            )
+            obj_as_dict = obj.dict_krb5_key_base64_encoded()
         else:
-            json_text = ujson.dumps(obj.dict(), sort_keys=True, indent=4)
+            obj_as_dict = obj.dict()
+        if isinstance(obj, ListenerUserAddModifyObject) or isinstance(obj, ListenerUserRemoveObject):
+            if obj_as_dict.get("old_data") == {}:
+                # prevent validation error when loading into
+                # ListenerUserAddModifyObject or ListenerUserRemoveObject
+                del obj_as_dict["old_data"]
+        json_text = ujson.dumps(obj_as_dict, sort_keys=True, indent=4)
 
         async with aiofiles.open(path, "w") as fp:
             await fp.write(json_text)
@@ -104,7 +108,7 @@ class ListenerObjectHandler:
             the listener file, so out queues can load it.
         :rtype: bool
         """
-        # get old / store new data in (ListenerOldDataEntry) in self.old_date_db
+        # get old / store new data in (ListenerUserOldDataEntry) in self.old_date_db
         if isinstance(obj, ListenerUserAddModifyObject):
             logger.debug("Preprocessing add/modify %r (%r)...", obj.dn, obj.id)
             # get previous 'old_data' from DB, so we can know if a school was
@@ -115,7 +119,7 @@ class ListenerObjectHandler:
                 pass
             # get passwords from ldap and update 'old_data' in DB
             obj.user_passwords = await self.ldap_access.get_passwords(obj.username)
-            self.old_data_db[obj.id] = ListenerOldDataEntry(
+            self.old_data_db[obj.id] = ListenerUserOldDataEntry(
                 schools=obj.schools,
                 record_uid=obj.object.get("record_uid"),
                 source_uid=obj.object.get("source_uid"),

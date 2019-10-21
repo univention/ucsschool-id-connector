@@ -33,7 +33,7 @@ import random
 import string
 from functools import partial
 from pathlib import Path
-from tempfile import mkdtemp
+from tempfile import mkdtemp, NamedTemporaryFile, TemporaryDirectory
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
@@ -257,11 +257,9 @@ def listener_dump_user_object():
     return _func
 
 
-# enable this, when you need it
-#
-# @pytest.fixture
-# def user_passwords_object():
-#     return lambda: UserPasswordsFactory()
+@pytest.fixture
+def user_passwords_object():
+    return lambda: UserPasswordsFactory()
 
 
 @pytest.fixture
@@ -365,14 +363,14 @@ def mock_plugin_impls():
     custom_plugin_dir.mkdir(parents=True)
     mock_plugin_dirs = (default_plugin_dir, custom_plugin_dir)
 
-    custom_package_name = fake.safe_color_name()
+    custom_package_name = fake.pystr(min_chars=5, max_chars=8)
     custom_package_dir = custom_package_base_dir / custom_package_name
     custom_package_dir.mkdir(parents=True)
-    custom_module_name = fake.safe_color_name()
+    custom_module_name = fake.pystr(min_chars=5, max_chars=8)
     custom_module_path = custom_package_dir / f"{custom_module_name}.py"
     with open(custom_module_path, "w") as fp:
         fp.write(CUSTOM_TEST_MODULE_IN_PACKAGE)
-    custom_plugin_name = fake.safe_color_name()
+    custom_plugin_name = fake.pystr(min_chars=5, max_chars=8)
     custom_plugin_path = custom_plugin_dir / f"{custom_plugin_name}.py"
     with open(custom_plugin_path, "w") as fp:
         fp.write(
@@ -380,7 +378,7 @@ def mock_plugin_impls():
                 module_name=custom_module_name, package_name=custom_package_name
             )
         )
-    default_plugin_name = fake.safe_color_name()
+    default_plugin_name = fake.pystr(min_chars=5, max_chars=8)
     default_plugin_path = default_plugin_dir / f"{default_plugin_name}.py"
     with open(default_plugin_path, "w") as fp:
         fp.write(DEFAULT_DUMMY_PLUGIN)
@@ -406,17 +404,62 @@ def mock_plugin_spec():
     id_sync.plugins.plugin_manager.add_hookspecs(DummyPluginSpec)
 
 
+@pytest.fixture(scope="session")
+def db_path():
+    path = mkdtemp(dir="/tmp")
+    yield Path(path)
+    shutil.rmtree(path)
+
+
 @pytest.fixture
-def mock_plugins(monkeypatch, mock_plugin_impls, mock_plugin_spec):
+def mock_plugins(monkeypatch, mock_plugin_impls, mock_plugin_spec, user_passwords_object, db_path):
     mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
-    db_path = Path(mkdtemp(dir="/tmp"))
+    fake_user_passwords_object = user_passwords_object()
+
+    class LDAPAccess(MagicMock):
+        async def get_passwords(self, username):
+            return fake_user_passwords_object
+
     monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
     monkeypatch.setenv("ldap_server_name", "localhost")
     monkeypatch.setenv("ldap_server_port", "7389")
+
     with patch.object(
         id_sync.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
     ), patch.object(id_sync.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs),\
-            patch.object(id_sync.constants, "OLD_DATA_DB_PATH", db_path):
+            patch.object(id_sync.constants, "OLD_DATA_DB_PATH", db_path),\
+            patch("id_sync.ldap_access.LDAPAccess", LDAPAccess):
+
         id_sync.plugin_loader.load_plugins()
 
-    yield mock_plugin_impls, db_path
+    yield mock_plugin_impls, db_path, fake_user_passwords_object
+
+
+@pytest.fixture(scope="session")
+def example_user_json_path_real():
+    return Path(__file__).parent.parent / "example_user.json"
+
+
+@pytest.fixture(scope="session")
+def example_user_remove_json_path_real():
+    return Path(__file__).parent.parent / "example_user_remove.json"
+
+
+@pytest.fixture
+def example_user_json_path_copy(example_user_json_path_real):
+    def _func(temp_dir):
+        with NamedTemporaryFile(delete=False, dir=str(temp_dir), suffix=".json") as fpw, open(example_user_json_path_real, "rb") as fpr:
+            fpw.write(fpr.read())
+            fpw.flush()
+        return Path(fpw.name)
+    return _func
+
+
+@pytest.fixture
+def example_user_remove_json_path_copy(example_user_remove_json_path_real):
+    def _func(temp_dir):
+        with NamedTemporaryFile(delete=False, dir=str(temp_dir), suffix=".json") as fpw, open(example_user_remove_json_path_real, "rb") as fpr:
+            fpw.write(fpr.read())
+            fpw.flush()
+        return Path(fpw.name)
+    return _func
