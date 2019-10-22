@@ -131,17 +131,21 @@ class UserHandler:
             await self.handle_has_no_schools(obj)
             return
 
-        old_schools = [
-            s for s in obj.old_data.schools if s in await self.api_schools_cache
-        ]
+        known_schools = (await self.api_schools_cache).keys()
+        if obj.old_data:
+            old_schools = [
+                s for s in obj.old_data.schools if s in known_schools
+            ]
+        else:
+            old_schools = []
         self.logger.debug(
             "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) source_uid=(%r->%r).",
             obj.username,
             old_schools,
             current_schools,
-            obj.old_data.record_uid,
+            obj.old_data.record_uid if obj.old_data else "<no old_data>",
             obj.record_uid,
-            obj.old_data.source_uid,
+            obj.old_data.source_uid if obj.old_data else "<no old_data>",
             obj.source_uid,
         )
         request_body = await self.map_attributes(obj)
