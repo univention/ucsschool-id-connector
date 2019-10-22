@@ -31,13 +31,10 @@
 # <http://www.gnu.org/licenses/>.
 
 import asyncio
-import datetime
-import json
 import pprint
 import signal
 import sys
 import time
-from pathlib import Path
 from typing import List
 
 import aiojobs
@@ -45,7 +42,7 @@ from service import Service
 
 from id_sync import __version__
 from id_sync.config_storage import ConfigurationStorage
-from id_sync.constants import IN_QUEUE_DIR, LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
+from id_sync.constants import LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
 from id_sync.plugin_loader import load_plugins
 from id_sync.plugins import plugin_manager
 from id_sync.queues import InQueue, OutQueue, get_out_queue_dirs

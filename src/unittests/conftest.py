@@ -33,7 +33,7 @@ import shutil
 import string
 from functools import partial
 from pathlib import Path
-from tempfile import NamedTemporaryFile, TemporaryDirectory, mkdtemp
+from tempfile import NamedTemporaryFile, mkdtemp
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 

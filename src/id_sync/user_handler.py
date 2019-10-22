@@ -41,7 +41,6 @@ from .constants import (
     BB_API_MAIN_ATTRIBUTES,
     CHECK_SSL_CERTS,
     HTTP_CLIENT_TIMEOUT,
-    LOG_FILE_PATH_QUEUES,
 )
 from .models import (
     ListenerActionEnum,
