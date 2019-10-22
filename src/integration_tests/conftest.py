@@ -346,6 +346,8 @@ async def make_host_user(host_bb_token: str, random_name, random_int, bb_api_url
         :param ous: The new users ous
         :return: The json used to create the user via the API
         """
+        firstname = random_name()
+        lastname = random_name()
         user_data = {
             'name': 'test{}'.format(random_name()),
             'birthday': "19{}-0{}-{}{}".format(
@@ -355,9 +357,9 @@ async def make_host_user(host_bb_token: str, random_name, random_int, bb_api_url
                 random_int(1, 8)
             ),
             'disabled': False,
-            'firstname': random_name(),
-            'lastname': random_name(),
-            'record_uid': random_name(),
+            'firstname': firstname,
+            'lastname': lastname,
+            'record_uid': '{}.{}'.format(firstname, lastname),
             'roles': [bb_api_url(docker_hostname, 'roles', role) for role in roles],
             'school': bb_api_url(docker_hostname, 'schools', ous[0]),
             'school_classes': {} if roles == ('staff',) else dict(
