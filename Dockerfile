@@ -59,7 +59,7 @@ LABEL "description"="ID Sync" \
 COPY src/ /id-sync/src/
 
 RUN cd /id-sync/src && \
-    /id-sync/venv/bin/python3 -m pytest -l -v --color=yes unittests && \
+    /id-sync/venv/bin/python3 -m pytest -l -v --color=yes tests/unittests && \
     /id-sync/venv/bin/pip3 install --no-cache-dir --editable . && \
     rst2html5-3 README.rst README.html && \
     rst2html5-3 HISTORY.rst HISTORY.html && \

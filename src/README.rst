@@ -140,8 +140,7 @@ Sync your working copy into the running container, enter it and restart the serv
 
     [in container] $ . venv/bin/activate
     [in container] (venv) $ cd src
-    [in container] (venv) $ python -m pytest -l -v unittests/
-    [in container] (venv) $ python -m pytest -l -v integration_tests/
+    [in container] (venv) $ python -m pytest -l -v
 
 
 Build release
@@ -389,14 +388,14 @@ Unit tests are executed as part of the build process. To start them manually in 
 
     root@ucs-host:# univention-app shell id-sync
     /id-sync # cd src/
-    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v unittests
+    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v tests/unittests
     /id-sync/src # exit
 
 To run integration tests (*not safe, will modify source and target systems!*), run::
 
     root@ucs-host:# univention-app shell id-sync
     /id-sync # cd src/
-    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v integration_tests
+    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v tests/integration_tests
     /id-sync/src # exit
 
 

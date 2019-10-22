@@ -70,10 +70,10 @@ format: ## format source code (requires Python interpreter activated from venv)
 	venv/bin/black --target-version py37 src src/queue_management src/schedule_user
 
 test: ## run tests with the Python interpreter from 'venv'
-	. venv/bin/activate && cd src && python -m pytest -l -v  unittests
+	. venv/bin/activate && cd src && python -m pytest -l -v tests/unittests
 
 src/.coverage: src/*.json src/*.py src/*/*.py
-	. venv/bin/activate && cd src && coverage run --source integration_tests,unittests,id_sync -m pytest
+	. venv/bin/activate && cd src && coverage run --source tests,id_sync -m pytest || true
 	. venv/bin/activate && cd src && coverage report -m
 
 coverage: src/.coverage ## check code coverage with the Python interpreter from 'venv'
