@@ -127,10 +127,21 @@ Sync your working copy into the running container, enter it and restart the serv
     → /var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged
     [developer machine] ~/git/id-sync $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/id-sync/
     [test VM] $ univention-app shell id-sync
+    [in container] $ /id-sync/venv/bin/pip3 install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
     [in container] $ /etc/init.d/id-sync restart
     [in container] $ /etc/init.d/id-sync-rest-api stop
     [in container] $ /etc/init.d/id-sync-rest-api-dev start
     #                       auto-reload HTTP-API ^^^^
+
+    [in container] $ src/schedule_user demo_teacher
+    # DEBUG: Searching LDAP for user with username 'demo_teacher'...
+    # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.
+    # DEBUG: Done.
+
+    [in container] $ . venv/bin/activate
+    [in container] (venv) $ cd src
+    [in container] (venv) $ python -m pytest -l -v unittests/
+    [in container] (venv) $ python -m pytest -l -v integration_tests/
 
 
 Build release
