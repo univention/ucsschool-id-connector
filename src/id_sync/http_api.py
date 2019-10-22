@@ -284,12 +284,6 @@ def get_readme():
         return fp.read()
 
 
-@app.get(f"{URL_PREFIX}/images", response_class=HTMLResponse)
-def get_images():
-    with open(Path(__file__).parent.parent / "images") as fp:
-        return fp.read()
-
-
 app.include_router(router, prefix=URL_PREFIX)
 app.mount(
     f"{URL_PREFIX}/static",
