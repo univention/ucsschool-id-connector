@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import datetime
 from unittest.mock import patch
 
 import pytest
@@ -49,6 +50,7 @@ async def test_map_attributes(
     user_handler._api_schools_cache = dict(
         (ou, fake.uri()) for ou in user_obj.object["school"]
     )
+    user_handler._api_schools_cache_creation = datetime.datetime.now()
     user_handler.api_roles_cache = dict(
         (role.name, fake.uri()) for role in user_obj.school_user_roles
     )
