@@ -46,7 +46,7 @@ async def test_map_attributes(
     s_a_config = school_authority_configuration()
     user_handler = id_sync.user_handler.UserHandler(s_a_config)
     user_obj: id_sync.models.ListenerUserAddModifyObject = listener_user_add_modify_object()
-    user_handler.api_schools_cache = dict(
+    user_handler._api_schools_cache = dict(
         (ou, fake.uri()) for ou in user_obj.object["school"]
     )
     user_handler.api_roles_cache = dict(
@@ -59,7 +59,7 @@ async def test_map_attributes(
     with patch.object(id_sync.user_handler, "get_source_uid", get_source_uid):
         res = await user_handler.map_attributes(user_obj)
     school = [ou for ou in user_obj.object["school"] if ou in user_obj.dn][0]
-    school_uri = user_handler.api_schools_cache[school]
+    school_uri = (await user_handler.api_schools_cache)[school]
     assert res == {
         "disabled": user_obj.object["disabled"],
         "firstname": user_obj.object["firstname"],
@@ -69,7 +69,7 @@ async def test_map_attributes(
         "roles": list(user_handler.api_roles_cache.values()),
         "school": school_uri,
         "school_classes": user_obj.object.get("school_classes", {}),
-        "schools": list(user_handler.api_schools_cache.values()),
+        "schools": list((await user_handler.api_schools_cache).values()),
         "source_uid": user_obj.object["source_uid"],
         "udm_properties": {
             "id_sync_pw": {

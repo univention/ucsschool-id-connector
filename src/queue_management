@@ -74,6 +74,11 @@ class IDSyncService(Service):
 
     async def manage_queues(self) -> None:
         load_plugins()
+        await InQueue.load_school_authority_mapping()
+        self.logger.info(
+            "Loaded school to school authority mapping:\n%s",
+            pprint.pformat(InQueue.school_authority_mapping),
+        )
         scheduler = await aiojobs.create_scheduler()
         InQueue.scheduler = scheduler
         OutQueue.scheduler = scheduler
@@ -95,11 +100,6 @@ class IDSyncService(Service):
                 "Found abandoned out queue directories: %r", abandoned_out_queue_dirs
             )
         self.in_queue = InQueue(out_queues=self.out_queues)
-        await self.in_queue.load_school_authority_mapping()
-        self.logger.info(
-            "Loaded school to school authority mapping:\n%s",
-            pprint.pformat(self.in_queue.school_authority_mapping),
-        )
         if list(self.out_queues):
             self.logger.info("Running initial distribution of in-queue...")
             await self.in_queue.distribute()

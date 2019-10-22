@@ -15,13 +15,13 @@
     "school": "school",
     "schools": "schools",
     "school_classes": "school_classes",
-    "source_uid": "source_uid",
+    "ucsschoolSourceUID": "source_uid",
     "roles": "roles",
     "title": "title",
     "displayName": "displayName",
     "userexpiry": "userexpiry",
     "phone": "phone",
-    "record_uid": "record_uid"
+    "ucsschoolRecordUID": "record_uid"
   },
   "passwords_target_attribute": "id_sync_pw"
 }

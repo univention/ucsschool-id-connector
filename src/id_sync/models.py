@@ -32,7 +32,7 @@ import base64
 import logging
 import re
 from enum import Enum
-from typing import Any, Dict, List, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 import lazy_object_proxy
 from pydantic import BaseModel, PydanticValueError, SecretStr, UrlStr, validator
@@ -196,6 +196,14 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
                 msg_template='Missing or empty "school" attribute: "{key}"="{value}"',
             )
         return value
+
+    @property
+    def record_uid(self) -> Optional[str]:
+        return self.object.get("record_uid")
+
+    @property
+    def source_uid(self) -> Optional[str]:
+        return self.object.get("source_uid")
 
     @property
     def school(self) -> str:

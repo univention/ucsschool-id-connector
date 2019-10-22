@@ -34,6 +34,7 @@ from typing import Any, Callable, Dict, List, Tuple, Union
 
 import aiofiles
 import aiohttp
+from async_property import async_property
 
 from .constants import (
     API_SCHOOL_CACHE_TTL,
@@ -43,9 +44,10 @@ from .constants import (
     LOG_FILE_PATH_QUEUES,
 )
 from .models import (
+    ListenerActionEnum,
     ListenerAddModifyObject,
-    ListenerRemoveObject,
     ListenerUserAddModifyObject,
+    ListenerUserRemoveObject,
     SchoolAuthorityConfiguration,
     SchoolUserRole,
     UnknownSchoolUserRole,
@@ -103,7 +105,7 @@ class UserHandler:
             f"{self.__class__.__name__}({self.school_authority.name})"
         )
         self.api_roles_cache: Dict[str, str] = {}
-        self.api_schools_cache: Dict[str, str] = {}
+        self._api_schools_cache: Dict[str, str] = {}
         self._api_schools_cache_creation = datetime.datetime(1970, 1, 1)
         timeout = aiohttp.ClientTimeout(total=HTTP_CLIENT_TIMEOUT)
         self._session = aiohttp.ClientSession(timeout=timeout)
@@ -112,55 +114,71 @@ class UserHandler:
         """Clean shutdown procedure."""
         await self._session.close()
 
-    async def handle_create_or_update(self, obj: ListenerAddModifyObject) -> None:
+    async def handle_create_or_update(self, obj: ListenerUserAddModifyObject) -> None:
         """Create or modify user."""
-        if not True:  # TODO: implement
+        # TODO: this method should be for ListenerAddModifyObject and call
+        # plugins for handling specific types
+
+        current_schools = [s for s in obj.schools if s in await self.api_schools_cache]
+
+        if not current_schools:
             self.logger.info(
-                "All TODO entries of user %r for school authority %r have been "
-                "removed or are in the past, deleting user from school authority.",
+                "All schools of user %r in this school authority (%r) have been "
+                "removed. Deleting user from school authority...",
                 obj.username,
                 self.school_authority.name,
             )
-            await self._do_remove(obj.uuid)
+            remove_obj = ListenerUserRemoveObject(
+                dn=obj.dn,
+                id=obj.id,
+                udm_object_type=obj.udm_object_type,
+                action=ListenerActionEnum.delete,
+                old_data=obj.old_data,
+            )
+            await self._do_remove(remove_obj)
             return
 
-        if True:  # TODO: implement
-            # user has currently active entries for this school authority,
-            # construct data from them
-            self.logger.info(
-                "User %r has currently active entries for school authority %r.",
-                obj.username,
-                self.school_authority.name,
-            )
-
+        old_schools = [
+            s for s in obj.old_data.schools if s in await self.api_schools_cache
+        ]
+        self.logger.debug(
+            "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) source_uid=(%r->%r).",
+            obj.username,
+            old_schools,
+            current_schools,
+            obj.old_data.record_uid,
+            obj.record_uid,
+            obj.old_data.source_uid,
+            obj.source_uid,
+        )
+        self.logger.debug("*** obj.dict()=%r", obj.dict())  # TODO: remove when stable
         request_body = await self.map_attributes(obj)
+        self.logger.debug("*** request_body=%r", request_body)  # TODO: remove when stable
         await self._do_create_or_update(request_body)
 
-    async def handle_remove(self, obj: ListenerRemoveObject) -> None:
+    async def handle_remove(self, obj: ListenerUserRemoveObject) -> None:
         """Remove user."""
-        await self._do_remove(obj.uuid)
+        # TODO: this method should be for ListenerAddModifyObject and call
+        # plugins for handling specific types
+        await self._do_remove(obj)
 
-    async def check_schools(self, schools: List[str]) -> None:
+    @async_property
+    async def api_schools_cache(self) -> Dict[str, str]:
         """Verify that all schools are known by the target system."""
         # update list of school URLs
-        if not self.api_schools_cache or (
+        if not self._api_schools_cache or (
             self._api_schools_cache_creation
             + datetime.timedelta(seconds=API_SCHOOL_CACHE_TTL)
             < datetime.datetime.now()
         ):
-            self.api_schools_cache.clear()
-            await self.fetch_schools()
+            self._api_schools_cache.clear()
+            self._api_schools_cache.update(await self.fetch_schools())
             self._api_schools_cache_creation = datetime.datetime.now()
             self.logger.debug(
                 "Updated schools known by API server: %s",
-                ", ".join(self.api_schools_cache.keys()),
+                ", ".join(self._api_schools_cache.keys()),
             )
-        # verify that all schools are known
-        for school in schools:
-            if school not in self.api_schools_cache:
-                raise UnknownSchool(
-                    f"School unknown on API server: {school!r}.", school=school
-                )
+        return self._api_schools_cache
 
     async def school_roles_to_target_roles(self, roles: List[str]) -> List[str]:
         """Convert UCS@school role IDs to target API IDs."""
@@ -194,18 +212,12 @@ class UserHandler:
         for role in json_resp["results"]:
             self.api_roles_cache[role["name"]] = role["url"]
 
-    async def fetch_schools(self, name: str = None) -> None:
-        """Fetch one (set `name`) or all schools from API of school authority."""
-        if name:
-            url = f"{self.school_authority.url}/schools/{name}/"
-        else:
-            url = f"{self.school_authority.url}/schools/"
+    async def fetch_schools(self) -> Dict[str, str]:
+        """Fetch all schools from API of school authority."""
+        # TODO: this should be in a plugin
+        url = f"{self.school_authority.url}/schools/"
         status, json_resp = await self.http_get(url)
-        if name:
-            self.api_schools_cache[json_resp["name"]] = json_resp["url"]
-        else:
-            for school in json_resp["results"]:
-                self.api_schools_cache[school["name"]] = school["url"]
+        return dict((school["name"], school["url"]) for school in json_resp["results"])
 
     async def _do_request(
         self,
@@ -317,8 +329,11 @@ class UserHandler:
             )
             self.logger.info("User created (status: %r): %r", status, json_resp)
 
-    async def _do_remove(self, uuid: str) -> None:
-        params = [("record_uid", uuid), ("source_uid", await get_source_uid())]
+    async def _do_remove(self, obj: ListenerUserRemoveObject) -> None:
+        params = [
+            ("record_uid", obj.old_data.record_uid),
+            ("source_uid", obj.old_data.source_uid or await get_source_uid()),
+        ]
         url = f"{self.school_authority.url}/users/"
         status, json_resp = await self.http_get(url, params)
         if json_resp:
@@ -414,7 +429,7 @@ class UserHandler:
         Get URL of primary school for this user.
         """
         try:
-            return self.api_schools_cache[obj.school]
+            return (await self.api_schools_cache)[obj.school]
         except KeyError:
             raise UnknownSchool(
                 f"School {obj.school!r} unknown on target server.", school=obj.school
@@ -425,7 +440,7 @@ class UserHandler:
         Get URLs of all schools in our school authority that the user is
         currently a member of.
         """
-        return [self.api_schools_cache[school] for school in obj.schools]
+        return [(await self.api_schools_cache)[school] for school in obj.schools]
 
     async def _handle_attr_school_classes(
         self, obj: ListenerUserAddModifyObject

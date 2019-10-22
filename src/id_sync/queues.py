@@ -85,8 +85,9 @@ class FileQueue:
     name: str
     path: Path
     head = ""
-    school_authority: SchoolAuthorityConfiguration = None
     scheduler: Scheduler = None
+    school_authority: SchoolAuthorityConfiguration = None
+    school_authority_mapping: Dict[str, str] = {}
     task: Job = None
 
     def __init__(self, name: str = None, path: Path = None) -> None:
@@ -143,6 +144,13 @@ class FileQueue:
                     continue
                 res.append(Path(entry.path))
         return sorted(res)
+
+    @classmethod
+    async def load_school_authority_mapping(cls) -> Dict[str, str]:
+        mapping_obj = await ConfigurationStorage.load_school2target_mapping()
+        cls.school_authority_mapping.clear()
+        cls.school_authority_mapping.update(mapping_obj.mapping)
+        return cls.school_authority_mapping
 
     def as_queue_model(self):
         return QueueModel(
@@ -256,7 +264,6 @@ class FileQueue:
 class InQueue(FileQueue):
     name = "InQueue"
     path = IN_QUEUE_DIR
-    school_authority_mapping: Dict[str, str] = {}
 
     def __init__(
         self,
@@ -272,12 +279,6 @@ class InQueue(FileQueue):
     @property
     def school_authority_names(self) -> List[str]:
         return [q.school_authority.name for q in self.out_queues]
-
-    async def load_school_authority_mapping(self) -> Dict[str, str]:
-        mapping_obj = await ConfigurationStorage.load_school2target_mapping()
-        self.school_authority_mapping.clear()
-        self.school_authority_mapping.update(mapping_obj.mapping)
-        return self.school_authority_mapping
 
     async def preprocess_file(self, path: Path) -> Path:
         """
@@ -498,7 +499,7 @@ class OutQueue(FileQueue):
                 await self.user_handler.fetch_schools()
                 self.logger.debug(
                     "Schools known by API server: %s",
-                    ", ".join(self.user_handler.api_schools_cache.keys()),
+                    ", ".join((await self.user_handler.api_schools_cache).keys()),
                 )
             except APICommunicationError as exc:
                 self.logger.error(
