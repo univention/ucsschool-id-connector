@@ -29,9 +29,8 @@
 
 import json
 import os
-import random
-import string
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
 from urllib.parse import urljoin
 
 import pytest
@@ -46,23 +45,29 @@ from id_sync.utils import get_ucrv
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 
+AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
+
+
 @pytest.fixture(scope="session")
 def school_auth_config(docker_hostname: str):
     """
-    Fixture to create configurations for school authorities. It expects a specific environment for the integration
-    tests and can provide a maximum of two distinct configurations.
+    Fixture to create configurations for school authorities. It expects a
+    specific environment for the integration tests and can provide a maximum
+    of two distinct configurations.
     """
     requested_data = dict()
     for fnf in ("bb-api-IP_traeger", "bb-api-key_traeger"):
         for i in ("1", "2"):
             resp = requests.get(urljoin("http://" + docker_hostname, fnf + i + ".txt"))
-            assert resp.status_code == 200
+            assert resp.status_code == 200, (resp.status_code, resp.reason, resp.url)
             requested_data[fnf + i] = resp.text.strip("\n")
 
     def _school_auth_config(auth_nr: int) -> Dict[str, str]:
         """
         Generates a configuration for a school authority.
-        :param auth_nr: Request the config for either school authority auth1 or school authority auth2
+
+        :param auth_nr: Request the config for either school authority auth1
+            or school authority auth2
         :return: The school authority configuration in dictionary form
         """
         assert 0 < auth_nr < 3
@@ -98,34 +103,6 @@ def school_auth_config(docker_hostname: str):
     yield _school_auth_config
 
 
-@pytest.fixture
-def random_name():
-    """
-    TODO: Replace with Faker
-    """
-
-    def _func(ints=True):
-        name = list(string.ascii_letters)
-        if ints:
-            name.extend(list(string.digits))
-        random.shuffle(name)
-        return "".join(name[: random.randint(8, 10)])
-
-    return _func
-
-
-@pytest.fixture
-def random_int():
-    """
-    TODO: Replace with Faker
-    """
-
-    def _func(start=0, end=12):
-        return random.randint(start, end)
-
-    return _func
-
-
 @pytest.fixture()
 def req_headers():
     """
@@ -137,8 +114,10 @@ def req_headers():
     ) -> Dict[str, str]:
         """
         Creates a dictionary containing the specified headers
+
         :param token: The secret for creating the Authorization: Token header
-        :param bearer: The secret for creating the Authorization: Bearer header. Overrides Token if both are present
+        :param bearer: The secret for creating the Authorization: Bearer
+            header. Overrides Token if both are present
         :param accept: The value of the accept header
         :param content_type: The value of the Content-Type header
         :return: The dict containing all specified headers
@@ -166,6 +145,7 @@ def bb_api_url():
     def _bb_api_url(hostname: str, resource: str, entity: str = "") -> str:
         """
         Creates a BB-API resource URL
+
         :param hostname: The APIs hostname
         :param resource: The resource to query (schools, users, roles)
         :param entity: If given it builds the URL for the specific resource entity
@@ -204,7 +184,7 @@ def host_bb_token(docker_hostname: str) -> str:
     resp = requests.get(
         urljoin("http://" + docker_hostname + "/", "bb-api-key_sender.txt")
     )
-    assert resp.status_code == 200
+    assert resp.status_code == 200, (resp.status_code, resp.reason, resp.url)
     return resp.text.strip("\n")
 
 
@@ -223,7 +203,7 @@ def host_id_sync_token(docker_hostname: str) -> str:
         data=dict(username="Administrator", password="univention"),
         headers=req_headers,
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, (resp.status_code, resp.reason, resp.url)
     return response.json()["access_token"]
 
 
@@ -247,6 +227,7 @@ async def make_school_authority(
     ) -> SchoolAuthorityConfiguration:
         """
         Creates and saves a school authority
+
         :param name: The school authorities name
         :param url: The url for the school authorities endpoint
         :param password: The secret to access the school authorities endpoint
@@ -267,7 +248,7 @@ async def make_school_authority(
             json=json_data,
             headers=headers,
         )
-        assert resp.status_code == 201
+        assert resp.status_code == 201, (resp.status_code, resp.reason, resp.url)
         school_authority = SchoolAuthorityConfiguration(
             name=name,
             url=url,
@@ -294,7 +275,8 @@ async def make_school_authority(
 @pytest.fixture()
 def save_mapping(docker_hostname: str, req_headers, host_id_sync_token: str):
     """
-    Fixture to save a ou to school authority mapping in id-sync. Mapping gets deleted if the fixture goes out of scope
+    Fixture to save a ou to school authority mapping in id-sync. Mapping gets
+    deleted if the fixture goes out of scope
     """
     headers = req_headers(
         bearer=host_id_sync_token,
@@ -316,7 +298,11 @@ def save_mapping(docker_hostname: str, req_headers, host_id_sync_token: str):
             json=dict(mapping=mapping),
             headers=headers,
         )
-        assert response.json() == dict(mapping=mapping)
+        assert response.json() == dict(mapping=mapping), (
+            response.status_code,
+            response.reason,
+            response.url,
+        )
 
     yield _save_mapping
 
@@ -329,7 +315,11 @@ def save_mapping(docker_hostname: str, req_headers, host_id_sync_token: str):
         json=dict(mapping=dict()),
         headers=headers,
     )
-    assert response.json() == dict(mapping=dict())
+    assert response.json() == dict(mapping=dict()), (
+        response.status_code,
+        response.reason,
+        response.url,
+    )
 
 
 @pytest.fixture()
@@ -337,24 +327,23 @@ def create_schools(
     random_name, docker_hostname, bb_api_url, host_bb_token, req_headers
 ):
     """
-    Fixture factory to create OUs. The OUs are cached during multiple test runs to save development time.
+    Fixture factory to create OUs. The OUs are cached during multiple test runs
+    to save development time.
     """
-    mapping_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "auth-school-mapping.json"
-    )
-    auth_school_mapping = dict()
-    if os.path.exists(mapping_file):
-        with open(mapping_file, "r") as fp:
+    if AUTH_SCHOOL_MAPPING_PATH.exists():
+        with AUTH_SCHOOL_MAPPING_PATH.open("r") as fp:
             auth_school_mapping = json.load(fp)
     else:
-        os.mknod(mapping_file)
+        auth_school_mapping = dict()
 
     def _create_schools(
-        school_authorities: [(SchoolAuthorityConfiguration, int)]
+        school_authorities: List[Tuple[SchoolAuthorityConfiguration, int]]
     ) -> Dict[str, List[str]]:
         """
-        Creates a number of OUs per school authority as specified. If OUs are present already they are reused.
+        Creates a number of OUs per school authority as specified. If OUs are
+        present already they are reused.
         The OUs are created on the host system as well as the specified authority.
+
         :param school_authorities: A list of (school_authority, amount of OUs) tuples.
         :return: The mapping from school_authority to OUs
         """
@@ -377,7 +366,17 @@ def create_schools(
                     ),
                     json={"name": ou, "display_name": ou},
                 )
-                assert resp.status_code == 201
+                assert resp.status_code == 201, (
+                    resp.status_code,
+                    resp.reason,
+                    resp.url,
+                )
+                resp = requests.get(bb_api_url(docker_hostname, "schools", ou))
+                assert resp.status_code == 200, (
+                    resp.status_code,
+                    resp.reason,
+                    resp.url,
+                )
                 resp = requests.post(
                     bb_api_url(auth.url, "schools"),
                     verify=False,
@@ -387,10 +386,19 @@ def create_schools(
                     ),
                     json={"name": ou, "display_name": ou},
                 )
-                assert resp.status_code == 201
+                assert resp.status_code == 201, (
+                    resp.status_code,
+                    resp.reason,
+                    resp.url,
+                )
+                resp = requests.get(bb_api_url(auth.url, "schools", ou))
+                assert resp.status_code == 200, (
+                    resp.status_code,
+                    resp.reason,
+                    resp.url,
+                )
                 auth_school_mapping[auth.name].append(ou)
-        with open(mapping_file, "w") as fp:
-            fp.truncate()
+        with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:
             json.dump(auth_school_mapping, fp)
         return auth_school_mapping
 
@@ -408,14 +416,15 @@ async def make_host_user(
     docker_hostname: str,
 ):
     """
-    Fixture factory to create users on the host system. They are created via the BB-API and
-    automatically removed when the fixture goes out of scope.
+    Fixture factory to create users on the apps host system. They are created
+    via the BB-API and automatically removed when the fixture goes out of scope.
     """
     created_users = list()
 
     def _make_host_user(roles=("student",), ous=("DEMOSCHOOL",)):
         """
         Creates a user on the hosts UCS system via BB-API
+
         :param roles: The new users roles
         :param ous: The new users ous
         :return: The json used to create the user via the API
@@ -423,7 +432,7 @@ async def make_host_user(
         firstname = random_name()
         lastname = random_name()
         user_data = {
-            "name": "test{}".format(random_name()),
+            "name": "test{}".format(random_name())[:15],
             "birthday": "19{}-0{}-{}{}".format(
                 random_int(10, 99), random_int(1, 9), random_int(0, 2), random_int(1, 8)
             ),
@@ -446,7 +455,7 @@ async def make_host_user(
             verify=False,
         )
         print(resp.json())
-        assert resp.status_code == 201
+        assert resp.status_code == 201, (resp.status_code, resp.reason, resp.url)
         response_user = resp.json()
         created_users.append(response_user)
         return user_data

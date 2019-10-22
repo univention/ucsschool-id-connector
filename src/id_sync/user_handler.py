@@ -133,9 +133,7 @@ class UserHandler:
 
         known_schools = (await self.api_schools_cache).keys()
         if obj.old_data:
-            old_schools = [
-                s for s in obj.old_data.schools if s in known_schools
-            ]
+            old_schools = [s for s in obj.old_data.schools if s in known_schools]
         else:
             old_schools = []
         self.logger.debug(

@@ -28,7 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urljoin
 
 import pytest
@@ -41,9 +41,11 @@ requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 def compare_user(source: Dict[str, Any], other: Dict[str, Any], to_check=()):
     """
-    This function compares two dictionaries. Specifically it checks if all key-value pairs from the source
-    also exist in the other dictionary. It does not assert all key-value pairs from the other dictionary
-    to be in the source!
+    This function compares two dictionaries. Specifically it checks if all
+    key-value pairs from the source also exist in the other dictionary. It
+    does not assert all key-value pairs from the other dictionary to be in the
+    source!
+
     :param source: The original dictionary
     :param other: The dictionary to check against the original source
     :param to_check: The keys to check.
@@ -62,27 +64,39 @@ def compare_user(source: Dict[str, Any], other: Dict[str, Any], to_check=()):
         assert source[key] == other[key]
 
 
-def wait_for_status_code(method, url, status_code, headers=None, json=None, timeout=10):
+def wait_for_status_code(
+    method, url, status_code, headers=None, json=None, timeout=10, raise_assert=True
+) -> Tuple[bool, Optional[requests.Response]]:
     """
-    Sends defined request repeatedly until the desired status code is returned or the timeout occurs.
+    Sends defined request repeatedly until the desired status code is returned
+    or the timeout occurs.
+
     :param method: The requests method to use
     :param url: The url to request
     :param status_code: The desired status code to wait for
     :param headers: The headers of the request
     :param json: The json data of the request
-    :param timeout: The timeout
-    :return: Tuple[bool, response], with bool being True if desired status code was reached, otherwise False
+    :param int timeout: The timeout
+    :param bool raise_assert: whether to raise an AssertionError if the desired
+        status code was not reached
+    :return: Tuple[bool, response], with bool being True if desired status code
+        was reached, otherwise False
     """
     start = time.time()
-    result = (False, None)
     while (time.time() - start) < timeout:
         headers = {} if not headers else headers
         json = {} if not json else json
         response = method(url, headers=headers, json=json, verify=False)
         if response.status_code == status_code:
             return True, response
-        result = (False, response)
-    return result
+    else:
+        response = None
+    if raise_assert:
+        raise AssertionError(
+            f"Status {status_code} for {method.__name__.upper()} {url!r} using "
+            f"headers={headers!r} and json={json!r}."
+        )
+    return False, response
 
 
 @pytest.mark.asyncio
@@ -96,7 +110,8 @@ async def test_create_user(
     bb_api_url,
 ):
     """
-    Tests if id_sync distributes a newly created User to the correct school authorities.
+    Tests if id_sync distributes a newly created User to the correct school
+    authorities.
     """
     school_auth1 = make_school_authority(**school_auth_config(1))
     school_auth2 = make_school_authority(**school_auth_config(2))
@@ -124,7 +139,6 @@ async def test_create_user(
                 content_type="application/json",
             ),
         )
-        assert result[0]
         user_remote = result[1].json()
         # TODO: check all attributes!
         compare_user(user, user_remote, ["firstname"])
@@ -138,7 +152,6 @@ async def test_create_user(
                     content_type="application/json",
                 ),
             )
-            assert result[0]
             user_remote = result[1].json()
             # TODO: check all attributes!
             compare_user(user, user_remote, ["firstname"])
@@ -152,7 +165,6 @@ async def test_create_user(
                     content_type="application/json",
                 ),
             )
-            assert result[0]
 
 
 @pytest.mark.asyncio
@@ -195,7 +207,6 @@ async def test_delete_user(
             content_type="application/json",
         ),
     )
-    assert response[0]
     response = wait_for_status_code(
         requests.get,
         auth2_url,
@@ -205,7 +216,6 @@ async def test_delete_user(
             content_type="application/json",
         ),
     )
-    assert response[0]
     response = requests.delete(
         bb_api_url(docker_hostname, "users", user["name"]),
         headers=req_headers(token=host_bb_token, content_type="application/json"),
@@ -221,7 +231,6 @@ async def test_delete_user(
             content_type="application/json",
         ),
     )
-    assert response[0]
     response = wait_for_status_code(
         requests.get,
         auth2_url,
@@ -231,7 +240,6 @@ async def test_delete_user(
             content_type="application/json",
         ),
     )
-    assert response[0]
 
 
 @pytest.mark.asyncio
@@ -247,7 +255,8 @@ async def test_modify_user(
     docker_hostname,
 ):
     """
-    Tests if the modification of a user is properly distributed to the school authority
+    Tests if the modification of a user is properly distributed to the school
+    authority
     """
     school_auth1 = make_school_authority(**school_auth_config(1))
     school_auth2 = make_school_authority(**school_auth_config(2))
@@ -273,7 +282,6 @@ async def test_modify_user(
             content_type="application/json",
         ),
     )
-    assert result[0]
     # Modify user
     resp = requests.patch(
         bb_api_url(docker_hostname, "users", user["name"]),
@@ -293,7 +301,6 @@ async def test_modify_user(
             content_type="application/json",
         ),
     )
-    assert result[0]
     remote_user = result[1].json()
     assert remote_user["disabled"] != user["disabled"]  # Just an example to check
 
@@ -329,7 +336,6 @@ async def test_class_change(
             content_type="application/json",
         ),
     )
-    assert result[0]
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
     response = requests.patch(
         bb_api_url(docker_hostname, "users", user["name"]),
@@ -348,7 +354,6 @@ async def test_class_change(
             content_type="application/json",
         ),
     )
-    assert result[0]
     remote_user = result[1].json()
     assert remote_user["school_classes"] == new_value
 
@@ -385,7 +390,6 @@ async def test_school_change(
             content_type="application/json",
         ),
     )
-    assert result[0]
     new_value = {
         "school_classes": {ou_auth1_2: [random_name()]},
         "school": bb_api_url(docker_hostname, "schools", ou_auth1_2),
@@ -408,7 +412,6 @@ async def test_school_change(
             content_type="application/json",
         ),
     )
-    assert result[0]
     remote_user = result[1].json()
     assert remote_user["school"] == new_value["school"]
     assert remote_user["school_classes"] == new_value["school_classes"]
