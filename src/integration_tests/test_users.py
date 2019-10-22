@@ -38,15 +38,18 @@ from urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 
-def compare_dict(source: Dict[str, Any], other: Dict[str, Any]):
+def compare_user(source: Dict[str, Any], other: Dict[str, Any], to_check=()):
     """
     This function compares two dictionaries. Specifically it checks if all key-value pairs from the source
     also exist in the other dictionary. It does not assert all key-value pairs from the other dictionary
     to be in the source!
     :param source: The original dictionary
     :param other: The dictionary to check against the original source
+    :param to_check: The keys to check.
     """
-    for key in source.keys():
+    if len(to_check) == 0:
+        to_check = ['disabled', 'firstname', 'lastname', 'name', 'record_uid', 'school_classes', 'source_uid']
+    for key in to_check:
         assert source[key] == other[key]
 
 
@@ -100,7 +103,7 @@ async def test_create_user(make_school_authority, make_host_user, req_headers, s
         assert result[0]
         user_remote = result[1].json()
         # TODO: check all attributes!
-        compare_dict(user, user_remote)
+        compare_user(user, user_remote, ['firstname'])
         if ou_auth2 in ous:
             result = wait_for_status_code(requests.get, auth2_url, 200,
                                           headers=req_headers(token=school_auth2.password.get_secret_value(),
@@ -108,7 +111,7 @@ async def test_create_user(make_school_authority, make_host_user, req_headers, s
             assert result[0]
             user_remote = result[1].json()
             # TODO: check all attributes!
-            compare_dict(user, user_remote)
+            compare_user(user, user_remote, ['firstname'])
         else:
             result = wait_for_status_code(requests.get, auth2_url, 404,
                                           headers=req_headers(token=school_auth2.password.get_secret_value(),
