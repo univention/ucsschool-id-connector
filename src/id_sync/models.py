@@ -199,11 +199,11 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
 
     @property
     def record_uid(self) -> Optional[str]:
-        return self.object.get("record_uid")
+        return self.object.get("ucsschoolRecordUID")
 
     @property
     def source_uid(self) -> Optional[str]:
-        return self.object.get("source_uid")
+        return self.object.get("ucsschoolSourceUID")
 
     @property
     def school(self) -> str:

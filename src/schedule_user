@@ -40,7 +40,6 @@ from typing import AsyncIterator, Union
 import aiofiles
 import click
 import ujson
-from async_property import async_cached_property
 
 from id_sync.constants import APPCENTER_LISTENER_PATH, LOG_FILE_PATH_QUEUES
 from id_sync.ldap_access import LDAPAccess
@@ -57,14 +56,6 @@ class TimeEventScheduler:
 
     async def get_user_from_ldap(self, username: str) -> Union[User, None]:
         return await self.ldap_access.get_user(username, attributes=["*", "entryUUID"])
-
-    @async_cached_property
-    async def uuid_ldap_attr(self):
-        """
-        Name of the LDAP attribute that the extended attribute `UUID` is
-        stored in.
-        """
-        return await self.ldap_access.extended_attribute_ldap_mapping("UUID")
 
     async def get_users_from_ldap(self) -> AsyncIterator[User]:
         filter_s = ""
@@ -109,8 +100,7 @@ class TimeEventScheduler:
         logger.debug("Searching LDAP for user with username %r...", username)
         user = await self.get_user_from_ldap(username)
         if user:
-            logger.info("Adding user to in-queue: %s.", user.username)
-            # logger.debug("UUID: %r", uuid[0] if uuid else uuid)
+            logger.info("Adding user to in-queue: %r.", user.dn)
             await self.write_listener_file(user)
         else:
             logger.error("No user with username %r could be found.", username)

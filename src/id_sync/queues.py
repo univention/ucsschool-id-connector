@@ -59,6 +59,7 @@ from .models import (
 from .plugins import plugin_manager
 from .user_handler import (
     APICommunicationError,
+    MissingData,
     ServerError,
     UnknownSchool,
     UnknownSchoolUserRole,
@@ -551,11 +552,18 @@ class OutQueue(FileQueue):
             return
         # TODO: hook start (handle listener obj)
         try:
-            if isinstance(obj, ListenerAddModifyObject):
+            if isinstance(obj, ListenerUserAddModifyObject):
                 await self.user_handler.handle_create_or_update(obj)
-            else:
+            elif isinstance(obj, ListenerUserRemoveObject):
                 await self.user_handler.handle_remove(obj)
-        except (UnknownSchool, UnknownSchoolUserRole) as exc:
+            else:
+                raise NotImplementedError(f"Don't know how to handle obj={obj!r}.")
+        except (
+            UnknownSchool,
+            UnknownSchoolUserRole,
+            NotImplementedError,
+            MissingData,
+        ) as exc:
             self.logger.error(exc)
             self.discard_file(path)
         # TODO: hook end

@@ -47,6 +47,7 @@ from .models import (
     ListenerActionEnum,
     ListenerAddModifyObject,
     ListenerUserAddModifyObject,
+    ListenerUserOldDataEntry,
     ListenerUserRemoveObject,
     SchoolAuthorityConfiguration,
     SchoolUserRole,
@@ -69,6 +70,10 @@ class APIRequestError(APICommunicationError):
 
 
 class ConfigurationError(Exception):
+    pass
+
+
+class MissingData(Exception):
     pass
 
 
@@ -119,23 +124,12 @@ class UserHandler:
         # TODO: this method should be for ListenerAddModifyObject and call
         # plugins for handling specific types
 
+        self.logger.debug("*** obj.dict()=%r", obj.dict())  # TODO: remove when stable
+
         current_schools = [s for s in obj.schools if s in await self.api_schools_cache]
 
         if not current_schools:
-            self.logger.info(
-                "All schools of user %r in this school authority (%r) have been "
-                "removed. Deleting user from school authority...",
-                obj.username,
-                self.school_authority.name,
-            )
-            remove_obj = ListenerUserRemoveObject(
-                dn=obj.dn,
-                id=obj.id,
-                udm_object_type=obj.udm_object_type,
-                action=ListenerActionEnum.delete,
-                old_data=obj.old_data,
-            )
-            await self._do_remove(remove_obj)
+            await self.handle_has_no_schools(obj)
             return
 
         old_schools = [
@@ -151,10 +145,47 @@ class UserHandler:
             obj.old_data.source_uid,
             obj.source_uid,
         )
-        self.logger.debug("*** obj.dict()=%r", obj.dict())  # TODO: remove when stable
         request_body = await self.map_attributes(obj)
-        self.logger.debug("*** request_body=%r", request_body)  # TODO: remove when stable
+        self.logger.debug(
+            "*** request_body=%r", request_body
+        )  # TODO: remove when stable
         await self._do_create_or_update(request_body)
+
+    async def handle_has_no_schools(self, obj: ListenerUserAddModifyObject) -> None:
+        self.logger.info(
+            "All schools of user %r in this school authority (%r) have been "
+            "removed. Deleting user from school authority...",
+            obj.username,
+            self.school_authority.name,
+        )
+        if obj.old_data:
+            self.logger.debug(
+                "User %r has 'old_data': schools=%r record_uid=%r source_uid=%r",
+                obj.old_data.schools,
+                obj.old_data.record_uid,
+                obj.old_data.source_uid,
+            )
+            old_data = obj.old_data
+        else:
+            self.logger.debug("User %r has no 'old_data'.")
+        self.logger.debug(
+            "User %r has currently: schools=%r record_uid=%r source_uid=%r",
+            obj.username,
+            obj.schools,
+            obj.record_uid,
+            obj.source_uid,
+        )
+        old_data = ListenerUserOldDataEntry(
+            record_uid=obj.record_uid, source_uid=obj.source_uid, schools=obj.schools
+        )
+        remove_obj = ListenerUserRemoveObject(
+            dn=obj.dn,
+            id=obj.id,
+            udm_object_type=obj.udm_object_type,
+            action=ListenerActionEnum.delete,
+            old_data=old_data,
+        )
+        await self._do_remove(remove_obj)
 
     async def handle_remove(self, obj: ListenerUserRemoveObject) -> None:
         """Remove user."""
@@ -330,10 +361,15 @@ class UserHandler:
             self.logger.info("User created (status: %r): %r", status, json_resp)
 
     async def _do_remove(self, obj: ListenerUserRemoveObject) -> None:
-        params = [
-            ("record_uid", obj.old_data.record_uid),
-            ("source_uid", obj.old_data.source_uid or await get_source_uid()),
-        ]
+        params = {
+            "record_uid": obj.old_data.record_uid,
+            "source_uid": obj.old_data.source_uid or await get_source_uid(),
+        }
+        if not all(list(params.values())):
+            raise MissingData(
+                f"Missing record_uid or source_uid in params={params!r}.\n"
+                f"obj={obj.dict()!r}"
+            )
         url = f"{self.school_authority.url}/users/"
         status, json_resp = await self.http_get(url, params)
         if json_resp:
