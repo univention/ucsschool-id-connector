@@ -125,6 +125,10 @@ class UserHandler:
 
         self.logger.debug("*** obj.dict()=%r", obj.dict())  # TODO: remove when stable
 
+        # TODO: create HTTP resource to make server reload the OUs
+        # for now be very inefficient and force a fetch_schools() for every user!:
+        self._api_schools_cache.clear()
+
         current_schools = [s for s in obj.schools if s in await self.api_schools_cache]
 
         if not current_schools:
@@ -190,8 +194,13 @@ class UserHandler:
 
     async def handle_remove(self, obj: ListenerUserRemoveObject) -> None:
         """Remove user."""
-        # TODO: this method should be for ListenerAddModifyObject and call
+        # TODO: this method should be force ListenerAddModifyObject and call
         # plugins for handling specific types
+
+        # TODO: create HTTP resource to make server reload the OUs
+        # for now be very inefficient and for a fetch_schools() for every user!:
+        self._api_schools_cache.clear()
+
         await self._do_remove(obj)
 
     @async_property
@@ -465,11 +474,18 @@ class UserHandler:
         """
         Get URL of primary school for this user.
         """
-        try:
-            return (await self.api_schools_cache)[obj.school]
-        except KeyError:
+        api_schools_cache = await self.api_schools_cache
+        schools = sorted(set([obj.school] + obj.schools))
+        for school in schools:
+            try:
+                return api_schools_cache[school]
+            except KeyError:
+                pass
+        else:
             raise UnknownSchool(
-                f"School {obj.school!r} unknown on target server.", school=obj.school
+                f"None of the users schools ({schools!r}) are known on the "
+                f"target server.",
+                school=obj.school,
             )
 
     async def _handle_attr_schools(self, obj: ListenerUserAddModifyObject) -> List[str]:
@@ -477,17 +493,35 @@ class UserHandler:
         Get URLs of all schools in our school authority that the user is
         currently a member of.
         """
-        return [(await self.api_schools_cache)[school] for school in obj.schools]
+        res = []
+        api_schools_cache = await self.api_schools_cache
+        schools = sorted(set([obj.school] + obj.schools))
+        for school in schools:
+            try:
+                res.append(api_schools_cache[school])
+            except KeyError:
+                pass
+        if res:
+            return res
+        else:
+            raise UnknownSchool(
+                f"None of the users schools ({schools!r}) are known on the "
+                f"target server.",
+                school=obj.school,
+            )
 
     async def _handle_attr_school_classes(
         self, obj: ListenerUserAddModifyObject
     ) -> Dict[str, List[str]]:
         """Get school classes the user is in this school authority."""
-        # TODO implement
-        school_classes = {}
-        return school_classes
+        known_schools = (await self.api_schools_cache).keys()
+        return dict(
+            (ou, classes)
+            for ou, classes in obj.object.get("school_classes", {}).items()
+            if ou in known_schools
+        )
 
     @staticmethod
     async def _handle_attr_source_uid(obj: ListenerUserAddModifyObject) -> str:
         """Get a source_uid."""
-        return await get_source_uid()
+        return obj.source_uid or await get_source_uid()

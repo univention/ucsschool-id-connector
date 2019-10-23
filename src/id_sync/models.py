@@ -224,7 +224,7 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         return sorted(self.object["school"])[0]
 
     @property
-    def schools(self) -> str:
+    def schools(self) -> List[str]:
         return self.object["school"]
 
     @property

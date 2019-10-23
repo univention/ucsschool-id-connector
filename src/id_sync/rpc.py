@@ -173,6 +173,10 @@ class SimpleRPCServer:
         self.in_queue.school_authority_mapping.update(
             request.school_to_authority_mapping["mapping"]
         )
+        self.logger.info(
+            "School2SchoolAuthorityMapping was updated. New mapping: %r",
+            self.in_queue.school_authority_mapping,
+        )
         return RPCResponseModel(result=obj)
 
     async def get_queues(self, request: RPCRequest) -> RPCResponseModel:
