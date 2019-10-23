@@ -197,16 +197,20 @@ async def test_delete_user(
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     ou_auth2 = auth_school_mapping[school_auth2.name][0]
-    await save_mapping(
-        {
-            ou_auth1: school_auth1.name,
-            ou_auth1_2: school_auth1.name,
-            ou_auth2: school_auth2.name,
-        }
-    )
+    mapping = {
+        ou_auth1: school_auth1.name,
+        ou_auth1_2: school_auth1.name,
+        ou_auth2: school_auth2.name,
+    }
+    await save_mapping(mapping)
+    print(f"Mapping: {mapping!r}")
     user = make_host_user(ous=(ou_auth1, ou_auth2))
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
+    print(
+        f"Created user {user['name']!r}, looking for it in ou_auth1 at "
+        f"{auth1_url!r}..."
+    )
     wait_for_status_code(
         requests.get,
         auth1_url,
@@ -215,6 +219,10 @@ async def test_delete_user(
             token=school_auth1.password.get_secret_value(),
             content_type="application/json",
         ),
+    )
+    print(
+        f"Created user {user['name']!r}, looking for it in ou_auth2 at "
+        f"{auth2_url!r}..."
     )
     wait_for_status_code(
         requests.get,
@@ -225,12 +233,17 @@ async def test_delete_user(
             content_type="application/json",
         ),
     )
+    print(f"Deleting user {user['name']!r} in sender...")
     response = requests.delete(
         bb_api_url(docker_hostname, "users", user["name"]),
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         verify=False,
     )
     assert response.status_code == 204
+    print(
+        f"User {user['name']!r} was deleted in sender, waiting for it to "
+        f"disappear in ou_auth1..."
+    )
     wait_for_status_code(
         requests.get,
         auth1_url,
@@ -239,6 +252,10 @@ async def test_delete_user(
             token=school_auth1.password.get_secret_value(),
             content_type="application/json",
         ),
+    )
+    print(
+        f"User {user['name']!r} disappeared in ou_auth1, waiting for it to "
+        f"also disappear in ou_auth2..."
     )
     wait_for_status_code(
         requests.get,
