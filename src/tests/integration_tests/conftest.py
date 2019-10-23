@@ -430,41 +430,48 @@ def create_schools(
         :return: The mapping from school_authority to OUs
         """
         for auth, amount in school_authorities:
-            if auth.name in auth_school_mapping:
-                ous = [
-                    "testou-{}".format(random_name())
-                    for i in range(amount - len(auth_school_mapping[auth.name]))
-                ]
-            else:
-                ous = ["testou-{}".format(random_name()) for i in range(amount)]
-                auth_school_mapping[auth.name] = list()
+            print(f"Creating {amount} schools for auth {auth.name!r}...")
+            try:
+                ous = auth_school_mapping[auth.name]
+            except KeyError:
+                auth_school_mapping[auth.name] = []
+                ous = []
+            ous.extend([
+                "testou-{}".format(random_name())
+                for i in range(amount - len(ous))
+            ])
+            print(f"Creating OUs: {ous!r}...")
             for ou in ous:
-                http_request(
-                    "post",
-                    bb_api_url(docker_hostname, "schools"),
-                    headers=req_headers(
-                        token=host_bb_token, content_type="application/json"
-                    ),
-                    json_data={"name": ou, "display_name": ou},
-                    expected_statuses=(201,),
-                )
-                http_request(
+                url = bb_api_url(docker_hostname, "schools")
+                response = http_request(
                     "get",
                     bb_api_url(docker_hostname, "schools", ou),
                     headers=req_headers(
                         token=host_bb_token, content_type="application/json"
                     ),
+                    expected_statuses=(200, 404),
                 )
-                http_request(
-                    "post",
-                    bb_api_url(auth.url, "schools"),
-                    headers=req_headers(
-                        token=auth.password.get_secret_value(),
-                        content_type="application/json",
-                    ),
-                    json_data={"name": ou, "display_name": ou},
-                    expected_statuses=(201,),
-                )
+                if response.status_code == 200:
+                    print(f"OU {ou} exists in sender.")
+                else:
+                    print(f"Creating OU {ou!r} in sender ({url!r})...")
+                    http_request(
+                        "post",
+                        url,
+                        headers=req_headers(
+                            token=host_bb_token, content_type="application/json"
+                        ),
+                        json_data={"name": ou, "display_name": ou},
+                        expected_statuses=(201, 400),
+                    )
+                    http_request(
+                        "get",
+                        bb_api_url(docker_hostname, "schools", ou),
+                        headers=req_headers(
+                            token=host_bb_token, content_type="application/json"
+                        ),
+                    )
+                url = bb_api_url(auth.url, "schools")
                 http_request(
                     "get",
                     bb_api_url(auth.url, "schools", ou),
@@ -472,8 +479,32 @@ def create_schools(
                         token=auth.password.get_secret_value(),
                         content_type="application/json",
                     ),
+                    expected_statuses=(200, 404),
                 )
-                auth_school_mapping[auth.name].append(ou)
+                if response.status_code == 200:
+                    print(f"OU {ou} exists in {auth.name!r}.")
+                else:
+                    print(f"Creating OU {ou!r} in {auth.name!r} ({url!r})...")
+                    http_request(
+                        "post",
+                        url,
+                        headers=req_headers(
+                            token=auth.password.get_secret_value(),
+                            content_type="application/json",
+                        ),
+                        json_data={"name": ou, "display_name": ou},
+                        expected_statuses=(201,),
+                    )
+                    http_request(
+                        "get",
+                        bb_api_url(auth.url, "schools", ou),
+                        headers=req_headers(
+                            token=auth.password.get_secret_value(),
+                            content_type="application/json",
+                        ),
+                    )
+                if ou not in auth_school_mapping[auth.name]:
+                    auth_school_mapping[auth.name].append(ou)
         with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:
             json.dump(auth_school_mapping, fp)
         return auth_school_mapping
