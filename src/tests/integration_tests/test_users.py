@@ -29,7 +29,7 @@
 
 import time
 from typing import Any, Dict, Optional, Tuple
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 import pytest
 import requests
@@ -83,18 +83,20 @@ def wait_for_status_code(
         was reached, otherwise False
     """
     start = time.time()
+    response = None
     while (time.time() - start) < timeout:
-        headers = {} if not headers else headers
-        json = {} if not json else json
+        headers = headers or {}
+        json = json or {}
         response = method(url, headers=headers, json=json, verify=False)
         if response.status_code == status_code:
             return True, response
-    else:
-        response = None
+        time.sleep(1)
     if raise_assert:
         raise AssertionError(
-            f"Status {status_code} for {method.__name__.upper()} {url!r} using "
-            f"headers={headers!r} and json={json!r}."
+            f"Status {None if response is None else response.status_code} "
+            f"(reason: {None if response is None else response.reason}) for "
+            f"{method.__name__.upper()} {url!r} using headers={headers!r}"
+            f" and json={json!r}."
         )
     return False, response
 
@@ -113,23 +115,27 @@ async def test_create_user(
     Tests if id_sync distributes a newly created User to the correct school
     authorities.
     """
-    school_auth1 = make_school_authority(**school_auth_config(1))
-    school_auth2 = make_school_authority(**school_auth_config(2))
+    school_auth1 = await make_school_authority(**school_auth_config(1))
+    school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     ou_auth2 = auth_school_mapping[school_auth2.name][0]
-    save_mapping(
-        {
-            ou_auth1: school_auth1.name,
-            ou_auth1_2: school_auth1.name,
-            ou_auth2: school_auth2.name,
-        }
-    )
+    mapping = {
+        ou_auth1: school_auth1.name,
+        ou_auth1_2: school_auth1.name,
+        ou_auth2: school_auth2.name,
+    }
+    await save_mapping(mapping)
+    print(f"Mapping: {mapping!r}")
     for ous in ((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)):
+        print(f"Creating user in ous={ous!r}...")
         user = make_host_user(ous=ous)
         auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
         auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
+        print(
+            f"Created user {user['name']!r}, looking for it in OU1 at {auth1_url!r}..."
+        )
         result = wait_for_status_code(
             requests.get,
             auth1_url,
@@ -141,8 +147,10 @@ async def test_create_user(
         )
         user_remote = result[1].json()
         # TODO: check all attributes!
+        print(f"Found user {user_remote['name']!r}, checking its attributes...")
         compare_user(user, user_remote, ["firstname"])
         if ou_auth2 in ous:
+            print(f"User should also be in OU2 ({ou_auth2!r}), checking...")
             result = wait_for_status_code(
                 requests.get,
                 auth2_url,
@@ -156,7 +164,8 @@ async def test_create_user(
             # TODO: check all attributes!
             compare_user(user, user_remote, ["firstname"])
         else:
-            result = wait_for_status_code(
+            print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
+            wait_for_status_code(
                 requests.get,
                 auth2_url,
                 404,
@@ -182,13 +191,13 @@ async def test_delete_user(
     """
     Tests if id_sync distributes the deletion of an existing user correctly.
     """
-    school_auth1 = make_school_authority(**school_auth_config(1))
-    school_auth2 = make_school_authority(**school_auth_config(2))
+    school_auth1 = await make_school_authority(**school_auth_config(1))
+    school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     ou_auth2 = auth_school_mapping[school_auth2.name][0]
-    save_mapping(
+    await save_mapping(
         {
             ou_auth1: school_auth1.name,
             ou_auth1_2: school_auth1.name,
@@ -198,7 +207,7 @@ async def test_delete_user(
     user = make_host_user(ous=(ou_auth1, ou_auth2))
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
-    response = wait_for_status_code(
+    wait_for_status_code(
         requests.get,
         auth1_url,
         200,
@@ -207,7 +216,7 @@ async def test_delete_user(
             content_type="application/json",
         ),
     )
-    response = wait_for_status_code(
+    wait_for_status_code(
         requests.get,
         auth2_url,
         200,
@@ -222,7 +231,7 @@ async def test_delete_user(
         verify=False,
     )
     assert response.status_code == 204
-    response = wait_for_status_code(
+    wait_for_status_code(
         requests.get,
         auth1_url,
         404,
@@ -231,7 +240,7 @@ async def test_delete_user(
             content_type="application/json",
         ),
     )
-    response = wait_for_status_code(
+    wait_for_status_code(
         requests.get,
         auth2_url,
         404,
@@ -258,13 +267,13 @@ async def test_modify_user(
     Tests if the modification of a user is properly distributed to the school
     authority
     """
-    school_auth1 = make_school_authority(**school_auth_config(1))
-    school_auth2 = make_school_authority(**school_auth_config(2))
+    school_auth1 = await make_school_authority(**school_auth_config(1))
+    school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     ou_auth2 = auth_school_mapping[school_auth2.name][0]
-    save_mapping(
+    await save_mapping(
         {
             ou_auth1: school_auth1.name,
             ou_auth1_2: school_auth1.name,
@@ -321,13 +330,13 @@ async def test_class_change(
     """
     Tests if the modification of a users class is properly distributed by id-sync.
     """
-    school_auth1 = make_school_authority(**school_auth_config(1))
+    school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
-    save_mapping({ou_auth1: school_auth1.name})
+    await save_mapping({ou_auth1: school_auth1.name})
     user = make_host_user(ous=[ou_auth1])
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    result = wait_for_status_code(
+    wait_for_status_code(
         requests.get,
         auth1_url,
         200,
@@ -337,14 +346,13 @@ async def test_class_change(
         ),
     )
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
-    response = requests.patch(
+    requests.patch(
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         json=new_value,
     )
     time.sleep(10)
-    auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     result = wait_for_status_code(
         requests.get,
         auth1_url,
@@ -374,14 +382,14 @@ async def test_school_change(
     """
     Tests if the modification of a users school is properly distributed by id-sync.
     """
-    school_auth1 = make_school_authority(**school_auth_config(1))
+    school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 2)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
-    save_mapping({ou_auth1: school_auth1.name, ou_auth1_2: school_auth1.name})
+    await save_mapping({ou_auth1: school_auth1.name, ou_auth1_2: school_auth1.name})
     user = make_host_user(ous=[ou_auth1])
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    result = wait_for_status_code(
+    wait_for_status_code(
         requests.get,
         auth1_url,
         200,
@@ -395,7 +403,7 @@ async def test_school_change(
         "school": bb_api_url(docker_hostname, "schools", ou_auth1_2),
         "schools": [bb_api_url(docker_hostname, "schools", ou_auth1_2)],
     }
-    response = requests.patch(
+    requests.patch(
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
@@ -413,6 +421,6 @@ async def test_school_change(
         ),
     )
     remote_user = result[1].json()
-    assert remote_user["school"] == new_value["school"]
+    assert urlsplit(remote_user["school"]).path == urlsplit(new_value["school"]).path
     assert remote_user["school_classes"] == new_value["school_classes"]
     assert remote_user["schools"] == new_value["schools"]

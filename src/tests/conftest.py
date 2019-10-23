@@ -317,7 +317,10 @@ def listener_user_add_modify_object(listener_dump_user_object):
 
 @pytest.fixture
 def school_authority_configuration():
-    return lambda: SchoolAuthorityConfigurationFactory()
+    def _func(**kwargs):
+        return SchoolAuthorityConfigurationFactory(**kwargs)
+
+    return _func
 
 
 @pytest.fixture

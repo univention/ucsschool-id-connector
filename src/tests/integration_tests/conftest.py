@@ -30,7 +30,7 @@
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 from urllib.parse import urljoin
 
 import pytest
@@ -38,14 +38,54 @@ import requests
 from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
 
+from id_sync.config_storage import ConfigurationStorage
+from id_sync.constants import OUT_QUEUE_TOP_DIR
 from id_sync.models import SchoolAuthorityConfiguration
 from id_sync.utils import get_ucrv
+
+try:
+    from simplejson.errors import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
+
 
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 
 AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
+
+
+@pytest.fixture
+def http_request():
+    def _func(
+        method: str,
+        url: str,
+        headers: Dict[str, str] = None,
+        json_data: Dict[str, Any] = None,
+        verify: bool = False,
+        expected_statuses: Iterable[int] = (200,),
+    ) -> requests.Response:
+        req_meth = getattr(requests, method)
+        response = req_meth(url, headers=headers, json=json_data, verify=verify)
+        try:
+            msg = response.json()
+        except JSONDecodeError:
+            msg = (
+                "<no JSON>"
+                if response.status_code in expected_statuses
+                else response.text
+            )
+        msg = (
+            f"Status {response.status_code} (reason: {response.reason}) for "
+            f"{method.upper()} {url!r} using headers={headers!r} and "
+            f"json_data={json_data!r} -> msg: {msg}."
+        )
+        assert response.status_code in expected_statuses, msg
+        print(msg)
+        return response
+
+    return _func
 
 
 @pytest.fixture(scope="session")
@@ -58,8 +98,9 @@ def school_auth_config(docker_hostname: str):
     requested_data = dict()
     for fnf in ("bb-api-IP_traeger", "bb-api-key_traeger"):
         for i in ("1", "2"):
-            resp = requests.get(urljoin("http://" + docker_hostname, fnf + i + ".txt"))
-            assert resp.status_code == 200, (resp.status_code, resp.reason, resp.url)
+            url = urljoin(f"https://{docker_hostname}", f"{fnf}{i}.txt")
+            resp = requests.get(url, verify=False)
+            assert resp.status_code == 200, (resp.status_code, resp.reason, url)
             requested_data[fnf + i] = resp.text.strip("\n")
 
     def _school_auth_config(auth_nr: int) -> Dict[str, str]:
@@ -72,11 +113,9 @@ def school_auth_config(docker_hostname: str):
         """
         assert 0 < auth_nr < 3
         config = {
-            "name": "auth" + str(auth_nr),
-            "url": "https://"
-            + requested_data["bb-api-IP_traeger" + str(auth_nr)]
-            + "/api-bb/",
-            "password": requested_data["bb-api-key_traeger" + str(auth_nr)],
+            "name": f"auth{auth_nr}",
+            "url": f"https://{requested_data[f'bb-api-IP_traeger{auth_nr}']}/api-bb/",
+            "password": requested_data[f"bb-api-key_traeger{auth_nr}"],
             "mapping": {
                 "firstname": "firstname",
                 "lastname": "lastname",
@@ -89,13 +128,13 @@ def school_auth_config(docker_hostname: str):
                 "school": "school",
                 "schools": "schools",
                 "school_classes": "school_classes",
-                "source_uid": "source_uid",
+                "ucsschoolSourceUID": "source_uid",
                 "roles": "roles",
                 "title": "title",
                 "displayName": "displayName",
                 "userexpiry": "userexpiry",
                 "phone": "phone",
-                "record_uid": "record_uid",
+                "ucsschoolRecordUID": "record_uid",
             },
         }
         return config
@@ -182,7 +221,7 @@ def host_bb_token(docker_hostname: str) -> str:
     Returns a valid token for the BB-API of the containers host system.
     """
     resp = requests.get(
-        urljoin("http://" + docker_hostname + "/", "bb-api-key_sender.txt")
+        urljoin(f"https://{docker_hostname}/", "bb-api-key_sender.txt"), verify=False
     )
     assert resp.status_code == 200, (resp.status_code, resp.reason, resp.url)
     return resp.text.strip("\n")
@@ -198,18 +237,26 @@ def host_id_sync_token(docker_hostname: str) -> str:
         "Content-Type": "application/x-www-form-urlencoded",
     }
     response = requests.post(
-        urljoin("https://" + docker_hostname, "id-sync/api/token"),
+        urljoin(f"https://{docker_hostname}", "id-sync/api/token"),
         verify=False,
         data=dict(username="Administrator", password="univention"),
         headers=req_headers,
     )
-    assert response.status_code == 200, (resp.status_code, resp.reason, resp.url)
+    assert response.status_code == 200, (
+        response.status_code,
+        response.reason,
+        response.url,
+    )
     return response.json()["access_token"]
 
 
 @pytest.fixture()
 async def make_school_authority(
-    host_id_sync_token: str, docker_hostname: str, req_headers
+    host_id_sync_token: str,
+    docker_hostname: str,
+    req_headers,
+    http_request,
+    school_authority_configuration,
 ) -> SchoolAuthorityConfiguration:
     """
     Fixture factory to create (and at the same time save) school authorities.
@@ -222,7 +269,7 @@ async def make_school_authority(
         content_type="application/json",
     )
 
-    def _make_school_authority(
+    async def _make_school_authority(
         name: str, url: UrlStr, password: str, mapping: Dict[str, Any]
     ) -> SchoolAuthorityConfiguration:
         """
@@ -234,48 +281,75 @@ async def make_school_authority(
         :param mapping: The school authorities mapping
         :return: A saved school authority
         """
-        json_data = {
-            "name": name,
-            "url": url,
-            "password": password,
-            "active": True,
-            "mapping": mapping,
-            "passwords_target_attribute": "id_sync_pw",
-        }
-        resp = requests.post(
-            urljoin("https://" + docker_hostname, "id-sync/api/v1/school_authorities"),
-            verify=False,
-            json=json_data,
+        # try to delete possible leftovers from previous failed test
+        http_request(
+            "delete",
+            urljoin(f"{url}/", name),
             headers=headers,
+            expected_statuses=(204, 404),
         )
-        assert resp.status_code == 201, (resp.status_code, resp.reason, resp.url)
-        school_authority = SchoolAuthorityConfiguration(
+        # (re)create school authority configuration
+        school_authority = school_authority_configuration(
             name=name,
             url=url,
             password=password,
             mapping=mapping,
             password_target_attribute="id_sync_pw",
         )
+        config_as_dict = school_authority.dict()
+        config_as_dict["password"] = school_authority.password.get_secret_value()
+        url = urljoin(f"https://{docker_hostname}", "id-sync/api/v1/school_authorities")
+        http_request(
+            "post",
+            url,
+            json_data=config_as_dict,
+            headers=headers,
+            expected_statuses=(201,),
+        )
+        async for loaded_s_a in ConfigurationStorage.load_school_authorities():
+            if (
+                loaded_s_a.name == name
+                and loaded_s_a.password.get_secret_value() == password
+            ):
+                break
+        else:
+            raise AssertionError(
+                f"SchoolAuthorityConfiguration(name={name!r}) was not saved."
+            )
+        out_queue_dir = OUT_QUEUE_TOP_DIR / name
+        assert out_queue_dir.exists()
+
         created_authorities.append(school_authority.name)
         return school_authority
 
     yield _make_school_authority
 
     for school_authority_name in created_authorities:
-        response = requests.delete(
+        http_request(
+            "delete",
             urljoin(
-                "https://" + docker_hostname,
-                "id-sync/api/v1/school_authorities/" + school_authority_name,
+                f"https://{docker_hostname}",
+                f"id-sync/api/v1/school_authorities/{school_authority_name}",
             ),
-            verify=False,
             headers=headers,
+            expected_statuses=(204, 404),
         )
+        async for loaded_s_a in ConfigurationStorage.load_school_authorities():
+            if loaded_s_a.name == school_authority_name:
+                raise AssertionError(
+                    f"SchoolAuthorityConfiguration(name={school_authority_name!r})"
+                    f" was not deleted."
+                )
+        out_queue_dir = OUT_QUEUE_TOP_DIR / school_authority_name
+        assert not out_queue_dir.exists()
 
 
 @pytest.fixture()
-def save_mapping(docker_hostname: str, req_headers, host_id_sync_token: str):
+async def save_mapping(
+    docker_hostname: str, req_headers, host_id_sync_token: str, http_request
+):
     """
-    Fixture to save a ou to school authority mapping in id-sync. Mapping gets
+    Fixture to save an ou to school authority mapping in id-sync. Mapping gets
     deleted if the fixture goes out of scope
     """
     headers = req_headers(
@@ -283,19 +357,21 @@ def save_mapping(docker_hostname: str, req_headers, host_id_sync_token: str):
         accept="application/json",
         content_type="application/json",
     )
+    ori_s2s_mapping = await ConfigurationStorage.load_school2target_mapping()
+    print(f"Original s2s mapping: {ori_s2s_mapping.dict()!r}")
 
-    def _save_mapping(mapping: Dict[str, str]):
+    async def _save_mapping(mapping: Dict[str, str]):
         """
         Saves the specified mapping via HTTP-API
         :param mapping: The mapping
         """
-        response = requests.put(
+        response = http_request(
+            "put",
             urljoin(
                 "https://{}".format(docker_hostname),
                 "id-sync/api/v1/school_to_authority_mapping",
             ),
-            verify=False,
-            json=dict(mapping=mapping),
+            json_data=dict(mapping=mapping),
             headers=headers,
         )
         assert response.json() == dict(mapping=mapping), (
@@ -303,28 +379,34 @@ def save_mapping(docker_hostname: str, req_headers, host_id_sync_token: str):
             response.reason,
             response.url,
         )
+        s2s_mapping = await ConfigurationStorage.load_school2target_mapping()
+        assert mapping == s2s_mapping.mapping
+        print(f"Set new s2s mapping: {s2s_mapping.dict()!r}")
 
     yield _save_mapping
 
-    response = requests.put(
+    response = http_request(
+        "put",
         urljoin(
             "https://{}".format(docker_hostname),
             "id-sync/api/v1/school_to_authority_mapping",
         ),
-        verify=False,
-        json=dict(mapping=dict()),
+        json_data=ori_s2s_mapping.dict(),
         headers=headers,
     )
-    assert response.json() == dict(mapping=dict()), (
+    assert response.json() == ori_s2s_mapping.dict(), (
         response.status_code,
         response.reason,
         response.url,
     )
+    s2s_mapping = await ConfigurationStorage.load_school2target_mapping()
+    assert s2s_mapping == ori_s2s_mapping
+    print(f"Restored original s2s mapping: {s2s_mapping.dict()!r}")
 
 
 @pytest.fixture()
 def create_schools(
-    random_name, docker_hostname, bb_api_url, host_bb_token, req_headers
+    random_name, docker_hostname, bb_api_url, host_bb_token, req_headers, http_request
 ):
     """
     Fixture factory to create OUs. The OUs are cached during multiple test runs
@@ -348,7 +430,6 @@ def create_schools(
         :return: The mapping from school_authority to OUs
         """
         for auth, amount in school_authorities:
-            ous = list()
             if auth.name in auth_school_mapping:
                 ous = [
                     "testou-{}".format(random_name())
@@ -358,44 +439,39 @@ def create_schools(
                 ous = ["testou-{}".format(random_name()) for i in range(amount)]
                 auth_school_mapping[auth.name] = list()
             for ou in ous:
-                resp = requests.post(
+                http_request(
+                    "post",
                     bb_api_url(docker_hostname, "schools"),
-                    verify=False,
                     headers=req_headers(
                         token=host_bb_token, content_type="application/json"
                     ),
-                    json={"name": ou, "display_name": ou},
+                    json_data={"name": ou, "display_name": ou},
+                    expected_statuses=(201,),
                 )
-                assert resp.status_code == 201, (
-                    resp.status_code,
-                    resp.reason,
-                    resp.url,
+                http_request(
+                    "get",
+                    bb_api_url(docker_hostname, "schools", ou),
+                    headers=req_headers(
+                        token=host_bb_token, content_type="application/json"
+                    ),
                 )
-                resp = requests.get(bb_api_url(docker_hostname, "schools", ou))
-                assert resp.status_code == 200, (
-                    resp.status_code,
-                    resp.reason,
-                    resp.url,
-                )
-                resp = requests.post(
+                http_request(
+                    "post",
                     bb_api_url(auth.url, "schools"),
-                    verify=False,
                     headers=req_headers(
                         token=auth.password.get_secret_value(),
                         content_type="application/json",
                     ),
-                    json={"name": ou, "display_name": ou},
+                    json_data={"name": ou, "display_name": ou},
+                    expected_statuses=(201,),
                 )
-                assert resp.status_code == 201, (
-                    resp.status_code,
-                    resp.reason,
-                    resp.url,
-                )
-                resp = requests.get(bb_api_url(auth.url, "schools", ou))
-                assert resp.status_code == 200, (
-                    resp.status_code,
-                    resp.reason,
-                    resp.url,
+                http_request(
+                    "get",
+                    bb_api_url(auth.url, "schools", ou),
+                    headers=req_headers(
+                        token=auth.password.get_secret_value(),
+                        content_type="application/json",
+                    ),
                 )
                 auth_school_mapping[auth.name].append(ou)
         with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:
@@ -414,6 +490,7 @@ async def make_host_user(
     source_uid: str,
     req_headers,
     docker_hostname: str,
+    http_request,
 ):
     """
     Fixture factory to create users on the apps host system. They are created
@@ -448,14 +525,14 @@ async def make_host_user(
             "schools": [bb_api_url(docker_hostname, "schools", ou) for ou in ous],
             "source_uid": source_uid,
         }
-        resp = requests.post(
+        resp = http_request(
+            "post",
             bb_api_url(docker_hostname, "users"),
             headers=req_headers(token=host_bb_token, content_type="application/json"),
-            json=user_data,
-            verify=False,
+            json_data=user_data,
+            expected_statuses=(201,),
         )
         print(resp.json())
-        assert resp.status_code == 201, (resp.status_code, resp.reason, resp.url)
         response_user = resp.json()
         created_users.append(response_user)
         return user_data
@@ -463,8 +540,9 @@ async def make_host_user(
     yield _make_host_user
 
     for user in created_users:
-        requests.delete(
+        http_request(
+            "delete",
             bb_api_url(docker_hostname, "users", user["name"]),
             headers=req_headers(token=host_bb_token),
-            verify=False,
+            expected_statuses=(204, 404),
         )
