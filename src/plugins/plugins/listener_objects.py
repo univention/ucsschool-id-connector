@@ -131,8 +131,8 @@ class ListenerObjectHandler:
             obj.user_passwords = await self.ldap_access.get_passwords(obj.username)
             self.old_data_db[obj.id] = ListenerUserOldDataEntry(
                 schools=obj.schools,
-                record_uid=obj.object.get("record_uid"),
-                source_uid=obj.object.get("source_uid"),
+                record_uid=obj.record_uid,
+                source_uid=obj.source_uid,
             )
             return True
         return False

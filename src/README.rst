@@ -199,12 +199,15 @@ Configuration
 -------------
 The school authorities configuration should be done through the `ID Sync REST API`.
 
-The ``record_uid`` property should be synced to a UCS\@school system as ``record_uid``, the ``TODO`` property should be synced as ``roles``::
+* The UDM ``ucsschoolRecordUID`` property (a.k.a. UCS\@school ``record_uid`` property) should be synced to a UCS\@school system as ``record_uid``.
+* The UDM ``ucsschoolSourceUID`` property (a.k.a. UCS\@school ``source_uid`` property) should be synced to a UCS\@school system as ``source_uid``.
+* The `virtual` (special handling by the `ID Sync` app) ``roles`` property should be synced as ``roles``::
 
     {
         "mapping": {
-            "record_uid": "record_uid",
-            "TODO": "roles"
+            "ucsschoolRecordUID": "record_uid",
+            "ucsschoolSourceUID": "source_uid",
+            "roles": "roles"
             }
     }
 

@@ -136,9 +136,9 @@ async def test_preprocess_del_file_with_old_data(
     assert isinstance(del_obj_new, id_sync.models.ListenerUserRemoveObject)
     assert del_obj_new.id == add_mod_obj.id
     assert del_obj_new.old_data is not None
-    assert del_obj_new.old_data.record_uid == add_mod_obj.object.get("record_uid")
-    assert del_obj_new.old_data.source_uid == add_mod_obj.object.get("source_uid")
-    assert del_obj_new.old_data.schools == add_mod_obj.object.get("school")
+    assert del_obj_new.old_data.record_uid == add_mod_obj.record_uid
+    assert del_obj_new.old_data.source_uid == add_mod_obj.source_uid
+    assert del_obj_new.old_data.schools == add_mod_obj.schools
 
 
 # TODO: test UserHandler

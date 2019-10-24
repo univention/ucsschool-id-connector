@@ -179,9 +179,9 @@ class SchoolAuthorityConfigurationFactory(factory.Factory):
             "school": "school",
             "schools": "schools",
             "school_classes": "school_classes",
-            "source_uid": "source_uid",
+            "ucsschoolSourceUID": "source_uid",
             "roles": "roles",
-            "record_uid": "record_uid",
+            "ucsschoolRecordUID": "record_uid",
         }
     )
     passwords_target_attribute = "id_sync_pw"
@@ -244,11 +244,11 @@ def _listener_dump_user_object(
             "passwordexpiry": None,
             "phone": [fake.phone_number()],
             "primaryGroup": f"cn=Domain Users,cn=groups,{base_dn}",
-            "record_uid": fake.user_name(),
+            "ucsschoolRecordUID": fake.user_name(),
             "sambaRID": str(fake.pyint(4000, 60000)),
             "school": ous,
             "shell": "/bin/bash",
-            "source_uid": source_uid,
+            "ucsschoolSourceUID": source_uid,
             "uidNumber": str(fake.pyint(4000, 60000)),
             "unixhome": f"/home/{fn}",
             "unlockTime": "",
