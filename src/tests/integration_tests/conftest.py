@@ -191,12 +191,31 @@ def bb_api_url():
         :return: The BB-API URL
         """
         if hostname.endswith("api-bb/"):
-            return urljoin(hostname, "{}/{}".format(resource, entity))
-        return urljoin(
-            "https://{}/api-bb/".format(hostname), "{}/{}/".format(resource, entity)
-        )
+            return urljoin(hostname, f"{resource}/{entity}")
+        return urljoin(f"https://{hostname}/api-bb/", f"{resource}/{entity}/")
 
     return _bb_api_url
+
+
+@pytest.fixture()
+def id_sync_api_url(docker_hostname):
+    """
+    Fixture to create ID Sync API resource URLs.
+    """
+
+    def _id_sync_api_url(resource: str, entity: str = "") -> str:
+        """
+        Creates a ID Sync API resource URL
+
+        :param resource: The resource to query
+        :param entity: If given it builds the URL for the specific resource entity
+        :return: The ID Sync API URL
+        """
+        return urljoin(
+            f"https://{docker_hostname}/id-sync/api/v1/", f"{resource}/{entity}"
+        ).rstrip("/")
+
+    return _id_sync_api_url
 
 
 @pytest.fixture(scope="session")
@@ -253,7 +272,7 @@ def host_id_sync_token(docker_hostname: str) -> str:
 @pytest.fixture()
 async def make_school_authority(
     host_id_sync_token: str,
-    docker_hostname: str,
+    id_sync_api_url,
     req_headers,
     http_request,
     school_authority_configuration,
@@ -298,7 +317,7 @@ async def make_school_authority(
         )
         config_as_dict = school_authority.dict()
         config_as_dict["password"] = school_authority.password.get_secret_value()
-        url = urljoin(f"https://{docker_hostname}", "id-sync/api/v1/school_authorities")
+        url = id_sync_api_url("school_authorities")
         http_request(
             "post",
             url,
@@ -327,10 +346,7 @@ async def make_school_authority(
     for school_authority_name in created_authorities:
         http_request(
             "delete",
-            urljoin(
-                f"https://{docker_hostname}",
-                f"id-sync/api/v1/school_authorities/{school_authority_name}",
-            ),
+            id_sync_api_url("school_authorities", school_authority_name),
             headers=headers,
             expected_statuses=(204, 404),
         )
@@ -346,7 +362,7 @@ async def make_school_authority(
 
 @pytest.fixture()
 async def save_mapping(
-    docker_hostname: str, req_headers, host_id_sync_token: str, http_request
+    id_sync_api_url, req_headers, host_id_sync_token: str, http_request
 ):
     """
     Fixture to save an ou to school authority mapping in id-sync. Mapping gets
@@ -367,10 +383,7 @@ async def save_mapping(
         """
         response = http_request(
             "put",
-            urljoin(
-                "https://{}".format(docker_hostname),
-                "id-sync/api/v1/school_to_authority_mapping",
-            ),
+            id_sync_api_url("school_to_authority_mapping"),
             json_data=dict(mapping=mapping),
             headers=headers,
         )
@@ -387,10 +400,7 @@ async def save_mapping(
 
     response = http_request(
         "put",
-        urljoin(
-            "https://{}".format(docker_hostname),
-            "id-sync/api/v1/school_to_authority_mapping",
-        ),
+        id_sync_api_url("school_to_authority_mapping"),
         json_data=ori_s2s_mapping.dict(),
         headers=headers,
     )
@@ -436,10 +446,9 @@ def create_schools(
             except KeyError:
                 auth_school_mapping[auth.name] = []
                 ous = []
-            ous.extend([
-                "testou-{}".format(random_name())
-                for i in range(amount - len(ous))
-            ])
+            ous.extend(
+                ["testou-{}".format(random_name()) for i in range(amount - len(ous))]
+            )
             print(f"Creating OUs: {ous!r}...")
             for ou in ous:
                 url = bb_api_url(docker_hostname, "schools")

@@ -29,7 +29,7 @@
 
 import time
 from typing import Any, Dict, Optional, Tuple
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urlsplit
 
 import pytest
 import requests
@@ -187,6 +187,7 @@ async def test_delete_user(
     create_schools,
     bb_api_url,
     docker_hostname,
+    http_request,
 ):
     """
     Tests if id_sync distributes the deletion of an existing user correctly.
@@ -234,12 +235,13 @@ async def test_delete_user(
         ),
     )
     print(f"Deleting user {user['name']!r} in sender...")
-    response = requests.delete(
+    http_request(
+        "delete",
         bb_api_url(docker_hostname, "users", user["name"]),
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         verify=False,
+        expected_statuses=(204,),
     )
-    assert response.status_code == 204
     print(
         f"User {user['name']!r} was deleted in sender, waiting for it to "
         f"disappear in ou_auth1..."
@@ -299,7 +301,7 @@ async def test_modify_user(
     )
     user = make_host_user(ous=[ou_auth1])
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    result = wait_for_status_code(
+    wait_for_status_code(
         requests.get,
         auth1_url,
         200,
@@ -309,7 +311,7 @@ async def test_modify_user(
         ),
     )
     # Modify user
-    resp = requests.patch(
+    requests.patch(
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
@@ -317,7 +319,6 @@ async def test_modify_user(
     )
     # Check if user was modified
     time.sleep(10)
-    auth1_url = urljoin(urljoin(school_auth1.url, "users"), user["name"])
     result = wait_for_status_code(
         requests.get,
         auth1_url,
@@ -343,6 +344,7 @@ async def test_class_change(
     docker_hostname,
     host_bb_token,
     random_name,
+    http_request,
 ):
     """
     Tests if the modification of a users class is properly distributed by id-sync.
@@ -363,11 +365,12 @@ async def test_class_change(
         ),
     )
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
-    requests.patch(
+    http_request(
+        "patch",
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
-        json=new_value,
+        json_data=new_value,
     )
     time.sleep(10)
     result = wait_for_status_code(
@@ -395,6 +398,7 @@ async def test_school_change(
     docker_hostname,
     host_bb_token,
     random_name,
+    http_request,
 ):
     """
     Tests if the modification of a users school is properly distributed by id-sync.
@@ -420,11 +424,12 @@ async def test_school_change(
         "school": bb_api_url(docker_hostname, "schools", ou_auth1_2),
         "schools": [bb_api_url(docker_hostname, "schools", ou_auth1_2)],
     }
-    requests.patch(
+    http_request(
+        "patch",
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
-        json=new_value,
+        json_data=new_value,
     )
     time.sleep(10)
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
