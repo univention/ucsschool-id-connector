@@ -376,8 +376,9 @@ For UCS\@school target systems an extended attribute must be created and its nam
         /usr/share/ucs-school-import/pyhooks/
 
 
-Edit ``/var/lib/ucs-school-import/configs/user_import.json`` and add the name of the `passwords_target_attribute` (``id_sync_pw``) to ``mapped_udm_properties``::
+Edit ``/var/lib/ucs-school-import/configs/user_import.json`` and add the name of the `passwords_target_attribute` (``id_sync_pw``) to ``mapped_udm_properties`` (and ``mapped_udm_properties`` to ``configuration_checks``)::
 
+    "configuration_checks": ["defaults", "mapped_udm_properties"],
     "mapped_udm_properties": ["phone", "e-mail", "id_sync_pw"]
 
 

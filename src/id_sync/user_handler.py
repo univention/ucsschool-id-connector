@@ -139,7 +139,7 @@ class UserHandler:
         if obj.old_data:
             old_schools = [s for s in obj.old_data.schools if s in known_schools]
         else:
-            old_schools = []
+            old_schools = "<no old_data>"
         self.logger.debug(
             "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) source_uid=(%r->%r).",
             obj.username,
