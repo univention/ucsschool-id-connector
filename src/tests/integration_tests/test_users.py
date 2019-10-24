@@ -134,7 +134,7 @@ async def test_create_user(
         auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
         auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
         print(
-            f"Created user {user['name']!r}, looking for it in OU1 at {auth1_url!r}..."
+            f"Created user {user['name']!r}, looking for it in auth1 at {auth1_url!r}..."
         )
         result = wait_for_status_code(
             requests.get,
@@ -208,8 +208,8 @@ async def test_delete_user(
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
     print(
-        f"Created user {user['name']!r}, looking for it in ou_auth1 at "
-        f"{auth1_url!r}..."
+        f"Created user {user['name']!r} in sender. Looking for it now in "
+        f"ou_auth1 at {auth1_url!r}..."
     )
     wait_for_status_code(
         requests.get,
@@ -221,8 +221,8 @@ async def test_delete_user(
         ),
     )
     print(
-        f"Created user {user['name']!r}, looking for it in ou_auth2 at "
-        f"{auth2_url!r}..."
+        f"Found user {user['name']!r} in ou_auth1. Looking for it now in "
+        f"ou_auth2 at {auth2_url!r}..."
     )
     wait_for_status_code(
         requests.get,

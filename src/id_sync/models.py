@@ -98,7 +98,10 @@ class ListenerUserOldDataEntry(ListenerOldDataEntry):
     source_uid: str = None
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(school={self.schools!r}, record_uid={self.record_uid!r}, source_uid={self.source_uid!r})"
+        return (
+            f"{self.__class__.__name__}(school={self.schools!r}, record_uid="
+            f"{self.record_uid!r}, source_uid={self.source_uid!r})"
+        )
 
 
 class UserPasswords(BaseModel):
@@ -132,7 +135,7 @@ class ListenerActionEnum(str, Enum):
     delete = "delete"
 
 
-class ListenerObject(BaseModel):
+class ListenerObject(BaseModel, abc.ABC):
     dn: str
     id: str
     udm_object_type: str
@@ -141,8 +144,8 @@ class ListenerObject(BaseModel):
     def __hash__(self):
         return hash(self.id)
 
-    def __str__(self):
-        return f"{self.__class__.__name__}({self.udm_object_type}, {self.dn})"
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r})"
 
 
 class ListenerAddModifyObject(ListenerObject, abc.ABC):
@@ -155,6 +158,12 @@ class ListenerAddModifyObject(ListenerObject, abc.ABC):
     def supported_udm_object_type(cls, value):
         raise NotImplementedError(
             "Implement this in a subclass specific for each UDM object type."
+        )
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, "
+            f"{self.old_data!r})"
         )
 
 
@@ -271,12 +280,18 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         return res
 
 
-class ListenerRemoveObject(ListenerObject):
+class ListenerRemoveObject(ListenerObject, abc.ABC):
     action = ListenerActionEnum.delete
 
 
 class ListenerUserRemoveObject(ListenerRemoveObject):
-    old_data: "ListenerUserOldDataEntry" = None
+    old_data: ListenerUserOldDataEntry = None
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r},"
+            f" {self.old_data!r})"
+        )
 
 
 class SchoolAuthorityConfiguration(BaseModel):

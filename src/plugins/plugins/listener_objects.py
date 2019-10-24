@@ -120,7 +120,7 @@ class ListenerObjectHandler:
         """
         # get old / store new data in (ListenerUserOldDataEntry) in self.old_date_db
         if isinstance(obj, ListenerUserAddModifyObject):
-            logger.debug("Preprocessing add/modify %r (%r)...", obj.dn, obj.id)
+            logger.debug("Preprocessing add/modify %r...", obj)
             # get previous 'old_data' from DB, so we can know if a school was
             # removed from the user
             try:
@@ -135,6 +135,8 @@ class ListenerObjectHandler:
                 source_uid=obj.source_uid,
             )
             return True
+        else:
+            logger.debug("Ignoring %r.", obj)
         return False
 
     @hook_impl
@@ -157,8 +159,10 @@ class ListenerObjectHandler:
         :rtype: bool
         """
         if isinstance(obj, ListenerUserRemoveObject):
+            logger.debug("Preprocessing remove %r...", obj)
             try:
                 obj.old_data = self.old_data_db[obj.id]
+                logger.debug("Found %r.", obj.old_data)
             except KeyError:
                 logger.error("*** CANNOT DELETE USER FROM TARGET SYSTEM(S)! ***")
                 logger.error(
@@ -171,6 +175,8 @@ class ListenerObjectHandler:
                 # now), in case there was a problem and the data is still needed.
                 self.old_data_db.touch(obj.id, expire=7 * 24 * 3600)
                 return True
+        else:
+            logger.debug("Ignoring %r.", obj)
         return False
 
 

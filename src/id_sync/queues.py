@@ -307,7 +307,7 @@ class InQueue(FileQueue):
         if changed:
             try:
                 self.logger.debug(
-                    "A preprocessing hook modified 'obj', saving it back to JSON..."
+                    "A preprocessing hook modified %r, saving it back to JSON...", obj
                 )
                 await self.save_listener_file(obj, path)
             except ListenerSavingError as exc:

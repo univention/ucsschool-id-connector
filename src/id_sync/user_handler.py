@@ -349,11 +349,17 @@ class UserHandler:
         )
 
     async def _do_create_or_update(self, data: Dict[str, Any]) -> None:
-        # check if user exists, search using the UUID
-        params = [
-            ("record_uid", str(data.get("record_uid"))),
-            ("source_uid", await get_source_uid()),
-        ]
+        # TODO: this should be in a plugin
+        # check if user exists, search using the IDs
+        params = {
+            "record_uid": str(data.get("record_uid")),
+            "source_uid": data.get("source_uid") or await get_source_uid(),
+        }
+        if not all(list(params.values())):
+            raise MissingData(
+                f"Cannot add/modify user: missing record_uid or source_uid in "
+                f"data: {data!r}."
+            )
         url = f"{self.school_authority.url}/users/"
         status, json_resp = await self.http_get(url, params)
         if json_resp:
@@ -377,8 +383,7 @@ class UserHandler:
         }
         if not all(list(params.values())):
             raise MissingData(
-                f"Missing record_uid or source_uid in params={params!r}.\n"
-                f"obj={obj.dict()!r}"
+                f"Cannot remove user: missing record_uid or source_uid in {obj!r}."
             )
         url = f"{self.school_authority.url}/users/"
         status, json_resp = await self.http_get(url, params)
