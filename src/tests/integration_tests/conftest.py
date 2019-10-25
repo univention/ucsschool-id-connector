@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 from urllib.parse import urljoin
 
+import faker
 import pytest
 import requests
 from pydantic import UrlStr
@@ -51,6 +52,7 @@ except ImportError:
 
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+fake = faker.Faker()
 
 
 AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
@@ -546,12 +548,12 @@ async def make_host_user(
         :param ous: The new users ous
         :return: The json used to create the user via the API
         """
-        firstname = random_name()
-        lastname = random_name()
+        firstname = fake.first_name()
+        lastname = fake.last_name()
         user_data = {
-            "name": "test{}".format(random_name())[:15],
-            "birthday": "19{}-0{}-{}{}".format(
-                random_int(10, 99), random_int(1, 9), random_int(0, 2), random_int(1, 8)
+            "name": "test{}".format(fake.user_name())[:15],
+            "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime(
+                "%Y-%m-%d"
             ),
             "disabled": False,
             "firstname": firstname,

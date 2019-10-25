@@ -222,7 +222,7 @@ def _listener_dump_user_object(
     source_uid = source_uid or "TESTID"
     fn = fake.first_name()
     ln = fake.last_name()
-    un = fake.user_name()
+    un = fake.user_name()[:15]
     return {
         "dn": f"uid={un},cn=users,ou={ou},{base_dn}",
         "id": fake.uuid4(),

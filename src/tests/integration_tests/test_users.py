@@ -31,12 +31,14 @@ import time
 from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urlsplit
 
+import faker
 import pytest
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+fake = faker.Faker()
 
 
 def compare_user(source: Dict[str, Any], other: Dict[str, Any], to_check=()):
@@ -281,6 +283,7 @@ async def test_modify_user(
     save_mapping,
     create_schools,
     docker_hostname,
+    http_request,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -300,6 +303,14 @@ async def test_modify_user(
         }
     )
     user = make_host_user(ous=[ou_auth1])
+    # check user exists on sender
+    wait_for_status_code(
+        requests.get,
+        bb_api_url(docker_hostname, "users", user["name"]),
+        200,
+        headers=req_headers(token=host_bb_token, content_type="application/json"),
+    )
+    # check user exists on auth1
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     wait_for_status_code(
         requests.get,
@@ -311,12 +322,23 @@ async def test_modify_user(
         ),
     )
     # Modify user
-    requests.patch(
+    new_value = {
+        "firstname": fake.first_name(),
+        "lastname": fake.last_name(),
+        "disabled": not user["disabled"],
+        "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime(
+            "%Y-%m-%d"
+        ),
+    }
+    response = http_request(
+        "patch",
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
-        json={"disabled": not user["disabled"]},
+        json=new_value,
     )
+    user_on_host = response.json()
+    assert user_on_host["disabled"] == new_value["disabled"]
     # Check if user was modified
     time.sleep(10)
     result = wait_for_status_code(
@@ -329,7 +351,10 @@ async def test_modify_user(
         ),
     )
     remote_user = result[1].json()
-    assert remote_user["disabled"] != user["disabled"]  # Just an example to check
+    assert remote_user["disabled"] == new_value["disabled"]
+    assert remote_user["firstname"] == new_value["firstname"]
+    assert remote_user["lastname"] == new_value["lastname"]
+    assert remote_user["birthday"] == new_value["birthday"]
 
 
 @pytest.mark.asyncio
