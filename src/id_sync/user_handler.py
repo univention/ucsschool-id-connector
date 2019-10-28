@@ -30,14 +30,19 @@
 import datetime
 import random
 import string
-from typing import Any, Callable, Dict, List, Tuple, Union
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import aiofiles
 import aiohttp
+import ujson
 from async_property import async_property
+
+from id_sync.ldap_access import LDAPAccess
 
 from .constants import (
     API_SCHOOL_CACHE_TTL,
+    APPCENTER_LISTENER_PATH,
     BB_API_MAIN_ATTRIBUTES,
     CHECK_SSL_CERTS,
     HTTP_CLIENT_TIMEOUT,
@@ -51,6 +56,7 @@ from .models import (
     SchoolAuthorityConfiguration,
     SchoolUserRole,
     UnknownSchoolUserRole,
+    User,
     UserPasswords,
 )
 from .utils import ConsoleAndFileLogging, get_source_uid
@@ -530,3 +536,50 @@ class UserHandler:
     async def _handle_attr_source_uid(obj: ListenerUserAddModifyObject) -> str:
         """Get a source_uid."""
         return obj.source_uid or await get_source_uid()
+
+
+class UserScheduler:
+    def __init__(self):
+        self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__)
+        self.ldap_access = LDAPAccess()
+
+    async def get_user_from_ldap(self, username: str) -> Optional[User]:
+        return await self.ldap_access.get_user(username, attributes=["*", "entryUUID"])
+
+    @staticmethod
+    async def write_listener_file(user: User) -> None:
+        """
+        Create JSON file to trigger appcenter converter service to create JSON
+        file for our app container.
+
+        We cannot create listener files (`ListenerObject`) like the appcenter
+        converter service does, because we don't have UDM. So we'll create the
+        files the appcenter listener creates. They will trigger the appcenter
+        converter service to write the listener files (`ListenerObject`).
+
+        This is what the appcenter listener does in
+        management/univention-appcenter/python/appcenter/listener.py in
+        `AppListener._write_json()`.
+        """
+        attrs = {
+            "entry_uuid": user.attributes["entryUUID"][0],
+            "dn": user.dn,
+            "object_type": "users/user",
+            "command": "m",
+        }
+        json_s = ujson.dumps(attrs, sort_keys=True, indent=4)
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
+        path = Path(APPCENTER_LISTENER_PATH, f"{timestamp}.json")
+        async with aiofiles.open(path, "w") as fp:
+            await fp.write(json_s)
+
+    async def queue_user(self, username: str) -> None:
+        self.logger.debug("Searching LDAP for user with username %r...", username)
+        user = await self.get_user_from_ldap(username)
+        if user:
+            self.logger.info("Adding user to in-queue: %r.", user.dn)
+            await self.write_listener_file(user)
+        else:
+            self.logger.error(
+                "No school user with username %r could be found.", username
+            )

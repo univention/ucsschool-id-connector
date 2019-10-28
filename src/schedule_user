@@ -33,85 +33,20 @@ Find users in LDAP and add them to the in queue.
 """
 
 import asyncio
-import datetime
-from pathlib import Path
-from typing import AsyncIterator, Union
 
-import aiofiles
 import click
-import ujson
 
-from id_sync.constants import APPCENTER_LISTENER_PATH, LOG_FILE_PATH_QUEUES
-from id_sync.ldap_access import LDAPAccess
-from id_sync.models import User
+from id_sync.user_handler import UserScheduler
 from id_sync.utils import ConsoleAndFileLogging
-
-logger = ConsoleAndFileLogging.get_logger(Path(__file__).name, LOG_FILE_PATH_QUEUES)
-ConsoleAndFileLogging.add_console_handler(logger)
-
-
-class TimeEventScheduler:
-    def __init__(self):
-        self.ldap_access = LDAPAccess()
-
-    async def get_user_from_ldap(self, username: str) -> Union[User, None]:
-        return await self.ldap_access.get_user(username, attributes=["*", "entryUUID"])
-
-    async def get_users_from_ldap(self) -> AsyncIterator[User]:
-        filter_s = ""
-        logger.debug("LDAP filter: %r", filter_s)
-        for result in await self.ldap_access.search(filter_s, ["*", "entryUUID"]):
-            yield User(
-                username=result["uid"].value,
-                full_name=result["displayName"].value,
-                disabled=self.ldap_access.user_is_disabled(result),
-                dn=result.entry_dn,
-                attributes=result.entry_attributes_as_dict,
-            )
-
-    @staticmethod
-    async def write_listener_file(user: User) -> None:
-        """
-        Create JSON file to trigger appcenter converter service to create JSON
-        file for our app container.
-
-        We cannot create listener files (`ListenerObject`) like the appcenter
-        converter service does, because we don't have UDM. So we'll create the
-        files the appcenter listener creates. They will trigger the appcenter
-        converter service to write the listener files (`ListenerObject`).
-
-        This is what the appcenter listener does in
-        management/univention-appcenter/python/appcenter/listener.py in
-        `AppListener._write_json()`.
-        """
-        attrs = {
-            "entry_uuid": user.attributes["entryUUID"][0],
-            "dn": user.dn,
-            "object_type": "users/user",
-            "command": "m",
-        }
-        json_s = ujson.dumps(attrs, sort_keys=True, indent=4)
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
-        path = Path(APPCENTER_LISTENER_PATH, f"{timestamp}.json")
-        async with aiofiles.open(path, "w") as fp:
-            await fp.write(json_s)
-
-    async def queue_user(self, username: str) -> None:
-        logger.debug("Searching LDAP for user with username %r...", username)
-        user = await self.get_user_from_ldap(username)
-        if user:
-            logger.info("Adding user to in-queue: %r.", user.dn)
-            await self.write_listener_file(user)
-        else:
-            logger.error("No user with username %r could be found.", username)
-        logger.debug("Done.")
 
 
 @click.command(help="Schedule distribution of a user.")
 @click.argument("username")
 def schedule(username: str = None):
-    scheduler = TimeEventScheduler()
+    scheduler = UserScheduler()
+    ConsoleAndFileLogging.add_console_handler(scheduler.logger)
     asyncio.run(scheduler.queue_user(username))
+    scheduler.logger.debug("Done.")
 
 
 if __name__ == "__main__":
