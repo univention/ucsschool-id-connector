@@ -401,45 +401,20 @@ class InQueue(FileQueue):
                 self.discard_file(path)
                 continue
 
-            # TODO: hook start (which school_authorities have to be contacted to
-            #  handle this file?)
-
             # distribute to school authorities
             s_a_names: Set[str] = set()
-            if isinstance(obj, ListenerUserAddModifyObject):
-                for school in obj.schools:
-                    try:
-                        s_a_names.add(self.school_authority_mapping[school])
-                    except KeyError:
-                        self.logger.error(
-                            "School missing in school authority mapping, ignoring: %r",
-                            school,
-                        )
-
-            # add deleted school authorities, so the change/deletion will be
-            # distributed by the respective out queues
-            if isinstance(obj, ListenerUserAddModifyObject) or isinstance(
-                obj, ListenerUserRemoveObject
+            for result in plugin_manager.hook.school_authorities_to_distribute_to(
+                obj=obj, in_queue=self
             ):
-                if obj.old_data:
-                    old_schools = obj.old_data.schools
-                else:
-                    old_schools = []
-                for school in old_schools:
-                    try:
-                        s_a_names.add(self.school_authority_mapping[school])
-                    except KeyError:
-                        self.logger.error(
-                            "School from 'old_data_ missing in school authority"
-                            " mapping, ignoring: %r",
-                            school,
-                        )
-            # TODO: hook end
-
+                s_a_names.update(await result)
+            self.logger.debug(
+                "Plugins for 'school_authorities_to_distribute_to' returned: %r",
+                s_a_names,
+            )
             # copy listener file to out queues for affected school authorities
             if not s_a_names:
                 self.logger.info(
-                    "Ignoring user without current or previous school authority entries "
+                    "Ignoring object without current or previous school authority entries "
                     "(DN: %r entryUUID: %r).",
                     obj.dn,
                     obj.id,

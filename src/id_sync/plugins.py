@@ -28,7 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterable, Optional
 
 import pluggy
 
@@ -47,12 +47,9 @@ plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
 
 class ListenerObjectHandler:
-    @hook_spec
-    def shutdown(self) -> None:
-        """
-        Called when the daemon is shutting down. Close database and network
-        connections.
-        """
+    """
+    Pluggy hook specifications for handling listener files.
+    """
 
     @hook_spec
     def get_listener_object(self, obj_dict: Dict[str, Any]) -> Optional[ListenerObject]:
@@ -84,6 +81,20 @@ class ListenerObjectHandler:
         :rtype: bool
         :raises ValueError: JSON encoding error
         :raises OSError: (FileNotFoundError etc)
+        """
+
+
+class Preprocessing:
+    """
+    Pluggy hook specifications for preprocessing ``ListenerObject``
+    instances in the in-queue.
+    """
+
+    @hook_spec
+    def shutdown(self) -> None:
+        """
+        Called when the daemon is shutting down. Close database and network
+        connections.
         """
 
     @hook_spec
@@ -130,4 +141,34 @@ class ListenerObjectHandler:
         """
 
 
+class Distribution:
+    """
+    Pluggy hook specifications for preprocessing ``ListenerObject``
+    instances in the in-queue.
+    """
+
+    @hook_spec
+    async def school_authorities_to_distribute_to(
+        self, obj: ListenerObject, in_queue: "id_sync.queues.InQueue"
+    ) -> Iterable[str]:
+        """
+        Create list of school authorities this object should be sent to.
+
+        All `school_authorities_to_distribute_to` hook implementations will be
+        executed and the result lists will be merged. If the object type cannot
+        or should not be handled by the plugin, return an empty list.
+
+        :param ListenerObject obj: of a concrete subclass of ListenerObject
+        :param InQueue in_queue: the in-queue
+        :return: list of names of school authorities, they should match those
+            in ``SchoolAuthorityConfiguration.name``
+        :rtype: list
+        """
+        # TODO: currently only passing 'self' (InQueue) because plugins need
+        # the 'school_authority_mapping'. Would be better to move that and
+        # the related models to a plugin package.
+
+
 plugin_manager.add_hookspecs(ListenerObjectHandler)
+plugin_manager.add_hookspecs(Preprocessing)
+plugin_manager.add_hookspecs(Distribution)
