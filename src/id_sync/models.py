@@ -92,6 +92,18 @@ class ListenerOldDataEntry(BaseModel, abc.ABC):
     ...
 
 
+class ListenerGroupOldDataEntry(ListenerOldDataEntry):
+    users: List[str]
+
+    def __repr__(self):
+        num_users = len(self.users)
+        if num_users > 5:
+            users_str = f"{num_users} members: [...]"
+        else:
+            users_str = f"{num_users} members: {self.users!r}"
+        return f"{self.__class__.__name__}({users_str})"
+
+
 class ListenerUserOldDataEntry(ListenerOldDataEntry):
     schools: List[str]
     record_uid: str = None
@@ -165,6 +177,28 @@ class ListenerAddModifyObject(ListenerObject, abc.ABC):
             f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, "
             f"{self.old_data!r})"
         )
+
+
+class ListenerGroupAddModifyObject(ListenerAddModifyObject):
+    old_data: ListenerGroupOldDataEntry = None
+
+    @validator("udm_object_type")
+    def supported_udm_object_type(cls, value):
+        if value != "groups/group":
+            raise ListenerFileAttributeError(
+                key="udm_object_type",
+                value=value,
+                msg_template='Unsupported UDM object type: "{key}"="{value}"',
+            )
+        return value
+
+    @property
+    def name(self) -> str:
+        return self.object["name"]
+
+    @property
+    def users(self) -> List[str]:
+        return self.object["users"]
 
 
 class ListenerUserAddModifyObject(ListenerAddModifyObject):
@@ -282,6 +316,16 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
 
 class ListenerRemoveObject(ListenerObject, abc.ABC):
     action = ListenerActionEnum.delete
+
+
+class ListenerGroupRemoveObject(ListenerRemoveObject):
+    old_data: ListenerGroupOldDataEntry = None
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r},"
+            f" {self.old_data!r})"
+        )
 
 
 class ListenerUserRemoveObject(ListenerRemoveObject):
