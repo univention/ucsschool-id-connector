@@ -305,12 +305,13 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
             by_alias=by_alias,
             skip_defaults=skip_defaults,
         )
-        res["user_passwords"] = self.user_passwords.dict_krb5_key_base64_encoded(
-            include=include,
-            exclude=exclude,
-            by_alias=by_alias,
-            skip_defaults=skip_defaults,
-        )
+        if self.user_passwords:
+            res["user_passwords"] = self.user_passwords.dict_krb5_key_base64_encoded(
+                include=include,
+                exclude=exclude,
+                by_alias=by_alias,
+                skip_defaults=skip_defaults,
+            )
         return res
 
 

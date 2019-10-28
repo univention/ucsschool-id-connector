@@ -447,7 +447,7 @@ class UserHandler:
 
         if isinstance(obj, ListenerUserAddModifyObject):
             # set password hashes
-            if self.school_authority.passwords_target_attribute:
+            if self.school_authority.passwords_target_attribute and obj.user_passwords:
                 pw_hashes = obj.user_passwords.dict()
                 # hashes are already base64 encoded by inqueue->prepare->save
                 # but have been made bytes by the pydantic Model definition

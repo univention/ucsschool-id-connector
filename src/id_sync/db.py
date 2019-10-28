@@ -86,7 +86,11 @@ class OldDataDB(KeyValueDB):
         return super().__setitem__(key, value.dict())
 
     def get(self, key, default=None, *args, **kwargs) -> ListenerOldDataEntryType:
-        return self._data_type(**super().get(key, default, *args, **kwargs))
+        res = super().get(key, default, *args, **kwargs)
+        if res is default:
+            return default
+        else:
+            return self._data_type(**res)
 
     def set(self, key, value, *args, **kwargs):
         return super().set(key, value.dict(), *args, **kwargs)
