@@ -30,6 +30,7 @@
 import datetime
 import random
 import string
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -59,7 +60,7 @@ from .models import (
     User,
     UserPasswords,
 )
-from .utils import ConsoleAndFileLogging, get_source_uid
+from .utils import ConsoleAndFileLogging, class_dn_regex, get_source_uid
 
 ParamType = Union[Dict[str, str], List[Tuple[str, str]]]
 
@@ -119,6 +120,7 @@ class UserHandler:
         self._api_schools_cache_creation = datetime.datetime(1970, 1, 1)
         timeout = aiohttp.ClientTimeout(total=HTTP_CLIENT_TIMEOUT)
         self._session = aiohttp.ClientSession(timeout=timeout)
+        self.class_dn_regex = class_dn_regex()
 
     async def shutdown(self):
         """Clean shutdown procedure."""
@@ -526,11 +528,13 @@ class UserHandler:
     ) -> Dict[str, List[str]]:
         """Get school classes the user is in this school authority."""
         known_schools = (await self.api_schools_cache).keys()
-        return dict(
-            (ou, classes)
-            for ou, classes in obj.object.get("school_classes", {}).items()
-            if ou in known_schools
-        )
+        groups_dns = obj.object.get("groups", [])
+        res = defaultdict(list)
+        for group_dn in groups_dns:
+            group_match = self.class_dn_regex.match(group_dn)
+            if group_match and group_match["ou"] in known_schools:
+                res[group_match["ou"]].append(group_match["name"])
+        return res
 
     @staticmethod
     async def _handle_attr_source_uid(obj: ListenerUserAddModifyObject) -> str:

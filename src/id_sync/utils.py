@@ -29,6 +29,8 @@
 
 import logging
 import os
+import re
+from functools import lru_cache
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import TextIO, Union
@@ -44,6 +46,8 @@ from .constants import (
     LOG_ENTRY_DEBUG_FORMAT,
     LOG_FILE_PATH_QUEUES,
     SERVICE_NAME,
+    UCR_CONTAINER_CLASS,
+    UCR_CONTAINER_PUPILS,
     UCR_DB_FILE,
     UCR_REGEX,
     UCRV_SOURCE_UID,
@@ -143,3 +147,19 @@ class ConsoleAndFileLogging:
         handler = colorlog.StreamHandler()
         handler.setFormatter(colorlog.ColoredFormatter(LOG_ENTRY_CMDLINE_FORMAT))
         logger.addHandler(handler)
+
+
+@lru_cache(maxsize=1)
+def class_dn_regex():
+    base_dn = os.environ["ldap_base"]
+    # default value of env.get("ucsschool_ldap_default_...") can be the
+    # empty string, because of the apps 'env' file
+    c_class = os.environ.get(UCR_CONTAINER_CLASS[0]) or UCR_CONTAINER_CLASS[1]
+    c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
+    return re.compile(
+        f"cn=(?P<ou>.+?)-(?P<name>.+?),"
+        f"cn={c_class},cn={c_student},cn=groups,"
+        f"ou=(?P=ou),"
+        f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
