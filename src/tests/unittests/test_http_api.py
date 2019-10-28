@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import logging
 from unittest.mock import patch
 
 from pydantic import SecretStr
@@ -37,6 +38,7 @@ import id_sync.http_api
 import id_sync.models
 import id_sync.queues
 import id_sync.token_auth
+import id_sync.utils
 
 client = TestClient(id_sync.http_api.app)
 
@@ -47,9 +49,18 @@ async def override_get_current_active_user():
     )
 
 
+def override_setup_logging():
+    logger = logging.getLogger("id_sync.http_api")
+    id_sync.utils.ConsoleAndFileLogging.add_console_handler(logger)
+    return logger
+
+
 id_sync.http_api.app.dependency_overrides[
     id_sync.token_auth.get_current_active_user
 ] = override_get_current_active_user
+id_sync.http_api.app.dependency_overrides[
+    id_sync.http_api.get_logger
+] = override_setup_logging
 
 
 @patch("id_sync.http_api.zmq_context")

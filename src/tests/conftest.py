@@ -33,7 +33,7 @@ import shutil
 import string
 from functools import partial
 from pathlib import Path
-from tempfile import NamedTemporaryFile, mkdtemp
+from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
@@ -88,22 +88,24 @@ class ExampleTestClass:
         return arg1 + arg2
 """
 
-# Monkey patch get_logger() here, so it won't have to be included as a
-# fixture everywhere.
-_ori_get_logger = id_sync.utils.ConsoleAndFileLogging.get_logger
 
+# Monkey patch get_logger() for the whole test session
+@pytest.fixture(scope="session")
+def setup_logging():
+    ori_get_logger = id_sync.utils.ConsoleAndFileLogging.get_logger
+    tmp_log_path = Path(mkdtemp())
 
-def utils_get_logger(
-    name: str = None, path: Path = id_sync.constants.LOG_FILE_PATH_QUEUES
-):
-    log_dir = Path(mkdtemp())
-    if path:
-        path = log_dir / path.name
-    print(f"\n **** log directory is: {path} ****")
-    return _ori_get_logger(name, path)
+    def utils_get_logger(
+        name: str = None, path: Path = id_sync.constants.LOG_FILE_PATH_QUEUES
+    ):
+        path = tmp_log_path / path.name
+        print(f"\n **** log directory is: {path} ****")
+        return ori_get_logger(name, path)
 
-
-id_sync.utils.ConsoleAndFileLogging.get_logger = utils_get_logger
+    with patch("id_sync.utils.ConsoleAndFileLogging.get_logger", utils_get_logger):
+        yield
+    id_sync.utils.ConsoleAndFileLogging.get_logger = ori_get_logger
+    shutil.rmtree(str(tmp_log_path))
 
 
 class UserPasswordsFactory(factory.Factory):
@@ -457,7 +459,6 @@ def mock_plugins(
     ), patch(
         "id_sync.ldap_access.LDAPAccess", LDAPAccess
     ):
-
         id_sync.plugin_loader.load_plugins()
 
     yield mock_plugin_impls, db_path, fake_user_passwords_object
