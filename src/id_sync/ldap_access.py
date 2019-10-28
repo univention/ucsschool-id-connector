@@ -101,7 +101,9 @@ class LDAPAccess:
         if user_dn:
             admin_group_members = await self.admin_group_members()
             if user_dn in admin_group_members:
-                return await self.get_user(username, user_dn, password)
+                return await self.get_user(
+                    username, user_dn, password, school_only=False
+                )
             else:
                 logger.debug(
                     "User %r not member of group %r.", username, ADMIN_GROUP_NAME
@@ -202,7 +204,8 @@ class LDAPAccess:
         bind_dn: str = None,
         bind_pw: str = None,
         attributes: List[str] = None,
-    ) -> Union[User, None]:
+        school_only=True,
+    ) -> Optional[User]:
         if not attributes:
             attributes = [
                 "displayName",
@@ -212,6 +215,14 @@ class LDAPAccess:
                 "uid",
             ]
         filter_s = f"(uid={escape_filter_chars(username)})"
+        if school_only:
+            filter_s = (
+                f"(&{filter_s}(|"
+                f"(objectClass=ucsschoolStaff)"
+                f"(objectClass=ucsschoolStudent)"
+                f"(objectClass=ucsschoolTeacher)"
+                f"))"
+            )
         results = await self.search(
             filter_s,
             attributes,

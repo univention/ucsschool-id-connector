@@ -92,7 +92,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(username=username)
     except PyJWTError:
         raise credentials_exception
-    user = await ldap_auth_instance.get_user(username=token_data.username)
+    user = await ldap_auth_instance.get_user(
+        username=token_data.username, school_only=False
+    )
     if user is None:
         raise credentials_exception
     return user
