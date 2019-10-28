@@ -62,7 +62,7 @@ class ListenerObjectHandler:
         handled by the default code, return `None`.
 
         Multiple `get_listener_object` hook implementations may run, until one
-        returns an object.
+        returns an object. Further implementations will not be executed.
 
         :param dict obj_dict: dictionary loaded from the appcenter listener
             converters JSON file
@@ -70,12 +70,13 @@ class ListenerObjectHandler:
         :rtype: None or ListenerObject
         """
 
-    @hook_spec(firstresult=True)
+    @hook_spec
     def save_listener_object(self, obj: ListenerObject, path: Path) -> bool:
         """
         Store `obj` JSON encoded into file at `path`.
 
-        Only one `save_listener_object` hook implementation will be executed.
+        Multiple `get_listener_object` hook implementations may run, until one
+        returns `True`. Further implementations will not be executed.
 
         :param ListenerObject obj: instance of a subclass of `ListenerObject`
         :param Path path: filesystem path to save to
@@ -93,7 +94,8 @@ class ListenerObjectHandler:
         For example store data in a DB, that will not be available in the
         delete operation (use it in `preprocess_remove_object()`), because the
         ListenerRemoveObject has no object data, just the objects `id`. Or
-        load additional data missing in the `obj.object`.
+        load additional data missing in the `obj.object`. Or if the difference
+        to previous add/mod is needed in a modify operation.
 
         If `obj` was modified and the out queues should see that modification,
         return `True`, so it gets saved to disk.
@@ -121,7 +123,7 @@ class ListenerObjectHandler:
         All `preprocess_remove_object` hook implementations will be executed.
 
         :param ListenerRemoveObject obj: instance of a concrete subclass
-            of ListenerAddModifyObject
+            of ListenerRemoveObject
         :return: whether `obj` was modified and it should be written back to
             the listener file, so out queues can load it.
         :rtype: bool

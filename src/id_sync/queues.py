@@ -248,7 +248,14 @@ class FileQueue:
 
     async def save_listener_file(self, obj: ListenerObject, path: Path) -> None:
         try:
-            path = await plugin_manager.hook.save_listener_object(obj=obj, path=path)
+            hook_coros = plugin_manager.hook.save_listener_object(obj=obj, path=path)
+            for coro in hook_coros:
+                if await coro:
+                    break
+            else:
+                raise ListenerSavingError(
+                    f"No 'save_listener_object' hook saved {obj!r}."
+                )
         except (OSError, ValueError) as exc:
             self.logger.exception(
                 "Saving obj to %s: %s\nobj=%r", path.name, exc, obj.dict()
@@ -297,12 +304,13 @@ class InQueue(FileQueue):
 
         changed = False
         if isinstance(obj, ListenerAddModifyObject):
-            results = plugin_manager.hook.preprocess_add_mod_object(obj=obj)
-            changed |= any([await r for r in results])
+            result_coros = plugin_manager.hook.preprocess_add_mod_object(obj=obj)
+            # await all elements of list of coroutine objects
+            changed |= any([await coro for coro in result_coros])
 
         if isinstance(obj, ListenerRemoveObject):
-            results = plugin_manager.hook.preprocess_remove_object(obj=obj)
-            changed |= any([await r for r in results])
+            result_coros = plugin_manager.hook.preprocess_remove_object(obj=obj)
+            changed |= any([await coro for coro in result_coros])
 
         if changed:
             try:

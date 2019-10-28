@@ -30,7 +30,7 @@
 import os
 from collections import namedtuple
 from datetime import datetime
-from typing import List, Union
+from typing import List, Optional
 
 import aiofiles
 import lazy_object_proxy
@@ -96,7 +96,7 @@ class LDAPAccess:
 
     async def check_auth_and_get_user(
         self, username: str, password: str
-    ) -> Union[User, None]:
+    ) -> Optional[User]:
         user_dn = await self.get_dn_of_user(username)
         if user_dn:
             admin_group_members = await self.admin_group_members()
@@ -159,7 +159,7 @@ class LDAPAccess:
         else:
             return ""
 
-    async def get_passwords(self, username: str) -> Union[UserPasswords, None]:
+    async def get_passwords(self, username: str) -> Optional[UserPasswords]:
         filter_s = f"(uid={escape_filter_chars(username)})"
         attributes = [
             "krb5Key",
@@ -258,7 +258,7 @@ class LDAPAccess:
 
     async def extended_attribute_ldap_mapping(
         self, udm_property_name: str
-    ) -> Union[str, None]:
+    ) -> Optional[str]:
         filter_s = (
             f"(&(objectClass=univentionUDMProperty)"
             f"(cn={escape_filter_chars(udm_property_name)}))"
