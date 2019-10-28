@@ -164,10 +164,10 @@ class ListenerObjectHandler:
             the listener file, so out queues can load it.
         :rtype: bool
         """
-        # get old / store new data in (ListenerUserOldDataEntry) in self.old_data_db
         if not isinstance(obj, self.listener_add_modify_object_type):
             return False
 
+        # get old / store new data in self.old_data_db
         self.logger.debug("Preprocessing %r...", obj)
         obj.old_data = self.get_old_data(obj)
         self.save_old_data(obj)
@@ -243,13 +243,13 @@ class ListenerUserObjectHandler(ListenerObjectHandler):
 
     @hook_impl
     async def preprocess_add_mod_object(self, obj: ListenerUserAddModifyObject) -> bool:
-        res = await super().preprocess_add_mod_object(obj)
-        if not res:
-            return res
+        if not isinstance(obj, self.listener_add_modify_object_type):
+            return False
+        old_data_res = await super().preprocess_add_mod_object(obj)
         obj.user_passwords = await self.ldap_access.get_passwords(obj.username)
         if not obj.user_passwords:
             self.logger.error("Could not get password hashes of %r.", obj.dn)
-        return True
+        return old_data_res or bool(obj.user_passwords)
 
 
 class ListenerGroupObjectHandler(ListenerObjectHandler):
