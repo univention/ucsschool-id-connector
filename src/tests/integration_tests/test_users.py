@@ -36,6 +36,11 @@ import pytest
 import requests
 from urllib3.exceptions import InsecureRequestWarning
 
+try:
+    from simplejson.errors import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
+
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 fake = faker.Faker()
@@ -67,7 +72,14 @@ def compare_user(source: Dict[str, Any], other: Dict[str, Any], to_check=()):
 
 
 def wait_for_status_code(
-    method, url, status_code, headers=None, json=None, timeout=10, raise_assert=True
+    method,
+    url,
+    status_code,
+    headers=None,
+    json=None,
+    expected_json: Dict[str, Any] = None,
+    timeout=10,
+    raise_assert=True,
 ) -> Tuple[bool, Optional[requests.Response]]:
     """
     Sends defined request repeatedly until the desired status code is returned
@@ -78,28 +90,49 @@ def wait_for_status_code(
     :param status_code: The desired status code to wait for
     :param headers: The headers of the request
     :param json: The json data of the request
+    :param dict expected_json: key-value pairs that should exist in JSON response
     :param int timeout: The timeout
     :param bool raise_assert: whether to raise an AssertionError if the desired
         status code was not reached
     :return: Tuple[bool, response], with bool being True if desired status code
         was reached, otherwise False
     """
+
+    def check_response(json_result):
+        if not expected_json:
+            return True
+        for k, v in expected_json.items():
+            if json_result.get(k) != v:
+                return False
+        return True
+
     start = time.time()
     response = None
+    msg = ""
     while (time.time() - start) < timeout:
         headers = headers or {}
         json = json or {}
         response = method(url, headers=headers, json=json, verify=False)
-        if response.status_code == status_code:
-            return True, response
-        time.sleep(1)
-    if raise_assert:
-        raise AssertionError(
+        try:
+            json_result = response.json()
+        except JSONDecodeError:
+            json_result = {}
+        msg = (
             f"Status {None if response is None else response.status_code} "
             f"(reason: {None if response is None else response.reason}) for "
             f"{method.__name__.upper()} {url!r} using headers={headers!r}"
-            f" and json={json!r}."
+            f" and json={json!r}\njson_result={json_result!r}"
         )
+        if response.status_code == status_code:
+            if check_response(json_result):
+                return True, response
+        print(
+            f"{msg}\nexpected status={status_code!r} and "
+            f"json={expected_json!r}... sleeping..."
+        )
+        time.sleep(1)
+    if raise_assert:
+        raise AssertionError(msg)
     return False, response
 
 
@@ -335,7 +368,7 @@ async def test_modify_user(
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
-        json=new_value,
+        json_data=new_value,
     )
     user_on_host = response.json()
     assert user_on_host["disabled"] == new_value["disabled"]
@@ -379,8 +412,20 @@ async def test_class_change(
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     await save_mapping({ou_auth1: school_auth1.name})
     user = make_host_user(ous=[ou_auth1])
+    response = http_request(
+        "get",
+        bb_api_url(docker_hostname, "users", user["name"]),
+        verify=False,
+        headers=req_headers(token=host_bb_token, content_type="application/json"),
+    )
+    school_classes_at_sender = response.json()["school_classes"]
+    assert school_classes_at_sender == user["school_classes"]
+    print(
+        f"1. Created user {user['name']} with school_classes="
+        f"{user['school_classes']!r} on sender."
+    )
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    wait_for_status_code(
+    _, response = wait_for_status_code(
         requests.get,
         auth1_url,
         200,
@@ -388,17 +433,37 @@ async def test_class_change(
             token=school_auth1.password.get_secret_value(),
             content_type="application/json",
         ),
+        expected_json={"school_classes": user["school_classes"]},
+    )
+    school_classes_at_auth1 = response.json()["school_classes"]
+    assert school_classes_at_auth1 == user["school_classes"]
+    print(
+        f"2. User was created in auth1 ({auth1_url!r}) with school_classes"
+        f"={school_classes_at_auth1!r}."
     )
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
-    http_request(
+    print(f"3. setting new value for school_classes on sender: {new_value!r}")
+    response = http_request(
         "patch",
         bb_api_url(docker_hostname, "users", user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         json_data=new_value,
     )
-    time.sleep(10)
-    result = wait_for_status_code(
+    school_classes_at_sender = response.json()["school_classes"]
+    assert school_classes_at_sender == new_value["school_classes"]
+    _, response = wait_for_status_code(
+        requests.get,
+        bb_api_url(docker_hostname, "users", user["name"]),
+        200,
+        headers=req_headers(token=host_bb_token, content_type="application/json"),
+    )
+    school_classes_at_sender = response.json()["school_classes"]
+    assert school_classes_at_sender == new_value["school_classes"]
+    print(
+        f"4. User was modified at sender, has now school_classes={school_classes_at_sender!r}."
+    )
+    _, response = wait_for_status_code(
         requests.get,
         auth1_url,
         200,
@@ -406,9 +471,10 @@ async def test_class_change(
             token=school_auth1.password.get_secret_value(),
             content_type="application/json",
         ),
+        expected_json=new_value,
     )
-    remote_user = result[1].json()
-    assert remote_user["school_classes"] == new_value
+    remote_user = response.json()
+    assert remote_user["school_classes"] == new_value["school_classes"]
 
 
 @pytest.mark.asyncio
@@ -456,9 +522,25 @@ async def test_school_change(
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         json_data=new_value,
     )
+    _, response = wait_for_status_code(
+        requests.get,
+        bb_api_url(docker_hostname, "users", user["name"]),
+        200,
+        headers=req_headers(token=host_bb_token, content_type="application/json"),
+    )
+    sender_user = response.json()
+    print(
+        f"User was modified at sender, has now school={sender_user['school']!r} "
+        f"schools={sender_user['schools']!r} "
+        f"school_classes={sender_user['school_classes']!r}."
+    )
+    assert sender_user["school"] == new_value["school"]
+    assert sender_user["schools"] == new_value["schools"]
+    assert sender_user["school_classes"] == new_value["school_classes"]
+
     time.sleep(10)
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    result = wait_for_status_code(
+    _, response = wait_for_status_code(
         requests.get,
         auth1_url,
         200,
@@ -467,7 +549,9 @@ async def test_school_change(
             content_type="application/json",
         ),
     )
-    remote_user = result[1].json()
+    remote_user = response.json()
     assert urlsplit(remote_user["school"]).path == urlsplit(new_value["school"]).path
+    assert [urlsplit(school).path for school in remote_user["schools"]] == [
+        urlsplit(school).path for school in new_value["schools"]
+    ]
     assert remote_user["school_classes"] == new_value["school_classes"]
-    assert remote_user["schools"] == new_value["schools"]
