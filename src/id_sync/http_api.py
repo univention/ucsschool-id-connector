@@ -28,7 +28,9 @@
 # <http://www.gnu.org/licenses/>.
 
 import asyncio
+import logging
 from datetime import timedelta
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Coroutine, Dict, List, Union
 
@@ -76,14 +78,19 @@ from .utils import ConsoleAndFileLogging, get_token_ttl
 
 router = APIRouter()
 zmq_context = zmq.asyncio.Context()
-ConsoleAndFileLogging.get_logger("uvicorn", LOG_FILE_PATH_HTTP)
-logger = ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_HTTP)
 ldap_auth_instance: LDAPAccess = lazy_object_proxy.Proxy(LDAPAccess)
+
+
+@lru_cache(maxsize=1)
+def get_logger() -> logging.Logger:
+    ConsoleAndFileLogging.get_logger("uvicorn", LOG_FILE_PATH_HTTP)
+    return ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_HTTP)
 
 
 @router.get("/school_to_authority_mapping", tags=["school_to_authority_mapping"])
 async def read_school_to_school_authority_mapping(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> School2SchoolAuthorityMapping:
     res = await query_service(cmd="get_school_to_authority_mapping")
     if res.get("errors"):
@@ -97,6 +104,7 @@ async def read_school_to_school_authority_mapping(
 async def put_school_to_school_authority_mapping(
     school_to_authority_mapping: School2SchoolAuthorityMapping,
     current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> School2SchoolAuthorityMapping:
     logger.info(
         "User %r modifying school to school authority mapping...", current_user.username
@@ -114,7 +122,8 @@ async def put_school_to_school_authority_mapping(
 
 @router.get("/queues", response_model=List[QueueModel], tags=["queues"])
 async def read_queues(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> List[QueueModel]:
     res = await query_service(cmd="get_queues")
     resp = AllQueues(**res["result"])
@@ -123,7 +132,9 @@ async def read_queues(
 
 @router.get("/queues/{name}", response_model=QueueModel, tags=["queues"])
 async def read_queue(
-    name: str, current_user: User = Depends(get_current_active_user)
+    name: str,
+    current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> QueueModel:
     res = await query_service(cmd="get_queue", name=name)
     if res.get("errors"):
@@ -133,7 +144,8 @@ async def read_queue(
 
 @router.get("/school_authorities", tags=["school_authorities"])
 async def read_school_authorities(
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> List[SchoolAuthorityConfiguration]:
     res = await query_service(cmd="get_school_authorities")
     return sorted(
@@ -147,6 +159,7 @@ async def read_school_authorities(
 async def create_school_authorities(
     school_authority: SchoolAuthorityConfiguration,
     current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> SchoolAuthorityConfiguration:
     logger.info(
         "User %r creating school authority %r...",
@@ -163,7 +176,9 @@ async def create_school_authorities(
 
 @router.get("/school_authorities/{name}", tags=["school_authorities"])
 async def read_school_authority(
-    name: str, current_user: User = Depends(get_current_active_user)
+    name: str,
+    current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> SchoolAuthorityConfiguration:
     res = await query_service(cmd="get_school_authority", name=name)
     if res.get("errors"):
@@ -177,7 +192,9 @@ async def read_school_authority(
     status_code=HTTP_204_NO_CONTENT,
 )
 async def delete_school_authority(
-    name: str, current_user: User = Depends(get_current_active_user)
+    name: str,
+    current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> None:
     logger.info("User %r deleting school authority %r...", current_user.username, name)
     res = await query_service(cmd="delete_school_authority", name=name)
@@ -193,6 +210,7 @@ async def patch_school_authority(
     name: str,
     school_authority: SchoolAuthorityConfigurationPatchDocument,
     current_user: User = Depends(get_current_active_user),
+    logger: logging.Logger = Depends(get_logger),
 ) -> SchoolAuthorityConfiguration:
     # We could use status_code=204 for PATCH, but then we must not return anything.
     # IMHO that is less useful than using 200 and returning the modified resource.
@@ -256,7 +274,10 @@ app = FastAPI(
 
 
 @app.post(TOKEN_URL, response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    logger: logging.Logger = Depends(get_logger),
+):
     user = await ldap_auth_instance.check_auth_and_get_user(
         form_data.username, form_data.password
     )

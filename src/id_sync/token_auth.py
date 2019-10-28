@@ -37,17 +37,11 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from .constants import (
-    LOG_FILE_PATH_HTTP,
-    TOKEN_HASH_ALGORITHM,
-    TOKEN_SIGN_SECRET_FILE,
-    TOKEN_URL,
-)
+from .constants import TOKEN_HASH_ALGORITHM, TOKEN_SIGN_SECRET_FILE, TOKEN_URL
 from .ldap_access import LDAPAccess
 from .models import TokenData, User
-from .utils import ConsoleAndFileLogging, get_token_ttl
+from .utils import get_token_ttl
 
-logger = ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_HTTP)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=TOKEN_URL)
 _secret_key = ""
 ldap_auth_instance: LDAPAccess = lazy_object_proxy.Proxy(LDAPAccess)

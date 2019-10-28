@@ -42,7 +42,6 @@ from .constants import ADMIN_GROUP_NAME, LOG_FILE_PATH_HTTP, MACHINE_PASSWORD_FI
 from .models import User, UserPasswords
 from .utils import ConsoleAndFileLogging
 
-logger = ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_HTTP)
 MachinePWCache = namedtuple("MachinePWCache", ["mtime", "password"])
 
 
@@ -52,6 +51,7 @@ class LDAPAccess:
 
     def __init__(self):
         self.ldap_base = os.environ["ldap_base"]
+        self.logger = ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_HTTP)
         self.server = Server(
             host=os.environ["ldap_server_name"],
             port=int(os.environ["ldap_server_port"]),
@@ -80,13 +80,13 @@ class LDAPAccess:
                 authentication=SIMPLE,
                 read_only=True,
             ):
-                logger.info("Successful LDAP: %r.", bind_dn)
+                self.logger.info("Successful LDAP: %r.", bind_dn)
                 return True
         except LDAPBindError:
-            logger.info("Invalid credentials for %r.", bind_dn)
+            self.logger.info("Invalid credentials for %r.", bind_dn)
             return False
         except LDAPExceptionError as exc:
-            logger.exception(
+            self.logger.exception(
                 "When connecting to %r with bind_dn %r: %s",
                 self.server.host,
                 bind_dn,
@@ -105,12 +105,12 @@ class LDAPAccess:
                     username, user_dn, password, school_only=False
                 )
             else:
-                logger.debug(
+                self.logger.debug(
                     "User %r not member of group %r.", username, ADMIN_GROUP_NAME
                 )
                 return None
         else:
-            logger.debug("No such user in LDAP: %r.", username)
+            self.logger.debug("No such user in LDAP: %r.", username)
             return None
 
     async def search(
@@ -138,7 +138,7 @@ class LDAPAccess:
         except LDAPExceptionError as exc:
             if isinstance(exc, LDAPBindError) and not raise_on_bind_error:
                 return []
-            logger.exception(
+            self.logger.exception(
                 "When connecting to %r with bind_dn %r: %s",
                 self.server.host,
                 self.host_dn,
@@ -253,7 +253,9 @@ class LDAPAccess:
         if len(results) == 1:
             return results[0]["uniqueMember"].values
         else:
-            logger.error("Reading %r from LDAP: results=%r", ADMIN_GROUP_NAME, results)
+            self.logger.error(
+                "Reading %r from LDAP: results=%r", ADMIN_GROUP_NAME, results
+            )
             return []
 
     async def extended_attribute_ldap_mapping(
@@ -270,5 +272,7 @@ class LDAPAccess:
         if len(results) == 1:
             return results[0]["univentionUDMPropertyLdapMapping"].value
         else:
-            logger.error("Reading %r from LDAP: results=%r", udm_property_name, results)
+            self.logger.error(
+                "Reading %r from LDAP: results=%r", udm_property_name, results
+            )
             return None
