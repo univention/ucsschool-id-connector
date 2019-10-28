@@ -104,3 +104,5 @@ PLUGIN_DIRS = (
     APP_SRC_PATH / "plugins/plugins",
     APP_CONFIG_BASE_PATH / "plugins/plugins",
 )
+UCR_CONTAINER_CLASS = ("ucsschool_ldap_default_container_class", "klassen")
+UCR_CONTAINER_PUPILS = ("ucsschool_ldap_default_container_pupils", "schueler")

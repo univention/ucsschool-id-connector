@@ -1,0 +1,13 @@
+ucsschool_ldap_default_container_admins=@%@ucsschool/ldap/default/container/admins@%@
+ucsschool_ldap_default_container_pupils=@%@ucsschool/ldap/default/container/pupils@%@
+ucsschool_ldap_default_container_staff=@%@ucsschool/ldap/default/container/staff@%@
+ucsschool_ldap_default_container_teachers_and_staff=@%@ucsschool/ldap/default/container/teachers-and-staff@%@
+ucsschool_ldap_default_container_teachers=@%@ucsschool/ldap/default/container/teachers@%@
+ucsschool_ldap_default_container_class=@%@ucsschool/ldap/default/container/class@%@
+ucsschool_ldap_default_container_rooms=@%@ucsschool/ldap/default/container/rooms@%@
+ucsschool_ldap_default_container_exam=@%@ucsschool/ldap/default/container/exam@%@
+ucsschool_ldap_default_groupname_exam=@%@ucsschool/ldap/default/groupname/exam@%@
+ucsschool_ldap_default_groupprefix_pupils=@%@ucsschool/ldap/default/groupprefix/pupils@%@
+ucsschool_ldap_default_groupprefix_teachers=@%@ucsschool/ldap/default/groupprefix/teachers@%@
+ucsschool_ldap_default_groupprefix_admins=@%@ucsschool/ldap/default/groupprefix/admins@%@
+ucsschool_ldap_default_groupprefix_staff=@%@ucsschool/ldap/default/groupprefix/staff@%@
