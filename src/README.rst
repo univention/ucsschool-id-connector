@@ -1,7 +1,7 @@
 ID Sync replication system
 ==========================
 
-|python| |license| |code style|
+|python| |license|
 
 .. This file can be read on the installed system at https://FQDN/id-sync/api/v1/readme
 .. The changelog can be read on the installed system at https://FQDN/id-sync/api/v1/history
@@ -12,7 +12,7 @@ Introduction
 The `ID Sync` replication system is composed of three components:
 
 * A process on the data source UCS server, receiving user creation/modification/deletion events from the LDAP server and relaying them to multiple recipients via HTTP. Henceforth called the `ID Sync service`.
-* A process on the data source UCS server to monitor and configure the ID Sync service, henceforth called the `ID Sync REST API`.
+* A process on the data source UCS server to monitor and configure the ID Sync service, henceforth called the `ID Sync HTTP API`.
 * Multiple recipients of the directory data relayed by the `ID Sync service`. They run a HTTP-API service, that the `ID Sync service` pushes updates to.
 
 The changelog ist in the `HISTORY <history>`_ file.
@@ -23,137 +23,11 @@ Architectural overview
 |diagram_overview|
 
 
-Interactions and components
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Installation
+------------
 
-|diagram_details|
-
-
-Development
------------
-
-Setup development environment::
-
-    $ cd ~/git/id-sync
-    $ make setup_devel_env
-    $ make install
-
-This will create a directory ``venv`` with a Python virtualenv with the app and all its dependencies in it. To use it, run::
-
-    $ . venv/bin/activate
-
-Run ``make`` without argument to see more useful commands::
-
-    $ make
-
-    clean                remove all build, test, coverage and Python artifacts
-    clean-build          remove build artifacts
-    clean-pyc            remove Python file artifacts
-    clean-test           remove test and coverage artifacts
-    setup_devel_env      setup development environment (virtualenv)
-    lint                 check style (requires Python interpreter activated from venv)
-    format               format source code (requires Python interpreter activated from venv)
-    test                 run tests with the Python interpreter from 'venv'
-    coverage             check code coverage with the Python interpreter from 'venv'
-    coverage-html        generate HTML coverage report
-    install              install the package to the active Python's site-packages
-    build-docker-img     build docker image locally quickly
-    build-docker-img-on-knut copy source to docker.knut, build and push docker image
-
-
-Build Docker image::
-
-    $ cd ~/git/id-sync
-    $ make build-docker-img
-
-The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::
-
-    $ docker run -p 127.0.0.1:8911:8911/tcp --name id_sync docker-test-upload.software-univention.de/id-sync:0.1.0
-
-Use ``docker run -d ...`` to let it run in the background. Use ``docker logs id_sync`` to see the stdout; ``docker stop id_sync`` and ``docker rm id_sync`` to stop and remove the running container.
-
-Replace version (in above command ``0.1.0``) with current version. See ``APP_VERSION`` in output at the start of the build process.
-
-
-When the container is started that way (not through the appcenter) it must be accessed through https://FQDN:8911/id-sync/api/v1/docs after stopping the firewall (``service univention-firewall stop``).
-
-To enter the running container run::
-
-    $ docker exec -it id_sync /bin/ash
-
-There you can use the virtual envs Python::
-
-    /id-sync # . venv/bin/activate
-
-    (venv) /id-sync # python
-    Python 3.7.4 (default, Aug  2 2019, 18:24:02)
-    [GCC 8.3.0] on linux
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> from id_sync import models
-
-    (venv) /id-sync # ipython
-    Python 3.7.4 (default, Aug  2 2019, 18:24:02)
-    Type 'copyright', 'credits' or 'license' for more information
-    IPython 7.8.0 -- An enhanced Interactive Python. Type '?' for help.
-
-    In [1]: from id_sync import models
-
-
-Install BB-API on sender for integration tests
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A HTTP-API is required for the integration tests (running in the container) to be able to create/modify/delete users in the host and the target systems::
-
-    $ ucr set bb/http_api/users/django_debug=yes bb/http_api/users/wsgi_server_capture_output=yes bb/http_api/users/wsgi_server_loglevel=debug bb/http_api/users/enable_session_authentication=yes
-    $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json /var/lib/ucs-school-import/configs/user_import.json
-    $ python -c 'import json; fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w"); config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"]; fp.seek(0); json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
-    $ echo -e "deb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/all/\ndeb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/amd64/" > /etc/apt/sources.list.d/30_BB.list
-    $ univention-install -y ucs-school-http-api-bb
-
-To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses and authentication tokens (To be executed on the sender system)::
-
-    $ /usr/share/pyshared/bb/http_api/users/manage.py shell -c "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)" > /var/www/bb-api-key_sender.txt
-    $ ssh IP_TRAEGER1 '/usr/share/pyshared/bb/http_api/users/manage.py shell -c "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)"' > /var/www/bb-api-key_traeger1.txt
-    $ ssh IP_TRAEGER2 '/usr/share/pyshared/bb/http_api/users/manage.py shell -c "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)"' > /var/www/bb-api-key_traeger2.txt
-    $ echo IP_TRAEGER1 > /var/www/bb-api-IP_traeger1.txt
-    $ echo IP_TRAEGER2 > /var/www/bb-api-IP_traeger2.txt
-
-Using devsync with running app container
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sync your working copy into the running container, enter it and restart the services::
-
-    [test VM] $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' "$(ucr get appcenter/apps/id-sync/container)"
-    → /var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged
-    [developer machine] ~/git/id-sync $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/id-sync/
-    [test VM] $ univention-app shell id-sync
-    [in container] $ /id-sync/venv/bin/pip3 install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
-    [in container] $ /etc/init.d/id-sync restart
-    [in container] $ /etc/init.d/id-sync-rest-api stop
-    [in container] $ /etc/init.d/id-sync-rest-api-dev start
-    #                       auto-reload HTTP-API ^^^^
-
-    [in container] $ src/schedule_user demo_teacher
-    # DEBUG: Searching LDAP for user with username 'demo_teacher'...
-    # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.
-    # DEBUG: Done.
-
-    [in container] $ . venv/bin/activate
-    [in container] (venv) $ cd src
-    [in container] (venv) $ python -m pytest -l -v
-
-
-Build release
--------------
-
-To upload ("push") a new Docker image to Univentions Docker registry (``docker-test.software-univention.de``), run::
-
-    $ cd ~/git/id-sync
-    $ make build-docker-img-on-knut
-
-
-Install
--------
+On the server system
+^^^^^^^^^^^^^^^^^^^^
 
 The app is currently only available in the test appcenter. Installation::
 
@@ -170,10 +44,16 @@ If they didn't get created, run::
     $ univention-run-join-scripts --run-scripts --force 50id-sync.inst
 
 
+On the target systems
+^^^^^^^^^^^^^^^^^^^^^
+
+A HTTP-API is required for the `ID Sync` app to be able to create/modify/delete users on the target systems. Currently only the BB-API is supported. Instructions for installation and configuration can be found in a later section.
+
+
 Update
 ------
 
-Updates are installed in one of the two usual UCS ways::
+Updates are installed in one of the two usual UCS ways. Either via UMC or on the command line::
 
     $ univention-upgrade
     $ univention-app upgrade id-sync
@@ -182,22 +62,21 @@ Updates are installed in one of the two usual UCS ways::
 Starting / Stopping services
 ----------------------------
 
-Both services (`ID Sync service` and `ID Sync REST API`) run in a Docker container. The container can be started/stopped by using the regular service facility of the host system::
+Both services (`ID Sync service` and `ID Sync HTTP API`) run in a Docker container. The container can be started/stopped by using the regular service facility of the host system::
 
     $ service docker-app-id-sync start
     $ service docker-app-id-sync status
     $ service docker-app-id-sync stop
 
-To restart individual services, init scripts `inside` the Docker container can be used::
+To restart individual services, init scripts `inside` the Docker container can be used. The ``univention-app`` program has a command that makes it easy to execute commands `inside` the Docker container::
 
-    $ univention-app shell id-sync
-    $ /etc/init.d/id-sync start  # status / stop (ID Sync service)
-    $ /etc/init.d/id-sync-rest-api start # status / stop (ID Sync REST API)
+    $ univention-app shell id-sync /etc/init.d/id-sync restart  # ID Sync service
+    $ univention-app shell id-sync /etc/init.d/id-sync-rest-api start # ID Sync HTTP API
 
 
 Configuration
 -------------
-The school authorities configuration should be done through the `ID Sync REST API`.
+The school authorities configuration must be done through the `ID Sync HTTP API`. Do not edit configuration files directly.
 
 * The UDM ``ucsschoolRecordUID`` property (a.k.a. UCS\@school ``record_uid`` property) should be synced to a UCS\@school system as ``record_uid``.
 * The UDM ``ucsschoolSourceUID`` property (a.k.a. UCS\@school ``source_uid`` property) should be synced to a UCS\@school system as ``source_uid``.
@@ -213,13 +92,11 @@ The school authorities configuration should be done through the `ID Sync REST AP
 
 See ``src/example_configs.json`` for an example.
 
-TODO: document what/how to map to "roles"
 
+ID Sync HTTP API
+----------------
 
-HTTP-API
---------
-
-A HTTP-API offers two resources:
+A HTTP-API of the `ID Sync` app offers two resources:
 
 * `queues`: monitoring of queues
 * `school_authorities`: configuration of school authorities
@@ -236,7 +113,7 @@ The Swagger UI page is especially helpful as it allows to send queries directly 
 Authentication
 ^^^^^^^^^^^^^^
 
-To use the API, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_ must be retrieved from ``https://FQDN/id-sync/api/token``. The token will be valid for a configurable amount of time (default 60 minutes), after which they must be renewed. To change the TTL, open the apps `app settings` in the app center.
+To use the API, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_ must be retrieved from ``https://FQDN/id-sync/api/token``. The token will be valid for a configurable amount of time (default 60 minutes), after which they must be renewed. To change the TTL, open the apps `app settings` in the UCS app center.
 
 Example ``curl`` command to retrieve a token::
 
@@ -244,13 +121,15 @@ Example ``curl`` command to retrieve a token::
 
 Only members of the group ``id-sync-admins`` are allowed to access the HTTP-API.
 
-The user ``Administrator`` is automatically added to this group for testing purposes. In production the regular admin user accounts should be used.
+The user ``Administrator`` is automatically added to this group for testing purposes. In production only the regular admin user accounts should be used.
 
 
 File locations
 --------------
 
-Nothing need to be backuped and restored before and after an app update, because all important data is persisted in files on volumes  mounted from the UCS host into the docker container.
+This section lists relevant directories and files. Configuration file *must not* be edited by hand. All configuration is done either trough the `app settings` in the UCS app center or through the `ID Sync HTTP API`.
+
+Nothing needs to be backuped and restored before and after an app update, because all important data is persisted in files on volumes mounted from the UCS host into the docker container.
 
 Logfiles
 ^^^^^^^^
@@ -277,10 +156,10 @@ Each school authority configuration has a queue associated.
 Queue files
 ^^^^^^^^^^^
 
-The listener on the UCS host creates a JSON file for each creation/modification/move/deletion of a user object.
+The LDAP listener process on the UCS host creates a JSON file for each creation/modification/move/deletion of a user object.
 Those JSON files are written to ``/var/lib/univention-appcenter/apps/id-sync/data/listener``. That is the directory of the `in queue`.
 
-The process handling the `in queue` copies files from it to a directory for each school authority that it can associate with the user account in the file.
+The process handling the `in queue` copies files from there to a directory for each school authority that it can associate with the user account in the file.
 Each `out queue` handles a directory below ``/var/lib/univention-appcenter/apps/id-sync/data/out_queues``.
 
 When a school authority configuration is deleted, its associated queue directory is moved to ``/var/lib/univention-appcenter/apps/id-sync/data/out_queues_trash``.
@@ -303,21 +182,54 @@ Example setting up a second school authority
 
 If we already have a school authority set up and want to basically copy its configuration in order to set up a second one we can do the following:
 
-First make sure the new school authority server has the package ucs-school-http-api-bb from the custumer repository installed and running.
+First make sure the new school authority server has the package ucs-school-http-api-bb from the customer repository installed and running. Configuration is described in a later section.
 
-First we want to retrieve the configuration for our old school authority. For this we open the HTTP-API Swagger UI ( https://FQDN/id-sync/api/v1/doc ) and authenticate ourselves. The button can be found at the top right corner of the page. Then we retrieve a list of the school authorities available using the ``GET /id-sync/api/v1/school_authorities`` tab, by clicking on ``Try it out`` and ``Execute``. In the response body we get a JSON list of the school authorities that are currently configured. We need to copy the one we want to replicate and save it for later. Under "POST /id-sync/api/v1/school_authorities" we can create the new school authority. Click `try it out` and insert the coped JSON object from before into the request body. Now we just have to alter the name, url, and password before executing the request. The url has to point to the new school authorities HTTP-API. The name can be chosen at your leisure and the password is the authentication token of the school authorities HTTP-API. The tab ``PATCH /id-sync/api/v1/school_authorities/{name}`` can be used to change an already existing configuration.
+Then we want to retrieve the configuration for our old school authority.
+For this we open the HTTP-API Swagger UI ( https://FQDN/id-sync/api/v1/doc ) and authenticate ourselves.
+The button can be found at the top right corner of the page.
+Then we retrieve a list of the school authorities available using the ``GET /id-sync/api/v1/school_authorities`` tab, by clicking on ``Try it out`` and ``Execute``.
+In the response body we get a JSON list of the school authorities that are currently configured.
+We need to copy the one we want to replicate and save it for later.
+Under "POST /id-sync/api/v1/school_authorities" we can create the new school authority.
+Click `try it out` and insert the coped JSON object from before into the request body.
+Now we just have to alter the name, url, and password before executing the request.
+The url has to point to the new school authorities HTTP-API.
+The name can be chosen at your leisure and the password is the authentication token of the school authorities HTTP-API (retrieved earlier).
+The tab ``PATCH /id-sync/api/v1/school_authorities/{name}`` can be used to change an already existing configuration.
 
-How the HTTP-API of the target school authority can be set is described in the following section. To retrieve a list of the extended attributes on the old school authority server one can use::
+To retrieve a list of the extended attributes on the old school authority server one can use::
 
     $ udm settings/extended_attribute list
+
+
+Installation of target HTTP-API
+-------------------------------
+
+On each target system run::
+
+    $ echo -e "deb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/all/\n\
+      deb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/amd64/" > \
+      /etc/apt/sources.list.d/30_BB.list
+    $ univention-install -y ucs-school-http-api-bb
+
+To allow the `ID Sync` app to access the APIs it needs an authentication token. On each target system run::
+
+    $ /usr/share/pyshared/bb/http_api/users/manage.py shell -c \
+      "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)"
+
+This will print the token for writing to the API to the screen. Copy and save it for later use.
 
 
 Configuration of target HTTP-API
 --------------------------------
 The password hashes for LDAP and Kerberos authentication are collectively transmitted in one JSON object to one target attribute.
-The target attributes name must be set in the school authority configuration attribute ``passwords_target_attribute``. The target system is responsible for handling the data.
+The target attributes name must be set in the school authority configuration attribute ``passwords_target_attribute``.
+The target system is responsible for handling the data.
 
-For UCS\@school target systems an extended attribute must be created and its name used in the import hook provided in ``target_systems/usr/share/ucs-school-import/pyhooks/handle_id_sync_pw.py``::
+For UCS\@school target systems two extended attributes must be created.
+The name of one (``id_sync_pw``) is used in the import hook `id_sync_password_hook.py <static/id_sync_password_hook.py>`_.
+If the extended attributes name is not ``id_sync_pw``, the hook file ``id_sync_password_hook.py`` must be edited, as well as the school authority configuration and the BB-API configuration file (``/var/lib/ucs-school-import/configs/user_import.json``).
+To install the extended attributes run::
 
     $ udm settings/extended_attribute create \
         --ignore_exists \
@@ -372,8 +284,8 @@ For UCS\@school target systems an extended attribute must be created and its nam
         --set fullWidth=1 \
         --set disableUDMWeb=0
 
-    $ cp target_systems/usr/share/ucs-school-import/pyhooks/handle_id_sync_pw.py \
-        /usr/share/ucs-school-import/pyhooks/
+    $ wget https://SENDER-FQDN/id-sync/api/v1/static/id_sync_password_hook.py -O
+        /usr/share/ucs-school-import/pyhooks/id_sync_password_hook.py
 
 
 Edit ``/var/lib/ucs-school-import/configs/user_import.json`` and add the name of the `passwords_target_attribute` (``id_sync_pw``) to ``mapped_udm_properties`` (and ``mapped_udm_properties`` to ``configuration_checks``)::
@@ -381,46 +293,34 @@ Edit ``/var/lib/ucs-school-import/configs/user_import.json`` and add the name of
     "configuration_checks": ["defaults", "mapped_udm_properties"],
     "mapped_udm_properties": ["phone", "e-mail", "id_sync_pw"]
 
+The ``mapped_udm_properties`` setting lists the names of UDM properties that should be available in the API.
+The example configuration above can be created with the following command::
 
-**Attention**: if the password target property is not named ``id_sync_pw``, the constant at the top of the import hook (``handle_id_sync_pw.py``) must be modified accordingly (as well as the school authority configuration and the BB-HTTP-API configuration).
-
-
-Tests
------
-
-Unit tests are executed as part of the build process. To start them manually in the installed apps running Docker container, run::
-
-    root@ucs-host:# univention-app shell id-sync
-    /id-sync # cd src/
-    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v tests/unittests
-    /id-sync/src # exit
-
-To run integration tests (*not safe, will modify source and target systems!*), run::
-
-    root@ucs-host:# univention-app shell id-sync
-    /id-sync # cd src/
-    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v tests/integration_tests
-    /id-sync/src # exit
+   $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json \
+      /var/lib/ucs-school-import/configs/user_import.json
+   $ python -c 'import json; fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w"); \
+      config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; \
+      config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"]; fp.seek(0); \
+      json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
 
 
 Plugins
 -------
 
-The code of the `ID Sync` app can be adapted through plugins. The `pluggy`_ plugin system is used to define, implement and call plugins. To share code between plugins additional Python packages can be installed. The following demonstrates a simple example of a custom Python packages and a plugin for `ID Sync`.
+The code of the `ID Sync` app can be adapted through plugins.
+The `pluggy`_ plugin system is used to define, implement and call plugins.
+To share code between plugins additional Python packages can be installed.
+The following demonstrates a simple example of a custom Python packages and a plugin for `ID Sync`.
 
 All plugin *specifications* (function signatures) are defined in ``src/id_sync/plugins.py``.
 
 The directory structure for custom plugins and packages can be found in the host system below ``/var/lib/univention-appcenter/apps/id-sync/conf/``::
 
     /var/lib/univention-appcenter/apps/id-sync/conf/plugins/
-    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/custom/
-    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/custom/packages/
-    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/custom/plugins/
-    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/default/
-    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/default/packages/
-    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/default/plugins/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/packages/
+    /var/lib/univention-appcenter/apps/id-sync/conf/plugins/plugins/
 
-Do **not** add, edit or remove files below ``.../plugins/default``. Those are supplied by Univention, are required for proper operations and will be overwritten upon update.
+The app is released with default plugins, that implement a default version for all specifications found in ``src/id_sync/plugins.py``.
 
 An example plugin specification::
 
@@ -433,22 +333,20 @@ An example plugin specification::
 A directory structure for a custom plugin ``dummy`` and custom package ``example_package`` below ``/var/lib/univention-appcenter/apps/id-sync/conf/``::
 
     .../plugins/
-    .../plugins/custom
-    .../plugins/custom/packages
-    .../plugins/custom/packages/example_package
-    .../plugins/custom/packages/example_package/__init__.py
-    .../plugins/custom/packages/example_package/example_module.py
-    .../plugins/custom/plugins
-    .../plugins/custom/plugins/dummy.py
-    .../plugins/default/...
+    .../plugins/packages
+    .../plugins/packages/example_package
+    .../plugins/packages/example_package/__init__.py
+    .../plugins/packages/example_package/example_module.py
+    .../plugins/plugins
+    .../plugins/plugins/dummy.py
 
 
-Content of ``plugins/custom/plugins/dummy.py``::
+Content of ``plugins/plugins/dummy.py``::
 
     #
     # An example plugin that will be usable as "plugin_manager.hook.dummy_func()".
     # It uses a class from a module in a custom package:
-    # plugins/custom/packages/example_package/example_module.py
+    # plugins/packages/example_package/example_module.py
     #
     # The plugin specifications are in src/id_sync/plugins.py
     #
@@ -479,12 +377,12 @@ Content of ``plugins/custom/plugins/dummy.py``::
     # register plugins
     plugin_manager.register(DummyPlugin())
 
-Content of ``plugins/custom/packages/example_package/example_module.py``::
+Content of ``plugins/packages/example_package/example_module.py``::
 
     #
     # An example Python module that will be loadable as "example_package.example_module"
-    # if stored in 'plugins/custom/packages/example_package/example_module.py'.
-    # Do not forget to create 'plugins/custom/packages/example_package/__init__.py'.
+    # if stored in 'plugins/packages/example_package/example_module.py'.
+    # Do not forget to create 'plugins/packages/example_package/__init__.py'.
     #
 
     from id_sync.utils import ConsoleAndFileLogging
@@ -503,25 +401,14 @@ When the app starts, all plugins will be discovered and logged::
     ... INFO  [id_sync.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
 
 
-TODOs
------
-
-* Fix BB-API:
-
-  * search with unknown property returns all objects (``/api-bb/users/?ucsschoolSourceUID=TESTID&foobar=abc -> all user objects``)
-
-
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
     :alt: GNU AGPL V3 license
     :target: https://www.gnu.org/licenses/agpl-3.0
 .. |python| image:: https://img.shields.io/badge/python-3.7+-blue.svg
     :alt: Python 3.7+
     :target: https://www.python.org/downloads/release/python-373/
-.. |code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :alt: Code style: black
-    :target: https://github.com/python/black
 .. |diagram_overview| image:: /id-sync/api/v1/static/M2M-Sync_overview.png
     :alt: Diagram with an overview of the master 2 master sync
-.. |diagram_details| image:: /id-sync/api/v1/static/M2M-Sync_details.png
-    :alt: Diagram with the technical details of the master 2 master sync
+.. |id_sync_password_hook.py| image:: /id-sync/api/v1/static/id_sync_password_hook.py
+    :alt: The UCS\@school import hook.
 .. _pluggy: https://pluggy.readthedocs.io/

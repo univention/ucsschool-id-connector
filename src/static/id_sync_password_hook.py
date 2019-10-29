@@ -3,7 +3,10 @@
 """
 UCS@school import hook to save password hashes sent by the ID Sync app.
 
-Install by copying this file to /usr/share/ucs-school-import/pyhooks.
+Install it, by copying this file to /usr/share/ucs-school-import/pyhooks.
+If the extended attribute to receive the password hashes is not called
+`id_sync_pw`, change the name in the `PASSWORD_TARGET_ATTRIBUT` constant
+in line 17.
 """
 
 import base64
