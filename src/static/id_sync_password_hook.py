@@ -11,8 +11,8 @@ in line 17.
 
 import base64
 import datetime
-from ucsschool.importer.utils.user_pyhook import UserPyHook
 
+from ucsschool.importer.utils.user_pyhook import UserPyHook
 
 PASSWORD_TARGET_ATTRIBUT = "id_sync_pw"
 

@@ -62,12 +62,12 @@ setup_devel_env: ## setup development environment (virtualenv)
 
 lint: ## check style (requires Python interpreter activated from venv)
 	venv/bin/isort --check-only --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --recursive src src/queue_management src/schedule_user
-	venv/bin/black --check src src/queue_management src/schedule_user
+	venv/bin/black --check --target-version py37 --exclude src/static/id_sync_password_hook.py src src/queue_management src/schedule_user
 	venv/bin/flake8 --max-line-length=90 --ignore=W503 src src/queue_management src/schedule_user
 
 format: ## format source code (requires Python interpreter activated from venv)
 	venv/bin/isort --apply --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --recursive src src/queue_management src/schedule_user
-	venv/bin/black --target-version py37 src src/queue_management src/schedule_user
+	venv/bin/black --target-version py37 --exclude src/static/id_sync_password_hook.py src src/queue_management src/schedule_user
 
 test: ## run tests with the Python interpreter from 'venv'
 	. venv/bin/activate && cd src && python -m pytest -l -v tests/unittests
