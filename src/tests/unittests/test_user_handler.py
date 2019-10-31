@@ -41,7 +41,7 @@ fake = Faker()
 
 @pytest.mark.asyncio
 async def test_map_attributes(
-    listener_user_add_modify_object, school_authority_configuration
+    listener_user_add_modify_object, school_authority_configuration, patch_environ
 ):
     # TODO: use SchoolAuthorityConfiguration from integration_tests fixture
     s_a_config = school_authority_configuration()

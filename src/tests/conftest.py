@@ -436,8 +436,15 @@ def db_path():
 
 
 @pytest.fixture
+def patch_environ(monkeypatch):
+    monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
+    monkeypatch.setenv("ldap_server_name", "localhost")
+    monkeypatch.setenv("ldap_server_port", "7389")
+
+
+@pytest.fixture
 def mock_plugins(
-    monkeypatch, mock_plugin_impls, mock_plugin_spec, user_passwords_object, db_path
+    patch_environ, mock_plugin_impls, mock_plugin_spec, user_passwords_object, db_path
 ):
     mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
     fake_user_passwords_object = user_passwords_object()
@@ -445,10 +452,6 @@ def mock_plugins(
     class LDAPAccess(MagicMock):
         async def get_passwords(self, username):
             return fake_user_passwords_object
-
-    monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
-    monkeypatch.setenv("ldap_server_name", "localhost")
-    monkeypatch.setenv("ldap_server_port", "7389")
 
     with patch.object(
         id_sync.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
