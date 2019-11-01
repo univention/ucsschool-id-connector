@@ -78,7 +78,7 @@ def wait_for_status_code(
     headers=None,
     json=None,
     expected_json: Dict[str, Any] = None,
-    timeout=10,
+    timeout=60,
     raise_assert=True,
 ) -> Tuple[bool, Optional[requests.Response]]:
     """
