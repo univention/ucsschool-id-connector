@@ -32,7 +32,7 @@ import datetime
 import os
 import shutil
 from pathlib import Path
-from typing import AsyncIterator, Dict, Iterator, List, Optional, Set, TypeVar
+from typing import AsyncIterator, Coroutine, Dict, Iterator, List, Optional, Set, TypeVar
 
 import aiofiles
 import ujson
@@ -249,10 +249,15 @@ class FileQueue:
     async def save_listener_file(self, obj: ListenerObject, path: Path) -> None:
         try:
             hook_coros = plugin_manager.hook.save_listener_object(obj=obj, path=path)
-            for coro in hook_coros:
-                if await coro:
-                    break
-            else:
+            success = False
+            for coro in hook_coros:  # type: Coroutine
+                if success:
+                    # Let the coroutine clean itself up and exit. Prevents
+                    # "RuntimeWarning: coroutine ... was never awaited."
+                    coro.close()
+                else:
+                    success |= await coro
+            if not success:
                 raise ListenerSavingError(
                     f"No 'save_listener_object' hook saved {obj!r}."
                 )

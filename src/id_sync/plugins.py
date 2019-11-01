@@ -68,7 +68,7 @@ class ListenerObjectHandler:
         """
 
     @hook_spec
-    def save_listener_object(self, obj: ListenerObject, path: Path) -> bool:
+    async def save_listener_object(self, obj: ListenerObject, path: Path) -> bool:
         """
         Store `obj` JSON encoded into file at `path`.
 
