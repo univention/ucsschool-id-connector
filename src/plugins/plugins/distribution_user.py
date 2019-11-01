@@ -39,7 +39,7 @@ from id_sync.queues import InQueue
 from id_sync.utils import ConsoleAndFileLogging
 
 
-class UserDistribution:
+class UserDistributionImpl:
     def __init__(self):
         self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__)
 
@@ -88,11 +88,11 @@ class UserDistribution:
                 s_a_names.add(in_queue.school_authority_mapping[school])
             except KeyError:
                 self.logger.error(
-                    "School from 'old_data_ missing in school authority"
+                    "School from 'old_data' missing in school authority"
                     " mapping, ignoring: %r",
                     school,
                 )
         return s_a_names
 
 
-plugin_manager.register(UserDistribution())
+plugin_manager.register(UserDistributionImpl())

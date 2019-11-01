@@ -53,7 +53,7 @@ from id_sync.plugins import hook_impl, plugin_manager
 from id_sync.utils import ConsoleAndFileLogging
 
 
-class ListenerObjectHandler:
+class ListenerObjectHandlerImpl:
     """
     Base class for handling the loading and saving of listener files with
     groups/group and users/user objects.
@@ -210,7 +210,7 @@ class ListenerObjectHandler:
             return False
 
 
-class ListenerUserObjectHandler(ListenerObjectHandler):
+class ListenerUserObjectHandlerImpl(ListenerObjectHandlerImpl):
     """Handle loading and saving of listener files with users/user objects."""
 
     udm_object_type = "users/user"
@@ -252,7 +252,7 @@ class ListenerUserObjectHandler(ListenerObjectHandler):
         return old_data_res or bool(obj.user_passwords)
 
 
-class ListenerGroupObjectHandler(ListenerObjectHandler):
+class ListenerGroupObjectHandlerImpl(ListenerObjectHandlerImpl):
     """Handle loading and saving of listener files with groups/group objects."""
 
     udm_object_type = "groups/group"
@@ -266,5 +266,5 @@ class ListenerGroupObjectHandler(ListenerObjectHandler):
 
 
 # hooks will be executed in the reversed order they were registered
-plugin_manager.register(ListenerGroupObjectHandler())
-plugin_manager.register(ListenerUserObjectHandler())
+plugin_manager.register(ListenerGroupObjectHandlerImpl())
+plugin_manager.register(ListenerUserObjectHandlerImpl())

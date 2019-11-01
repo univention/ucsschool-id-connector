@@ -42,7 +42,7 @@ from id_sync.user_handler import UserScheduler
 from id_sync.utils import ConsoleAndFileLogging, class_dn_regex
 
 
-class GroupBBDistribution:
+class GroupBBDistributionImpl:
     """Distribute school classes"""
 
     def __init__(self):
@@ -101,4 +101,4 @@ class GroupBBDistribution:
         return []
 
 
-plugin_manager.register(GroupBBDistribution())
+plugin_manager.register(GroupBBDistributionImpl())

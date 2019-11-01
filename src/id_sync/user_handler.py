@@ -493,7 +493,9 @@ class UserHandler:
             try:
                 return api_schools_cache[school]
             except KeyError:
-                pass
+                self.logger.warning(
+                    "Ignoring unknown OU %r in 'school[s]' of %r.", school, obj
+                )
         else:
             raise UnknownSchool(
                 f"None of the users schools ({schools!r}) are known on the "
@@ -513,7 +515,9 @@ class UserHandler:
             try:
                 res.append(api_schools_cache[school])
             except KeyError:
-                pass
+                self.logger.warning(
+                    "Ignoring unknown OU %r in 'school[s]' of %r.", school, obj
+                )
         if res:
             return res
         else:
@@ -532,8 +536,15 @@ class UserHandler:
         res = defaultdict(list)
         for group_dn in groups_dns:
             group_match = self.class_dn_regex.match(group_dn)
-            if group_match and group_match["ou"] in known_schools:
-                res[group_match["ou"]].append(group_match["name"])
+            if group_match:
+                if group_match["ou"] in known_schools:
+                    res[group_match["ou"]].append(group_match["name"])
+                else:
+                    self.logger.warning(
+                        "Ignoring unknown OU %r in 'school_classes' of %r.",
+                        group_match["ou"],
+                        obj,
+                    )
         return res
 
     @staticmethod

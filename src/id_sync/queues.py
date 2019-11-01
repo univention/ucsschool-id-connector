@@ -309,12 +309,12 @@ class InQueue(FileQueue):
 
         changed = False
         if isinstance(obj, ListenerAddModifyObject):
-            result_coros = plugin_manager.hook.preprocess_add_mod_object(obj=obj)
+            result_coros: List[Coroutine] = plugin_manager.hook.preprocess_add_mod_object(obj=obj)
             # await all elements of list of coroutine objects
             changed |= any([await coro for coro in result_coros])
 
         if isinstance(obj, ListenerRemoveObject):
-            result_coros = plugin_manager.hook.preprocess_remove_object(obj=obj)
+            result_coros: List[Coroutine] = plugin_manager.hook.preprocess_remove_object(obj=obj)
             changed |= any([await coro for coro in result_coros])
 
         if changed:
