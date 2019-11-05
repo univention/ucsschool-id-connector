@@ -59,6 +59,7 @@ def http_request():
     def _func(
         method: str,
         url: str,
+        params: Dict[str, str] = None,
         headers: Dict[str, str] = None,
         json_data: Dict[str, Any] = None,
         verify: bool = False,
@@ -67,7 +68,9 @@ def http_request():
         if not verify:
             requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
         req_meth = getattr(requests, method)
-        response = req_meth(url, headers=headers, json=json_data, verify=verify)
+        response = req_meth(
+            url, params=params, headers=headers, json=json_data, verify=verify
+        )
         try:
             msg = response.json()
         except JSONDecodeError:

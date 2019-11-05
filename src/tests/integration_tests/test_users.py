@@ -27,8 +27,9 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import copy
 import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple
 from urllib.parse import urlsplit
 
 import faker
@@ -44,7 +45,9 @@ except ImportError:
 fake = faker.Faker()
 
 
-def compare_user(source: Dict[str, Any], other: Dict[str, Any], to_check=()):
+def compare_user(
+    source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None
+):
     """
     This function compares two dictionaries. Specifically it checks if all
     key-value pairs from the source also exist in the other dictionary. It
@@ -55,16 +58,16 @@ def compare_user(source: Dict[str, Any], other: Dict[str, Any], to_check=()):
     :param other: The dictionary to check against the original source
     :param to_check: The keys to check.
     """
-    if len(to_check) == 0:
-        to_check = [
-            "disabled",
-            "firstname",
-            "lastname",
-            "name",
-            "record_uid",
-            "school_classes",
-            "source_uid",
-        ]
+    to_check = to_check or (
+        "name",
+        "firstname",
+        "lastname",
+        "birthday",
+        "disabled",
+        "record_uid",
+        "school_classes",
+        "source_uid",
+    )
     for key in to_check:
         assert source[key] == other[key]
 
@@ -136,6 +139,24 @@ def wait_for_status_code(
     return False, response
 
 
+def filter_ous(
+    user: Dict[str, Any], auth: str, mapping: Dict[str, str]
+) -> Dict[str, Any]:
+    """
+    Remove OUs from `users` 'schools' and 'school_classes' attributes,
+    that belong to auth other than `auth`.
+    """
+    result_user = copy.deepcopy(user)
+    for school_url in user["schools"]:
+        school = school_url.rstrip("/").split("/")[-1]
+        if mapping[school] != auth:
+            result_user["schools"].remove(school_url)
+    for class_ou in user["school_classes"].keys():
+        if mapping[class_ou] != auth:
+            del result_user["school_classes"][class_ou]
+    return result_user
+
+
 @pytest.mark.asyncio
 async def test_create_user(
     make_school_authority,
@@ -145,7 +166,10 @@ async def test_create_user(
     save_mapping,
     create_schools,
     bb_api_url,
+    docker_hostname,
     check_password,
+    http_request,
+    host_bb_token,
 ):
     """
     Tests if id_sync distributes a newly created User to the correct school
@@ -163,10 +187,23 @@ async def test_create_user(
         ou_auth2: school_auth2.name,
     }
     await save_mapping(mapping)
-    print(f"Mapping: {mapping!r}")
-    for ous in ((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)):
-        print(f"Creating user in ous={ous!r}...")
-        user = make_host_user(ous=ous)
+    print(f"===> Mapping: {mapping!r}")
+    print(f"===> ou_auth1  : OU {ou_auth1!r} @ auth {school_auth1.name!r}")
+    print(f"===> ou_auth1_2: OU {ou_auth1_2!r} @ auth {school_auth1.name!r}")
+    print(f"===> ou_auth2  : OU {ou_auth2!r} @ auth {school_auth2.name!r}")
+    for num, ous in enumerate(
+        ((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)), start=1
+    ):
+        print(f"===> Case {num}/3: Creating user in ous={ous!r}...")
+        user: Dict[str, Any] = make_host_user(ous=ous)
+        # verify user on source system
+        http_request(
+            "get",
+            bb_api_url(docker_hostname, "users", user["name"]),
+            headers=req_headers(token=host_bb_token, content_type="application/json"),
+            verify=False,
+            expected_statuses=(200,),
+        )
         check_password(user["name"], user["password"], docker_hostname)
         auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
         auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
@@ -183,9 +220,10 @@ async def test_create_user(
             ),
         )
         user_remote = result[1].json()
-        # TODO: check all attributes!
         print(f"Found user {user_remote['name']!r}, checking its attributes...")
-        compare_user(user, user_remote, ["firstname"])
+
+        expected_target_user1 = filter_ous(user, school_auth1.name, mapping)
+        compare_user(expected_target_user1, user_remote)
         check_password(user["name"], user["password"], urlsplit(auth1_url).netloc)
         if ou_auth2 in ous:
             print(f"User should also be in OU2 ({ou_auth2!r}), checking...")
@@ -199,8 +237,8 @@ async def test_create_user(
                 ),
             )
             user_remote = result[1].json()
-            # TODO: check all attributes!
-            compare_user(user, user_remote, ["firstname"])
+            expected_target_user2 = filter_ous(user, school_auth2.name, mapping)
+            compare_user(expected_target_user2, user_remote)
             check_password(user["name"], user["password"], urlsplit(auth2_url).netloc)
         else:
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
@@ -378,8 +416,8 @@ async def test_modify_user(
         json_data=new_value,
     )
     user_on_host = response.json()
-    assert user_on_host["disabled"] == new_value["disabled"]
-    # Check if user was modified
+    compare_user(new_value, user_on_host, new_value.keys())
+    # Check if user was modified on target host
     time.sleep(10)
     result = wait_for_status_code(
         requests.get,
@@ -391,10 +429,7 @@ async def test_modify_user(
         ),
     )
     remote_user = result[1].json()
-    assert remote_user["disabled"] == new_value["disabled"]
-    assert remote_user["firstname"] == new_value["firstname"]
-    assert remote_user["lastname"] == new_value["lastname"]
-    assert remote_user["birthday"] == new_value["birthday"]
+    compare_user(user_on_host, remote_user)
 
 
 @pytest.mark.asyncio
