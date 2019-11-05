@@ -28,12 +28,13 @@
 # <http://www.gnu.org/licenses/>.
 
 import asyncio
+import os
 import random
 import shutil
 import string
 from functools import partial
 from pathlib import Path
-from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
+from tempfile import mkdtemp, mkstemp
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
@@ -49,7 +50,6 @@ import id_sync.plugins
 import id_sync.utils
 
 fake = Faker()
-
 
 DEFAULT_DUMMY_PLUGIN = """
 from id_sync.utils import ConsoleAndFileLogging
@@ -89,11 +89,77 @@ class ExampleTestClass:
 """
 
 
+@pytest.fixture
+def setup_environ(monkeypatch):  # pragma: no cover
+    """
+    Monkey patch environment variables.
+    Required for running unittests on outside Docker container (on developer
+    machine).
+    """
+    if "docker_host_name" not in os.environ:
+        monkeypatch.setenv("docker_host_name", "localhost")
+    if "ldap_base" not in os.environ:
+        monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
+    if "ldap_server_name" not in os.environ:
+        monkeypatch.setenv("ldap_server_name", "localhost")
+    if "ldap_server_port" not in os.environ:
+        monkeypatch.setenv("ldap_server_port", "7389")
+
+
+@pytest.fixture(scope="session")
+def temp_dir_session():
+    temp_dirs = []
+
+    def _func(**mkdtemp_kwargs) -> Path:
+        res = mkdtemp(**mkdtemp_kwargs)
+        temp_dirs.append(res)
+        return Path(res)
+
+    yield _func
+
+    for td in temp_dirs:
+        shutil.rmtree(td)
+
+
+@pytest.fixture
+def temp_dir_func():
+    temp_dirs = []
+
+    def _func(**mkdtemp_kwargs) -> Path:
+        res = mkdtemp(**mkdtemp_kwargs)
+        temp_dirs.append(res)
+        return Path(res)
+
+    yield _func
+
+    for td in temp_dirs:
+        shutil.rmtree(td)
+
+
+@pytest.fixture
+def temp_file_func():
+    temp_files: List[Path] = []
+
+    def _func(**mkstemp_kwargs) -> Path:
+        fd, res = mkstemp(**mkstemp_kwargs)
+        os.close(fd)
+        temp_files.append(Path(res))
+        return Path(res)
+
+    yield _func
+
+    for tf in temp_files:
+        try:
+            tf.unlink()
+        except FileNotFoundError:
+            pass
+
+
 # Monkey patch get_logger() for the whole test session
 @pytest.fixture(scope="session")
-def setup_logging():
+def setup_logging(temp_dir_session):
     ori_get_logger = id_sync.utils.ConsoleAndFileLogging.get_logger
-    tmp_log_path = Path(mkdtemp())
+    tmp_log_path = temp_dir_session()
 
     def utils_get_logger(
         name: str = None, path: Path = id_sync.constants.LOG_FILE_PATH_QUEUES
@@ -105,7 +171,21 @@ def setup_logging():
     with patch("id_sync.utils.ConsoleAndFileLogging.get_logger", utils_get_logger):
         yield
     id_sync.utils.ConsoleAndFileLogging.get_logger = ori_get_logger
-    shutil.rmtree(str(tmp_log_path))
+
+
+class UserFactory(factory.Factory):
+    class Meta:
+        model = id_sync.models.User
+
+    username = factory.Faker("user_name")
+    full_name = factory.Faker("name")
+    disabled = False
+    dn = factory.LazyFunction(
+        lambda: f"uid={fake.first_name()},cn=users,"
+        f"dc={fake.first_name()},"
+        f"dc={fake.first_name()}"
+    )
+    attributes = factory.Dict({"entryUUID": factory.List([factory.Faker("uuid4")])})
 
 
 class UserPasswordsFactory(factory.Factory):
@@ -319,7 +399,7 @@ def listener_user_add_modify_object(listener_dump_user_object):
 
 @pytest.fixture
 def school_authority_configuration():
-    def _func(**kwargs):
+    def _func(**kwargs) -> id_sync.models.SchoolAuthorityConfiguration:
         return SchoolAuthorityConfigurationFactory(**kwargs)
 
     return _func
@@ -374,10 +454,10 @@ class DummyPluginSpec:
 
 
 @pytest.fixture(scope="session")
-def mock_plugin_impls():
+def mock_plugin_impls(temp_dir_session):
     # replace /var/lib/univention-appcenter/apps/id-sync with path below /tmp
     # and /id-sync/src with ../..
-    tmp_dir = Path(mkdtemp(dir="/tmp"))
+    tmp_dir = temp_dir_session()
     default_package_dir = Path(__file__).parent.parent / "plugins/packages"
     custom_package_base_dir = tmp_dir / "plugins/packages"
     custom_package_base_dir.mkdir(parents=True)
@@ -411,7 +491,6 @@ def mock_plugin_impls():
 
     id_sync.plugins.plugin_manager.unregister("DummyPlugin")
     id_sync.plugins.plugin_manager.unregister("DefaultDummyPlugin")
-    shutil.rmtree(tmp_dir)
     default_plugin_path.unlink()
     for path in (default_plugin_dir / "__pycache__").glob(
         f"{default_plugin_name}.*.pyc"
@@ -429,29 +508,38 @@ def mock_plugin_spec():
 
 
 @pytest.fixture(scope="session")
-def db_path():
-    path = mkdtemp(dir="/tmp")
-    yield Path(path)
-    shutil.rmtree(path)
+def db_path(temp_dir_session):
+    """use same path for DB in all tests"""
+    return temp_dir_session()
 
 
-@pytest.fixture
-def patch_environ(monkeypatch):
-    monkeypatch.setenv("ldap_base", "dc=foo,dc=bar")
-    monkeypatch.setenv("ldap_server_name", "localhost")
-    monkeypatch.setenv("ldap_server_port", "7389")
+@pytest.fixture(scope="session")
+def ldap_access_mock():
+    user = UserFactory()
+    password = UserPasswordsFactory()
+
+    class LDAPAccess(MagicMock):
+        _user = user
+        _password = password
+
+        async def get_user(self, *args, **kwargs):
+            return user
+
+        async def get_passwords(self, username):
+            return password
+
+    return LDAPAccess()
 
 
 @pytest.fixture
 def mock_plugins(
-    patch_environ, mock_plugin_impls, mock_plugin_spec, user_passwords_object, db_path
+    mock_plugin_impls,
+    mock_plugin_spec,
+    user_passwords_object,
+    db_path,
+    ldap_access_mock,
 ):
     mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
-    fake_user_passwords_object = user_passwords_object()
-
-    class LDAPAccess(MagicMock):
-        async def get_passwords(self, username):
-            return fake_user_passwords_object
 
     with patch.object(
         id_sync.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
@@ -460,11 +548,11 @@ def mock_plugins(
     ), patch.object(
         id_sync.constants, "OLD_DATA_DB_PATH", db_path
     ), patch(
-        "id_sync.ldap_access.LDAPAccess", LDAPAccess
+        "id_sync.ldap_access.LDAPAccess", ldap_access_mock
     ):
         id_sync.plugin_loader.load_plugins()
 
-    yield mock_plugin_impls, db_path, fake_user_passwords_object
+    yield mock_plugin_impls, db_path
 
 
 @pytest.fixture(scope="session")
@@ -478,24 +566,28 @@ def example_user_remove_json_path_real():
 
 
 @pytest.fixture
-def example_user_json_path_copy(example_user_json_path_real):
+def example_user_json_path_copy(example_user_json_path_real, temp_file_func):
     def _func(temp_dir):
-        with NamedTemporaryFile(
-            delete=False, dir=str(temp_dir), suffix=".json"
-        ) as fpw, open(example_user_json_path_real, "rb") as fpr:
+        path_of_copy = temp_file_func(dir=str(temp_dir), suffix=".json")
+        with open(path_of_copy, "w") as fpw, open(
+            example_user_json_path_real, "r"
+        ) as fpr:
             fpw.write(fpr.read())
             fpw.flush()
-        return Path(fpw.name)
+        return path_of_copy
 
     return _func
 
 
 @pytest.fixture
-def example_user_remove_json_path_copy(example_user_remove_json_path_real):
+def example_user_remove_json_path_copy(
+    example_user_remove_json_path_real, temp_file_func
+):
     def _func(temp_dir):
-        with NamedTemporaryFile(
-            delete=False, dir=str(temp_dir), suffix=".json"
-        ) as fpw, open(example_user_remove_json_path_real, "rb") as fpr:
+        path_of_copy = temp_file_func(dir=str(temp_dir), suffix=".json")
+        with open(path_of_copy, "w") as fpw, open(
+            example_user_remove_json_path_real, "r"
+        ) as fpr:
             fpw.write(fpr.read())
             fpw.flush()
         return Path(fpw.name)

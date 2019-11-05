@@ -39,7 +39,7 @@ from urllib3.exceptions import InsecureRequestWarning
 
 try:
     from simplejson.errors import JSONDecodeError
-except ImportError:
+except ImportError:  # pragma: no cover
     JSONDecodeError = ValueError
 
 fake = faker.Faker()
@@ -118,7 +118,7 @@ def wait_for_status_code(
         response = method(url, headers=headers, json=json, verify=False)
         try:
             json_result = response.json()
-        except JSONDecodeError:
+        except JSONDecodeError:  # pragma: no cover
             json_result = {}
         msg = (
             f"Status {None if response is None else response.status_code} "
@@ -134,9 +134,9 @@ def wait_for_status_code(
             f"json={expected_json!r}... sleeping..."
         )
         time.sleep(1)
-    if raise_assert:
+    if raise_assert:  # pragma: no cover
         raise AssertionError(msg)
-    return False, response
+    return False, response  # pragma: no cover
 
 
 def filter_ous(

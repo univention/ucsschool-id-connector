@@ -550,6 +550,8 @@ class UserHandler:
                         group_match["ou"],
                         obj,
                     )
+        res = dict(res.items())
+        self.logger.debug("User %r has school_classes: %r.", obj.username, res)
         return res
 
     @staticmethod

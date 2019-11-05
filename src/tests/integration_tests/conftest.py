@@ -46,7 +46,7 @@ from id_sync.utils import get_ucrv
 
 try:
     from simplejson.errors import JSONDecodeError
-except ImportError:
+except ImportError:  # pragma: no cover
     JSONDecodeError = ValueError
 
 
@@ -340,7 +340,7 @@ async def make_school_authority(
         else:
             raise AssertionError(
                 f"SchoolAuthorityConfiguration(name={name!r}) was not saved."
-            )
+            )  # pragma: no cover
         out_queue_dir = OUT_QUEUE_TOP_DIR / name
         assert out_queue_dir.exists()
 
@@ -361,7 +361,7 @@ async def make_school_authority(
                 raise AssertionError(
                     f"SchoolAuthorityConfiguration(name={school_authority_name!r})"
                     f" was not deleted."
-                )
+                )  # pragma: no cover
         out_queue_dir = OUT_QUEUE_TOP_DIR / school_authority_name
         assert not out_queue_dir.exists()
 

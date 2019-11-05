@@ -46,7 +46,7 @@ def load_plugins() -> None:
     logger = ConsoleAndFileLogging.get_logger(__name__)
     for package_dir in PLUGIN_PACKAGE_DIRS:
         logger.debug("Adding directory to Python path: '%s'...", package_dir)
-        if not package_dir.exists():
+        if not package_dir.exists():  # pragma: no cover
             package_dir.mkdir(mode=0o755, parents=True)
             with (package_dir / "README.txt").open("w") as fp:
                 fp.write("This directory will be added to the PYTHONPATH / sys.path.\n")
@@ -54,7 +54,7 @@ def load_plugins() -> None:
             sys.path.append(str(package_dir))
     for plugin_dir in PLUGIN_DIRS:
         logger.debug("Looking for plugins in '%s'...", plugin_dir)
-        if not plugin_dir.exists():
+        if not plugin_dir.exists():  # pragma: no cover
             plugin_dir.mkdir(mode=0o755, parents=True)
             with (plugin_dir / "README.txt").open("w") as fp:
                 fp.write(

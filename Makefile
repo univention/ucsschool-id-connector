@@ -73,6 +73,7 @@ test: ## run tests with the Python interpreter from 'venv'
 	. venv/bin/activate && cd src && python -m pytest -l -v tests/unittests
 
 src/.coverage: src/*.json src/*.py src/*/*.py
+	rm -fv src/tests/integration_tests/auth-school-mapping.json
 	. venv/bin/activate && cd src && coverage run --source tests,id_sync -m pytest || true
 	. venv/bin/activate && cd src && coverage report -m
 
