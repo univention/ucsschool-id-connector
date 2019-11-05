@@ -61,7 +61,7 @@ async def test_map_attributes(
     school = [ou for ou in user_obj.schools if ou in user_obj.dn][0]
     school_uri = (await user_handler.api_schools_cache)[school]
     assert res == {
-        "disabled": user_obj.object["disabled"],
+        "disabled": user_obj.object["disabled"] == "1",
         "firstname": user_obj.object["firstname"],
         "lastname": user_obj.object["lastname"],
         "name": user_obj.username,

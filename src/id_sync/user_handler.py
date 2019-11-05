@@ -459,6 +459,11 @@ class UserHandler:
         return res
 
     @staticmethod
+    async def _handle_attr_disabled(obj: ListenerUserAddModifyObject) -> bool:
+        """Pass on state of 'disabled'."""
+        return obj.object["disabled"] == "1"
+
+    @staticmethod
     async def _handle_attr_password(obj: ListenerUserAddModifyObject) -> str:
         """Generate a random password."""
         pw = list(string.ascii_letters + string.digits + ".-_")
