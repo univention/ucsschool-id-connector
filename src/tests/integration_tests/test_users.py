@@ -145,6 +145,7 @@ async def test_create_user(
     save_mapping,
     create_schools,
     bb_api_url,
+    check_password,
 ):
     """
     Tests if id_sync distributes a newly created User to the correct school
@@ -166,6 +167,7 @@ async def test_create_user(
     for ous in ((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)):
         print(f"Creating user in ous={ous!r}...")
         user = make_host_user(ous=ous)
+        check_password(user["name"], user["password"], docker_hostname)
         auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
         auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
         print(
@@ -184,6 +186,7 @@ async def test_create_user(
         # TODO: check all attributes!
         print(f"Found user {user_remote['name']!r}, checking its attributes...")
         compare_user(user, user_remote, ["firstname"])
+        check_password(user["name"], user["password"], urlsplit(auth1_url).netloc)
         if ou_auth2 in ous:
             print(f"User should also be in OU2 ({ou_auth2!r}), checking...")
             result = wait_for_status_code(
@@ -198,6 +201,7 @@ async def test_create_user(
             user_remote = result[1].json()
             # TODO: check all attributes!
             compare_user(user, user_remote, ["firstname"])
+            check_password(user["name"], user["password"], urlsplit(auth2_url).netloc)
         else:
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
             wait_for_status_code(
@@ -317,6 +321,7 @@ async def test_modify_user(
     create_schools,
     docker_hostname,
     http_request,
+    check_password,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -343,6 +348,7 @@ async def test_modify_user(
         200,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
     )
+    check_password(user["name"], user["password"], docker_hostname)
     # check user exists on auth1
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     wait_for_status_code(
@@ -354,6 +360,7 @@ async def test_modify_user(
             content_type="application/json",
         ),
     )
+    check_password(user["name"], user["password"], urlsplit(auth1_url).netloc)
     # Modify user
     new_value = {
         "firstname": fake.first_name(),

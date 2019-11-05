@@ -559,6 +559,7 @@ async def make_host_user(
             "disabled": False,
             "firstname": firstname,
             "lastname": lastname,
+            "password": fake.password(length=15),
             "record_uid": "{}.{}".format(firstname, lastname),
             "roles": [bb_api_url(docker_hostname, "roles", role) for role in roles],
             "school": bb_api_url(docker_hostname, "schools", ous[0]),
@@ -589,3 +590,12 @@ async def make_host_user(
             headers=req_headers(token=host_bb_token),
             expected_statuses=(204, 404),
         )
+
+
+@pytest.fixture
+def check_password(http_request):
+    def _func(username: str, password: str, host: str):
+        url = f"https://{host}/univention/auth/"
+        http_request("get", url, params={"username": username, "password": password})
+
+    return _func
