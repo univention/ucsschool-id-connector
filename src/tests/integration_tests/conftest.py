@@ -50,11 +50,7 @@ except ImportError:
     JSONDecodeError = ValueError
 
 
-# Suppress only the single warning from urllib3 needed.
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 fake = faker.Faker()
-
-
 AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
 
 
@@ -68,6 +64,8 @@ def http_request():
         verify: bool = False,
         expected_statuses: Iterable[int] = (200,),
     ) -> requests.Response:
+        if not verify:
+            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
         req_meth = getattr(requests, method)
         response = req_meth(url, headers=headers, json=json_data, verify=verify)
         try:
@@ -101,6 +99,7 @@ def school_auth_config(docker_hostname: str):
     for fnf in ("bb-api-IP_traeger", "bb-api-key_traeger"):
         for i in ("1", "2"):
             url = urljoin(f"https://{docker_hostname}", f"{fnf}{i}.txt")
+            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
             resp = requests.get(url, verify=False)
             assert resp.status_code == 200, (resp.status_code, resp.reason, url)
             requested_data[fnf + i] = resp.text.strip("\n")
@@ -241,6 +240,7 @@ def host_bb_token(docker_hostname: str) -> str:
     """
     Returns a valid token for the BB-API of the containers host system.
     """
+    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     resp = requests.get(
         urljoin(f"https://{docker_hostname}/", "bb-api-key_sender.txt"), verify=False
     )
@@ -257,6 +257,7 @@ def host_id_sync_token(docker_hostname: str) -> str:
         "accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
     }
+    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     response = requests.post(
         urljoin(f"https://{docker_hostname}", "id-sync/api/token"),
         verify=False,

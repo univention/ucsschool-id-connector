@@ -41,8 +41,6 @@ try:
 except ImportError:
     JSONDecodeError = ValueError
 
-# Suppress only the single warning from urllib3 needed.
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 fake = faker.Faker()
 
 
@@ -106,6 +104,8 @@ def wait_for_status_code(
                 return False
         return True
 
+    # Suppress only the single warning from urllib3 needed.
+    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     start = time.time()
     response = None
     msg = ""
