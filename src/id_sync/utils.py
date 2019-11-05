@@ -94,13 +94,13 @@ async def get_ucrv(ucr: str, default: UCRValue = None) -> UCRValue:
 
 async def get_token_ttl() -> int:
     try:
-        return int(await get_ucrv(UCRV_TOKEN_TTL, 60))
+        return int(await get_ucrv(*UCRV_TOKEN_TTL))
     except ValueError:
-        return 60
+        return UCRV_TOKEN_TTL[1]
 
 
 async def get_source_uid() -> str:
-    return await get_ucrv(UCRV_SOURCE_UID, "TESTID")
+    return await get_ucrv(*UCRV_SOURCE_UID)
 
 
 class ConsoleAndFileLogging:
