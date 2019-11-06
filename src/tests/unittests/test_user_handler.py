@@ -32,8 +32,8 @@ import datetime
 import pytest
 from faker import Faker
 
-import id_sync.models
-import id_sync.user_handler
+import ucsschool_id_connector.models
+import ucsschool_id_connector.user_handler
 
 fake = Faker()
 
@@ -43,8 +43,8 @@ async def test_map_attributes(
     listener_user_add_modify_object, school_authority_configuration
 ):
     s_a_config = school_authority_configuration()
-    user_handler = id_sync.user_handler.UserHandler(s_a_config)
-    user_obj: id_sync.models.ListenerUserAddModifyObject = listener_user_add_modify_object()
+    user_handler = ucsschool_id_connector.user_handler.UserHandler(s_a_config)
+    user_obj: ucsschool_id_connector.models.ListenerUserAddModifyObject = listener_user_add_modify_object()
     user_handler._api_schools_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
     user_handler._api_schools_cache_creation = datetime.datetime.now()
     user_handler.api_roles_cache = dict(
@@ -66,7 +66,7 @@ async def test_map_attributes(
         "schools": list((await user_handler.api_schools_cache).values()),
         "source_uid": user_obj.source_uid,
         "udm_properties": {
-            "id_sync_pw": {
+            "ucsschool_id_connector_pw": {
                 "krb5Key": [k.decode() for k in user_obj.user_passwords.krb5Key],
                 "krb5KeyVersionNumber": user_obj.user_passwords.krb5KeyVersionNumber,
                 "sambaNTPassword": user_obj.user_passwords.sambaNTPassword,

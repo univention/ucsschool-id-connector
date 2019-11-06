@@ -172,7 +172,7 @@ async def test_create_user(
     host_bb_token,
 ):
     """
-    Tests if id_sync distributes a newly created User to the correct school
+    Tests if ucsschool_id_connector distributes a newly created User to the correct school
     authorities.
     """
     school_auth1 = await make_school_authority(**school_auth_config(1))
@@ -267,7 +267,7 @@ async def test_delete_user(
     http_request,
 ):
     """
-    Tests if id_sync distributes the deletion of an existing user correctly.
+    Tests if ucsschool_id_connector distributes the deletion of an existing user correctly.
     """
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))

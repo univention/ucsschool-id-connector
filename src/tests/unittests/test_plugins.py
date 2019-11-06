@@ -27,11 +27,11 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import id_sync.plugins
+import ucsschool_id_connector.plugins
 
 
 def test_load_plugins(mock_plugins, random_int):
     arg1 = random_int()
     arg2 = random_int()
-    res = id_sync.plugins.plugin_manager.hook.dummy_func(arg1=arg1, arg2=arg2)
+    res = ucsschool_id_connector.plugins.plugin_manager.hook.dummy_func(arg1=arg1, arg2=arg2)
     assert res == arg1 + arg2

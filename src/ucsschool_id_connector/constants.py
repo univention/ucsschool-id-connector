@@ -96,7 +96,7 @@ MACHINE_PASSWORD_FILE = "/etc/machine.secret"
 HTTP_CLIENT_TIMEOUT = 60
 HISTORY_FILE = "HISTORY.html"
 README_FILE = "README.html"
-PLUGIN_NAMESPACE = "id_sync"
+PLUGIN_NAMESPACE = "ucsschool_id_connector"
 PLUGIN_PACKAGE_DIRS = (
     APP_SRC_PATH / "plugins/packages",
     APP_CONFIG_BASE_PATH / "plugins/packages",

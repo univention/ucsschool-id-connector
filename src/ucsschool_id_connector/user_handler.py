@@ -39,7 +39,7 @@ import aiohttp
 import ujson
 from async_property import async_property
 
-from id_sync.ldap_access import LDAPAccess
+from ucsschool_id_connector.ldap_access import LDAPAccess
 
 from .constants import (
     API_SCHOOL_CACHE_TTL,

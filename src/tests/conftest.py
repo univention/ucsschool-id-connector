@@ -43,17 +43,17 @@ import pytest
 import ujson
 from faker import Faker
 
-import id_sync.constants
-import id_sync.models
-import id_sync.plugin_loader
-import id_sync.plugins
-import id_sync.utils
+import ucsschool_id_connector.constants
+import ucsschool_id_connector.models
+import ucsschool_id_connector.plugin_loader
+import ucsschool_id_connector.plugins
+import ucsschool_id_connector.utils
 
 fake = Faker()
 
 DEFAULT_DUMMY_PLUGIN = """
-from id_sync.utils import ConsoleAndFileLogging
-from id_sync.plugins import hook_impl, plugin_manager
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
+from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 logger = ConsoleAndFileLogging.get_logger(__name__)
 class DefaultDummyPlugin:
     @hook_impl
@@ -64,8 +64,8 @@ plugin_manager.register(DefaultDummyPlugin())
 """
 
 CUSTOM_DUMMY_PLUGIN = """
-from id_sync.utils import ConsoleAndFileLogging
-from id_sync.plugins import hook_impl, plugin_manager
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
+from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from {package_name}.{module_name} import ExampleTestClass
 logger = ConsoleAndFileLogging.get_logger(__name__)
 class DummyPlugin:
@@ -80,7 +80,7 @@ plugin_manager.register(DummyPlugin())
 """
 
 CUSTOM_TEST_MODULE_IN_PACKAGE = """
-from id_sync.utils import ConsoleAndFileLogging
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 logger = ConsoleAndFileLogging.get_logger(__name__)
 class ExampleTestClass:
     def add(self, arg1, arg2):
@@ -158,24 +158,24 @@ def temp_file_func():
 # Monkey patch get_logger() for the whole test session
 @pytest.fixture(scope="session")
 def setup_logging(temp_dir_session):
-    ori_get_logger = id_sync.utils.ConsoleAndFileLogging.get_logger
+    ori_get_logger = ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger
     tmp_log_path = temp_dir_session()
 
     def utils_get_logger(
-        name: str = None, path: Path = id_sync.constants.LOG_FILE_PATH_QUEUES
+        name: str = None, path: Path = ucsschool_id_connector.constants.LOG_FILE_PATH_QUEUES
     ):
         path = tmp_log_path / path.name
         print(f"\n **** log directory is: {path} ****")
         return ori_get_logger(name, path)
 
-    with patch("id_sync.utils.ConsoleAndFileLogging.get_logger", utils_get_logger):
+    with patch("ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger", utils_get_logger):
         yield
-    id_sync.utils.ConsoleAndFileLogging.get_logger = ori_get_logger
+    ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger = ori_get_logger
 
 
 class UserFactory(factory.Factory):
     class Meta:
-        model = id_sync.models.User
+        model = ucsschool_id_connector.models.User
 
     username = factory.Faker("user_name")
     full_name = factory.Faker("name")
@@ -190,7 +190,7 @@ class UserFactory(factory.Factory):
 
 class UserPasswordsFactory(factory.Factory):
     class Meta:
-        model = id_sync.models.UserPasswords
+        model = ucsschool_id_connector.models.UserPasswords
 
     userPassword = factory.List(
         [
@@ -208,7 +208,7 @@ class UserPasswordsFactory(factory.Factory):
 
 class ListenerObjectFactory(factory.Factory):
     class Meta:
-        model = id_sync.models.ListenerObject
+        model = ucsschool_id_connector.models.ListenerObject
 
     dn = factory.LazyFunction(
         lambda: f"uid={fake.first_name()},cn=users,"
@@ -219,12 +219,12 @@ class ListenerObjectFactory(factory.Factory):
     udm_object_type = factory.LazyFunction(
         lambda: f"{fake.first_name()}/" f"{fake.first_name()}"
     )
-    action = factory.LazyFunction(lambda: id_sync.models.ListenerActionEnum.add_mod)
+    action = factory.LazyFunction(lambda: ucsschool_id_connector.models.ListenerActionEnum.add_mod)
 
 
 class ListenerAddModifyObjectFactory(ListenerObjectFactory):
     class Meta:
-        model = id_sync.models.ListenerAddModifyObject
+        model = ucsschool_id_connector.models.ListenerAddModifyObject
 
     object = factory.Dict({})
     options = factory.List([])
@@ -232,7 +232,7 @@ class ListenerAddModifyObjectFactory(ListenerObjectFactory):
 
 class ListenerUserAddModifyObjectFactory(ListenerAddModifyObjectFactory):
     class Meta:
-        model = id_sync.models.ListenerUserAddModifyObject
+        model = ucsschool_id_connector.models.ListenerUserAddModifyObject
 
     object = factory.LazyFunction(lambda: _listener_dump_user_object()["object"])
     options = factory.List(["default"])
@@ -241,12 +241,12 @@ class ListenerUserAddModifyObjectFactory(ListenerAddModifyObjectFactory):
 
 
 class ListenerRemoveObjectFactory(ListenerObjectFactory):
-    action = id_sync.models.ListenerActionEnum.delete
+    action = ucsschool_id_connector.models.ListenerActionEnum.delete
 
 
 class SchoolAuthorityConfigurationFactory(factory.Factory):
     class Meta:
-        model = id_sync.models.SchoolAuthorityConfiguration
+        model = ucsschool_id_connector.models.SchoolAuthorityConfiguration
 
     name = factory.Faker("first_name")
     active = factory.LazyFunction(lambda: True)
@@ -266,12 +266,12 @@ class SchoolAuthorityConfigurationFactory(factory.Factory):
             "ucsschoolRecordUID": "record_uid",
         }
     )
-    passwords_target_attribute = "id_sync_pw"
+    passwords_target_attribute = "ucsschool_id_connector_pw"
 
 
 class School2SchoolAuthorityMappingFactory(factory.Factory):
     class Meta:
-        model = id_sync.models.School2SchoolAuthorityMapping
+        model = ucsschool_id_connector.models.School2SchoolAuthorityMapping
 
     mapping = factory.LazyFunction(
         lambda: dict(
@@ -371,7 +371,7 @@ def listener_user_add_modify_object(listener_dump_user_object):
         ous: List[str] = None,
         options: List[str] = None,
         source_uid: str = None,
-    ) -> id_sync.models.ListenerUserAddModifyObject:
+    ) -> ucsschool_id_connector.models.ListenerUserAddModifyObject:
         listener_dump_obj = listener_dump_user_object(
             base_dn=base_dn, ou=ou, ous=ous, options=options, source_uid=source_uid
         )
@@ -389,7 +389,7 @@ def listener_user_add_modify_object(listener_dump_user_object):
 #
 # @pytest.fixture
 # def listener_user_remove_object():
-#     def _func() -> id_sync.models.ListenerRemoveObject:
+#     def _func() -> ucsschool_id_connector.models.ListenerRemoveObject:
 #         obj = ListenerRemoveObjectFactory()
 #         obj.udm_object_type = "users/user"
 #         return obj
@@ -399,7 +399,7 @@ def listener_user_add_modify_object(listener_dump_user_object):
 
 @pytest.fixture
 def school_authority_configuration():
-    def _func(**kwargs) -> id_sync.models.SchoolAuthorityConfiguration:
+    def _func(**kwargs) -> ucsschool_id_connector.models.SchoolAuthorityConfiguration:
         return SchoolAuthorityConfigurationFactory(**kwargs)
 
     return _func
@@ -448,7 +448,7 @@ def school2school_authority_mapping():
 
 
 class DummyPluginSpec:
-    @id_sync.plugins.hook_spec(firstresult=True)
+    @ucsschool_id_connector.plugins.hook_spec(firstresult=True)
     def dummy_func(self, arg1, arg2):
         """An example hook."""
 
@@ -489,8 +489,8 @@ def mock_plugin_impls(temp_dir_session):
 
     yield mock_plugin_dirs, mock_package_dirs
 
-    id_sync.plugins.plugin_manager.unregister("DummyPlugin")
-    id_sync.plugins.plugin_manager.unregister("DefaultDummyPlugin")
+    ucsschool_id_connector.plugins.plugin_manager.unregister("DummyPlugin")
+    ucsschool_id_connector.plugins.plugin_manager.unregister("DefaultDummyPlugin")
     default_plugin_path.unlink()
     for path in (default_plugin_dir / "__pycache__").glob(
         f"{default_plugin_name}.*.pyc"
@@ -504,7 +504,7 @@ def mock_plugin_impls(temp_dir_session):
 
 @pytest.fixture(scope="session")
 def mock_plugin_spec():
-    id_sync.plugins.plugin_manager.add_hookspecs(DummyPluginSpec)
+    ucsschool_id_connector.plugins.plugin_manager.add_hookspecs(DummyPluginSpec)
 
 
 @pytest.fixture(scope="session")
@@ -542,15 +542,15 @@ def mock_plugins(
     mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
 
     with patch.object(
-        id_sync.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
+        ucsschool_id_connector.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
     ), patch.object(
-        id_sync.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs
+        ucsschool_id_connector.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs
     ), patch.object(
-        id_sync.constants, "OLD_DATA_DB_PATH", db_path
+        ucsschool_id_connector.constants, "OLD_DATA_DB_PATH", db_path
     ), patch(
-        "id_sync.ldap_access.LDAPAccess", ldap_access_mock
+        "ucsschool_id_connector.ldap_access.LDAPAccess", ldap_access_mock
     ):
-        id_sync.plugin_loader.load_plugins()
+        ucsschool_id_connector.plugin_loader.load_plugins()
 
     yield mock_plugin_impls, db_path
 

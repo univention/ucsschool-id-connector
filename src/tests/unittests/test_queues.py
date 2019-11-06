@@ -31,28 +31,28 @@ from pathlib import Path
 
 import pytest
 
-import id_sync.constants
-import id_sync.db
-import id_sync.models
-import id_sync.queues
+import ucsschool_id_connector.constants
+import ucsschool_id_connector.db
+import ucsschool_id_connector.models
+import ucsschool_id_connector.queues
 
 
 @pytest.mark.asyncio
 async def test_load_listener_file_example_user(
     monkeypatch, mock_plugins, example_user_json_path_real, temp_dir_func
 ):
-    in_queue = id_sync.queues.InQueue(path=temp_dir_func())
+    in_queue = ucsschool_id_connector.queues.InQueue(path=temp_dir_func())
     obj = await in_queue.load_listener_file(example_user_json_path_real)
-    assert isinstance(obj, id_sync.models.ListenerUserAddModifyObject)
+    assert isinstance(obj, ucsschool_id_connector.models.ListenerUserAddModifyObject)
 
 
 @pytest.mark.asyncio
 async def test_load_listener_file_example_user_remove(
     monkeypatch, mock_plugins, example_user_remove_json_path_real, temp_dir_func
 ):
-    in_queue = id_sync.queues.InQueue(path=temp_dir_func())
+    in_queue = ucsschool_id_connector.queues.InQueue(path=temp_dir_func())
     obj = await in_queue.load_listener_file(example_user_remove_json_path_real)
-    assert isinstance(obj, id_sync.models.ListenerUserRemoveObject)
+    assert isinstance(obj, ucsschool_id_connector.models.ListenerUserRemoveObject)
 
 
 @pytest.mark.asyncio
@@ -62,21 +62,21 @@ async def test_preprocess_add_mod_file(
     mock_plugin_impls, db_path = mock_plugins
     temp_dir = temp_dir_func()
     add_mod_json_path = example_user_json_path_copy(temp_dir)
-    in_queue = id_sync.queues.InQueue(path=temp_dir)
+    in_queue = ucsschool_id_connector.queues.InQueue(path=temp_dir)
 
     add_mod_obj = await in_queue.load_listener_file(add_mod_json_path)
-    assert isinstance(add_mod_obj, id_sync.models.ListenerUserAddModifyObject)
+    assert isinstance(add_mod_obj, ucsschool_id_connector.models.ListenerUserAddModifyObject)
     assert add_mod_obj.user_passwords is None  # not yet preprocessed
 
     new_path = await in_queue.preprocess_file(add_mod_json_path)
     assert new_path.name == f"{add_mod_json_path.name[:-5]}_ready.json"
 
     add_mod_obj_new = await in_queue.load_listener_file(new_path)
-    assert isinstance(add_mod_obj_new, id_sync.models.ListenerUserAddModifyObject)
+    assert isinstance(add_mod_obj_new, ucsschool_id_connector.models.ListenerUserAddModifyObject)
     assert add_mod_obj_new.id == add_mod_obj.id
-    assert isinstance(add_mod_obj_new.user_passwords, id_sync.models.UserPasswords)
+    assert isinstance(add_mod_obj_new.user_passwords, ucsschool_id_connector.models.UserPasswords)
 
-    old_data_db = id_sync.db.OldDataDB(db_path, id_sync.models.ListenerUserOldDataEntry)
+    old_data_db = ucsschool_id_connector.db.OldDataDB(db_path, ucsschool_id_connector.models.ListenerUserOldDataEntry)
     assert add_mod_obj.id in old_data_db
     del old_data_db[add_mod_obj.id]
 
@@ -89,19 +89,19 @@ async def test_preprocess_del_file(
 
     temp_dir = temp_dir_func()
     del_json_path = example_user_remove_json_path_copy(temp_dir)
-    in_queue = id_sync.queues.InQueue(path=temp_dir)
+    in_queue = ucsschool_id_connector.queues.InQueue(path=temp_dir)
 
     del_obj = await in_queue.load_listener_file(del_json_path)
-    assert isinstance(del_obj, id_sync.models.ListenerUserRemoveObject)
+    assert isinstance(del_obj, ucsschool_id_connector.models.ListenerUserRemoveObject)
 
-    old_data_db = id_sync.db.OldDataDB(db_path, id_sync.models.ListenerUserOldDataEntry)
+    old_data_db = ucsschool_id_connector.db.OldDataDB(db_path, ucsschool_id_connector.models.ListenerUserOldDataEntry)
     assert del_obj.id not in old_data_db
 
     new_path = await in_queue.preprocess_file(del_json_path)
     assert new_path.name == f"{del_json_path.name[:-5]}_ready.json"
 
     del_obj_new = await in_queue.load_listener_file(new_path)
-    assert isinstance(del_obj_new, id_sync.models.ListenerUserRemoveObject)
+    assert isinstance(del_obj_new, ucsschool_id_connector.models.ListenerUserRemoveObject)
     assert del_obj_new.old_data is None
 
 
@@ -116,23 +116,23 @@ async def test_preprocess_del_file_with_old_data(
     temp_dir = temp_dir_func()
     add_mod_json_path = example_user_json_path_copy(temp_dir)
     del_json_path = example_user_remove_json_path_copy(temp_dir)
-    in_queue = id_sync.queues.InQueue(path=temp_dir)
+    in_queue = ucsschool_id_connector.queues.InQueue(path=temp_dir)
 
     # preprocess add/mod file to get IDs into old_db
     add_mod_obj = await in_queue.load_listener_file(add_mod_json_path)
-    assert isinstance(add_mod_obj, id_sync.models.ListenerUserAddModifyObject)
+    assert isinstance(add_mod_obj, ucsschool_id_connector.models.ListenerUserAddModifyObject)
     await in_queue.preprocess_file(add_mod_json_path)
-    old_data_db = id_sync.db.OldDataDB(db_path, id_sync.models.ListenerUserOldDataEntry)
+    old_data_db = ucsschool_id_connector.db.OldDataDB(db_path, ucsschool_id_connector.models.ListenerUserOldDataEntry)
     assert add_mod_obj.id in old_data_db
 
     # preprocessed del file should get old_data from db
     del_obj = await in_queue.load_listener_file(del_json_path)
     assert del_obj.id == add_mod_obj.id
-    assert isinstance(del_obj, id_sync.models.ListenerUserRemoveObject)
+    assert isinstance(del_obj, ucsschool_id_connector.models.ListenerUserRemoveObject)
     new_path = await in_queue.preprocess_file(del_json_path)
     del_obj_new = await in_queue.load_listener_file(new_path)
 
-    assert isinstance(del_obj_new, id_sync.models.ListenerUserRemoveObject)
+    assert isinstance(del_obj_new, ucsschool_id_connector.models.ListenerUserRemoveObject)
     assert del_obj_new.id == add_mod_obj.id
     assert del_obj_new.old_data is not None
     assert del_obj_new.old_data.record_uid == add_mod_obj.record_uid

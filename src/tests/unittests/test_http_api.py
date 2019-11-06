@@ -33,37 +33,37 @@ from unittest.mock import patch
 from pydantic import SecretStr
 from starlette.testclient import TestClient
 
-import id_sync.constants
-import id_sync.http_api
-import id_sync.models
-import id_sync.queues
-import id_sync.token_auth
-import id_sync.utils
+import ucsschool_id_connector.constants
+import ucsschool_id_connector.http_api
+import ucsschool_id_connector.models
+import ucsschool_id_connector.queues
+import ucsschool_id_connector.token_auth
+import ucsschool_id_connector.utils
 
-client = TestClient(id_sync.http_api.app)
+client = TestClient(ucsschool_id_connector.http_api.app)
 
 
 async def override_get_current_active_user():
-    return id_sync.models.User(
+    return ucsschool_id_connector.models.User(
         username="tester", disabled=False, dn="uid=tester,dc=test"
     )
 
 
 def override_setup_logging():
-    logger = logging.getLogger("id_sync.http_api")
-    id_sync.utils.ConsoleAndFileLogging.add_console_handler(logger)
+    logger = logging.getLogger("ucsschool_id_connector.http_api")
+    ucsschool_id_connector.utils.ConsoleAndFileLogging.add_console_handler(logger)
     return logger
 
 
-id_sync.http_api.app.dependency_overrides[
-    id_sync.token_auth.get_current_active_user
+ucsschool_id_connector.http_api.app.dependency_overrides[
+    ucsschool_id_connector.token_auth.get_current_active_user
 ] = override_get_current_active_user
-id_sync.http_api.app.dependency_overrides[
-    id_sync.http_api.get_logger
+ucsschool_id_connector.http_api.app.dependency_overrides[
+    ucsschool_id_connector.http_api.get_logger
 ] = override_setup_logging
 
 
-@patch("id_sync.http_api.zmq_context")
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_read_queues(zmq_context_mock, random_name, random_int, zmq_socket):
     queue_data = {
         "in_queue": {
@@ -79,12 +79,12 @@ def test_read_queues(zmq_context_mock, random_name, random_int, zmq_socket):
     socket = zmq_socket({"result": queue_data})
     zmq_context_mock.socket.return_value = socket
     res = client.get(
-        f"{id_sync.constants.URL_PREFIX}/queues",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/queues",
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        id_sync.models.RPCRequest(cmd=id_sync.models.RPCCommand.get_queues).json()
+        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queues).json()
     )
     assert res.status_code == 200
     queue_data["in_queue"]["school_authority"] = ""
@@ -93,21 +93,21 @@ def test_read_queues(zmq_context_mock, random_name, random_int, zmq_socket):
     assert res.json() == [queue_data["in_queue"], *queue_data["out_queues"]]
 
 
-@patch("id_sync.http_api.zmq_context")
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_read_queue(zmq_context_mock, random_name, random_int, zmq_socket):
     queue_data = {"name": random_name(), "head": random_name(), "length": random_int()}
     socket = zmq_socket({"result": queue_data})
     zmq_context_mock.socket.return_value = socket
 
-    client = TestClient(id_sync.http_api.app)
+    client = TestClient(ucsschool_id_connector.http_api.app)
     res = client.get(
-        f"{id_sync.constants.URL_PREFIX}/queues/{queue_data['name']}",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/queues/{queue_data['name']}",
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.get_queue, name=queue_data["name"]
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name=queue_data["name"]
         ).json()
     )
     assert res.status_code == 200
@@ -115,7 +115,7 @@ def test_read_queue(zmq_context_mock, random_name, random_int, zmq_socket):
     assert res.json() == queue_data
 
 
-@patch("id_sync.http_api.zmq_context")
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_socket):
     school_authority_data = [
         {
@@ -136,15 +136,15 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
 
-    client = TestClient(id_sync.http_api.app)
+    client = TestClient(ucsschool_id_connector.http_api.app)
     res = client.get(
-        f"{id_sync.constants.URL_PREFIX}/school_authorities",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_authorities",
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.get_school_authorities
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_school_authorities
         ).json()
     )
     for data in school_authority_data:
@@ -158,7 +158,7 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
     assert res.json() == school_authority_data
 
 
-@patch("id_sync.http_api.zmq_context")
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_socket):
     school_authority_data = {
         "name": random_name(),
@@ -171,15 +171,15 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
 
-    client = TestClient(id_sync.http_api.app)
+    client = TestClient(ucsschool_id_connector.http_api.app)
     res = client.get(
-        f"{id_sync.constants.URL_PREFIX}/school_authorities/{school_authority_data['name']}",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_authorities/{school_authority_data['name']}",
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.get_school_authority,
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority,
             name=school_authority_data["name"],
         ).json()
     )
@@ -188,7 +188,7 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
     assert res.json() == school_authority_data
 
 
-@patch("id_sync.http_api.zmq_context")
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_create_school_authorities(
     zmq_context_mock, random_name, random_int, zmq_socket
 ):
@@ -205,16 +205,16 @@ def test_create_school_authorities(
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
 
-    client = TestClient(id_sync.http_api.app)
+    client = TestClient(ucsschool_id_connector.http_api.app)
     res = client.post(
-        f"{id_sync.constants.URL_PREFIX}/school_authorities",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_authorities",
         json=school_authority_data,
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.create_school_authority,
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority,
             school_authority=school_authority_data,
         ).json()
     )
@@ -223,7 +223,7 @@ def test_create_school_authorities(
     assert res.json() == school_authority_data
 
 
-@patch("id_sync.http_api.zmq_context")
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_read_school_to_school_authority_mapping(
     zmq_context_mock, zmq_socket, school2school_authority_mapping
 ):
@@ -231,22 +231,22 @@ def test_read_school_to_school_authority_mapping(
     socket = zmq_socket({"result": school_to_authority_mapping.dict()})
     zmq_context_mock.socket.return_value = socket
 
-    client = TestClient(id_sync.http_api.app)
+    client = TestClient(ucsschool_id_connector.http_api.app)
     res = client.get(
-        f"{id_sync.constants.URL_PREFIX}/school_to_authority_mapping",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_to_authority_mapping",
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.get_school_to_authority_mapping
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_school_to_authority_mapping
         ).json()
     )
     assert res.status_code == 200
     assert res.json() == school_to_authority_mapping.dict()
 
 
-@patch("id_sync.http_api.zmq_context")
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_create_school_to_school_authority_mapping(
     zmq_context_mock,
     random_name,
@@ -258,16 +258,16 @@ def test_create_school_to_school_authority_mapping(
     socket = zmq_socket({"result": school_to_authority_mapping.dict()})
     zmq_context_mock.socket.return_value = socket
 
-    client = TestClient(id_sync.http_api.app)
+    client = TestClient(ucsschool_id_connector.http_api.app)
     res = client.put(
-        f"{id_sync.constants.URL_PREFIX}/school_to_authority_mapping",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_to_authority_mapping",
         json=school_to_authority_mapping.dict(),
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.put_school_to_authority_mapping,
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.put_school_to_authority_mapping,
             school_to_authority_mapping=school_to_authority_mapping,
         ).json()
     )
@@ -276,4 +276,4 @@ def test_create_school_to_school_authority_mapping(
 
 
 # TODO: test non-auth-access
-# del id_sync.http_api.app.dependency_overrides[id_sync.token.get_current_active_user] ?
+# del ucsschool_id_connector.http_api.app.dependency_overrides[ucsschool_id_connector.token.get_current_active_user] ?

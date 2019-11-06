@@ -30,54 +30,54 @@
 import pytest
 from pydantic import ValidationError
 
-import id_sync.models
-import id_sync.queues
+import ucsschool_id_connector.models
+import ucsschool_id_connector.queues
 
 
 def test_command_with_valid_enum():
-    id_sync.models.RPCRequest(cmd=id_sync.models.RPCCommand.get_queues)
+    ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queues)
 
 
 def test_command_with_valid_str():
-    id_sync.models.RPCRequest(cmd="get_queues")
+    ucsschool_id_connector.models.RPCRequest(cmd="get_queues")
 
 
 def test_command_with_bad_str():
     with pytest.raises(ValidationError):
-        id_sync.models.RPCRequest(cmd="foo_bar")
+        ucsschool_id_connector.models.RPCRequest(cmd="foo_bar")
 
 
 def test_command_with_required_name_args():
-    id_sync.models.RPCRequest(cmd=id_sync.models.RPCCommand.get_queue, name="foo")
-    id_sync.models.RPCRequest(
-        cmd=id_sync.models.RPCCommand.get_school_authority, name="bar"
+    ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name="foo")
+    ucsschool_id_connector.models.RPCRequest(
+        cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority, name="bar"
     )
 
 
 def test_command_without_required_name_arg():
     with pytest.raises(ValidationError):
-        id_sync.models.RPCRequest(cmd=id_sync.models.RPCCommand.get_queue)
+        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queue)
     with pytest.raises(ValidationError):
-        id_sync.models.RPCRequest(cmd=id_sync.models.RPCCommand.get_queue, name="")
+        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name="")
     with pytest.raises(ValidationError):
-        id_sync.models.RPCRequest(cmd=id_sync.models.RPCCommand.get_school_authority)
+        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority)
     with pytest.raises(ValidationError):
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.get_school_authority, name=""
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority, name=""
         )
 
 
 def test_command_with_required_school_authority_arg():
-    id_sync.models.RPCRequest(
-        cmd=id_sync.models.RPCCommand.create_school_authority,
+    ucsschool_id_connector.models.RPCRequest(
+        cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority,
         school_authority={"name": "foo", "url": "http://bar.baz", "password": "s3cr3t"},
     )
 
 
 def test_command_without_required_school_authority_arg():
     with pytest.raises(ValidationError):
-        id_sync.models.RPCRequest(cmd=id_sync.models.RPCCommand.create_school_authority)
+        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority)
     with pytest.raises(ValidationError):
-        id_sync.models.RPCRequest(
-            cmd=id_sync.models.RPCCommand.create_school_authority, school_authority={}
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority, school_authority={}
         )

@@ -23,5 +23,5 @@
     "phone": "phone",
     "ucsschoolRecordUID": "record_uid"
   },
-  "passwords_target_attribute": "id_sync_pw"
+  "passwords_target_attribute": "ucsschool_id_connector_pw"
 }

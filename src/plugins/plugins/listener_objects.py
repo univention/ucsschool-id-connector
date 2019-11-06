@@ -34,10 +34,10 @@ import aiofiles
 import ujson
 from pydantic import ValidationError
 
-from id_sync.constants import OLD_DATA_DB_PATH
-from id_sync.db import OldDataDB
-from id_sync.ldap_access import LDAPAccess
-from id_sync.models import (
+from ucsschool_id_connector.constants import OLD_DATA_DB_PATH
+from ucsschool_id_connector.db import OldDataDB
+from ucsschool_id_connector.ldap_access import LDAPAccess
+from ucsschool_id_connector.models import (
     ListenerAddModifyObject,
     ListenerGroupAddModifyObject,
     ListenerGroupOldDataEntry,
@@ -49,8 +49,8 @@ from id_sync.models import (
     ListenerUserOldDataEntry,
     ListenerUserRemoveObject,
 )
-from id_sync.plugins import hook_impl, plugin_manager
-from id_sync.utils import ConsoleAndFileLogging
+from ucsschool_id_connector.plugins import hook_impl, plugin_manager
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
 class ListenerObjectHandlerImpl:

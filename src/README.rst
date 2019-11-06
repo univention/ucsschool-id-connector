@@ -312,7 +312,7 @@ The `pluggy`_ plugin system is used to define, implement and call plugins.
 To share code between plugins additional Python packages can be installed.
 The following demonstrates a simple example of a custom Python packages and a plugin for `UCS\@school ID Connector`.
 
-All plugin *specifications* (function signatures) are defined in ``src/id_sync/plugins.py``.
+All plugin *specifications* (function signatures) are defined in ``src/ucsschool_id_connector/plugins.py``.
 
 The directory structure for custom plugins and packages can be found in the host system below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``::
 
@@ -320,7 +320,7 @@ The directory structure for custom plugins and packages can be found in the host
     /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/packages/
     /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/plugins/
 
-The app is released with default plugins, that implement a default version for all specifications found in ``src/id_sync/plugins.py``.
+The app is released with default plugins, that implement a default version for all specifications found in ``src/ucsschool_id_connector/plugins.py``.
 
 An example plugin specification::
 
@@ -348,11 +348,11 @@ Content of ``plugins/plugins/dummy.py``::
     # It uses a class from a module in a custom package:
     # plugins/packages/example_package/example_module.py
     #
-    # The plugin specifications are in src/id_sync/plugins.py
+    # The plugin specifications are in src/ucsschool_id_connector/plugins.py
     #
 
-    from id_sync.utils import ConsoleAndFileLogging
-    from id_sync.plugins import hook_impl, plugin_manager
+    from ucsschool_id_connector.utils import ConsoleAndFileLogging
+    from ucsschool_id_connector.plugins import hook_impl, plugin_manager
     from example_package.example_module import ExampleClass
 
     logger = ConsoleAndFileLogging.get_logger(__name__)
@@ -385,7 +385,7 @@ Content of ``plugins/packages/example_package/example_module.py``::
     # Do not forget to create 'plugins/packages/example_package/__init__.py'.
     #
 
-    from id_sync.utils import ConsoleAndFileLogging
+    from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
     logger = ConsoleAndFileLogging.get_logger(__name__)
 
@@ -397,8 +397,8 @@ Content of ``plugins/packages/example_package/example_module.py``::
 
 When the app starts, all plugins will be discovered and logged::
 
-    ... INFO  [id_sync.plugins.load_plugins:83] Loaded plugins: {.., <dummy.DummyPlugin object at 0x7fa5284a9240>}
-    ... INFO  [id_sync.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
+    ... INFO  [ucsschool_id_connector.plugins.load_plugins:83] Loaded plugins: {.., <dummy.DummyPlugin object at 0x7fa5284a9240>}
+    ... INFO  [ucsschool_id_connector.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
 
 
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg

@@ -29,7 +29,7 @@
 
 import setuptools
 
-import id_sync
+import ucsschool_id_connector
 
 with open("requirements.txt") as fp:
     requirements = fp.read().splitlines()
@@ -39,7 +39,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="ucsschool-id-connector",
-    version=id_sync.__version__,
+    version=ucsschool_id_connector.__version__,
     author="Daniel Tröder",
     author_email="troeder@univention.de",
     description="UCS@school ID Connector",

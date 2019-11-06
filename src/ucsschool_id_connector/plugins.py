@@ -149,7 +149,7 @@ class Distribution:
 
     @hook_spec
     async def school_authorities_to_distribute_to(
-        self, obj: ListenerObject, in_queue: "id_sync.queues.InQueue"
+        self, obj: ListenerObject, in_queue: "ucsschool_id_connector.queues.InQueue"
     ) -> Iterable[str]:
         """
         Create list of school authorities this object should be sent to.

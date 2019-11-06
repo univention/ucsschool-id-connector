@@ -39,10 +39,10 @@ import requests
 from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
 
-from id_sync.config_storage import ConfigurationStorage
-from id_sync.constants import APP_ID, OUT_QUEUE_TOP_DIR
-from id_sync.models import SchoolAuthorityConfiguration
-from id_sync.utils import get_ucrv
+from ucsschool_id_connector.config_storage import ConfigurationStorage
+from ucsschool_id_connector.constants import APP_ID, OUT_QUEUE_TOP_DIR
+from ucsschool_id_connector.models import SchoolAuthorityConfiguration
+from ucsschool_id_connector.utils import get_ucrv
 
 try:
     from simplejson.errors import JSONDecodeError
@@ -203,12 +203,12 @@ def bb_api_url():
 
 
 @pytest.fixture()
-def id_sync_api_url(docker_hostname):
+def ucsschool_id_connector_api_url(docker_hostname):
     """
     Fixture to create UCS@school ID Connector API resource URLs.
     """
 
-    def _id_sync_api_url(resource: str, entity: str = "") -> str:
+    def _ucsschool_id_connector_api_url(resource: str, entity: str = "") -> str:
         """
         Creates a UCS@school ID Connector API resource URL
 
@@ -220,7 +220,7 @@ def id_sync_api_url(docker_hostname):
             f"https://{docker_hostname}/{APP_ID}/api/v1/", f"{resource}/{entity}"
         ).rstrip("/")
 
-    return _id_sync_api_url
+    return _ucsschool_id_connector_api_url
 
 
 @pytest.fixture(scope="session")
@@ -253,7 +253,7 @@ def host_bb_token(docker_hostname: str) -> str:
 
 
 @pytest.fixture(scope="session")
-def host_id_sync_token(docker_hostname: str) -> str:
+def host_ucsschool_id_connector_token(docker_hostname: str) -> str:
     """
     Returns a valid token for the ucsschool-id-connector HTTP-API.
     """
@@ -278,8 +278,8 @@ def host_id_sync_token(docker_hostname: str) -> str:
 
 @pytest.fixture()
 async def make_school_authority(
-    host_id_sync_token: str,
-    id_sync_api_url,
+    host_ucsschool_id_connector_token: str,
+    ucsschool_id_connector_api_url,
     req_headers,
     http_request,
     school_authority_configuration,
@@ -290,7 +290,7 @@ async def make_school_authority(
     """
     created_authorities = list()
     headers = req_headers(
-        bearer=host_id_sync_token,
+        bearer=host_ucsschool_id_connector_token,
         accept="application/json",
         content_type="application/json",
     )
@@ -320,11 +320,11 @@ async def make_school_authority(
             url=url,
             password=password,
             mapping=mapping,
-            password_target_attribute="id_sync_pw",
+            password_target_attribute="ucsschool_id_connector_pw",
         )
         config_as_dict = school_authority.dict()
         config_as_dict["password"] = school_authority.password.get_secret_value()
-        url = id_sync_api_url("school_authorities")
+        url = ucsschool_id_connector_api_url("school_authorities")
         http_request(
             "post",
             url,
@@ -353,7 +353,7 @@ async def make_school_authority(
     for school_authority_name in created_authorities:
         http_request(
             "delete",
-            id_sync_api_url("school_authorities", school_authority_name),
+            ucsschool_id_connector_api_url("school_authorities", school_authority_name),
             headers=headers,
             expected_statuses=(204, 404),
         )
@@ -369,14 +369,14 @@ async def make_school_authority(
 
 @pytest.fixture()
 async def save_mapping(
-    id_sync_api_url, req_headers, host_id_sync_token: str, http_request
+    ucsschool_id_connector_api_url, req_headers, host_ucsschool_id_connector_token: str, http_request
 ):
     """
     Fixture to save an ou to school authority mapping in ucsschool-id-connector.
     Mapping gets deleted if the fixture goes out of scope.
     """
     headers = req_headers(
-        bearer=host_id_sync_token,
+        bearer=host_ucsschool_id_connector_token,
         accept="application/json",
         content_type="application/json",
     )
@@ -390,7 +390,7 @@ async def save_mapping(
         """
         response = http_request(
             "put",
-            id_sync_api_url("school_to_authority_mapping"),
+            ucsschool_id_connector_api_url("school_to_authority_mapping"),
             json_data=dict(mapping=mapping),
             headers=headers,
         )
@@ -407,7 +407,7 @@ async def save_mapping(
 
     response = http_request(
         "put",
-        id_sync_api_url("school_to_authority_mapping"),
+        ucsschool_id_connector_api_url("school_to_authority_mapping"),
         json_data=ori_s2s_mapping.dict(),
         headers=headers,
     )

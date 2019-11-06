@@ -36,8 +36,8 @@ import asyncio
 
 import click
 
-from id_sync.user_handler import UserScheduler
-from id_sync.utils import ConsoleAndFileLogging
+from ucsschool_id_connector.user_handler import UserScheduler
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
 @click.command(help="Schedule distribution of a user.")

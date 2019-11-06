@@ -32,9 +32,9 @@ import os
 import sys
 from typing import Iterator
 
-from id_sync.constants import PLUGIN_DIRS, PLUGIN_PACKAGE_DIRS
-from id_sync.plugins import plugin_manager
-from id_sync.utils import ConsoleAndFileLogging
+from ucsschool_id_connector.constants import PLUGIN_DIRS, PLUGIN_PACKAGE_DIRS
+from ucsschool_id_connector.plugins import plugin_manager
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 __plugins_loaded = False
 

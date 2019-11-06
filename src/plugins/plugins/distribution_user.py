@@ -29,14 +29,14 @@
 
 from typing import Iterable, Set
 
-from id_sync.models import (
+from ucsschool_id_connector.models import (
     ListenerObject,
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
 )
-from id_sync.plugins import hook_impl, plugin_manager
-from id_sync.queues import InQueue
-from id_sync.utils import ConsoleAndFileLogging
+from ucsschool_id_connector.plugins import hook_impl, plugin_manager
+from ucsschool_id_connector.queues import InQueue
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
 class UserDistributionImpl:

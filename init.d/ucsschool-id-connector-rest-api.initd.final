@@ -1,7 +1,7 @@
 #!/sbin/openrc-run
 
 command=/ucsschool-id-connector/venv/bin/uvicorn
-command_args="--host 0.0.0.0 --port 8911 id_sync.http_api:app"
+command_args="--host 0.0.0.0 --port 8911 ucsschool_id_connector.http_api:app"
 name=ucsschool-id-connector-rest-api
 description="UCS@school ID Connector REST API (ASGI server)"
 

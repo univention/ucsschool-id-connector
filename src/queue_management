@@ -40,14 +40,14 @@ from typing import List
 import aiojobs
 from service import Service
 
-from id_sync import __version__
-from id_sync.config_storage import ConfigurationStorage
-from id_sync.constants import LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
-from id_sync.plugin_loader import load_plugins
-from id_sync.plugins import plugin_manager
-from id_sync.queues import InQueue, OutQueue, get_out_queue_dirs
-from id_sync.rpc import SimpleRPCServer
-from id_sync.utils import ConsoleAndFileLogging, close_ucr_cache
+from ucsschool_id_connector import __version__
+from ucsschool_id_connector.config_storage import ConfigurationStorage
+from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
+from ucsschool_id_connector.plugin_loader import load_plugins
+from ucsschool_id_connector.plugins import plugin_manager
+from ucsschool_id_connector.queues import InQueue, OutQueue, get_out_queue_dirs
+from ucsschool_id_connector.rpc import SimpleRPCServer
+from ucsschool_id_connector.utils import ConsoleAndFileLogging, close_ucr_cache
 
 
 class IDSyncService(Service):

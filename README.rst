@@ -52,9 +52,9 @@ Build Docker image::
 
 The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::
 
-    $ docker run -p 127.0.0.1:8911:8911/tcp --name id_sync docker-test-upload.software-univention.de/ucsschool-id-connector:0.1.0
+    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector docker-test-upload.software-univention.de/ucsschool-id-connector:0.1.0
 
-Use ``docker run -d ...`` to let it run in the background. Use ``docker logs id_sync`` to see the stdout; ``docker stop id_sync`` and ``docker rm id_sync`` to stop and remove the running container.
+Use ``docker run -d ...`` to let it run in the background. Use ``docker logs ucsschool_id_connector`` to see the stdout; ``docker stop ucsschool_id_connector`` and ``docker rm ucsschool_id_connector`` to stop and remove the running container.
 
 Replace version (in above command ``0.1.0``) with current version. See ``APP_VERSION`` in output at the start of the build process.
 
@@ -63,7 +63,7 @@ When the container is started that way (not through the appcenter) it must be ac
 
 To enter the running container run::
 
-    $ docker exec -it id_sync /bin/ash
+    $ docker exec -it ucsschool_id_connector /bin/ash
 
 (When started through the appcenter use ``univention-app shell ucsschool-id-connector``.)
 
@@ -75,14 +75,14 @@ Inside the container you can use the virtual envs Python::
     Python 3.7.4 (default, Aug  2 2019, 18:24:02)
     [GCC 8.3.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
-    >>> from id_sync import models
+    >>> from ucsschool_id_connector import models
 
     (venv) /ucsschool-id-connector # ipython
     Python 3.7.4 (default, Aug  2 2019, 18:24:02)
     Type 'copyright', 'credits' or 'license' for more information
     IPython 7.8.0 -- An enhanced Interactive Python. Type '?' for help.
 
-    In [1]: from id_sync import models
+    In [1]: from ucsschool_id_connector import models
 
 
 Install BB-API on sender for integration tests

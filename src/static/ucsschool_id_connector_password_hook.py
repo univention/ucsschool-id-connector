@@ -6,8 +6,8 @@ Connector app.
 
 Install it, by copying this file to /usr/share/ucs-school-import/pyhooks.
 If the extended attribute to receive the password hashes is not called
-`id_sync_pw`, change the name in the `PASSWORD_TARGET_ATTRIBUT` constant
-in line 17.
+`ucsschool_id_connector_pw`, change the name in the `PASSWORD_TARGET_ATTRIBUTE`
+constant in line 18.
 """
 
 import base64
@@ -15,7 +15,7 @@ import datetime
 
 from ucsschool.importer.utils.user_pyhook import UserPyHook
 
-PASSWORD_TARGET_ATTRIBUT = "id_sync_pw"
+PASSWORD_TARGET_ATTRIBUT = "ucsschool_id_connector_pw"
 
 
 class PasswordSync(UserPyHook):
@@ -56,7 +56,7 @@ class PasswordSync(UserPyHook):
 			return
 		assert isinstance(pw_hashes, dict)
 		self.password_hashes[user.record_uid] = pw_hashes
-		user.udm_properties["id_sync_last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		user.udm_properties["ucsschool_id_connector_last_update"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 	def set_hashes_in_ldap(self, user):
 		"""
