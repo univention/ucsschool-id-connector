@@ -50,13 +50,13 @@ from ucsschool_id_connector.rpc import SimpleRPCServer
 from ucsschool_id_connector.utils import ConsoleAndFileLogging, close_ucr_cache
 
 
-class IDSyncService(Service):
+class IDConnectorService(Service):
     out_queues: List[OutQueue]
     in_queue: InQueue
     rpc_server: SimpleRPCServer
 
     def __init__(self, *args, **kwargs):
-        super(IDSyncService, self).__init__(*args, **kwargs)
+        super(IDConnectorService, self).__init__(*args, **kwargs)
         self.files_preserve.extend(
             (sys.stderr.fileno(), sys.stderr.fileno())
         )  # doesn't work :/
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         sys.exit("Syntax: %s <start|stop|restart|status|test>" % sys.argv[0])
 
     cmd = sys.argv[1].lower()
-    service = IDSyncService(SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1])
+    service = IDConnectorService(SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1])
 
     def _start():
         service.start()

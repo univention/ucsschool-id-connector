@@ -31,7 +31,7 @@ import re
 from pathlib import Path
 
 APP_ID = "ucsschool-id-connector"
-SERVICE_NAME = "IDSyncService"
+SERVICE_NAME = "IDConnectorService"
 APP_BASE_PATH = Path("/var/lib/univention-appcenter/apps", APP_ID)
 APP_SRC_PATH = Path(f"/{APP_ID}/src")
 APPCENTER_LISTENER_PATH = Path("/var/lib/univention-appcenter/listener", APP_ID)

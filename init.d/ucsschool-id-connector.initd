@@ -13,12 +13,12 @@ start() {
 
 stop() {
     ebegin "Stopping UCS@school ID Connector"
-    /ucsschool-id-connector/src/queue_management stop || (pgrep IDSyncService > /dev/null || rm -f /tmp/IDSyncService.pid)
+    /ucsschool-id-connector/src/queue_management stop || (pgrep IDConnectorService > /dev/null || rm -f /tmp/IDConnectorService.pid)
     eend $?
 }
 
 status() {
-    if pgrep IDSyncService > /dev/null; then
+    if pgrep IDConnectorService > /dev/null; then
         einfo "status: started"
         return 0
     else

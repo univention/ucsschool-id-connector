@@ -236,7 +236,7 @@ class SimpleRPCServer:
         if not self.in_queue.out_queues:
             # This is really weird! It only happens if self.in_queue.out_queues
             # was empty from the start. If an out_queue was created in
-            # queue_management.IDSyncService.manage_queues() from a saved
+            # queue_management.IDConnectorService.manage_queues() from a saved
             # school authority configuration, this does not happen.
             # A CPython optimization for empty lists maybe?
             self.in_queue.out_queues = self.out_queues
