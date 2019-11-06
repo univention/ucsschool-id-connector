@@ -62,12 +62,12 @@ setup_devel_env: ## setup development environment (virtualenv)
 
 lint: ## check style (requires Python interpreter activated from venv)
 	venv/bin/isort --check-only --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --recursive src src/queue_management src/schedule_user
-	venv/bin/black --check --target-version py37 --exclude src/static/id_sync_password_hook.py src src/queue_management src/schedule_user
+	venv/bin/black --check --target-version py37 --exclude src/static/ucsschool_id_connector_password_hook.py src src/queue_management src/schedule_user
 	venv/bin/flake8 --max-line-length=90 --ignore=W503 src src/queue_management src/schedule_user
 
 format: ## format source code (requires Python interpreter activated from venv)
 	venv/bin/isort --apply --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --recursive src src/queue_management src/schedule_user
-	venv/bin/black --target-version py37 --exclude src/static/id_sync_password_hook.py src src/queue_management src/schedule_user
+	venv/bin/black --target-version py37 --exclude src/static/ucsschool_id_connector_password_hook.py src src/queue_management src/schedule_user
 
 test: ## run tests with the Python interpreter from 'venv'
 	. venv/bin/activate && cd src && python -m pytest -l -v tests/unittests
@@ -92,5 +92,5 @@ build-docker-img: ## build docker image locally quickly
 
 build-docker-img-on-knut: clean ## copy source to docker.knut, build and push docker image
 	# TODO: target should depend on 'lint', but that currently fails
-	rsync -av --delete --exclude .git --exclude-from=.gitignore ./ root@docker.knut.univention.de:id-sync/
-	ssh root@docker.knut.univention.de 'cd id-sync && ./build_docker_image --push'
+	rsync -av --delete --exclude .git --exclude-from=.gitignore ./ root@docker.knut.univention.de:ucsschool-id-connector/
+	ssh root@docker.knut.univention.de 'cd ucsschool-id-connector && ./build_docker_image --push'

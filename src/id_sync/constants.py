@@ -30,10 +30,10 @@
 import re
 from pathlib import Path
 
-APP_ID = "id-sync"
+APP_ID = "ucsschool-id-connector"
 SERVICE_NAME = "IDSyncService"
 APP_BASE_PATH = Path("/var/lib/univention-appcenter/apps", APP_ID)
-APP_SRC_PATH = Path("/id-sync/src")
+APP_SRC_PATH = Path(f"/{APP_ID}/src")
 APPCENTER_LISTENER_PATH = Path("/var/lib/univention-appcenter/listener", APP_ID)
 APP_CONFIG_BASE_PATH = Path(APP_BASE_PATH, "conf")
 APP_DATA_BASE_PATH = Path(APP_BASE_PATH, "data")
@@ -53,8 +53,9 @@ try:
 except PermissionError:
     # not allowed when run by user outside of container (on dev system)
     DOCKER_LOG_FD = open("/proc/self/fd/2", "w")
-LOG_FILE_PATH_HTTP = Path("/var/log/univention/id-sync/http.log")
-LOG_FILE_PATH_QUEUES = Path("/var/log/univention/id-sync/queues.log")
+LOG_DIR = Path(f"/var/log/univention/{APP_ID}")
+LOG_FILE_PATH_HTTP = Path(LOG_DIR, "http.log")
+LOG_FILE_PATH_QUEUES = Path(LOG_DIR, "queues.log")
 LOG_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 LOG_ENTRY_DEBUG_FORMAT = (
     "%(asctime)s %(levelname)-5s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
@@ -62,15 +63,15 @@ LOG_ENTRY_DEBUG_FORMAT = (
 LOG_ENTRY_CMDLINE_FORMAT = "%(log_color)s%(levelname)-5s: %(message)s"
 
 RPC_ADDR = "tcp://127.0.0.1:5678"
-URL_PREFIX = "/id-sync/api/v1"
+URL_PREFIX = f"/{APP_ID}/api/v1"
 UCR_DB_FILE = "/etc/univention/base.conf"
 UCR_REGEX = re.compile(r"^(?P<ucr>.+?): (?P<value>.*)$")
 TOKEN_SIGN_SECRET_FILE = Path(APP_CONFIG_BASE_PATH, "tokens.secret")
 TOKEN_HASH_ALGORITHM = "HS256"
-TOKEN_URL = "/id-sync/api/token"
-UCRV_SOURCE_UID = ("id-sync/source_uid", "TESTID")
-UCRV_TOKEN_TTL = ("id-sync/access_tokel_ttl", 60)
-ADMIN_GROUP_NAME = "id-sync-admins"
+TOKEN_URL = f"/{APP_ID}/api/token"
+UCRV_SOURCE_UID = (f"{APP_ID}/source_uid", "TESTID")
+UCRV_TOKEN_TTL = (f"{APP_ID}/access_tokel_ttl", 60)
+ADMIN_GROUP_NAME = f"{APP_ID}-admins"
 CHECK_SSL_CERTS = False
 API_SCHOOL_CACHE_TTL = 600
 API_COMMUNICATION_ERROR_WAIT = 600

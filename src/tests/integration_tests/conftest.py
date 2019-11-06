@@ -40,7 +40,7 @@ from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
 
 from id_sync.config_storage import ConfigurationStorage
-from id_sync.constants import OUT_QUEUE_TOP_DIR
+from id_sync.constants import APP_ID, OUT_QUEUE_TOP_DIR
 from id_sync.models import SchoolAuthorityConfiguration
 from id_sync.utils import get_ucrv
 
@@ -149,7 +149,8 @@ def school_auth_config(docker_hostname: str):
 @pytest.fixture()
 def req_headers():
     """
-    Fixture to create request headers for BB-API and id-sync-API requests
+    Fixture to create request headers for BB-API and
+    ucsschool-id-connector-API requests.
     """
 
     def _req_headers(
@@ -204,19 +205,19 @@ def bb_api_url():
 @pytest.fixture()
 def id_sync_api_url(docker_hostname):
     """
-    Fixture to create ID Sync API resource URLs.
+    Fixture to create UCS@school ID Connector API resource URLs.
     """
 
     def _id_sync_api_url(resource: str, entity: str = "") -> str:
         """
-        Creates a ID Sync API resource URL
+        Creates a UCS@school ID Connector API resource URL
 
         :param resource: The resource to query
         :param entity: If given it builds the URL for the specific resource entity
-        :return: The ID Sync API URL
+        :return: The UCS@school ID Connector API URL
         """
         return urljoin(
-            f"https://{docker_hostname}/id-sync/api/v1/", f"{resource}/{entity}"
+            f"https://{docker_hostname}/{APP_ID}/api/v1/", f"{resource}/{entity}"
         ).rstrip("/")
 
     return _id_sync_api_url
@@ -233,9 +234,9 @@ def docker_hostname():
 @pytest.fixture()
 async def source_uid() -> str:
     """
-    The source UID as specified in the id-sync App settings.
+    The source UID as specified in the ucsschool-id-connector App settings.
     """
-    return await get_ucrv("id-sync/source_uid")
+    return await get_ucrv(f"{APP_ID}/source_uid")
 
 
 @pytest.fixture(scope="session")
@@ -254,7 +255,7 @@ def host_bb_token(docker_hostname: str) -> str:
 @pytest.fixture(scope="session")
 def host_id_sync_token(docker_hostname: str) -> str:
     """
-    Returns a valid token for the id-sync HTTP-API.
+    Returns a valid token for the ucsschool-id-connector HTTP-API.
     """
     req_headers = {
         "accept": "application/json",
@@ -262,7 +263,7 @@ def host_id_sync_token(docker_hostname: str) -> str:
     }
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     response = requests.post(
-        urljoin(f"https://{docker_hostname}", "id-sync/api/token"),
+        urljoin(f"https://{docker_hostname}", f"{APP_ID}/api/token"),
         verify=False,
         data=dict(username="Administrator", password="univention"),
         headers=req_headers,
@@ -371,8 +372,8 @@ async def save_mapping(
     id_sync_api_url, req_headers, host_id_sync_token: str, http_request
 ):
     """
-    Fixture to save an ou to school authority mapping in id-sync. Mapping gets
-    deleted if the fixture goes out of scope
+    Fixture to save an ou to school authority mapping in ucsschool-id-connector.
+    Mapping gets deleted if the fixture goes out of scope.
     """
     headers = req_headers(
         bearer=host_id_sync_token,

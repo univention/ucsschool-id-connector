@@ -263,7 +263,7 @@ def query_service(
 
 
 app = FastAPI(
-    title="ID Sync API",
+    title="UCS@school ID Connector API",
     description="API to monitor queues and manage the configuration.",
     version=__version__,
     docs_url=f"{URL_PREFIX}/docs",

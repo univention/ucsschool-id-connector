@@ -10,7 +10,7 @@ PUSH_DEV=0
 [ "$1" = "--push" ] && PUSH_DEV=1
 
 
-APP_ID="id-sync"
+APP_ID="ucsschool-id-connector"
 APP_VERSION="$(cd src; python3 -B -c 'import id_sync; print(id_sync.__version__)')"
 BASE_IMG="$(egrep ^FROM Dockerfile | cut -d ' ' -f 2-)"
 APP_IMG_NO_VERSION="docker-test-upload.software-univention.de/${APP_ID}"

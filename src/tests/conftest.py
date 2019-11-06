@@ -455,8 +455,8 @@ class DummyPluginSpec:
 
 @pytest.fixture(scope="session")
 def mock_plugin_impls(temp_dir_session):
-    # replace /var/lib/univention-appcenter/apps/id-sync with path below /tmp
-    # and /id-sync/src with ../..
+    # replace /var/lib/univention-appcenter/apps/ucsschool-id-connector with path below /tmp
+    # and /ucsschool-id-connector/src with ../..
     tmp_dir = temp_dir_session()
     default_package_dir = Path(__file__).parent.parent / "plugins/packages"
     custom_package_base_dir = tmp_dir / "plugins/packages"

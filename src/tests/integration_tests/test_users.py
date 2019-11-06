@@ -447,7 +447,8 @@ async def test_class_change(
     http_request,
 ):
     """
-    Tests if the modification of a users class is properly distributed by id-sync.
+    Tests if the modification of a users class is properly distributed by
+    ucsschool-id-connector.
     """
     school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 1)])
@@ -534,7 +535,8 @@ async def test_school_change(
     http_request,
 ):
     """
-    Tests if the modification of a users school is properly distributed by id-sync.
+    Tests if the modification of a users school is properly distributed by
+    ucsschool-id-connector.
     """
     school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 2)])

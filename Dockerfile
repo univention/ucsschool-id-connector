@@ -4,7 +4,7 @@ ARG version
 
 VOLUME /var/log
 
-WORKDIR /id-sync
+WORKDIR /ucsschool-id-connector
 
 EXPOSE 8911
 
@@ -14,11 +14,11 @@ COPY apline_apk_list init.d/ src/requirements*.txt /tmp/
 
 RUN echo '@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
     apk add --no-cache $(cat /tmp/apline_apk_list) && \
-    mv -v /tmp/id-sync.initd /etc/init.d/id-sync && \
-    mv -v /tmp/id-sync-rest-api.initd.final /etc/init.d/id-sync-rest-api && \
-    mv -v /tmp/id-sync-rest-api.initd.dev /etc/init.d/id-sync-rest-api-dev && \
-    rc-update add id-sync default && \
-    rc-update add id-sync-rest-api default && \
+    mv -v /tmp/ucsschool-id-connector.initd /etc/init.d/ucsschool-id-connector && \
+    mv -v /tmp/ucsschool-id-connector-rest-api.initd.final /etc/init.d/ucsschool-id-connector-rest-api && \
+    mv -v /tmp/ucsschool-id-connector-rest-api.initd.dev /etc/init.d/ucsschool-id-connector-rest-api-dev && \
+    rc-update add ucsschool-id-connector default && \
+    rc-update add ucsschool-id-connector-rest-api default && \
     cp -v /usr/share/zoneinfo/Europe/Berlin /etc/localtime && \
     echo "Europe/Berlin" > /etc/timezone && \
     # Disable getty's
@@ -43,9 +43,9 @@ RUN echo '@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/ap
     # Can't do cgroups
     sed -i 's/\tcgroup_add_service/\t#cgroup_add_service/g' /lib/rc/sh/openrc-run.sh && \
     sed -i 's/VSERVER/DOCKER/Ig' /lib/rc/sh/init.sh && \
-    virtualenv --system-site-packages /id-sync/venv && \
-    /id-sync/venv/bin/pip3 install --upgrade pip && \
-    /id-sync/venv/bin/pip3 install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
+    virtualenv --system-site-packages /ucsschool-id-connector/venv && \
+    /ucsschool-id-connector/venv/bin/pip3 install --upgrade pip && \
+    /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
     rm -rf /root/.cache/ /tmp/* && \
     apk del --no-cache \
         gcc \
@@ -53,14 +53,14 @@ RUN echo '@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/ap
         musl-dev \
         python3-dev
 
-LABEL "description"="ID Sync" \
+LABEL "description"="UCS@school ID Connector" \
     "version"="$version"
 
-COPY src/ /id-sync/src/
+COPY src/ /ucsschool-id-connector/src/
 
-RUN cd /id-sync/src && \
-    /id-sync/venv/bin/python3 -m pytest -l -v --color=yes tests/unittests && \
-    /id-sync/venv/bin/pip3 install --no-cache-dir --editable . && \
+RUN cd /ucsschool-id-connector/src && \
+    /ucsschool-id-connector/venv/bin/python3 -m pytest -l -v --color=yes tests/unittests && \
+    /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir --editable . && \
     rst2html5-3 README.rst README.html && \
     rst2html5-3 HISTORY.rst HISTORY.html && \
-    rm -rf /id-sync/src/.eggs/ /id-sync/src/.pytest_cache/ /root/.cache/ /tmp/pip*
+    rm -rf /ucsschool-id-connector/src/.eggs/ /ucsschool-id-connector/src/.pytest_cache/ /root/.cache/ /tmp/pip*

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-UCS@school import hook to save password hashes sent by the ID Sync app.
+UCS@school import hook to save password hashes sent by the UCS@school ID
+Connector app.
 
 Install it, by copying this file to /usr/share/ucs-school-import/pyhooks.
 If the extended attribute to receive the password hashes is not called
@@ -20,7 +21,7 @@ PASSWORD_TARGET_ATTRIBUT = "id_sync_pw"
 class PasswordSync(UserPyHook):
 	"""
 	Handle user.udm_properties[PASSWORD_TARGET_ATTRIBUT] that contains password
-	hashes from the ID Sync. Example:
+	hashes from the UCS@school ID Connector. Example:
 	{
 		'krb5KeyVersionNumber': 1,
 		'userPassword': [u'{crypt}$6$icFo5bLKnDAvSoIq$2w...'],

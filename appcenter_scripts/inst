@@ -35,7 +35,7 @@
 
 VERSION=1
 
-APP_ID="id-sync"
+APP_ID="ucsschool-id-connector"
 ADMIN_GROUP="$APP_ID-admins"
 TOKEN_SIGN_SECRET_FILE="/var/lib/univention-appcenter/apps/$APP_ID/conf/tokens.secret"
 
@@ -57,7 +57,7 @@ main () {
 	univention-directory-manager groups/group create "$@" --ignore_exists \
 		--position "cn=groups,$ldap_base" \
 		--set name="$ADMIN_GROUP" \
-		--set description="ID Sync admin group" \
+		--set description="UCS@school ID Connector admin group" \
 		--append "users=uid=Administrator,cn=users,$ldap_base" || die
 }
 

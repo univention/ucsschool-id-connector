@@ -1,5 +1,5 @@
-ID Sync replication system - developer documentation
-====================================================
+UCS\@school ID Connector developer documentation
+================================================
 
 |python| |license| |code style|
 
@@ -18,7 +18,7 @@ Development
 
 Setup development environment::
 
-    $ cd ~/git/id-sync
+    $ cd ~/git/ucsschool-id-connector
     $ make setup_devel_env
     $ make install
 
@@ -47,35 +47,37 @@ Run ``make`` without argument to see more useful commands::
 
 Build Docker image::
 
-    $ cd ~/git/id-sync
+    $ cd ~/git/ucsschool-id-connector
     $ make build-docker-img
 
 The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::
 
-    $ docker run -p 127.0.0.1:8911:8911/tcp --name id_sync docker-test-upload.software-univention.de/id-sync:0.1.0
+    $ docker run -p 127.0.0.1:8911:8911/tcp --name id_sync docker-test-upload.software-univention.de/ucsschool-id-connector:0.1.0
 
 Use ``docker run -d ...`` to let it run in the background. Use ``docker logs id_sync`` to see the stdout; ``docker stop id_sync`` and ``docker rm id_sync`` to stop and remove the running container.
 
 Replace version (in above command ``0.1.0``) with current version. See ``APP_VERSION`` in output at the start of the build process.
 
 
-When the container is started that way (not through the appcenter) it must be accessed through https://FQDN:8911/id-sync/api/v1/docs after stopping the firewall (``service univention-firewall stop``).
+When the container is started that way (not through the appcenter) it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs after stopping the firewall (``service univention-firewall stop``).
 
 To enter the running container run::
 
     $ docker exec -it id_sync /bin/ash
 
-There you can use the virtual envs Python::
+(When started through the appcenter use ``univention-app shell ucsschool-id-connector``.)
 
-    /id-sync # . venv/bin/activate
+Inside the container you can use the virtual envs Python::
 
-    (venv) /id-sync # python
+    /ucsschool-id-connector # . venv/bin/activate
+
+    (venv) /ucsschool-id-connector # python
     Python 3.7.4 (default, Aug  2 2019, 18:24:02)
     [GCC 8.3.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> from id_sync import models
 
-    (venv) /id-sync # ipython
+    (venv) /ucsschool-id-connector # ipython
     Python 3.7.4 (default, Aug  2 2019, 18:24:02)
     Type 'copyright', 'credits' or 'license' for more information
     IPython 7.8.0 -- An enhanced Interactive Python. Type '?' for help.
@@ -107,14 +109,14 @@ Using devsync with running app container
 
 Sync your working copy into the running container, enter it and restart the services::
 
-    [test VM] $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' "$(ucr get appcenter/apps/id-sync/container)"
+    [test VM] $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' "$(ucr get appcenter/apps/ucsschool-id-connector/container)"
     → /var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged
-    [developer machine] ~/git/id-sync $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/id-sync/
-    [test VM] $ univention-app shell id-sync
-    [in container] $ /id-sync/venv/bin/pip3 install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
-    [in container] $ /etc/init.d/id-sync restart
-    [in container] $ /etc/init.d/id-sync-rest-api stop
-    [in container] $ /etc/init.d/id-sync-rest-api-dev start
+    [developer machine] ~/git/ucsschool-id-connector $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/ucsschool-id-connector/
+    [test VM] $ univention-app shell ucsschool-id-connector
+    [in container] $ /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
+    [in container] $ /etc/init.d/ucsschool-id-connector restart
+    [in container] $ /etc/init.d/ucsschool-id-connector-rest-api stop
+    [in container] $ /etc/init.d/ucsschool-id-connector-rest-api-dev start
     #                       auto-reload HTTP-API ^^^^
 
     [in container] $ src/schedule_user demo_teacher
@@ -132,7 +134,7 @@ Build release
 
 To upload ("push") a new Docker image to Univentions Docker registry (``docker-test.software-univention.de``), run::
 
-    $ cd ~/git/id-sync
+    $ cd ~/git/ucsschool-id-connector
     $ make build-docker-img-on-knut
 
 
@@ -141,17 +143,17 @@ Tests
 
 Unit tests are executed as part of the build process. To start them manually in the installed apps running Docker container, run::
 
-    root@ucs-host:# univention-app shell id-sync
-    /id-sync # cd src/
-    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v tests/unittests
-    /id-sync/src # exit
+    root@ucs-host:# univention-app shell ucsschool-id-connector
+    /ucsschool-id-connector # cd src/
+    /ucsschool-id-connector/src # /ucsschool-id-connector/venv/bin/python -m pytest -l -v tests/unittests
+    /ucsschool-id-connector/src # exit
 
 To run integration tests (*not safe, will modify source and target systems!*), run::
 
-    root@ucs-host:# univention-app shell id-sync
-    /id-sync # cd src/
-    /id-sync/src # /id-sync/venv/bin/python -m pytest -l -v tests/integration_tests
-    /id-sync/src # exit
+    root@ucs-host:# univention-app shell ucsschool-id-connector
+    /ucsschool-id-connector # cd src/
+    /ucsschool-id-connector/src # /ucsschool-id-connector/venv/bin/python -m pytest -l -v tests/integration_tests
+    /ucsschool-id-connector/src # exit
 
 
 
@@ -164,7 +166,7 @@ To run integration tests (*not safe, will modify source and target systems!*), r
 .. |code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Code style: black
     :target: https://github.com/python/black
-.. |diagram_overview| image:: src/static/M2M-Sync_overview.png
+.. |diagram_overview| image:: src/static/ucsschool-id-connector_overview.png
     :alt: Diagram with an overview of the master 2 master sync
-.. |diagram_details| image:: src/static/M2M-Sync_details.png
+.. |diagram_details| image:: src/static/ucsschool-id-connector_details.png
     :alt: Diagram with the technical details of the master 2 master sync

@@ -1,6 +1,6 @@
 .. :changelog:
 
-.. The file can be read on the installed system at https://FQDN/id-sync/api/v1/history
+.. The file can be read on the installed system at https://FQDN/ucsschool-id-connector/api/v1/history
 
 Changelog
 ---------

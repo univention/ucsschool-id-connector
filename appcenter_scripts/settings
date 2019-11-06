@@ -1,10 +1,10 @@
-[id-sync/access_tokel_ttl]
+[ucsschool-id-connector/access_tokel_ttl]
 Type = Int
 Description = Number of minutes a token retrieved from and for the HTTP-API is valid.
 Description[de] = Anzahl der Minuten die ein Token, der von und für die HTTP-API bezogen wurde, gültig ist.
 InitialValue = 60
 
-[id-sync/source_uid]
+[ucsschool-id-connector/source_uid]
 Type = String
 Description = Value that will be transmit as the "source_uid" for all users (see https://docs.software-univention.de/ucsschool-import-handbuch-4.4.html#procedure:assignment). If unset: "TESTID".
 Description[de] = Wert der für alle User als "source_uid" übertragen wird (https://docs.software-univention.de/ucsschool-import-handbuch-4.4.html#procedure:assignment). Wenn nicht gesetzt: "TESTID".

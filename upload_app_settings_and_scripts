@@ -27,7 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-APP_ID="id-sync"
+APP_ID="ucsschool-id-connector"
 APP_VERSION="$(cd src; python3 -B -c 'import id_sync; print(id_sync.__version__)')"
 UCS_VERSION="4.4"
 APP="${UCS_VERSION}/${APP_ID}=${APP_VERSION}"
