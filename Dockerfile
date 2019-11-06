@@ -1,4 +1,4 @@
-FROM alpine:edge
+FROM alpine:latest
 
 ARG version
 
@@ -12,7 +12,8 @@ CMD ["/sbin/init"]
 
 COPY apline_apk_list init.d/ src/requirements*.txt /tmp/
 
-RUN echo '@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
+RUN echo '@edge-community http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories && \
+    echo '@edge-testing http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
     apk add --no-cache $(cat /tmp/apline_apk_list) && \
     mv -v /tmp/ucsschool-id-connector.initd /etc/init.d/ucsschool-id-connector && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.final /etc/init.d/ucsschool-id-connector-rest-api && \
