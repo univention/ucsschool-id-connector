@@ -12,8 +12,7 @@ CMD ["/sbin/init"]
 
 COPY apline_apk_list init.d/ src/requirements*.txt /tmp/
 
-RUN echo '@edge-community http://dl-cdn.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories && \
-    echo '@edge-testing http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
+RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/community' >> /etc/apk/repositories && \
     apk add --no-cache $(cat /tmp/apline_apk_list) && \
     mv -v /tmp/ucsschool-id-connector.initd /etc/init.d/ucsschool-id-connector && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.final /etc/init.d/ucsschool-id-connector-rest-api && \
@@ -46,10 +45,14 @@ RUN echo '@edge-community http://dl-cdn.alpinelinux.org/alpine/edge/community' >
     sed -i 's/VSERVER/DOCKER/Ig' /lib/rc/sh/init.sh && \
     virtualenv --system-site-packages /ucsschool-id-connector/venv && \
     /ucsschool-id-connector/venv/bin/pip3 install --upgrade pip && \
+    # build ujson from source https://github.com/esnme/ultrajson/issues/326
+    /ucsschool-id-connector/venv/bin/pip3 install git+git://github.com/esnme/ultrajson.git && \
     /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
     rm -rf /root/.cache/ /tmp/* && \
     apk del --no-cache \
+        g++ \
         gcc \
+        git \
         make \
         musl-dev \
         python3-dev

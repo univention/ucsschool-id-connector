@@ -52,11 +52,11 @@ Build Docker image::
 
 The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::
 
-    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector docker-test-upload.software-univention.de/ucsschool-id-connector:0.1.0
+    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector docker-test-upload.software-univention.de/ucsschool-id-connector:1.0.0
 
 Use ``docker run -d ...`` to let it run in the background. Use ``docker logs ucsschool_id_connector`` to see the stdout; ``docker stop ucsschool_id_connector`` and ``docker rm ucsschool_id_connector`` to stop and remove the running container.
 
-Replace version (in above command ``0.1.0``) with current version. See ``APP_VERSION`` in output at the start of the build process.
+Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in output at the start of the build process.
 
 
 When the container is started that way (not through the appcenter) it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs after stopping the firewall (``service univention-firewall stop``).
