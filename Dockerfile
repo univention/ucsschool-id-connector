@@ -10,10 +10,13 @@ EXPOSE 8911
 
 CMD ["/sbin/init"]
 
-COPY apline_apk_list init.d/ src/requirements*.txt /tmp/
+LABEL "description"="UCS@school ID Connector" \
+    "version"="$version"
+
+COPY alpine_apk_list init.d/ src/requirements*.txt /tmp/
 
 RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/community' >> /etc/apk/repositories && \
-    apk add --no-cache $(cat /tmp/apline_apk_list) && \
+    apk add --no-cache $(cat /tmp/alpine_apk_list) && \
     mv -v /tmp/ucsschool-id-connector.initd /etc/init.d/ucsschool-id-connector && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.final /etc/init.d/ucsschool-id-connector-rest-api && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.dev /etc/init.d/ucsschool-id-connector-rest-api-dev && \
@@ -33,9 +36,9 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
         -e 's/#rc_crashed_start=.*/rc_crashed_start=YES/g' \
         # Define extra dependencies for services
         -e 's/#rc_provide=".*"/rc_provide="loopback net"/g' \
-        /etc/rc.conf \
+        /etc/rc.conf && \
     # Remove unnecessary services
-    && rm -fv /etc/init.d/hwdrivers \
+    rm -fv /etc/init.d/hwdrivers \
         /etc/init.d/hwclock \
         /etc/init.d/modules \
         /etc/init.d/modules-load \
