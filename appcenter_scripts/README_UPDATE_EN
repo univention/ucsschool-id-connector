@@ -2,12 +2,25 @@
 	Changelog
 </h1>
 <h2>
+	v1.1.0 (2020-04-01)
+</h2>
+<h2>
+	<ul>
+		<li>
+		    Support for replicating to target systems exposing the <a href="https://docs.software-univention.de/ucsschool-kelvin-rest-api">UCS@school Kelvin REST API</a> was added.
+		</li>
+		<li>
+		    Update to Python 3.8.
+        </li>
+	</ul>
+</h2>
+<h2>
 	v1.0.0 (2019-11-15)
 </h2>
 <h2>
 	<ul>
 		<li>
-			inital release
+			Inital release.
 		</li>
 	</ul>
 </h2>

@@ -45,6 +45,7 @@ Run ``make`` without argument to see more useful commands::
     build-docker-img     build docker image locally quickly
     build-docker-img-on-knut copy source to docker.knut, build and push docker image
 
+*All commands in the Makefile assume that the virtualenv is active.*
 
 Build Docker image::
 
@@ -68,20 +69,18 @@ To enter the running container run::
 
 (When started through the appcenter use ``univention-app shell ucsschool-id-connector``.)
 
-Inside the container you can use the virtual envs Python::
+Inside the container you can use the systems Python::
 
-    /ucsschool-id-connector # . venv/bin/activate
-
-    (venv) /ucsschool-id-connector # python
-    Python 3.7.4 (default, Aug  2 2019, 18:24:02)
-    [GCC 8.3.0] on linux
+    /ucsschool-id-connector # python3
+    Python 3.8.2 (default, Feb 29 2020, 17:03:31)
+    [GCC 9.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> from ucsschool_id_connector import models
 
-    (venv) /ucsschool-id-connector # ipython
-    Python 3.7.4 (default, Aug  2 2019, 18:24:02)
+    /ucsschool-id-connector # ipython
+    Python 3.8.2 (default, Feb 29 2020, 17:03:31)
     Type 'copyright', 'credits' or 'license' for more information
-    IPython 7.8.0 -- An enhanced Interactive Python. Type '?' for help.
+    IPython 7.13.0 -- An enhanced Interactive Python. Type '?' for help.
 
     In [1]: from ucsschool_id_connector import models
 
@@ -114,7 +113,7 @@ Sync your working copy into the running container, enter it and restart the serv
     → /var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged
     [developer machine] ~/git/ucsschool-id-connector $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/ucsschool-id-connector/
     [test VM] $ univention-app shell ucsschool-id-connector
-    [in container] $ /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
+    [in container] $ python3 -m pip3 install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
     [in container] $ /etc/init.d/ucsschool-id-connector restart
     [in container] $ /etc/init.d/ucsschool-id-connector-rest-api stop
     [in container] $ /etc/init.d/ucsschool-id-connector-rest-api-dev start
@@ -125,9 +124,8 @@ Sync your working copy into the running container, enter it and restart the serv
     # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.
     # DEBUG: Done.
 
-    [in container] $ . venv/bin/activate
-    [in container] (venv) $ cd src
-    [in container] (venv) $ python -m pytest -l -v
+    [in container] $ cd src
+    [in container] $ python -m pytest -l -v
 
 
 Build release
@@ -150,14 +148,14 @@ Unit tests are executed as part of the build process. To start them manually in 
 
     root@ucs-host:# univention-app shell ucsschool-id-connector
     /ucsschool-id-connector # cd src/
-    /ucsschool-id-connector/src # /ucsschool-id-connector/venv/bin/python -m pytest -l -v tests/unittests
+    /ucsschool-id-connector/src # python3 -m pytest -l -v tests/unittests
     /ucsschool-id-connector/src # exit
 
 To run integration tests (*not safe, will modify source and target systems!*), run::
 
     root@ucs-host:# univention-app shell ucsschool-id-connector
     /ucsschool-id-connector # cd src/
-    /ucsschool-id-connector/src # /ucsschool-id-connector/venv/bin/python -m pytest -l -v tests/integration_tests
+    /ucsschool-id-connector/src # python3 -m pytest -l -v tests/integration_tests
     /ucsschool-id-connector/src # exit
 
 
@@ -165,9 +163,9 @@ To run integration tests (*not safe, will modify source and target systems!*), r
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
     :alt: GNU AGPL V3 license
     :target: https://www.gnu.org/licenses/agpl-3.0
-.. |python| image:: https://img.shields.io/badge/python-3.7+-blue.svg
-    :alt: Python 3.7+
-    :target: https://www.python.org/downloads/release/python-373/
+.. |python| image:: https://img.shields.io/badge/python-3.8-blue.svg
+    :alt: Python 3.8
+    :target: https://www.python.org/downloads/release/python-382/
 .. |code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Code style: black
     :target: https://github.com/python/black

@@ -1,6 +1,6 @@
 #!/sbin/openrc-run
 
-command=/ucsschool-id-connector/venv/bin/uvicorn
+command=/usr/bin/uvicorn
 command_args="--host 0.0.0.0 --port 8911 ucsschool_id_connector.http_api:app"
 name=ucsschool-id-connector-rest-api
 description="UCS@school ID Connector REST API (ASGI server)"
@@ -14,11 +14,11 @@ start() {
 stop() {
     ebegin "Stopping UCS@school ID Connector REST API"
     pkill -INT -f multiprocessing || true
-    pkill -INT -f /ucsschool-id-connector/venv/bin/uvicorn || true
+    pkill -INT -f /usr/bin/uvicorn || true
     eend $?
 }
 status () {
-    if pgrep -f /ucsschool-id-connector/venv/bin/uvicorn > /dev/null; then
+    if pgrep -f /usr/bin/uvicorn > /dev/null; then
         einfo "status: started"
         return 0
     else

@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.11
 
 ARG app_id
 ARG version
@@ -49,11 +49,11 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
     # Can't do cgroups
     sed -i 's/\tcgroup_add_service/\t#cgroup_add_service/g' /lib/rc/sh/openrc-run.sh && \
     sed -i 's/VSERVER/DOCKER/Ig' /lib/rc/sh/init.sh && \
-    virtualenv --system-site-packages /ucsschool-id-connector/venv && \
-    /ucsschool-id-connector/venv/bin/pip3 install --upgrade pip && \
+   # install Python packages
+    python3 -m pip install --upgrade pip && \
     # build ujson from source https://github.com/esnme/ultrajson/issues/326
-    /ucsschool-id-connector/venv/bin/pip3 install git+git://github.com/esnme/ultrajson.git && \
-    /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
+    python3 -m pip install git+git://github.com/esnme/ultrajson.git && \
+    python3 -m pip install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
     rm -rf /root/.cache/ /tmp/* && \
     apk del --no-cache mybuilddeps
 
@@ -62,8 +62,8 @@ COPY src/ /ucsschool-id-connector/src/
 COPY VERSION.txt /ucsschool-id-connector
 COPY examples/ /ucsschool-id-connector/examples/
 RUN cd /ucsschool-id-connector/src && \
-    /ucsschool-id-connector/venv/bin/python3 -m pytest -l -v --color=yes tests/unittests && \
-    /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir --editable . && \
+    python3 -m pytest -l -v --color=yes tests/unittests && \
+    python3 -m pip install --no-cache-dir --editable . && \
     rst2html5-3 README.rst README.html && \
     rst2html5-3 HISTORY.rst HISTORY.html && \
     rm -rf /ucsschool-id-connector/src/.eggs/ /ucsschool-id-connector/src/.pytest_cache/ /root/.cache/ /tmp/pip*

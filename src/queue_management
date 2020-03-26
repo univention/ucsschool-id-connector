@@ -1,4 +1,4 @@
-#!/ucsschool-id-connector/venv/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # TODO: adapt path of hashbang, when project gets renamed
