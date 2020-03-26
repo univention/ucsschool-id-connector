@@ -37,9 +37,11 @@ from typing import TextIO, Union
 
 import aiofiles
 import colorlog
+import pkg_resources
 from async_lru import alru_cache
 
 from .constants import (
+    APP_ID,
     DOCKER_LOG_FD,
     LOG_DATETIME_FORMAT,
     LOG_ENTRY_CMDLINE_FORMAT,
@@ -163,3 +165,13 @@ def class_dn_regex():
         f"{base_dn}",
         flags=re.IGNORECASE,
     )
+
+
+@lru_cache(maxsize=1)
+def get_app_version():
+    try:
+        return pkg_resources.get_distribution(APP_ID).version
+    except pkg_resources.DistributionNotFound:
+        # not yet installed (running tests prior to installation)
+        with (Path(__file__).parent.parent.parent / "VERSION.txt").open("r") as fp:
+            return fp.read().strip()

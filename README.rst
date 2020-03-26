@@ -132,6 +132,10 @@ Sync your working copy into the running container, enter it and restart the serv
 Build release
 -------------
 
+* Update the apps version in ``VERSION.txt``.
+* Add an entry to ``src/HISTORY.rst``.
+* Build and push Docker image to Docker registry
+
 To upload ("push") a new Docker image to Univentions Docker registry (``docker-test.software-univention.de``), run::
 
     $ cd ~/git/ucsschool-id-connector

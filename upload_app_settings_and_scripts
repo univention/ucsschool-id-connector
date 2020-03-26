@@ -28,7 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 APP_ID="ucsschool-id-connector"
-APP_VERSION="$(cd src; python3 -B -c 'import ucsschool_id_connector; print(ucsschool_id_connector.__version__)')"
+APP_VERSION="$(<VERSION.txt)"
 UCS_VERSION="4.4"
 APP="${UCS_VERSION}/${APP_ID}=${APP_VERSION}"
 UPLOAD_DIR="appcenter_scripts"

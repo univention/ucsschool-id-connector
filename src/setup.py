@@ -27,9 +27,11 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+from pathlib import Path
+
 import setuptools
 
-import ucsschool_id_connector
+from ucsschool_id_connector.constants import APP_ID
 
 with open("requirements.txt") as fp:
     requirements = fp.read().splitlines()
@@ -37,9 +39,12 @@ with open("requirements.txt") as fp:
 with open("README.rst", "r") as fh:
     long_description = fh.read()
 
+with (Path(__file__).parent.parent / "VERSION.txt").open("r") as fp:
+    version = fp.read().strip()
+
 setuptools.setup(
-    name="ucsschool-id-connector",
-    version=ucsschool_id_connector.__version__,
+    name=APP_ID,
+    version=version,
     author="Daniel Tröder",
     author_email="troeder@univention.de",
     description="UCS@school ID Connector",

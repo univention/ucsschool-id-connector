@@ -40,14 +40,17 @@ from typing import List
 import aiojobs
 from service import Service
 
-from ucsschool_id_connector import __version__
 from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
 from ucsschool_id_connector.plugin_loader import load_plugins
 from ucsschool_id_connector.plugins import plugin_manager
 from ucsschool_id_connector.queues import InQueue, OutQueue, get_out_queue_dirs
 from ucsschool_id_connector.rpc import SimpleRPCServer
-from ucsschool_id_connector.utils import ConsoleAndFileLogging, close_ucr_cache
+from ucsschool_id_connector.utils import (
+    ConsoleAndFileLogging,
+    close_ucr_cache,
+    get_app_version,
+)
 
 
 class IDConnectorService(Service):
@@ -65,9 +68,9 @@ class IDConnectorService(Service):
         )
 
     def run(self) -> None:
-        self.logger.info("%s %s starting...", SERVICE_NAME, __version__)
+        self.logger.info("%s %s starting...", SERVICE_NAME, get_app_version())
         asyncio.run(self.manage_queues())
-        self.logger.info("%s %s stopped.", SERVICE_NAME, __version__)
+        self.logger.info("%s %s stopped.", SERVICE_NAME, get_app_version())
 
     async def manage_queues(self) -> None:
         load_plugins()

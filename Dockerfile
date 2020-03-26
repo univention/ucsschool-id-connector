@@ -1,5 +1,6 @@
 FROM alpine:latest
 
+ARG app_id
 ARG version
 
 VOLUME /var/log
@@ -10,7 +11,7 @@ EXPOSE 8911
 
 CMD ["/sbin/init"]
 
-LABEL "description"="UCS@school ID Connector" \
+LABEL "description"="$app_id app image" \
     "version"="$version"
 
 COPY alpine_apk_list init.d/ src/requirements*.txt /tmp/
@@ -60,11 +61,9 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
         musl-dev \
         python3-dev
 
-LABEL "description"="UCS@school ID Connector" \
-    "version"="$version"
-
+# install app
 COPY src/ /ucsschool-id-connector/src/
-
+COPY VERSION.txt /ucsschool-id-connector
 COPY examples/ /ucsschool-id-connector/examples/
 RUN cd /ucsschool-id-connector/src && \
     /ucsschool-id-connector/venv/bin/python3 -m pytest -l -v --color=yes tests/unittests && \

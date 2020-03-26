@@ -52,7 +52,6 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from . import __version__
 from .constants import (
     HISTORY_FILE,
     LOG_FILE_PATH_HTTP,
@@ -74,7 +73,7 @@ from .models import (
     User,
 )
 from .token_auth import create_access_token, get_current_active_user
-from .utils import ConsoleAndFileLogging, get_token_ttl
+from .utils import ConsoleAndFileLogging, get_app_version, get_token_ttl
 
 router = APIRouter()
 zmq_context = zmq.asyncio.Context()
@@ -265,7 +264,7 @@ def query_service(
 app = FastAPI(
     title="UCS@school ID Connector API",
     description="API to monitor queues and manage the configuration.",
-    version=__version__,
+    version=get_app_version(),
     docs_url=f"{URL_PREFIX}/docs",
     redoc_url=f"{URL_PREFIX}/redoc",
     openapi_url=f"{URL_PREFIX}/openapi.json",
