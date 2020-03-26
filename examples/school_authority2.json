@@ -1,7 +1,7 @@
 {
-  "name": "St67",
-  "url": "https://10.200.3.67/api-bb/",
-  "password": "a938a6624f4421d851be980c28a79bf0c3a66339",
+  "name": "Traeger2",
+  "url": "https://10.200.3.242/api-bb/",
+  "password": "2c9ec561871d522c3be2d652a3bbf34f45fa2ec7",
   "active": true,
   "mapping": {
     "firstname": "firstname",
@@ -11,7 +11,6 @@
     "mailPrimaryAddress": "email",
     "e-mail": "email",
     "birthday": "birthday",
-    "password": "password",
     "school": "school",
     "schools": "schools",
     "school_classes": "school_classes",

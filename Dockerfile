@@ -65,6 +65,7 @@ LABEL "description"="UCS@school ID Connector" \
 
 COPY src/ /ucsschool-id-connector/src/
 
+COPY examples/ /ucsschool-id-connector/examples/
 RUN cd /ucsschool-id-connector/src && \
     /ucsschool-id-connector/venv/bin/python3 -m pytest -l -v --color=yes tests/unittests && \
     /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir --editable . && \

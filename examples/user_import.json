@@ -1,0 +1,29 @@
+{
+    "classes": {
+        "reader": "ucsschool.importer.reader.http_api_csv_reader.HttpApiCsvReader"
+    },
+    "configuration_checks": ["defaults", "mapped_udm_properties"],
+    "csv": {
+        "mapping": {
+            "Schule": "school",
+            "Vorname": "firstname",
+            "Nachname": "lastname",
+            "Klassen": "school_classes",
+            "Beschreibung": "description",
+            "Telefon": "phone",
+            "EMail": "email"
+        }
+    },
+    "scheme": {
+        "record_uid": "<firstname>.<lastname>",
+        "username": {
+            "default": "<:umlauts><firstname>.<lastname><:lower>[COUNTER2]"
+        }
+    },
+    "source_uid": "TESTID",
+    "mapped_udm_properties": ["profilepath", "phone", "e-mail", "organisation", "uidNumber"],
+    "username" : {
+            "allowed_special_chars": ".-"
+    },
+    "verbose": false
+}

@@ -557,12 +557,12 @@ def mock_plugins(
 
 @pytest.fixture(scope="session")
 def example_user_json_path_real():
-    return Path(__file__).parent.parent / "example_user.json"
+    return Path(__file__).parent.parent.parent / "examples" / "teacher1.json"
 
 
 @pytest.fixture(scope="session")
 def example_user_remove_json_path_real():
-    return Path(__file__).parent.parent / "example_user_remove.json"
+    return Path(__file__).parent.parent.parent / "examples" / "teacher1_remove.json"
 
 
 @pytest.fixture
