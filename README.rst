@@ -21,6 +21,7 @@ Setup development environment::
     $ cd ~/git/ucsschool-id-connector
     $ make setup_devel_env
     $ make install
+    $ pre-commit run -a
 
 This will create a directory ``venv`` with a Python virtualenv with the app and all its dependencies in it. To use it, run::
 

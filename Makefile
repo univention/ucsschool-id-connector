@@ -57,7 +57,9 @@ setup_devel_env: ## setup development environment (virtualenv)
 	else \
 		/usr/bin/python3.7 -m virtualenv --python python3.7 venv; \
 		. venv/bin/activate && pip install -r src/requirements.txt -r src/requirements-dev.txt; \
+		pre-commit install && \
 		echo "==> Run '. venv/bin/activate' to activate virtual env."; \
+		echo "==> Run 'pre-commit run -a' to execute pre-commit hooks manually."; \
 	fi
 
 lint: ## check style (requires Python interpreter activated from venv)
@@ -86,6 +88,7 @@ coverage-html: src/.coverage ## generate HTML coverage report
 install: clean setup_devel_env ## install the package to the active Python's site-packages
 	. venv/bin/activate && cd src && pip install -e .
 	venv/bin/pip list --editable
+	pre-commit install
 
 build-docker-img: ## build docker image locally quickly
 	./build_docker_image -q

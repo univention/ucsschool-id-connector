@@ -1,0 +1,70 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+    -   id: check-added-large-files
+    -   id: check-ast
+    -   id: check-json
+    -   id: check-xml
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: requirements-txt-fixer
+    -   id: trailing-whitespace
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.5.1
+    hooks:
+    -   id: python-check-blanket-noqa
+    -   id: python-no-eval
+    -   id: python-no-log-warn
+    -   id: python-use-type-annotations
+    -   id: rst-backticks
+#-   repo: https://github.com/asottile/dead
+#    rev: v1.3.0
+#    hooks:
+#    -   id: dead
+-   repo: https://github.com/Lucas-C/pre-commit-hooks-markup
+    rev: v1.0.0
+    hooks:
+    -   id: rst-linter
+-   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.1.0
+    hooks:
+    -   id: python-safety-dependencies-check
+#-   repo: git://github.com/detailyang/pre-commit-shell
+#    rev: v1.0.6
+#    hooks:
+#    -   id: shell-lint
+#        args: [--format=json]
+-   repo: git://github.com/doublify/pre-commit-isort
+    rev: master
+    hooks:
+    -   id: isort
+        entry: isort -vb --check-only --diff --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --thirdparty aiofiles --thirdparty aiojobs --thirdparty aiohttp --thirdparty async_lru --thirdparty async_property --thirdparty click --thirdparty colorlog --thirdparty fastapi --thirdparty jwt --thirdparty lazy_object_proxy --thirdparty ldap3 --thirdparty pydantic --thirdparty pytest --thirdparty starlette --thirdparty factory --thirdparty faker --thirdparty requests --thirdparty ujson --thirdparty urllib3 --thirdparty zmq --project ucsschool --project udm_rest_client
+-   repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+    -   id: black
+        language_version: python3.8
+-   repo: https://github.com/pryorda/dockerfilelint-precommit-hooks
+    rev: v0.1.0
+    hooks:
+    -   id: dockerfilelint
+        stages: [commit]
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: master
+    hooks:
+    -   id: flake8
+        entry: flake8 --ignore=W503 --max-line-length=105
+-   repo: https://github.com/PyCQA/bandit
+    rev: master
+    hooks:
+    -   id: bandit
+        entry: bandit -x src/tests
+#-   repo: https://github.com/pycqa/pydocstyle
+#    rev: 5.0.1
+#    hooks:
+#    -   id: pydocstyle
+default_language_version:
+    python: python3.8
