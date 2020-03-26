@@ -149,7 +149,8 @@ class UserHandler:
         else:
             old_schools = "<no old_data>"
         self.logger.debug(
-            "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) source_uid=(%r->%r).",
+            "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) "
+            "source_uid=(%r->%r).",
             obj.username,
             old_schools,
             current_schools,
@@ -246,7 +247,7 @@ class UserHandler:
 
     @staticmethod
     async def _get_error_msg(
-        response: aiohttp.ClientResponse
+        response: aiohttp.ClientResponse,
     ) -> Union[Dict[str, Any], str]:
         try:
             return await response.json()
@@ -304,7 +305,7 @@ class UserHandler:
                     response_body = await self._get_error_msg(response)
                     self.logger.error("Response body: %r", response_body)
                     if len(response_body) > 500:
-                        error_file = "/tmp/error.txt"
+                        error_file = "/tmp/error.txt"  # nosec
                         async with aiofiles.open(error_file, "w") as fp:
                             await fp.write(response_body)
                         self.logger.error("Wrote response body to %r", error_file)

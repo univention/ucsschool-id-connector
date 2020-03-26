@@ -154,7 +154,8 @@ class LDAPAccess:
             return results[0].entry_dn
         elif len(results) > 1:
             raise RuntimeError(
-                f"More than 1 result when searching LDAP with filter {filter_s!r}: {results!r}."
+                f"More than 1 result when searching LDAP with filter {filter_s!r}: "
+                f"{results!r}."
             )
         else:
             return ""
@@ -180,7 +181,8 @@ class LDAPAccess:
             )
         elif len(results) > 1:
             raise RuntimeError(
-                f"More than 1 result when searching LDAP with filter {filter_s!r}: {results!r}."
+                f"More than 1 result when searching LDAP with filter {filter_s!r}: "
+                f"{results!r}."
             )
         else:
             return None
@@ -241,7 +243,8 @@ class LDAPAccess:
             )
         elif len(results) > 1:
             raise RuntimeError(
-                f"More than 1 result when searching LDAP with filter {filter_s!r}: {results!r}."
+                f"More than 1 result when searching LDAP with filter {filter_s!r}: "
+                f"{results!r}."
             )
         else:
             return None

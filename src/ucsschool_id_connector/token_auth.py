@@ -42,8 +42,8 @@ from .ldap_access import LDAPAccess
 from .models import TokenData, User
 from .utils import get_token_ttl
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=TOKEN_URL)
-_secret_key = ""
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=TOKEN_URL)  # nosec
+_secret_key = ""  # nosec
 ldap_auth_instance: LDAPAccess = lazy_object_proxy.Proxy(LDAPAccess)
 
 

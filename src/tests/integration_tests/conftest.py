@@ -369,7 +369,10 @@ async def make_school_authority(
 
 @pytest.fixture()
 async def save_mapping(
-    ucsschool_id_connector_api_url, req_headers, host_ucsschool_id_connector_token: str, http_request
+    ucsschool_id_connector_api_url,
+    req_headers,
+    host_ucsschool_id_connector_token: str,
+    http_request,
 ):
     """
     Fixture to save an ou to school authority mapping in ucsschool-id-connector.

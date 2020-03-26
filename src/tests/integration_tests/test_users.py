@@ -72,7 +72,7 @@ def compare_user(
         assert source[key] == other[key]
 
 
-def wait_for_status_code(
+def wait_for_status_code(  # noqa: C901
     method,
     url,
     status_code,
@@ -267,7 +267,8 @@ async def test_delete_user(
     http_request,
 ):
     """
-    Tests if ucsschool_id_connector distributes the deletion of an existing user correctly.
+    Tests if ucsschool_id_connector distributes the deletion of an existing
+    user correctly.
     """
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))
@@ -504,7 +505,8 @@ async def test_class_change(
     school_classes_at_sender = response.json()["school_classes"]
     assert school_classes_at_sender == new_value["school_classes"]
     print(
-        f"4. User was modified at sender, has now school_classes={school_classes_at_sender!r}."
+        f"4. User was modified at sender, has now "
+        f"school_classes={school_classes_at_sender!r}."
     )
     _, response = wait_for_status_code(
         requests.get,

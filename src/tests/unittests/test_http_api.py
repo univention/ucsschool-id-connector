@@ -84,7 +84,9 @@ def test_read_queues(zmq_context_mock, random_name, random_int, zmq_socket):
         headers={"Authorization": "Bearer TODO da token"},
     )
     socket.send_string.assert_called_with(
-        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queues).json()
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_queues
+        ).json()
     )
     assert res.status_code == 200
     queue_data["in_queue"]["school_authority"] = ""
@@ -107,7 +109,8 @@ def test_read_queue(zmq_context_mock, random_name, random_int, zmq_socket):
     )
     socket.send_string.assert_called_with(
         ucsschool_id_connector.models.RPCRequest(
-            cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name=queue_data["name"]
+            cmd=ucsschool_id_connector.models.RPCCommand.get_queue,
+            name=queue_data["name"],
         ).json()
     )
     assert res.status_code == 200
@@ -173,7 +176,8 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
 
     client = TestClient(ucsschool_id_connector.http_api.app)
     res = client.get(
-        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_authorities/{school_authority_data['name']}",
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_authorities/"
+        f"{school_authority_data['name']}",
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
@@ -276,4 +280,5 @@ def test_create_school_to_school_authority_mapping(
 
 
 # TODO: test non-auth-access
-# del ucsschool_id_connector.http_api.app.dependency_overrides[ucsschool_id_connector.token.get_current_active_user] ?
+# del ucsschool_id_connector.http_api. \
+# app.dependency_overrides[ucsschool_id_connector.token.get_current_active_user] ?

@@ -31,7 +31,7 @@ import logging
 import os
 import pprint
 from pathlib import Path
-from typing import AsyncIterator, Iterable, Iterator
+from typing import AsyncIterator, Iterable, Iterator, cast
 
 import aiofiles
 import lazy_object_proxy
@@ -58,15 +58,15 @@ class ConfigurationStorage:
 
     @classmethod
     async def load_school_authorities(
-        cls
+        cls,
     ) -> AsyncIterator[SchoolAuthorityConfiguration]:
         cls.logger.debug(
             "Looking for configuration in %s...", SCHOOL_AUTHORITIES_CONFIG_PATH
         )
         cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
-        with os.scandir(
-            SCHOOL_AUTHORITIES_CONFIG_PATH
-        ) as dir_entries:  # type: Iterator[os.DirEntry]
+        with cast(
+            Iterator[os.DirEntry], os.scandir(SCHOOL_AUTHORITIES_CONFIG_PATH)
+        ) as dir_entries:
             for entry in dir_entries:
                 if not entry.is_file() or not entry.name.lower().endswith(".json"):
                     cls.logger.warning(

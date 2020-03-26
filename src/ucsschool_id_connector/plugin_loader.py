@@ -30,7 +30,7 @@
 import importlib
 import os
 import sys
-from typing import Iterator
+from typing import Iterator, cast
 
 from ucsschool_id_connector.constants import PLUGIN_DIRS, PLUGIN_PACKAGE_DIRS
 from ucsschool_id_connector.plugins import plugin_manager
@@ -60,7 +60,7 @@ def load_plugins() -> None:
                 fp.write(
                     "This directory will be searched for Python modules with plugins.\n"
                 )
-        with os.scandir(plugin_dir) as dir_entries:  # type: Iterator[os.DirEntry]
+        with cast(Iterator[os.DirEntry], os.scandir(plugin_dir)) as dir_entries:
             for entry in dir_entries:
                 if entry.is_file() and entry.name.lower().endswith(".py"):
                     module_name = entry.name[:-3]

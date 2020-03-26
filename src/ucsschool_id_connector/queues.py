@@ -41,6 +41,7 @@ from typing import (
     Optional,
     Set,
     TypeVar,
+    cast,
 )
 
 import aiofiles
@@ -103,8 +104,8 @@ class FileQueue:
     def __init__(self, name: str = None, path: Path = None) -> None:
         self.name = name or self.name
         self.path = path or self.path
-        assert self.name
-        assert self.path
+        if not self.name or not self.path:
+            raise TypeError("Arguments 'name' and 'path' are required.")
         self.trash_dir = self.path / "trash"
         self.keep_dir = self.path / "keep"
         self._deleted = False
@@ -140,9 +141,7 @@ class FileQueue:
         :rtype: list[Path]
         """
         res = []
-        with os.scandir(
-            path or self.path
-        ) as dir_entries:  # type: Iterator[os.DirEntry]
+        with cast(Iterator[os.DirEntry], os.scandir(path or self.path)) as dir_entries:
             for entry in dir_entries:
                 if entry.is_dir() and entry.name in ("keep", "trash"):
                     continue
@@ -259,7 +258,8 @@ class FileQueue:
         try:
             hook_coros = plugin_manager.hook.save_listener_object(obj=obj, path=path)
             success = False
-            for coro in hook_coros:  # type: Coroutine
+            coro: Coroutine
+            for coro in hook_coros:
                 if success:
                     # Let the coroutine clean itself up and exit. Prevents
                     # "RuntimeWarning: coroutine ... was never awaited."
@@ -359,23 +359,46 @@ class InQueue(FileQueue):
         else:
             self.logger.warning("No out queues configured!")
         while True:
-            for path in (
+            queue_files = [
                 p for p in self.queue_files() if not p.name.endswith("_ready.json")
-            ):
+            ]
+            for num, path in enumerate(queue_files, start=1,):
                 try:
                     new_path = await self.preprocess_file(path)
-                    self.logger.info("%s preprocessed -> %s.", path.name, new_path.name)
+                    self.logger.info(
+                        "(%d/%d) %s preprocessed -> %s.",
+                        num,
+                        len(queue_files),
+                        path.name,
+                        new_path.name,
+                    )
                 except InvalidListenerFile as exc:
-                    self.logger.info("Discarding invalid file %r: %s", path.name, exc)
+                    self.logger.info(
+                        "(%d/%d) Discarding invalid file %r: %s",
+                        num,
+                        len(queue_files),
+                        path.name,
+                        exc,
+                    )
                     self.discard_file(path)
                     continue
                 except ListenerSavingError as exc:
-                    self.logger.error("Could not save file %r: %s", path.name, exc)
+                    self.logger.error(
+                        "(%d/%d) Could not save file %r: %s",
+                        num,
+                        len(queue_files),
+                        path.name,
+                        exc,
+                    )
                     self.discard_file(path)
                     continue
                 except Exception as exc:
                     self.logger.exception(
-                        "During preprocessing of file %r: %s", path.name, exc
+                        "During preprocessing of file (%d/%d) %r: %s",
+                        num,
+                        len(queue_files),
+                        path.name,
+                        exc,
                     )
                     raise InvalidListenerFile("Error during preprocessing.") from exc
             self.log_queue_changes()
@@ -387,7 +410,7 @@ class InQueue(FileQueue):
             await asyncio.sleep(1)
             self._signal_alive()
 
-    async def distribute(self, queue_paths: List[Path] = None) -> None:
+    async def distribute(self, queue_paths: List[Path] = None) -> None:  # noqa: C901
         """
         Search for JSON files, extract school authorities and copy files to
         the respective out queues.
@@ -396,9 +419,9 @@ class InQueue(FileQueue):
             JSON files
         :return: None
         """
-        queue_paths = queue_paths or (
+        queue_paths = queue_paths or [
             p for p in self.queue_files() if p.name.endswith("_ready.json")
-        )
+        ]
         s_a_name_to_out_queue = dict(
             (q.school_authority.name, q) for q in self.out_queues
         )
@@ -432,8 +455,8 @@ class InQueue(FileQueue):
             # copy listener file to out queues for affected school authorities
             if not s_a_names:
                 self.logger.info(
-                    "Ignoring object without current or previous school authority entries "
-                    "(DN: %r entryUUID: %r).",
+                    "Ignoring object without current or previous school authority "
+                    "entries (DN: %r entryUUID: %r).",
                     obj.dn,
                     obj.id,
                 )
@@ -488,7 +511,7 @@ class OutQueue(FileQueue):
         # TODO: project specific handler class? GroupHandler?:
         self.user_handler = UserHandler(self.school_authority)
 
-    async def scan(self) -> None:
+    async def scan(self) -> None:  # noqa: C901
         self.logger.info("Handling out queue %r (%s)...", self.name, self.path)
         while True:
             # in case of a communication error with the target API, sleep and retry
@@ -595,7 +618,7 @@ async def get_out_queue_dirs() -> AsyncIterator[Path]:
         OUT_QUEUE_TOP_DIR.mkdir(mode=0o750, parents=True)
     except FileExistsError:
         pass
-    with os.scandir(OUT_QUEUE_TOP_DIR) as dir_entries:  # type: Iterator[os.DirEntry]
+    with cast(Iterator[os.DirEntry], os.scandir(OUT_QUEUE_TOP_DIR)) as dir_entries:
         for entry in dir_entries:
             if entry.is_dir():
                 yield Path(entry.path)

@@ -149,7 +149,7 @@ class Distribution:
 
     @hook_spec
     async def school_authorities_to_distribute_to(
-        self, obj: ListenerObject, in_queue: "ucsschool_id_connector.queues.InQueue"
+        self, obj: ListenerObject, in_queue
     ) -> Iterable[str]:
         """
         Create list of school authorities this object should be sent to.
@@ -159,7 +159,7 @@ class Distribution:
         or should not be handled by the plugin, return an empty list.
 
         :param ListenerObject obj: of a concrete subclass of ListenerObject
-        :param InQueue in_queue: the in-queue
+        :param ucsschool_id_connector.queues.InQueue in_queue: the in-queue
         :return: list of names of school authorities, they should match those
             in ``SchoolAuthorityConfiguration.name``
         :rtype: list

@@ -11,11 +11,11 @@ faker
 fastapi==0.42.0
 lazy-object-proxy
 ldap3
-PyJWT
 pluggy
 pydantic[ujson,email]==0.32.2
-python-multipart
+PyJWT
 pytest-asyncio
+python-multipart
 requests
 service
 uvicorn

@@ -259,7 +259,8 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
                 return ou_from_dn
             else:
                 logger.error(
-                    "OU found in DN (%r) not in 'school' attribute (%r) of user with DN %r.",
+                    "OU found in DN (%r) not in 'school' attribute (%r) of user with "
+                    "DN %r.",
                     ou_from_dn,
                     self.object["school"],
                     self.dn,
@@ -298,7 +299,8 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         by_alias: bool = False,
         skip_defaults: bool = False,
     ) -> Dict[str, Any]:
-        """wrapper around :py:meth:`dict()` that base64 encodes `user_passwords.krb5Key`"""
+        """wrapper around :py:meth:`dict()` that base64 encodes
+        `user_passwords.krb5Key`"""
         res = super().dict(
             include=include,
             exclude=exclude,
@@ -349,7 +351,8 @@ class SchoolAuthorityConfiguration(BaseModel):
     password: SecretStr
     """password/token to access the target HTTP API"""
     mapping: Dict[str, Any] = {}
-    """mapping from attribute names on the source system to attribute names on the target system"""
+    """mapping from attribute names on the source system to attribute names on
+     the target system"""
     passwords_target_attribute: str = None
     """attribute on the target system to write password hashes object to"""
 
@@ -362,7 +365,8 @@ class SchoolAuthorityConfigurationPatchDocument(BaseModel):
     password: SecretStr = None
     """password/token to access the target HTTP API"""
     mapping: Dict[str, Any] = None
-    """mapping from attribute names on the source system to attribute names on the target system"""
+    """mapping from attribute names on the source system to attribute names on
+    the target system"""
     passwords_target_attribute: str = None
     """attribute on the target system to write password hashes object to"""
 

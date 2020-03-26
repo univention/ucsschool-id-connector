@@ -66,8 +66,8 @@ RPC_ADDR = "tcp://127.0.0.1:5678"
 URL_PREFIX = f"/{APP_ID}/api/v1"
 UCR_DB_FILE = "/etc/univention/base.conf"
 UCR_REGEX = re.compile(r"^(?P<ucr>.+?): (?P<value>.*)$")
-TOKEN_SIGN_SECRET_FILE = Path(APP_CONFIG_BASE_PATH, "tokens.secret")
-TOKEN_HASH_ALGORITHM = "HS256"
+TOKEN_SIGN_SECRET_FILE = Path(APP_CONFIG_BASE_PATH, "tokens.secret")  # nosec
+TOKEN_HASH_ALGORITHM = "HS256"  # nosec
 TOKEN_URL = f"/{APP_ID}/api/token"
 UCRV_SOURCE_UID = (f"{APP_ID}/source_uid", "TESTID")
 UCRV_TOKEN_TTL = (f"{APP_ID}/access_tokel_ttl", 60)
@@ -92,7 +92,7 @@ BB_API_MAIN_ATTRIBUTES = {
     "source_uid",
     "ucsschool_roles",
 }
-MACHINE_PASSWORD_FILE = "/etc/machine.secret"
+MACHINE_PASSWORD_FILE = "/etc/machine.secret"  # nosec
 HTTP_CLIENT_TIMEOUT = 60
 HISTORY_FILE = "HISTORY.html"
 README_FILE = "README.html"

@@ -58,7 +58,10 @@ logger = ConsoleAndFileLogging.get_logger(__name__)
 class DefaultDummyPlugin:
     @hook_impl
     def dummy_func(self, arg1, arg2):
-        logger.info("Running DefaultDummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
+        logger.info(
+            "Running DefaultDummyPlugin.dummy_func() with arg1=%r arg2=%r.",
+            arg1, arg2
+        )
         return arg1 - arg2
 plugin_manager.register(DefaultDummyPlugin())
 """
@@ -71,7 +74,10 @@ logger = ConsoleAndFileLogging.get_logger(__name__)
 class DummyPlugin:
     @hook_impl
     def dummy_func(self, arg1, arg2):
-        logger.info("Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
+        logger.info(
+            "Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.",
+            arg1, arg2
+        )
         example_obj = ExampleTestClass()
         res = example_obj.add(arg1, arg2)
         assert res == arg1 + arg2
@@ -84,7 +90,10 @@ from ucsschool_id_connector.utils import ConsoleAndFileLogging
 logger = ConsoleAndFileLogging.get_logger(__name__)
 class ExampleTestClass:
     def add(self, arg1, arg2):
-        logger.info("Running ExampleTestClass.example_func() with arg1=%r arg2=%r.", arg1, arg2)
+        logger.info(
+            "Running ExampleTestClass.example_func() with arg1=%r arg2=%r.",
+            arg1, arg2
+        )
         return arg1 + arg2
 """
 
@@ -162,13 +171,17 @@ def setup_logging(temp_dir_session):
     tmp_log_path = temp_dir_session()
 
     def utils_get_logger(
-        name: str = None, path: Path = ucsschool_id_connector.constants.LOG_FILE_PATH_QUEUES
+        name: str = None,
+        path: Path = ucsschool_id_connector.constants.LOG_FILE_PATH_QUEUES,
     ):
         path = tmp_log_path / path.name
         print(f"\n **** log directory is: {path} ****")
         return ori_get_logger(name, path)
 
-    with patch("ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger", utils_get_logger):
+    with patch(
+        "ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger",
+        utils_get_logger,
+    ):
         yield
     ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger = ori_get_logger
 
@@ -219,7 +232,9 @@ class ListenerObjectFactory(factory.Factory):
     udm_object_type = factory.LazyFunction(
         lambda: f"{fake.first_name()}/" f"{fake.first_name()}"
     )
-    action = factory.LazyFunction(lambda: ucsschool_id_connector.models.ListenerActionEnum.add_mod)
+    action = factory.LazyFunction(
+        lambda: ucsschool_id_connector.models.ListenerActionEnum.add_mod
+    )
 
 
 class ListenerAddModifyObjectFactory(ListenerObjectFactory):
@@ -455,7 +470,7 @@ class DummyPluginSpec:
 
 @pytest.fixture(scope="session")
 def mock_plugin_impls(temp_dir_session):
-    # replace /var/lib/univention-appcenter/apps/ucsschool-id-connector with path below /tmp
+    # replace /v/l/u-a/apps/ucsschool-id-connector with path below /tmp
     # and /ucsschool-id-connector/src with ../..
     tmp_dir = temp_dir_session()
     default_package_dir = Path(__file__).parent.parent / "plugins/packages"

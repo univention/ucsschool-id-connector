@@ -144,4 +144,3 @@ Kelvin-API
 Token retrieval example::
 
     $ curl -i -k -X POST --data 'username=Administrator&password=s3cr3t' https://FQDN/kelvin/api/token
-

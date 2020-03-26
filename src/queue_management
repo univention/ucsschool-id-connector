@@ -41,7 +41,11 @@ import aiojobs
 from service import Service
 
 from ucsschool_id_connector.config_storage import ConfigurationStorage
-from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
+from ucsschool_id_connector.constants import (
+    LOG_FILE_PATH_QUEUES,
+    RPC_ADDR,
+    SERVICE_NAME,
+)
 from ucsschool_id_connector.plugin_loader import load_plugins
 from ucsschool_id_connector.plugins import plugin_manager
 from ucsschool_id_connector.queues import InQueue, OutQueue, get_out_queue_dirs
@@ -82,13 +86,11 @@ class IDConnectorService(Service):
         scheduler = await aiojobs.create_scheduler()
         InQueue.scheduler = scheduler
         OutQueue.scheduler = scheduler
-        self.out_queues = sorted(
-            [
-                OutQueue.from_school_authority(school_authority)
-                async for school_authority in ConfigurationStorage.load_school_authorities()
-            ],
-            key=lambda x: x.name,
-        )
+        self.out_queues = [
+            OutQueue.from_school_authority(school_authority)
+            async for school_authority in ConfigurationStorage.load_school_authorities()
+        ]
+        self.out_queues.sort(key=lambda x: x.name)
         out_queue_dirs = [q.path for q in self.out_queues]
         abandoned_out_queue_dirs = [
             path.name
@@ -139,12 +141,14 @@ class IDConnectorService(Service):
         plugin_manager.hook.shutdown()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # noqa: C901
     if len(sys.argv) != 2:
-        sys.exit("Syntax: %s <start|stop|restart|status|test>" % sys.argv[0])
+        sys.exit(f"Syntax: {sys.argv[0]} <start|stop|restart|status|test>")
 
     cmd = sys.argv[1].lower()
-    service = IDConnectorService(SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1])
+    service = IDConnectorService(
+        SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1]  # nosec
+    )
 
     def _start():
         service.start()

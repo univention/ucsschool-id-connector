@@ -32,7 +32,7 @@ import importlib
 import json
 import os
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, cast
 from unittest.mock import patch
 
 from click.testing import CliRunner
@@ -49,8 +49,11 @@ def test_schedule_user(temp_dir_func, ldap_access_mock):
     spec = importlib.util.spec_from_loader(module_name, loader)
     module = importlib.util.module_from_spec(spec)
 
-    with patch("ucsschool_id_connector.user_handler.LDAPAccess", ldap_access_mock), patch(
-        "ucsschool_id_connector.user_handler.APPCENTER_LISTENER_PATH", appcenter_listener_path
+    with patch(
+        "ucsschool_id_connector.user_handler.LDAPAccess", ldap_access_mock
+    ), patch(
+        "ucsschool_id_connector.user_handler.APPCENTER_LISTENER_PATH",
+        appcenter_listener_path,
     ):
         spec.loader.exec_module(module)
         schedule = getattr(module, "schedule")
@@ -59,9 +62,9 @@ def test_schedule_user(temp_dir_func, ldap_access_mock):
     assert result.exit_code == 0
 
     print("Fake APPCENTER_LISTENER_PATH contents:")
-    with os.scandir(
-        appcenter_listener_path
-    ) as dir_entries:  # type: Iterator[os.DirEntry]
+    with cast(
+        Iterator[os.DirEntry], os.scandir(appcenter_listener_path)
+    ) as dir_entries:
         for entry in dir_entries:
             print(entry.path)
             assert entry.name.startswith(datetime.datetime.now().strftime("%Y-%m-%d"))

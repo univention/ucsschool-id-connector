@@ -35,7 +35,9 @@ import ucsschool_id_connector.queues
 
 
 def test_command_with_valid_enum():
-    ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queues)
+    ucsschool_id_connector.models.RPCRequest(
+        cmd=ucsschool_id_connector.models.RPCCommand.get_queues
+    )
 
 
 def test_command_with_valid_str():
@@ -48,7 +50,9 @@ def test_command_with_bad_str():
 
 
 def test_command_with_required_name_args():
-    ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name="foo")
+    ucsschool_id_connector.models.RPCRequest(
+        cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name="foo"
+    )
     ucsschool_id_connector.models.RPCRequest(
         cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority, name="bar"
     )
@@ -56,11 +60,17 @@ def test_command_with_required_name_args():
 
 def test_command_without_required_name_arg():
     with pytest.raises(ValidationError):
-        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queue)
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_queue
+        )
     with pytest.raises(ValidationError):
-        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name="")
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name=""
+        )
     with pytest.raises(ValidationError):
-        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority)
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority
+        )
     with pytest.raises(ValidationError):
         ucsschool_id_connector.models.RPCRequest(
             cmd=ucsschool_id_connector.models.RPCCommand.get_school_authority, name=""
@@ -76,8 +86,11 @@ def test_command_with_required_school_authority_arg():
 
 def test_command_without_required_school_authority_arg():
     with pytest.raises(ValidationError):
-        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority)
+        ucsschool_id_connector.models.RPCRequest(
+            cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority
+        )
     with pytest.raises(ValidationError):
         ucsschool_id_connector.models.RPCRequest(
-            cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority, school_authority={}
+            cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority,
+            school_authority={},
         )

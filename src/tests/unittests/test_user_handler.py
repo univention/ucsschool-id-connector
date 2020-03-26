@@ -32,7 +32,7 @@ import datetime
 import pytest
 from faker import Faker
 
-import ucsschool_id_connector.models
+import ucsschool_id_connector.models as models
 import ucsschool_id_connector.user_handler
 
 fake = Faker()
@@ -44,7 +44,7 @@ async def test_map_attributes(
 ):
     s_a_config = school_authority_configuration()
     user_handler = ucsschool_id_connector.user_handler.UserHandler(s_a_config)
-    user_obj: ucsschool_id_connector.models.ListenerUserAddModifyObject = listener_user_add_modify_object()
+    user_obj: models.ListenerUserAddModifyObject = listener_user_add_modify_object()
     user_handler._api_schools_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
     user_handler._api_schools_cache_creation = datetime.datetime.now()
     user_handler.api_roles_cache = dict(
