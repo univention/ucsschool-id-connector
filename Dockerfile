@@ -14,10 +14,12 @@ CMD ["/sbin/init"]
 LABEL "description"="$app_id app image" \
     "version"="$version"
 
-COPY alpine_apk_list init.d/ src/requirements*.txt /tmp/
-
+# package and Python dependency installation, base system configuration,
+# and uninstallation - all in one step to keep image small
+COPY alpine_apk_list.* init.d/ src/requirements*.txt /tmp/
 RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/community' >> /etc/apk/repositories && \
-    apk add --no-cache $(cat /tmp/alpine_apk_list) && \
+    apk add --no-cache --virtual mybuilddeps $(cat /tmp/alpine_apk_list.build) && \
+    apk add --no-cache $(cat /tmp/alpine_apk_list.runtime) && \
     mv -v /tmp/ucsschool-id-connector.initd /etc/init.d/ucsschool-id-connector && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.final /etc/init.d/ucsschool-id-connector-rest-api && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.dev /etc/init.d/ucsschool-id-connector-rest-api-dev && \
@@ -53,13 +55,7 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
     /ucsschool-id-connector/venv/bin/pip3 install git+git://github.com/esnme/ultrajson.git && \
     /ucsschool-id-connector/venv/bin/pip3 install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
     rm -rf /root/.cache/ /tmp/* && \
-    apk del --no-cache \
-        g++ \
-        gcc \
-        git \
-        make \
-        musl-dev \
-        python3-dev
+    apk del --no-cache mybuilddeps
 
 # install app
 COPY src/ /ucsschool-id-connector/src/
