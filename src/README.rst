@@ -9,11 +9,11 @@ UCS@school ID Connector
 Introduction
 ------------
 
-The `UCS\@school ID Connector` replication system is composed of three components:
+The *UCS\@school ID Connector* replication system is composed of three components:
 
-* A process on the data source UCS server, receiving user creation/modification/deletion events from the LDAP server and relaying them to multiple recipients via HTTP. Henceforth called the `UCS\@school ID Connector service`.
-* A process on the data source UCS server to monitor and configure the UCS\@school ID Connector service, henceforth called the `UCS\@school ID Connector HTTP API`.
-* Multiple recipients of the directory data relayed by the `UCS\@school ID Connector service`. They run a HTTP-API service, that the `UCS\@school ID Connector service` pushes updates to.
+* A process on the data source UCS server, receiving user creation/modification/deletion events from the LDAP server and relaying them to multiple recipients via HTTP. Henceforth called the *UCS\@school ID Connector service*.
+* A process on the data source UCS server to monitor and configure the UCS\@school ID Connector service, henceforth called the *UCS\@school ID Connector HTTP API*.
+* Multiple recipients of the directory data relayed by the *UCS\@school ID Connector service*. They run a HTTP-API service, that the *UCS\@school ID Connector service* pushes updates to.
 
 The changelog ist in the `HISTORY <history>`_ file.
 
@@ -47,7 +47,7 @@ If they didn't get created, run::
 On the target systems
 ^^^^^^^^^^^^^^^^^^^^^
 
-A HTTP-API is required for the `UCS\@school ID Connector` app to be able to create/modify/delete users on the target systems. Currently only the BB-API is supported. Instructions for installation and configuration can be found in a later section.
+A HTTP-API is required for the *UCS\@school ID Connector* app to be able to create/modify/delete users on the target systems. Currently only the BB-API is supported. Instructions for installation and configuration can be found in a later section.
 
 
 Update
@@ -62,13 +62,13 @@ Updates are installed in one of the two usual UCS ways. Either via UMC or on the
 Starting / Stopping services
 ----------------------------
 
-Both services (`UCS\@school ID Connector service` and `UCS\@school ID Connector HTTP API`) run in a Docker container. The container can be started/stopped by using the regular service facility of the host system::
+Both services (*UCS\@school ID Connector service* and *UCS\@school ID Connector HTTP API*) run in a Docker container. The container can be started/stopped by using the regular service facility of the host system::
 
     $ service docker-app-ucsschool-id-connector start
     $ service docker-app-ucsschool-id-connector status
     $ service docker-app-ucsschool-id-connector stop
 
-To restart individual services, init scripts `inside` the Docker container can be used. The ``univention-app`` program has a command that makes it easy to execute commands `inside` the Docker container::
+To restart individual services, init scripts *inside* the Docker container can be used. The ``univention-app`` program has a command that makes it easy to execute commands *inside* the Docker container::
 
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart  # UCS@school ID Connector service
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector-rest-api start # UCS@school ID Connector HTTP API
@@ -76,11 +76,11 @@ To restart individual services, init scripts `inside` the Docker container can b
 
 Configuration
 -------------
-The school authorities configuration must be done through the `UCS\@school ID Connector HTTP API`. Do not edit configuration files directly.
+The school authorities configuration must be done through the *UCS\@school ID Connector HTTP API*. Do not edit configuration files directly.
 
 * The UDM ``ucsschoolRecordUID`` property (a.k.a. UCS\@school ``record_uid`` property) should be synced to a UCS\@school system as ``record_uid``.
 * The UDM ``ucsschoolSourceUID`` property (a.k.a. UCS\@school ``source_uid`` property) should be synced to a UCS\@school system as ``source_uid``.
-* The `virtual` (special handling by the `UCS\@school ID Connector` app) ``roles`` property should be synced as ``roles``::
+* The *virtual* (special handling by the *UCS\@school ID Connector* app) ``roles`` property should be synced as ``roles``::
 
     {
         "mapping": {
@@ -96,10 +96,10 @@ See ``src/example_configs.json`` for an example.
 UCS\@school ID Connector HTTP API
 ---------------------------------
 
-A HTTP-API of the `UCS\@school ID Connector` app offers two resources:
+A HTTP-API of the *UCS\@school ID Connector* app offers two resources:
 
-* `queues`: monitoring of queues
-* `school_authorities`: configuration of school authorities
+* *queues*: monitoring of queues
+* *school_authorities*: configuration of school authorities
 
 Two websites exist, that allow to interactively discover the API. They can be visited with a browser at the URLS:
 
@@ -113,7 +113,7 @@ The Swagger UI page is especially helpful as it allows to send queries directly 
 Authentication
 ^^^^^^^^^^^^^^
 
-To use the API, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_ must be retrieved from ``https://FQDN/ucsschool-id-connector/api/token``. The token will be valid for a configurable amount of time (default 60 minutes), after which they must be renewed. To change the TTL, open the apps `app settings` in the UCS app center.
+To use the API, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_ must be retrieved from ``https://FQDN/ucsschool-id-connector/api/token``. The token will be valid for a configurable amount of time (default 60 minutes), after which they must be renewed. To change the TTL, open the apps *app settings* in the UCS app center.
 
 Example ``curl`` command to retrieve a token::
 
@@ -127,7 +127,7 @@ The user ``Administrator`` is automatically added to this group for testing purp
 File locations
 --------------
 
-This section lists relevant directories and files. Configuration file *must not* be edited by hand. All configuration is done either trough the `app settings` in the UCS app center or through the `UCS\@school ID Connector HTTP API`.
+This section lists relevant directories and files. Configuration file *must not* be edited by hand. All configuration is done either trough the *app settings* in the UCS app center or through the *UCS\@school ID Connector HTTP API*.
 
 Nothing needs to be backuped and restored before and after an app update, because all important data is persisted in files on volumes mounted from the UCS host into the docker container.
 
@@ -149,7 +149,7 @@ Log output can also be seen running::
 School authority configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The configuration of the replication targets (`school authorities / Schulträger`) is stored in one JSON file per configured school authority under ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities``. The JSON configuration files must not be created by hand. The HTTP-API should be used for that instead.
+The configuration of the replication targets (*school authorities / Schulträger*) is stored in one JSON file per configured school authority under ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities``. The JSON configuration files must not be created by hand. The HTTP-API should be used for that instead.
 
 Each school authority configuration has a queue associated.
 
@@ -157,10 +157,10 @@ Queue files
 ^^^^^^^^^^^
 
 The LDAP listener process on the UCS host creates a JSON file for each creation/modification/move/deletion of a user object.
-Those JSON files are written to ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/listener``. That is the directory of the `in queue`.
+Those JSON files are written to ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/listener``. That is the directory of the *in queue*.
 
-The process handling the `in queue` copies files from there to a directory for each school authority that it can associate with the user account in the file.
-Each `out queue` handles a directory below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues``.
+The process handling the *in queue* copies files from there to a directory for each school authority that it can associate with the user account in the file.
+Each *out queue* handles a directory below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues``.
 
 When a school authority configuration is deleted, its associated queue directory is moved to ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues_trash``.
 
@@ -168,7 +168,7 @@ Token signature key
 ^^^^^^^^^^^^^^^^^^^
 
 The key with which the JWTs are signed is in the file ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret``.
-The file is created by the apps join script (see `Install` above).
+The file is created by the apps join script (see *Install* above).
 
 Volumes
 ^^^^^^^
@@ -191,7 +191,7 @@ Then we retrieve a list of the school authorities available using the ``GET /ucs
 In the response body we get a JSON list of the school authorities that are currently configured.
 We need to copy the one we want to replicate and save it for later.
 Under "POST /ucsschool-id-connector/api/v1/school_authorities" we can create the new school authority.
-Click `try it out` and insert the coped JSON object from before into the request body.
+Click *try it out* and insert the coped JSON object from before into the request body.
 Now we just have to alter the name, url, and password before executing the request.
 The url has to point to the new school authorities HTTP-API.
 The name can be chosen at your leisure and the password is the authentication token of the school authorities HTTP-API (retrieved earlier).
@@ -212,7 +212,7 @@ On each target system run::
       /etc/apt/sources.list.d/30_BB.list
     $ univention-install -y ucs-school-http-api-bb
 
-To allow the `UCS\@school ID Connector` app to access the APIs it needs an authentication token. On each target system run::
+To allow the *UCS\@school ID Connector* app to access the APIs it needs an authentication token. On each target system run::
 
     $ /usr/share/pyshared/bb/http_api/users/manage.py shell -c \
       "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)"
@@ -288,7 +288,7 @@ To install the extended attributes run::
         -O /usr/share/ucs-school-import/pyhooks/ucsschool_id_connector_password_hook.py
 
 
-Edit ``/var/lib/ucs-school-import/configs/user_import.json`` and add the name of the `passwords_target_attribute` (``ucsschool_id_connector_pw``) to ``mapped_udm_properties`` (and ``mapped_udm_properties`` to ``configuration_checks``)::
+Edit ``/var/lib/ucs-school-import/configs/user_import.json`` and add the name of the ``passwords_target_attribute`` (``ucsschool_id_connector_pw``) to ``mapped_udm_properties`` (and ``mapped_udm_properties`` to ``configuration_checks``)::
 
     "configuration_checks": ["defaults", "mapped_udm_properties"],
     "mapped_udm_properties": ["phone", "e-mail", "ucsschool_id_connector_pw"]
@@ -307,10 +307,10 @@ The example configuration above can be created with the following command::
 Plugins
 -------
 
-The code of the `UCS\@school ID Connector` app can be adapted through plugins.
+The code of the *UCS\@school ID Connector* app can be adapted through plugins.
 The `pluggy`_ plugin system is used to define, implement and call plugins.
 To share code between plugins additional Python packages can be installed.
-The following demonstrates a simple example of a custom Python packages and a plugin for `UCS\@school ID Connector`.
+The following demonstrates a simple example of a custom Python packages and a plugin for *UCS\@school ID Connector*.
 
 All plugin *specifications* (function signatures) are defined in ``src/ucsschool_id_connector/plugins.py``.
 

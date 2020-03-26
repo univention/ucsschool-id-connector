@@ -6,7 +6,7 @@ UCS\@school ID Connector developer documentation
 Introduction
 ------------
 
-All documentation regarding installation and configuration that is relevant for administrators, can be found in src/README.rst.
+All documentation regarding installation and configuration that is relevant for administrators, can be found in ``src/README.rst``.
 
 Interactions and components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
