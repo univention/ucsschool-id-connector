@@ -1,19 +1,19 @@
 #!/sbin/openrc-run
 
 command=/ucsschool-id-connector/src/queue_management
-command_args="--host 0.0.0.0 --port 8911 ucsschool_id_connector.http_api:app"
+command_args=""
 name="UCS@school ID Connector"
 description="UCS@school ID Connector"
 
 start() {
     ebegin "Starting UCS@school ID Connector"
-    /ucsschool-id-connector/src/queue_management start
+    $command start
     eend $?
 }
 
 stop() {
     ebegin "Stopping UCS@school ID Connector"
-    /ucsschool-id-connector/src/queue_management stop || (pgrep IDConnectorService > /dev/null || rm -f /tmp/IDConnectorService.pid)
+    $command stop || (pgrep IDConnectorService > /dev/null || rm -f /tmp/IDConnectorService.pid)
     eend $?
 }
 
