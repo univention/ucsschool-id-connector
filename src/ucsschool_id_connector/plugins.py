@@ -31,8 +31,9 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
 import pluggy
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
-from .constants import PLUGIN_NAMESPACE
+from .constants import LOG_FILE_PATH_QUEUES, PLUGIN_NAMESPACE
 from .models import (
     ListenerAddModifyObject,
     ListenerObject,
@@ -40,11 +41,22 @@ from .models import (
     SchoolAuthorityConfiguration,
 )
 
-__all__ = ["hook_impl", "plugin_manager"]
+__all__ = ["hook_impl", "plugin_manager", "add_plugin_logger"]
 
 hook_impl = pluggy.HookimplMarker(PLUGIN_NAMESPACE)
 hook_spec = pluggy.HookspecMarker(PLUGIN_NAMESPACE)
 plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
+
+
+def add_plugin_logger(klass):
+    def wrapper(*args, **kwargs):
+        new_instance = klass(*args, **kwargs)
+        new_instance.logger = ConsoleAndFileLogging.get_logger(
+            f"{new_instance.__class__.__name__}", LOG_FILE_PATH_QUEUES
+        )
+
+    return wrapper
+
 
 # hint:
 # @hook_spec  # return a list of results
@@ -192,6 +204,36 @@ class Postprocessing:
         be executed. The returned dictionaries are used to update the kwargs for
         aiohttp with. Common use cases would be the addition of headers or authentication
         strategies.
+        :param http_method: The HTTP method used, e.g. POST
+        :param url: The complete url this request goes to
+        :param school_authority: The school authority configuration that this request targets
+        :return: The dictionary to update the request kwargs with
+        """
+
+    @hook_spec
+    async def handle_listener_obj(
+        self, school_authority: SchoolAuthorityConfiguration, obj: ListenerObject
+    ) -> bool:
+        """
+        This hook is the entry point for the entire handling logic of ListenerObjects in the out queue.
+         All registered and for a specific school authority configured handler hooks are executed.
+         If no registered hook handles the object and thus none returned True, an error will be logged.
+        :param school_authority: The school authority this object is handled for
+        :param obj: The ListenerObject to handle
+        :return: True if this hook handled the object, otherwise False
+        """
+
+    @hook_spec
+    async def school_authority_ping(
+        self, school_authority: SchoolAuthorityConfiguration
+    ) -> bool:
+        """
+        This hook can be defined to implement a connectivity check to the API of a school authority.
+        If any registered ping hooks for a school authority returns False, the communication is
+        considered faulty.
+
+        :param school_authority: The school authority to check the connectivity to.
+        :return: True if check succeeds, otherwise False
         """
 
 

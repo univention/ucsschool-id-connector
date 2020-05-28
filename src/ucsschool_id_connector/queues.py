@@ -61,20 +61,11 @@ from .models import (
     ListenerAddModifyObject,
     ListenerObject,
     ListenerRemoveObject,
-    ListenerUserAddModifyObject,
-    ListenerUserRemoveObject,
     QueueModel,
     SchoolAuthorityConfiguration,
 )
 from .plugins import plugin_manager
-from .user_handler import (
-    APICommunicationError,
-    MissingData,
-    ServerError,
-    UnknownSchool,
-    UnknownSchoolUserRole,
-    UserHandler,
-)
+from .requests import APICommunicationError, ServerError
 from .utils import ConsoleAndFileLogging
 
 FileQueueTV = TypeVar("FileQueueTV", bound="FileQueue")
@@ -509,30 +500,21 @@ class OutQueue(FileQueue):
         super(OutQueue, self).__init__(name, path)
         self.school_authority = school_authority
         # TODO: project specific handler class? GroupHandler?:
-        self.user_handler = UserHandler(self.school_authority)
 
     async def scan(self) -> None:  # noqa: C901
         self.logger.info("Handling out queue %r (%s)...", self.name, self.path)
         while True:
             # in case of a communication error with the target API, sleep and retry
-            try:
-                await self.user_handler.fetch_roles()
-                self.logger.debug(
-                    "Roles known by API server: %s",
-                    ", ".join(self.user_handler.api_roles_cache.keys()),
-                )
-                await self.user_handler.fetch_schools()
-                self.logger.debug(
-                    "Schools known by API server: %s",
-                    ", ".join((await self.user_handler.api_schools_cache).keys()),
-                )
-            except APICommunicationError as exc:
+            result_coros: List[Coroutine] = plugin_manager.hook.school_authority_ping(
+                school_authority=self.school_authority
+            )
+            connection_ok = all([await coro for coro in result_coros])
+            if not connection_ok:
                 self.logger.error(
-                    "Error calling school authority API (retry in %d sec): %s",
-                    API_COMMUNICATION_ERROR_WAIT,
-                    exc,
+                    "One or more school_authority_ping hooks reported a faulty connection!"
                 )
                 await asyncio.sleep(API_COMMUNICATION_ERROR_WAIT)
+                continue
             # communication is OK, handle queue
             while True:
                 api_error = False
@@ -540,7 +522,7 @@ class OutQueue(FileQueue):
                     self.head = path.name
                     try:
                         await self.handle(path)
-                    except (ServerError, UnknownSchool) as exc:
+                    except ServerError as exc:
                         self.logger.error(exc)
                         self.discard_file(path)
                     except APICommunicationError as exc:
@@ -574,23 +556,16 @@ class OutQueue(FileQueue):
             self.discard_file(path)
             self.logger.debug("finished handling %r.", path.name)
             return
-        # TODO: hook start (handle listener obj)
         try:
-            if isinstance(obj, ListenerUserAddModifyObject):
-                await self.user_handler.handle_create_or_update(obj)
-            elif isinstance(obj, ListenerUserRemoveObject):
-                await self.user_handler.handle_remove(obj)
-            else:
-                raise NotImplementedError(f"Don't know how to handle obj={obj!r}.")
-        except (
-            UnknownSchool,
-            UnknownSchoolUserRole,
-            NotImplementedError,
-            MissingData,
-        ) as exc:
+            result_coros: List[Coroutine] = plugin_manager.hook.handle_listener_object(
+                school_authority=self.school_authority, obj=obj
+            )
+            handled = any([await coro for coro in result_coros])
+            if not handled:
+                raise NotImplementedError(f"No registered plugin handled obj={obj!r}.")
+        except Exception as exc:
             self.logger.error(exc)
             self.discard_file(path)
-        # TODO: hook end
         self.logger.debug("finished handling %r.", path.name)
 
     @classmethod
