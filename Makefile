@@ -75,7 +75,7 @@ format: ## format source code (requires Python interpreter activated from venv)
 	black --target-version py38 --exclude src/static/ucsschool_id_connector_password_hook.py src src/queue_management src/schedule_user
 
 test: ## run tests with the Python interpreter from 'venv'
-	python3 -m pytest -l -v tests/unittests
+	python3 -m pytest -l -v src/tests/unittests
 
 src/.coverage: src/*.json src/*.py src/*/*.py
 	rm -fv src/tests/integration_tests/auth-school-mapping.json
