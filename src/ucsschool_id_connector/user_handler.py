@@ -40,6 +40,7 @@ import ujson
 from async_property import async_property
 
 from ucsschool_id_connector.ldap_access import LDAPAccess
+from ucsschool_id_connector.plugins import plugin_manager
 
 from .constants import (
     API_SCHOOL_CACHE_TTL,
@@ -279,15 +280,17 @@ class UserHandler:
     ) -> Tuple[int, Dict[str, Any]]:
         acceptable_statuses = acceptable_statuses or [200]
         http_method = http_method.lower()
-        headers = {
-            f"Authorization": f"Token {self.school_authority.password.get_secret_value()}"
-        }
         meth = getattr(self._session, http_method)
-        request_kwargs = {"url": url, "headers": headers, "ssl": CHECK_SSL_CERTS}
+        request_kwargs = {"url": url, "ssl": CHECK_SSL_CERTS}
         if http_method in {"patch", "post"} and data is not None:
             request_kwargs["json"] = data
         if params:
             request_kwargs["params"] = params
+        for coro_result in plugin_manager.hook.create_request_kwargs(
+            http_method=http_method, url=url, school_authority=self.school_authority
+        ):
+            update_kwargs = await coro_result
+            request_kwargs.update(update_kwargs)
         try:
             async with meth(**request_kwargs) as response:
                 if response.status in acceptable_statuses:

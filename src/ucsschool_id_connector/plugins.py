@@ -33,7 +33,12 @@ from typing import Any, Dict, Iterable, Optional
 import pluggy
 
 from .constants import PLUGIN_NAMESPACE
-from .models import ListenerAddModifyObject, ListenerObject, ListenerRemoveObject
+from .models import (
+    ListenerAddModifyObject,
+    ListenerObject,
+    ListenerRemoveObject,
+    SchoolAuthorityConfiguration,
+)
 
 __all__ = ["hook_impl", "plugin_manager"]
 
@@ -169,6 +174,28 @@ class Distribution:
         # the related models to a plugin package.
 
 
+class Postprocessing:
+    """
+    Pluggy hook specifications for all hooks modifying data in postprocessing.
+    The implementations of these hooks need to be registered with a name, since the set of plugins
+    executed can be configured for every school authority individually.
+    """
+
+    @hook_spec
+    async def create_request_kwargs(
+        self, http_method: str, url, school_authority: SchoolAuthorityConfiguration
+    ) -> Dict[Any, Any]:
+        """
+        Creates a dictionary the kwargs for the aiohttp request should be updated with.
+
+        The configured create_request_kwargs hooks for a given school authority will
+        be executed. The returned dictionaries are used to update the kwargs for
+        aiohttp with. Common use cases would be the addition of headers or authentication
+        strategies.
+        """
+
+
 plugin_manager.add_hookspecs(ListenerObjectHandler)
 plugin_manager.add_hookspecs(Preprocessing)
 plugin_manager.add_hookspecs(Distribution)
+plugin_manager.add_hookspecs(Postprocessing)
