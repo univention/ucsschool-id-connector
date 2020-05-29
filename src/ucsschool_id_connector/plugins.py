@@ -28,7 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import pluggy
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
@@ -41,7 +41,7 @@ from .models import (
     SchoolAuthorityConfiguration,
 )
 
-__all__ = ["hook_impl", "plugin_manager", "add_plugin_logger"]
+__all__ = ["hook_impl", "plugin_manager", "add_plugin_logger", "filter_plugins"]
 
 hook_impl = pluggy.HookimplMarker(PLUGIN_NAMESPACE)
 hook_spec = pluggy.HookspecMarker(PLUGIN_NAMESPACE)
@@ -49,6 +49,10 @@ plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
 
 def add_plugin_logger(klass):
+    """
+    Decorator to add a logger to a plugin class. It will be accessible via self.logger
+    """
+
     def wrapper(*args, **kwargs):
         new_instance = klass(*args, **kwargs)
         new_instance.logger = ConsoleAndFileLogging.get_logger(
@@ -56,6 +60,34 @@ def add_plugin_logger(klass):
         )
 
     return wrapper
+
+
+def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
+    """
+    This function returns a HookCaller containing only the implementations of the specified plugins.
+    If the given list is empty, or no specified plugin implements the hook, the default plugin is chosen.
+
+    :param hook_name: The hook to be executed
+    :param plugins: The plugins to be filtered for
+    :return: A _HookCaller instance that can be used just like plugin_manager.hook.hook_name
+    """
+    all_hcaller_names = set()
+    for plugin_name in plugins:
+        hcallers = [
+            hcaller.name
+            for hcaller in plugin_manager.get_hookcallers(
+                plugin_manager.get_plugin(plugin_name)
+            )
+        ]
+        all_hcaller_names.update(set(hcallers))
+    if hook_name not in all_hcaller_names:
+        plugins = ["default"]
+    plugins_to_remove = [
+        plugin
+        for plugin in plugin_manager.get_plugins()
+        if plugin_manager.get_name(plugin) not in plugins
+    ]
+    return plugin_manager.subset_hook_caller(hook_name, plugins_to_remove)
 
 
 # hint:
@@ -108,7 +140,7 @@ class Preprocessing:
     """
 
     @hook_spec
-    def shutdown(self) -> None:
+    async def shutdown(self) -> None:
         """
         Called when the daemon is shutting down. Close database and network
         connections.

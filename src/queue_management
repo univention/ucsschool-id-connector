@@ -130,15 +130,14 @@ class IDConnectorService(Service):
         self.logger.info("Sleeping until shutdown is requested (SIGTERM).")
         while not self.got_sigterm():  # sleep until SIGTERM
             await asyncio.sleep(1)
-        self.logger.info("Shutting down all outgoing connections...")
-        for out_queue in self.out_queues:
-            await out_queue.user_handler.shutdown()
-        await asyncio.sleep(0.25)  # allow aiohttp SSL connections to close gracefully
         self.logger.info("Shutting down all running tasks...")
         await scheduler.close()
         self.logger.info("Closing cache and DB connections...")
         await close_ucr_cache()
-        plugin_manager.hook.shutdown()
+        self.logger.info("Shutting down all outgoing connections...")
+        for coro in plugin_manager.hook.shutdown():
+            await coro
+        await asyncio.sleep(0.25)  # allow aiohttp SSL connections to close gracefully
 
 
 if __name__ == "__main__":  # noqa: C901

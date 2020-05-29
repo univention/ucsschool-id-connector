@@ -32,7 +32,7 @@ import aiofiles
 import aiohttp
 
 from ucsschool_id_connector.constants import CHECK_SSL_CERTS
-from ucsschool_id_connector.plugins import plugin_manager
+from ucsschool_id_connector.plugins import filter_plugins
 
 ParamType = Union[Dict[str, str], List[Tuple[str, str]]]
 
@@ -69,7 +69,10 @@ async def _do_request(
         request_kwargs["json"] = data
     if params:
         request_kwargs["params"] = params
-    for coro_result in plugin_manager.hook.create_request_kwargs(
+    hook_caller = filter_plugins(
+        "create_request_kwargs", self.school_authority.postprocessing_plugins
+    )
+    for coro_result in hook_caller(
         http_method=http_method, url=url, school_authority=self.school_authority
     ):
         update_kwargs = await coro_result
