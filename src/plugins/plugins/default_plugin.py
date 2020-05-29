@@ -47,7 +47,7 @@ class DefaultPlugin:
     """
 
     def __init__(self):
-        self._user_handler_cache = dict()
+        self._user_handler_cache: Dict[str, UserHandler] = dict()
 
     def _get_user_handler(
         self, school_authority: SchoolAuthorityConfiguration
@@ -59,6 +59,11 @@ class DefaultPlugin:
                 school_authority
             )
             return self._user_handler_cache[school_authority.name]
+
+    @hook_impl
+    async def shutdown(self) -> None:
+        for user_handler in self._user_handler_cache.values():
+            await user_handler.shutdown()
 
     @hook_impl
     async def create_request_kwargs(

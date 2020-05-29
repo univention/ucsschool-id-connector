@@ -32,7 +32,7 @@ import random
 import string
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import aiofiles
 import aiohttp
@@ -248,20 +248,13 @@ class UserHandler:
                 f"Role(s) unknown on API server: {roles!r}.", roles=roles
             )
 
-    @staticmethod
-    async def _get_error_msg(
-        response: aiohttp.ClientResponse,
-    ) -> Union[Dict[str, Any], str]:
-        try:
-            return await response.json()
-        except (ValueError, aiohttp.ContentTypeError):
-            return await response.text()
-
     async def fetch_roles(self) -> None:
         """Fetch all roles from API of school authority."""
         # TODO: this should be in a plugin
         url = f"{self.school_authority.url}/roles/"
-        status, json_resp = await http_get(url)
+        status, json_resp = await http_get(
+            url, self.school_authority, session=self._session
+        )
         for role in json_resp["results"]:
             self.api_roles_cache[role["name"]] = role["url"]
 
@@ -269,7 +262,9 @@ class UserHandler:
         """Fetch all schools from API of school authority."""
         # TODO: this should be in a plugin
         url = f"{self.school_authority.url}/schools/"
-        status, json_resp = await http_get(url)
+        status, json_resp = await http_get(
+            url, self.school_authority, session=self._session
+        )
         return dict((school["name"], school["url"]) for school in json_resp["results"])
 
     async def _do_create_or_update(self, data: Dict[str, Any]) -> None:
@@ -285,18 +280,25 @@ class UserHandler:
                 f"data: {data!r}."
             )
         url = f"{self.school_authority.url}/users/"
-        status, json_resp = await http_get(url, params)
+        status, json_resp = await http_get(
+            url, self.school_authority, params, session=self._session
+        )
         if json_resp:
             # user exists, modify it
             user_url = json_resp[0]["url"]
             self.logger.info("User exists at %r.", user_url)
-            status, json_resp = await http_patch(user_url, data=data)
+            status, json_resp = await http_patch(
+                user_url, self.school_authority, session=self._session, data=data
+            )
             self.logger.info("User modified (status: %r): %r", status, json_resp)
         else:
             # create user
             self.logger.info("User not found, creating new one.")
             status, json_resp = await http_post(
-                f"{self.school_authority.url}/users/", data=data
+                f"{self.school_authority.url}/users/",
+                self.school_authority,
+                session=self._session,
+                data=data,
             )
             self.logger.info("User created (status: %r): %r", status, json_resp)
 
@@ -310,12 +312,16 @@ class UserHandler:
                 f"Cannot remove user: missing record_uid or source_uid in {obj!r}."
             )
         url = f"{self.school_authority.url}/users/"
-        status, json_resp = await http_get(url, params)
+        status, json_resp = await http_get(
+            url, self.school_authority, params, session=self._session
+        )
         if json_resp:
             # user exists, delete it
             user_url = json_resp[0]["url"]
             self.logger.info("User exists at %r.", user_url)
-            status, json_resp = await http_delete(user_url)
+            status, json_resp = await http_delete(
+                user_url, self.school_authority, session=self._session
+            )
             if status == 204:
                 self.logger.info("User deleted (status: %r): %r", status, json_resp)
             else:
