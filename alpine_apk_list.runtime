@@ -1,4 +1,5 @@
 busybox-initscripts
+libstdc++
 openrc
 python3
 py3-aiohttp
