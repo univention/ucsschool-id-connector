@@ -26,10 +26,12 @@
 # License with the Debian GNU/Linux or Univention distribution in file
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
+
 from typing import Any, Dict, List, Tuple, Union
 
 import aiofiles
 import aiohttp
+import lazy_object_proxy
 
 from ucsschool_id_connector.constants import (
     CHECK_SSL_CERTS,
@@ -40,7 +42,9 @@ from ucsschool_id_connector.plugins import filter_plugins
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 ParamType = Union[Dict[str, str], List[Tuple[str, str]]]
-logger = ConsoleAndFileLogging.get_logger("requests", LOG_FILE_PATH_QUEUES)
+logger = lazy_object_proxy.Proxy(
+    lambda: ConsoleAndFileLogging.get_logger("requests", LOG_FILE_PATH_QUEUES)
+)
 
 
 class APICommunicationError(Exception):
