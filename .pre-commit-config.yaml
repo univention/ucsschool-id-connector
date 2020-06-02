@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v3.1.0
     hooks:
     -   id: check-added-large-files
     -   id: check-ast
@@ -37,13 +37,18 @@ repos:
 #    hooks:
 #    -   id: shell-lint
 #        args: [--format=json]
+-   repo: https://github.com/asottile/seed-isort-config
+    rev: v2.1.1
+    hooks:
+    -   id: seed-isort-config
+        args: [--application-directories, src]
 -   repo: git://github.com/doublify/pre-commit-isort
-    rev: master
+    rev: v4.3.0
     hooks:
     -   id: isort
-        entry: isort -vb --check-only --diff --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --thirdparty aiofiles --thirdparty aiojobs --thirdparty aiohttp --thirdparty async_lru --thirdparty async_property --thirdparty click --thirdparty colorlog --thirdparty fastapi --thirdparty jwt --thirdparty lazy_object_proxy --thirdparty ldap3 --thirdparty pydantic --thirdparty pytest --thirdparty starlette --thirdparty factory --thirdparty faker --thirdparty requests --thirdparty ujson --thirdparty urllib3 --thirdparty zmq --project ucsschool --project udm_rest_client
+        entry: isort --check-only --diff
 -   repo: https://github.com/psf/black
-    rev: stable
+    rev: 19.10b0
     hooks:
     -   id: black
         language_version: python3.8
@@ -53,12 +58,11 @@ repos:
 #    -   id: dockerfilelint
 #        stages: [commit]
 -   repo: https://gitlab.com/pycqa/flake8
-    rev: master
+    rev: 3.8.2
     hooks:
     -   id: flake8
-        entry: flake8 --ignore=W503 --max-line-length=105
 -   repo: https://github.com/PyCQA/bandit
-    rev: master
+    rev: 1.6.2
     hooks:
     -   id: bandit
         entry: bandit -x src/tests

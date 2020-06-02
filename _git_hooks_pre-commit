@@ -1,4 +1,0 @@
-# copy me to .git/hooks/pre-commit
-
-make lint || (echo "Please run 'make lint' / 'make format'."; exit 1)
-egrep -v '\.\.|^ *\*|Extension points for' extensions.rst | egrep '\. ' && (echo "Missing line break after sentence in extensions.rst."; exit 1) || echo "OK: extensions.rst"

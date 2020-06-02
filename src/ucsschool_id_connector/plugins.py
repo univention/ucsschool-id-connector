@@ -31,15 +31,15 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 import pluggy
-from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
-from .constants import LOG_FILE_PATH_QUEUES, PLUGIN_NAMESPACE
-from .models import (
+from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES, PLUGIN_NAMESPACE
+from ucsschool_id_connector.models import (
     ListenerAddModifyObject,
     ListenerObject,
     ListenerRemoveObject,
     SchoolAuthorityConfiguration,
 )
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 __all__ = ["hook_impl", "plugin_manager", "add_plugin_logger", "filter_plugins"]
 

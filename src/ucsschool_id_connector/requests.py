@@ -72,7 +72,7 @@ async def _get_error_msg(
         return await response.text()
 
 
-async def _do_request(
+async def _do_request(  # noqa: C901
     http_method: str,
     url,
     school_authority,
