@@ -32,34 +32,19 @@ from typing import Any, Dict, Iterable, List, Optional
 
 import pluggy
 
-from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES, PLUGIN_NAMESPACE
+from ucsschool_id_connector.constants import PLUGIN_NAMESPACE
 from ucsschool_id_connector.models import (
     ListenerAddModifyObject,
     ListenerObject,
     ListenerRemoveObject,
     SchoolAuthorityConfiguration,
 )
-from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
-__all__ = ["hook_impl", "plugin_manager", "add_plugin_logger", "filter_plugins"]
+__all__ = ["hook_impl", "plugin_manager", "filter_plugins"]
 
 hook_impl = pluggy.HookimplMarker(PLUGIN_NAMESPACE)
 hook_spec = pluggy.HookspecMarker(PLUGIN_NAMESPACE)
 plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
-
-
-def add_plugin_logger(klass):
-    """
-    Decorator to add a logger to a plugin class. It will be accessible via self.logger
-    """
-
-    def wrapper(*args, **kwargs):
-        new_instance = klass(*args, **kwargs)
-        new_instance.logger = ConsoleAndFileLogging.get_logger(
-            f"{new_instance.__class__.__name__}", LOG_FILE_PATH_QUEUES
-        )
-
-    return wrapper
 
 
 def filter_plugins(hook_name: str, plugins: List[str]) -> Any:

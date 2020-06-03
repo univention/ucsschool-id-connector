@@ -28,18 +28,19 @@
 # <http://www.gnu.org/licenses/>.
 from typing import Any, Dict
 
+from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES
 from ucsschool_id_connector.models import (
     ListenerObject,
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
     SchoolAuthorityConfiguration,
 )
-from ucsschool_id_connector.plugins import add_plugin_logger, hook_impl, plugin_manager
+from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.requests import APICommunicationError
 from ucsschool_id_connector.user_handler import UserHandler
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
-@add_plugin_logger
 class DefaultPlugin:
     """
     This is the default implementation of the Postprocessing hooks. Currently it is targeting the BB-API.
@@ -48,6 +49,9 @@ class DefaultPlugin:
 
     def __init__(self):
         self._user_handler_cache: Dict[str, UserHandler] = dict()
+        self.logger = ConsoleAndFileLogging.get_logger(
+            self.__class__.__name__, LOG_FILE_PATH_QUEUES
+        )
 
     def _get_user_handler(
         self, school_authority: SchoolAuthorityConfiguration
