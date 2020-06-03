@@ -156,7 +156,14 @@ if __name__ == "__main__":  # noqa: C901
         print(f"Started {SERVICE_NAME} daemon.")
 
     def _stop():
-        service.stop()
+        try:
+            service.stop()
+        except ValueError as exc:
+            if "not running" in str(exc):
+                print(f"{SERVICE_NAME} daemon is not running.")
+                sys.exit(0)
+            else:
+                raise
         while service.is_running():
             time.sleep(0.1)
         print(f"Stopped {SERVICE_NAME} daemon.")
