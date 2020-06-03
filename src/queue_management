@@ -135,8 +135,7 @@ class IDConnectorService(Service):
         self.logger.info("Closing cache and DB connections...")
         await close_ucr_cache()
         self.logger.info("Shutting down all outgoing connections...")
-        for coro in plugin_manager.hook.shutdown():
-            await coro
+        await asyncio.gather(*plugin_manager.hook.shutdown())
         await asyncio.sleep(0.25)  # allow aiohttp SSL connections to close gracefully
 
 

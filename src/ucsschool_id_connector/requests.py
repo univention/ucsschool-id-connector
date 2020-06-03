@@ -27,6 +27,8 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import asyncio
+import logging
 from typing import Any, Dict, List, Tuple, Union
 
 import aiofiles
@@ -42,8 +44,8 @@ from ucsschool_id_connector.plugins import filter_plugins
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 ParamType = Union[Dict[str, str], List[Tuple[str, str]]]
-logger = lazy_object_proxy.Proxy(
-    lambda: ConsoleAndFileLogging.get_logger("requests", LOG_FILE_PATH_QUEUES)
+logger: logging.Logger = lazy_object_proxy.Proxy(
+    lambda: ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_QUEUES)
 )
 
 
@@ -83,24 +85,25 @@ async def _do_request(  # noqa: C901
 ) -> Tuple[int, Dict[str, Any]]:
     acceptable_statuses = acceptable_statuses or [200]
     http_method = http_method.lower()
-    if not session:
+    if session:
+        session_to_use = session
+    else:
         timeout = aiohttp.ClientTimeout(total=HTTP_CLIENT_TIMEOUT)
         session_to_use = aiohttp.ClientSession(timeout=timeout)
-    else:
-        session_to_use = session
     meth = getattr(session_to_use, http_method)
     request_kwargs = {"url": url, "ssl": CHECK_SSL_CERTS}
     if http_method in {"patch", "post"} and data is not None:
         request_kwargs["json"] = data
     if params:
         request_kwargs["params"] = params
-    hook_caller = filter_plugins(
+    create_request_kwargs_caller = filter_plugins(
         "create_request_kwargs", school_authority.postprocessing_plugins
     )
-    for coro_result in hook_caller(
-        http_method=http_method, url=url, school_authority=school_authority
+    for update_kwargs in await asyncio.gather(
+        *create_request_kwargs_caller(
+            http_method=http_method, url=url, school_authority=school_authority
+        )
     ):
-        update_kwargs = await coro_result
         request_kwargs.update(update_kwargs)
     try:
         async with meth(**request_kwargs) as response:

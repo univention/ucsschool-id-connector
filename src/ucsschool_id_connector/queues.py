@@ -505,13 +505,13 @@ class OutQueue(FileQueue):
         self.logger.info("Handling out queue %r (%s)...", self.name, self.path)
         while True:
             # in case of a communication error with the target API, sleep and retry
-            hook_caller = filter_plugins(
+            school_authority_ping_caller = filter_plugins(
                 "school_authority_ping", self.school_authority.postprocessing_plugins
             )
-            result_coros: List[Coroutine] = hook_caller(
+            school_authority_ping_coros: List[Coroutine] = school_authority_ping_caller(
                 school_authority=self.school_authority
             )
-            connection_ok = all([await coro for coro in result_coros])
+            connection_ok = all(await asyncio.gather(*school_authority_ping_coros))
             if not connection_ok:
                 self.logger.error(
                     "One or more school_authority_ping hooks reported a faulty connection!"
@@ -560,13 +560,15 @@ class OutQueue(FileQueue):
             self.logger.debug("finished handling %r.", path.name)
             return
         try:
-            hook_caller = filter_plugins(
+            handle_listener_object_caller = filter_plugins(
                 "handle_listener_object", self.school_authority.postprocessing_plugins
             )
-            result_coros: List[Coroutine] = hook_caller(
+            handle_listener_object_coros: List[
+                Coroutine
+            ] = handle_listener_object_caller(
                 school_authority=self.school_authority, obj=obj
             )
-            handled = any([await coro for coro in result_coros])
+            handled = any(await asyncio.gather(*handle_listener_object_coros))
             if not handled:
                 raise NotImplementedError(f"No registered plugin handled obj={obj!r}.")
         except Exception as exc:

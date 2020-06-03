@@ -64,7 +64,7 @@ def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
                 plugin_manager.get_plugin(plugin_name)
             )
         ]
-        all_hcaller_names.update(set(hcallers))
+        all_hcaller_names.update(hcallers)
     if hook_name not in all_hcaller_names:
         plugins = ["default"]
     plugins_to_remove = [
@@ -217,7 +217,7 @@ class Postprocessing:
         """
         Creates a dictionary the kwargs for the aiohttp request should be updated with.
 
-        The configured create_request_kwargs hooks for a given school authority will
+        The configured ``create_request_kwargs`` hooks for a given school authority will
         be executed. The returned dictionaries are used to update the kwargs for
         aiohttp with. Common use cases would be the addition of headers or authentication
         strategies.
@@ -232,9 +232,12 @@ class Postprocessing:
         self, school_authority: SchoolAuthorityConfiguration, obj: ListenerObject
     ) -> bool:
         """
-        This hook is the entry point for the entire handling logic of ListenerObjects in the out queue.
-         All registered and for a specific school authority configured handler hooks are executed.
-         If no registered hook handles the object and thus none returned True, an error will be logged.
+        This hook is the entry point for the entire handling logic of ``ListenerObjects``
+        in the out queue.
+        All handler hooks that have been registered and appear in a specific school authority
+        configuration are executed.
+        If no registered hook handles the object and thus none returned ``True``, an error
+        will be logged.
         :param school_authority: The school authority this object is handled for
         :param obj: The ListenerObject to handle
         :return: True if this hook handled the object, otherwise False
@@ -246,7 +249,7 @@ class Postprocessing:
     ) -> bool:
         """
         This hook can be defined to implement a connectivity check to the API of a school authority.
-        If any registered ping hooks for a school authority returns False, the communication is
+        If any registered ping hooks for a school authority returns ``False``, the communication is
         considered faulty.
 
         :param school_authority: The school authority to check the connectivity to.
