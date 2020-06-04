@@ -8,7 +8,7 @@ Changelog
 v1.1.0 (2020-06-02)
 ...................
 * The source code that is responsible for replicating users to specific target systems has been moved to plugins.
-* The new variable ``postprocessing_plugins`` allows configuring which plugin to use for each school authority configuration.
+* The new variable ``plugins`` allows configuring which plugin to use for each school authority configuration.
 * In combination the previous two features allow the connector to target a different API for each school authority.
 * Update to Python 3.8.
 

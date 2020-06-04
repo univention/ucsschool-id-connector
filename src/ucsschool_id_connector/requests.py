@@ -97,7 +97,7 @@ async def _do_request(  # noqa: C901
     if params:
         request_kwargs["params"] = params
     create_request_kwargs_caller = filter_plugins(
-        "create_request_kwargs", school_authority.postprocessing_plugins
+        "create_request_kwargs", school_authority.plugins
     )
     for update_kwargs in await asyncio.gather(
         *create_request_kwargs_caller(

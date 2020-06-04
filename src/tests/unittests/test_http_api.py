@@ -128,14 +128,14 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
             "password": random_name(),
             "mapping": {random_name(): random_name()},
             "passwords_target_attribute": random_name(),
-            "postprocessing_plugins": ["default"],
+            "plugins": ["default"],
         },
         {
             "name": random_name(),
             "active": bool(random_int(0, 1)),
             "url": f"http://{random_name()}.{random_name()}/",
             "password": random_name(),
-            "postprocessing_plugins": ["default"],
+            "plugins": ["default"],
         },
     ]
     socket = zmq_socket({"result": school_authority_data})
@@ -172,7 +172,7 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         "password": random_name(),
         "mapping": {random_name(): random_name()},
         "passwords_target_attribute": random_name(),
-        "postprocessing_plugins": ["default"],
+        "plugins": ["default"],
     }
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
@@ -208,7 +208,7 @@ def test_create_school_authorities(
         "active": bool(random_int(0, 1)),
         "mapping": {random_name(): random_name()},
         "passwords_target_attribute": random_name(),
-        "postprocessing_plugins": ["default"],
+        "plugins": ["default"],
     }
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket

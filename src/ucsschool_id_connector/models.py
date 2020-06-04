@@ -355,8 +355,9 @@ class SchoolAuthorityConfiguration(BaseModel):
      the target system"""
     passwords_target_attribute: str = None
     """attribute on the target system to write password hashes object to"""
-    postprocessing_plugins: List[str] = ["default"]
-    """the plugins that should be executed for this specific school authority during post processing"""
+    plugins: List[str] = ["default"]
+    """the plugins that should be executed for this specific school
+    authority during handling in the out queue"""
 
 
 class SchoolAuthorityConfigurationPatchDocument(BaseModel):
@@ -371,8 +372,9 @@ class SchoolAuthorityConfigurationPatchDocument(BaseModel):
     the target system"""
     passwords_target_attribute: str = None
     """attribute on the target system to write password hashes object to"""
-    postprocessing_plugins: List[str] = None
-    """the plugins that should be executed for this specific school authority during post processing"""
+    plugins: List[str] = None
+    """the plugins that should be executed for this specific school
+    authority during handling in the out queue"""
 
 
 class School2SchoolAuthorityMapping(BaseModel):

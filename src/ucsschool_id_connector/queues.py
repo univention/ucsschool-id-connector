@@ -506,7 +506,7 @@ class OutQueue(FileQueue):
         while True:
             # in case of a communication error with the target API, sleep and retry
             school_authority_ping_caller = filter_plugins(
-                "school_authority_ping", self.school_authority.postprocessing_plugins
+                "school_authority_ping", self.school_authority.plugins
             )
             school_authority_ping_coros: List[Coroutine] = school_authority_ping_caller(
                 school_authority=self.school_authority
@@ -561,7 +561,7 @@ class OutQueue(FileQueue):
             return
         try:
             handle_listener_object_caller = filter_plugins(
-                "handle_listener_object", self.school_authority.postprocessing_plugins
+                "handle_listener_object", self.school_authority.plugins
             )
             handle_listener_object_coros: List[
                 Coroutine
