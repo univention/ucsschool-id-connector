@@ -80,7 +80,7 @@ class DefaultPlugin:
         return result
 
     @hook_impl
-    async def handle_listener_obj(
+    async def handle_listener_object(
         self, school_authority: SchoolAuthorityConfiguration, obj: ListenerObject
     ) -> bool:
         user_handler = self._get_user_handler(school_authority)

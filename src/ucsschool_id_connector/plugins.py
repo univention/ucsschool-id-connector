@@ -228,7 +228,7 @@ class Postprocessing:
         """
 
     @hook_spec
-    async def handle_listener_obj(
+    async def handle_listener_object(
         self, school_authority: SchoolAuthorityConfiguration, obj: ListenerObject
     ) -> bool:
         """
