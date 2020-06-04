@@ -39,7 +39,7 @@ from ucsschool_id_connector.utils import ConsoleAndFileLogging
 __plugins_loaded = False
 
 
-def load_plugins() -> None:
+def load_plugins() -> None:  # noqa: C901
     global __plugins_loaded
     if __plugins_loaded:
         return
@@ -75,5 +75,13 @@ def load_plugins() -> None:
         "Known hooks: %r",
         [h for h in dir(plugin_manager.hook) if not h.startswith("_")],
     )
-    logger.info("Loaded plugins: %r", plugin_manager.get_plugins())
+    plugin_info = {}
+    for plugin in plugin_manager.get_plugins():
+        plugin_info[f"{plugin.__module__}.{plugin.__class__.__name__}"] = sorted(
+            h.name for h in plugin_manager.get_hookcallers(plugin)
+        )
+    logger.info("Loaded plugins:")
+    for plugin_name in sorted(plugin_info.keys()):
+        logger.info("    %r: %r", plugin_name, plugin_info[plugin_name])
+
     __plugins_loaded = True

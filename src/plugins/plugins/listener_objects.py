@@ -71,7 +71,7 @@ class ListenerObjectHandlerImpl:
         )
 
     @hook_impl
-    def shutdown(self) -> None:
+    async def shutdown(self) -> None:
         """
         Called when the daemon is shutting down. Close database and network
         connections.

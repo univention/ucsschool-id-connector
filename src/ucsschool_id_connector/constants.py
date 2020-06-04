@@ -76,22 +76,6 @@ CHECK_SSL_CERTS = False
 API_SCHOOL_CACHE_TTL = 600
 API_COMMUNICATION_ERROR_WAIT = 600
 SOURCE_UID = "TESTID"
-BB_API_MAIN_ATTRIBUTES = {
-    "name",
-    "birthday",
-    "disabled",
-    "email",
-    "firstname",
-    "lastname",
-    "password",
-    "record_uid",
-    "roles",
-    "school",
-    "school_classes",
-    "schools",
-    "source_uid",
-    "ucsschool_roles",
-}
 MACHINE_PASSWORD_FILE = "/etc/machine.secret"  # nosec
 HTTP_CLIENT_TIMEOUT = 60
 HISTORY_FILE = "HISTORY.html"

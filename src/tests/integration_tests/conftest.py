@@ -53,6 +53,8 @@ except ImportError:  # pragma: no cover
 fake = faker.Faker()
 AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
 
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
 
 @pytest.fixture
 def http_request():
@@ -65,8 +67,6 @@ def http_request():
         verify: bool = False,
         expected_statuses: Iterable[int] = (200,),
     ) -> requests.Response:
-        if not verify:
-            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
         req_meth = getattr(requests, method)
         response = req_meth(
             url, params=params, headers=headers, json=json_data, verify=verify
@@ -102,7 +102,6 @@ def school_auth_config(docker_hostname: str):
     for fnf in ("bb-api-IP_traeger", "bb-api-key_traeger"):
         for i in ("1", "2"):
             url = urljoin(f"https://{docker_hostname}", f"{fnf}{i}.txt")
-            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
             resp = requests.get(url, verify=False)
             assert resp.status_code == 200, (resp.status_code, resp.reason, url)
             requested_data[fnf + i] = resp.text.strip("\n")
@@ -244,7 +243,6 @@ def host_bb_token(docker_hostname: str) -> str:
     """
     Returns a valid token for the BB-API of the containers host system.
     """
-    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     resp = requests.get(
         urljoin(f"https://{docker_hostname}/", "bb-api-key_sender.txt"), verify=False
     )
@@ -261,7 +259,6 @@ def host_ucsschool_id_connector_token(docker_hostname: str) -> str:
         "accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     response = requests.post(
         urljoin(f"https://{docker_hostname}", f"{APP_ID}/api/token"),
         verify=False,
@@ -310,7 +307,7 @@ async def make_school_authority(
         # try to delete possible leftovers from previous failed test
         http_request(
             "delete",
-            urljoin(f"{url}/", name),
+            urljoin(f"{ucsschool_id_connector_api_url('school_authorities')}/", name),
             headers=headers,
             expected_statuses=(204, 404),
         )
@@ -576,6 +573,7 @@ async def make_host_user(
             "schools": [bb_api_url(docker_hostname, "schools", ou) for ou in ous],
             "source_uid": source_uid,
         }
+        print(f"Creating user {user_data['name']!r} in source system...")
         resp = http_request(
             "post",
             bb_api_url(docker_hostname, "users"),
@@ -591,6 +589,7 @@ async def make_host_user(
     yield _make_host_user
 
     for user in created_users:
+        print(f"Deleting user {user['name']!r} in source system...")
         http_request(
             "delete",
             bb_api_url(docker_hostname, "users", user["name"]),

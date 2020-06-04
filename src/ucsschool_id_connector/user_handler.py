@@ -32,23 +32,20 @@ import random
 import string
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional
 
 import aiofiles
 import aiohttp
 import ujson
 from async_property import async_property
 
-from ucsschool_id_connector.ldap_access import LDAPAccess
-
-from .constants import (
+from ucsschool_id_connector.constants import (
     API_SCHOOL_CACHE_TTL,
     APPCENTER_LISTENER_PATH,
-    BB_API_MAIN_ATTRIBUTES,
-    CHECK_SSL_CERTS,
     HTTP_CLIENT_TIMEOUT,
 )
-from .models import (
+from ucsschool_id_connector.ldap_access import LDAPAccess
+from ucsschool_id_connector.models import (
     ListenerActionEnum,
     ListenerAddModifyObject,
     ListenerUserAddModifyObject,
@@ -60,19 +57,29 @@ from .models import (
     User,
     UserPasswords,
 )
-from .utils import ConsoleAndFileLogging, class_dn_regex, get_source_uid
+from ucsschool_id_connector.requests import http_delete, http_get, http_patch, http_post
+from ucsschool_id_connector.utils import (
+    ConsoleAndFileLogging,
+    class_dn_regex,
+    get_source_uid,
+)
 
-ParamType = Union[Dict[str, str], List[Tuple[str, str]]]
-
-
-class APICommunicationError(Exception):
-    pass
-
-
-class APIRequestError(APICommunicationError):
-    def __init__(self, *args, status: int, **kwargs):
-        self.status = status
-        super().__init__(*args, **kwargs)
+BB_API_MAIN_ATTRIBUTES = {
+    "name",
+    "birthday",
+    "disabled",
+    "email",
+    "firstname",
+    "lastname",
+    "password",
+    "record_uid",
+    "roles",
+    "school",
+    "school_classes",
+    "schools",
+    "source_uid",
+    "ucsschool_roles",
+}
 
 
 class ConfigurationError(Exception):
@@ -83,12 +90,6 @@ class MissingData(Exception):
     pass
 
 
-class ServerError(APICommunicationError):
-    def __init__(self, *args, status: int, **kwargs):
-        self.status = status
-        super().__init__(*args, **kwargs)
-
-
 class UnknownSchool(Exception):
     def __init__(self, *args, school: str, **kwargs):
         self.school = school
@@ -97,6 +98,8 @@ class UnknownSchool(Exception):
 
 class UserHandler:
     """
+    THIS CLASS IS DEPRECATED AND WILL BE REMOVED IN FUTURE VERSIONS OF THE CONNECTOR THAT TARGETS
+    KELVIN AS THE DEFAULT API.
     Send current state of user to target system (school authority).
 
     Each out queue has its own :py:class:`UserHandler` instance which handles
@@ -245,20 +248,13 @@ class UserHandler:
                 f"Role(s) unknown on API server: {roles!r}.", roles=roles
             )
 
-    @staticmethod
-    async def _get_error_msg(
-        response: aiohttp.ClientResponse,
-    ) -> Union[Dict[str, Any], str]:
-        try:
-            return await response.json()
-        except (ValueError, aiohttp.ContentTypeError):
-            return await response.text()
-
     async def fetch_roles(self) -> None:
         """Fetch all roles from API of school authority."""
         # TODO: this should be in a plugin
         url = f"{self.school_authority.url}/roles/"
-        status, json_resp = await self.http_get(url)
+        status, json_resp = await http_get(
+            url, self.school_authority, session=self._session
+        )
         for role in json_resp["results"]:
             self.api_roles_cache[role["name"]] = role["url"]
 
@@ -266,96 +262,10 @@ class UserHandler:
         """Fetch all schools from API of school authority."""
         # TODO: this should be in a plugin
         url = f"{self.school_authority.url}/schools/"
-        status, json_resp = await self.http_get(url)
+        status, json_resp = await http_get(
+            url, self.school_authority, session=self._session
+        )
         return dict((school["name"], school["url"]) for school in json_resp["results"])
-
-    async def _do_request(
-        self,
-        http_method: str,
-        url,
-        params: ParamType = None,
-        acceptable_statuses: List[int] = None,
-        data=None,
-    ) -> Tuple[int, Dict[str, Any]]:
-        acceptable_statuses = acceptable_statuses or [200]
-        http_method = http_method.lower()
-        headers = {
-            f"Authorization": f"Token {self.school_authority.password.get_secret_value()}"
-        }
-        meth = getattr(self._session, http_method)
-        request_kwargs = {"url": url, "headers": headers, "ssl": CHECK_SSL_CERTS}
-        if http_method in {"patch", "post"} and data is not None:
-            request_kwargs["json"] = data
-        if params:
-            request_kwargs["params"] = params
-        try:
-            async with meth(**request_kwargs) as response:
-                if response.status in acceptable_statuses:
-                    return (
-                        response.status,
-                        None if response.status == 204 else await response.json(),
-                    )
-                else:
-                    self.logger.error(
-                        "%s %r returned with status %r.",
-                        http_method.upper(),
-                        url,
-                        response.status,
-                    )
-                    response_body = await self._get_error_msg(response)
-                    self.logger.error("Response body: %r", response_body)
-                    if len(response_body) > 500:
-                        error_file = "/tmp/error.txt"  # nosec
-                        async with aiofiles.open(error_file, "w") as fp:
-                            await fp.write(response_body)
-                        self.logger.error("Wrote response body to %r", error_file)
-                    msg = f"{http_method.upper()} {url} returned {response.status}."
-                    if response.status >= 500:
-                        raise ServerError(msg, status=response.status)
-                    else:
-                        raise APIRequestError(msg, status=response.status)
-        except aiohttp.ClientConnectionError as exc:
-            raise APICommunicationError(str(exc))
-
-    async def http_delete(
-        self, url, acceptable_statuses: List[int] = None
-    ) -> Tuple[int, Dict[str, Any]]:
-        acceptable_statuses = acceptable_statuses or [204]
-        return await self._do_request(
-            http_method="delete", url=url, acceptable_statuses=acceptable_statuses
-        )
-
-    async def http_get(
-        self, url, params: ParamType = None, acceptable_statuses: List[int] = None
-    ) -> Tuple[int, Dict[str, Any]]:
-        return await self._do_request(
-            http_method="get",
-            url=url,
-            acceptable_statuses=acceptable_statuses,
-            params=params,
-        )
-
-    async def http_patch(
-        self, url, data, acceptable_statuses: List[int] = None
-    ) -> Tuple[int, Dict[str, Any]]:
-        acceptable_statuses = acceptable_statuses or [200]
-        return await self._do_request(
-            http_method="patch",
-            url=url,
-            data=data,
-            acceptable_statuses=acceptable_statuses,
-        )
-
-    async def http_post(
-        self, url, data, acceptable_statuses: List[int] = None
-    ) -> Tuple[int, Dict[str, Any]]:
-        acceptable_statuses = acceptable_statuses or [201]
-        return await self._do_request(
-            http_method="post",
-            url=url,
-            data=data,
-            acceptable_statuses=acceptable_statuses,
-        )
 
     async def _do_create_or_update(self, data: Dict[str, Any]) -> None:
         # TODO: this should be in a plugin
@@ -370,18 +280,25 @@ class UserHandler:
                 f"data: {data!r}."
             )
         url = f"{self.school_authority.url}/users/"
-        status, json_resp = await self.http_get(url, params)
+        status, json_resp = await http_get(
+            url, self.school_authority, params, session=self._session
+        )
         if json_resp:
             # user exists, modify it
             user_url = json_resp[0]["url"]
             self.logger.info("User exists at %r.", user_url)
-            status, json_resp = await self.http_patch(user_url, data=data)
+            status, json_resp = await http_patch(
+                user_url, self.school_authority, session=self._session, data=data
+            )
             self.logger.info("User modified (status: %r): %r", status, json_resp)
         else:
             # create user
             self.logger.info("User not found, creating new one.")
-            status, json_resp = await self.http_post(
-                f"{self.school_authority.url}/users/", data=data
+            status, json_resp = await http_post(
+                f"{self.school_authority.url}/users/",
+                self.school_authority,
+                session=self._session,
+                data=data,
             )
             self.logger.info("User created (status: %r): %r", status, json_resp)
 
@@ -395,12 +312,16 @@ class UserHandler:
                 f"Cannot remove user: missing record_uid or source_uid in {obj!r}."
             )
         url = f"{self.school_authority.url}/users/"
-        status, json_resp = await self.http_get(url, params)
+        status, json_resp = await http_get(
+            url, self.school_authority, params, session=self._session
+        )
         if json_resp:
             # user exists, delete it
             user_url = json_resp[0]["url"]
             self.logger.info("User exists at %r.", user_url)
-            status, json_resp = await self.http_delete(user_url)
+            status, json_resp = await http_delete(
+                user_url, self.school_authority, session=self._session
+            )
             if status == 204:
                 self.logger.info("User deleted (status: %r): %r", status, json_resp)
             else:

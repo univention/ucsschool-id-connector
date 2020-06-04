@@ -11,6 +11,7 @@ py3-isort
 py3-jwt
 py3-ldap3
 py3-msgpack
+py3-pip
 py3-pluggy
 py3-pytest
 py3-pyzmq@stable-community
