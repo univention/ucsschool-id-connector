@@ -29,13 +29,11 @@
 
 import copy
 import time
-from typing import Any, Dict, Iterable, Optional, Tuple
+from typing import Any, Dict, Iterable
 from urllib.parse import urlsplit
 
 import faker
 import pytest
-import requests
-from urllib3.exceptions import InsecureRequestWarning
 
 try:
     from simplejson.errors import JSONDecodeError
@@ -45,98 +43,34 @@ except ImportError:  # pragma: no cover
 fake = faker.Faker()
 
 
-def compare_user(
-    source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None
-):
-    """
-    This function compares two dictionaries. Specifically it checks if all
-    key-value pairs from the source also exist in the other dictionary. It
-    does not assert all key-value pairs from the other dictionary to be in the
-    source!
+@pytest.fixture(scope="session")
+def compare_user(compare_dicts):
+    def _func(
+        source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None
+    ):
+        """
+        This function compares two dictionaries. Specifically it checks if all
+        key-value pairs from the source also exist in the other dictionary. It
+        does not assert all key-value pairs from the other dictionary to be in the
+        source!
 
-    :param source: The original dictionary
-    :param other: The dictionary to check against the original source
-    :param to_check: The keys to check.
-    """
-    to_check = to_check or (
-        "name",
-        "firstname",
-        "lastname",
-        "birthday",
-        "disabled",
-        "record_uid",
-        "school_classes",
-        "source_uid",
-    )
-    for key in to_check:
-        assert source[key] == other[key]
-
-
-def wait_for_status_code(  # noqa: C901
-    method,
-    url,
-    status_code,
-    headers=None,
-    json=None,
-    expected_json: Dict[str, Any] = None,
-    timeout=60,
-    raise_assert=True,
-) -> Tuple[bool, Optional[requests.Response]]:
-    """
-    Sends defined request repeatedly until the desired status code is returned
-    or the timeout occurs.
-
-    :param method: The requests method to use
-    :param url: The url to request
-    :param status_code: The desired status code to wait for
-    :param headers: The headers of the request
-    :param json: The json data of the request
-    :param dict expected_json: key-value pairs that should exist in JSON response
-    :param int timeout: The timeout
-    :param bool raise_assert: whether to raise an AssertionError if the desired
-        status code was not reached
-    :return: Tuple[bool, response], with bool being True if desired status code
-        was reached, otherwise False
-    """
-
-    def check_response(json_result):
-        if not expected_json:
-            return True
-        for k, v in expected_json.items():
-            if json_result.get(k) != v:
-                return False
-        return True
-
-    # Suppress only the single warning from urllib3 needed.
-    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-    start = time.time()
-    response = None
-    msg = ""
-    while (time.time() - start) < timeout:
-        headers = headers or {}
-        json = json or {}
-        response = method(url, headers=headers, json=json, verify=False)
-        try:
-            json_result = response.json()
-        except JSONDecodeError:  # pragma: no cover
-            json_result = {}
-        msg = (
-            f"Status {None if response is None else response.status_code} "
-            f"(reason: {None if response is None else response.reason}) for "
-            f"{method.__name__.upper()} {url!r} using headers={headers!r}"
-            f" and json={json!r}\njson_result={json_result!r}"
+        :param source: The original dictionary
+        :param other: The dictionary to check against the original source
+        :param to_check: The keys to check.
+        """
+        to_check = to_check or (
+            "name",
+            "firstname",
+            "lastname",
+            "birthday",
+            "disabled",
+            "record_uid",
+            "school_classes",
+            "source_uid",
         )
-        if response.status_code == status_code:
-            if check_response(json_result):
-                return True, response
-        print(
-            f"{msg}\nexpected status={status_code!r} and "
-            f"json={expected_json!r}... sleeping..."
-        )
-        time.sleep(1)
-    if raise_assert:  # pragma: no cover
-        raise AssertionError(msg)
-    return False, response  # pragma: no cover
+        return compare_dicts(source, other, to_check)
+
+    return _func
 
 
 def filter_ous(
@@ -170,6 +104,8 @@ async def test_create_user(
     check_password,
     http_request,
     host_bb_token,
+    compare_user,
+    wait_for_status_code,
 ):
     """
     Tests if ucsschool_id_connector distributes a newly created User to the correct school
@@ -211,7 +147,7 @@ async def test_create_user(
             f"Created user {user['name']!r}, looking for it in auth1 at {auth1_url!r}..."
         )
         result = wait_for_status_code(
-            requests.get,
+            "get",
             auth1_url,
             200,
             headers=req_headers(
@@ -228,7 +164,7 @@ async def test_create_user(
         if ou_auth2 in ous:
             print(f"User should also be in OU2 ({ou_auth2!r}), checking...")
             result = wait_for_status_code(
-                requests.get,
+                "get",
                 auth2_url,
                 200,
                 headers=req_headers(
@@ -243,7 +179,7 @@ async def test_create_user(
         else:
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
             wait_for_status_code(
-                requests.get,
+                "get",
                 auth2_url,
                 404,
                 headers=req_headers(
@@ -265,6 +201,7 @@ async def test_delete_user(
     bb_api_url,
     docker_hostname,
     http_request,
+    wait_for_status_code,
 ):
     """
     Tests if ucsschool_id_connector distributes the deletion of an existing
@@ -291,7 +228,7 @@ async def test_delete_user(
         f"ou_auth1 at {auth1_url!r}..."
     )
     wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         200,
         headers=req_headers(
@@ -304,7 +241,7 @@ async def test_delete_user(
         f"ou_auth2 at {auth2_url!r}..."
     )
     wait_for_status_code(
-        requests.get,
+        "get",
         auth2_url,
         200,
         headers=req_headers(
@@ -325,7 +262,7 @@ async def test_delete_user(
         f"disappear in ou_auth1..."
     )
     wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         404,
         headers=req_headers(
@@ -338,7 +275,7 @@ async def test_delete_user(
         f"also disappear in ou_auth2..."
     )
     wait_for_status_code(
-        requests.get,
+        "get",
         auth2_url,
         404,
         headers=req_headers(
@@ -361,6 +298,8 @@ async def test_modify_user(
     docker_hostname,
     http_request,
     check_password,
+    compare_user,
+    wait_for_status_code,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -382,7 +321,7 @@ async def test_modify_user(
     user = make_host_user(ous=[ou_auth1])
     # check user exists on sender
     wait_for_status_code(
-        requests.get,
+        "get",
         bb_api_url(docker_hostname, "users", user["name"]),
         200,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
@@ -391,7 +330,7 @@ async def test_modify_user(
     # check user exists on auth1
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         200,
         headers=req_headers(
@@ -421,7 +360,7 @@ async def test_modify_user(
     # Check if user was modified on target host
     time.sleep(10)
     result = wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         200,
         headers=req_headers(
@@ -446,6 +385,7 @@ async def test_class_change(
     host_bb_token,
     random_name,
     http_request,
+    wait_for_status_code,
 ):
     """
     Tests if the modification of a users class is properly distributed by
@@ -470,7 +410,7 @@ async def test_class_change(
     )
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     _, response = wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         200,
         headers=req_headers(
@@ -497,7 +437,7 @@ async def test_class_change(
     school_classes_at_sender = response.json()["school_classes"]
     assert school_classes_at_sender == new_value["school_classes"]
     _, response = wait_for_status_code(
-        requests.get,
+        "get",
         bb_api_url(docker_hostname, "users", user["name"]),
         200,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
@@ -509,7 +449,7 @@ async def test_class_change(
         f"school_classes={school_classes_at_sender!r}."
     )
     _, response = wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         200,
         headers=req_headers(
@@ -535,6 +475,7 @@ async def test_school_change(
     host_bb_token,
     random_name,
     http_request,
+    wait_for_status_code,
 ):
     """
     Tests if the modification of a users school is properly distributed by
@@ -548,7 +489,7 @@ async def test_school_change(
     user = make_host_user(ous=[ou_auth1])
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         200,
         headers=req_headers(
@@ -569,7 +510,7 @@ async def test_school_change(
         json_data=new_value,
     )
     _, response = wait_for_status_code(
-        requests.get,
+        "get",
         bb_api_url(docker_hostname, "users", user["name"]),
         200,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
@@ -587,7 +528,7 @@ async def test_school_change(
     time.sleep(10)
     auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
     _, response = wait_for_status_code(
-        requests.get,
+        "get",
         auth1_url,
         200,
         headers=req_headers(

@@ -35,7 +35,7 @@ import string
 from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp, mkstemp
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 from unittest.mock import MagicMock, patch
 
 import factory
@@ -606,5 +606,26 @@ def example_user_remove_json_path_copy(
             fpw.write(fpr.read())
             fpw.flush()
         return Path(fpw.name)
+
+    return _func
+
+
+@pytest.fixture(scope="session")
+def compare_dicts():
+    def _func(
+        source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None
+    ):
+        """
+        This function compares two dictionaries. Specifically it checks if all
+        key-value pairs from the source also exist in the other dictionary. It
+        does not assert all key-value pairs from the other dictionary to be in the
+        source!
+
+        :param source: The original dictionary
+        :param other: The dictionary to check against the original source
+        :param to_check: The keys to check.
+        """
+        for key in to_check:
+            assert source[key] == other[key]
 
     return _func

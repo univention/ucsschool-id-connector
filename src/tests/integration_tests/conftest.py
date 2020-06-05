@@ -29,8 +29,9 @@
 
 import json
 import os
+import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from urllib.parse import urljoin
 
 import faker
@@ -53,23 +54,30 @@ except ImportError:  # pragma: no cover
 fake = faker.Faker()
 AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
 
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-
-@pytest.fixture
+@pytest.fixture(scope="session")
 def http_request():
     def _func(
         method: str,
         url: str,
         params: Dict[str, str] = None,
         headers: Dict[str, str] = None,
+        form_data: Dict[str, Any] = None,
         json_data: Dict[str, Any] = None,
         verify: bool = False,
         expected_statuses: Iterable[int] = (200,),
+        check_status: bool = True,
     ) -> requests.Response:
-        req_meth = getattr(requests, method)
+        req_meth = getattr(requests, method.lower())
+        if not verify:
+            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
         response = req_meth(
-            url, params=params, headers=headers, json=json_data, verify=verify
+            url,
+            params=params,
+            headers=headers,
+            data=form_data,
+            json=json_data,
+            verify=verify,
         )
         try:
             msg = response.json()
@@ -84,7 +92,8 @@ def http_request():
             f"{method.upper()} {url!r} using headers={headers!r} and "
             f"json_data={json_data!r} -> msg: {msg}."
         )
-        assert response.status_code in expected_statuses, msg
+        if check_status:
+            assert response.status_code in expected_statuses, msg
         print(msg)
         return response
 
@@ -92,7 +101,72 @@ def http_request():
 
 
 @pytest.fixture(scope="session")
-def school_auth_config(docker_hostname: str):
+def wait_for_status_code(http_request):  # noqa: C901
+    def check_response(expected_json, json_result):
+        if not expected_json:
+            return True
+        for k, v in expected_json.items():
+            if json_result.get(k) != v:
+                return False
+        return True
+
+    def _func(
+        method: str,
+        url: str,
+        status_code: int,
+        headers: Dict[str, str] = None,
+        json: Dict[str, Any] = None,
+        expected_json: Dict[str, Any] = None,
+        timeout: int = 60,
+        raise_assert: bool = True,
+    ) -> Tuple[bool, Optional[requests.Response]]:
+        """
+        Sends defined request repeatedly until the desired status code is returned
+        or the timeout occurs.
+
+        :param str method: The requests methods name to use
+        :param str url: The url to request
+        :param int status_code: The desired status code to wait for
+        :param headers: The headers of the request
+        :param json: The json data of the request
+        :param dict expected_json: key-value pairs that should exist in JSON response
+        :param int timeout: The timeout
+        :param bool raise_assert: whether to raise an AssertionError if the desired
+            status code was not reached
+        :return: Tuple[bool, response], with bool being True if desired status code
+            was reached, otherwise False
+        """
+        start = time.time()
+        response = None
+        msg = ""
+        while (time.time() - start) < timeout:
+            headers = headers or {}
+            json = json or {}
+            response = http_request(
+                method,
+                url,
+                headers=headers,
+                json_data=json,
+                verify=False,
+                check_status=False,
+            )
+            if response.status_code == status_code:
+                if check_response(expected_json, response.json()):
+                    return True, response
+            print(
+                f"{msg}\nexpected status={status_code!r} and "
+                f"json={expected_json!r}... sleeping..."
+            )
+            time.sleep(1)
+        if raise_assert:  # pragma: no cover
+            raise AssertionError(msg)
+        return False, response  # pragma: no cover
+
+    return _func
+
+
+@pytest.fixture(scope="session")
+def school_auth_config(docker_hostname: str, http_request):
     """
     Fixture to create configurations for school authorities. It expects a
     specific environment for the integration tests and can provide a maximum
@@ -102,7 +176,7 @@ def school_auth_config(docker_hostname: str):
     for fnf in ("bb-api-IP_traeger", "bb-api-key_traeger"):
         for i in ("1", "2"):
             url = urljoin(f"https://{docker_hostname}", f"{fnf}{i}.txt")
-            resp = requests.get(url, verify=False)
+            resp = http_request("get", url, verify=False)
             assert resp.status_code == 200, (resp.status_code, resp.reason, url)
             requested_data[fnf + i] = resp.text.strip("\n")
 
@@ -239,19 +313,21 @@ async def source_uid() -> str:
 
 
 @pytest.fixture(scope="session")
-def host_bb_token(docker_hostname: str) -> str:
+def host_bb_token(docker_hostname: str, http_request) -> str:
     """
     Returns a valid token for the BB-API of the containers host system.
     """
-    resp = requests.get(
-        urljoin(f"https://{docker_hostname}/", "bb-api-key_sender.txt"), verify=False
+    resp = http_request(
+        "get",
+        urljoin(f"https://{docker_hostname}/", "bb-api-key_sender.txt"),
+        verify=False,
     )
     assert resp.status_code == 200, (resp.status_code, resp.reason, resp.url)
     return resp.text.strip("\n")
 
 
 @pytest.fixture(scope="session")
-def host_ucsschool_id_connector_token(docker_hostname: str) -> str:
+def host_ucsschool_id_connector_token(docker_hostname: str, http_request) -> str:
     """
     Returns a valid token for the ucsschool-id-connector HTTP-API.
     """
@@ -259,10 +335,11 @@ def host_ucsschool_id_connector_token(docker_hostname: str) -> str:
         "accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    response = requests.post(
+    response = http_request(
+        "post",
         urljoin(f"https://{docker_hostname}", f"{APP_ID}/api/token"),
         verify=False,
-        data=dict(username="Administrator", password="univention"),
+        form_data=dict(username="Administrator", password="univention"),
         headers=req_headers,
     )
     assert response.status_code == 200, (
