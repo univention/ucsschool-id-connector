@@ -101,18 +101,22 @@ class DefaultPlugin:
         await user_handler.fetch_roles()
         try:
             self.logger.debug(
-                "Roles known by API server: %s",
+                "Roles known by API server (%s): %s",
+                school_authority.name,
                 ", ".join(user_handler.api_roles_cache.keys()),
             )
             await user_handler.fetch_schools()
             self.logger.debug(
-                "Schools known by API server: %s",
+                "Schools known by API server (%s): %s",
+                school_authority.name,
                 ", ".join((await user_handler.api_schools_cache).keys()),
             )
 
         except APICommunicationError as exc:
             self.logger.error(
-                "Error calling school authority API: %s", exc,
+                "Error calling school authority API (%s): %s",
+                school_authority.name,
+                exc,
             )
             return False
         return True
