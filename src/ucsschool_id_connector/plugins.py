@@ -49,12 +49,15 @@ plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
 def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
     """
-    This function returns a HookCaller containing only the implementations of the specified plugins.
-    If the given list is empty, or no specified plugin implements the hook, the default plugin is chosen.
+    This function returns a HookCaller containing only the implementations of
+    the specified plugins.
+    If the given list is empty, or no specified plugin implements the hook, the
+    default plugin is chosen.
 
     :param hook_name: The hook to be executed
     :param plugins: The plugins to be filtered for
-    :return: A _HookCaller instance that can be used just like plugin_manager.hook.hook_name
+    :return: A _HookCaller instance that can be used just like
+        `plugin_manager.hook.hook_name`
     """
     all_hcaller_names = set()
     for plugin_name in plugins:
@@ -206,8 +209,9 @@ class Distribution:
 class Postprocessing:
     """
     Pluggy hook specifications for all hooks modifying data in postprocessing.
-    The implementations of these hooks need to be registered with a name, since the set of plugins
-    executed can be configured for every school authority individually.
+    The implementations of these hooks need to be registered with a name, since
+    the set of plugins executed can be configured for every school authority
+    individually.
     """
 
     @hook_spec
@@ -223,7 +227,8 @@ class Postprocessing:
         strategies.
         :param http_method: The HTTP method used, e.g. POST
         :param url: The complete url this request goes to
-        :param school_authority: The school authority configuration that this request targets
+        :param school_authority: The school authority configuration that this request
+            targets
         :return: The dictionary to update the request kwargs with
         """
 
@@ -234,10 +239,10 @@ class Postprocessing:
         """
         This hook is the entry point for the entire handling logic of ``ListenerObjects``
         in the out queue.
-        All handler hooks that have been registered and appear in a specific school authority
-        configuration are executed.
-        If no registered hook handles the object and thus none returned ``True``, an error
-        will be logged.
+        All handler hooks that have been registered and appear in a specific school
+        authority configuration are executed.
+        If no registered hook handles the object and thus none returned ``True``, an
+        error will be logged.
         :param school_authority: The school authority this object is handled for
         :param obj: The ListenerObject to handle
         :return: True if this hook handled the object, otherwise False
@@ -248,9 +253,10 @@ class Postprocessing:
         self, school_authority: SchoolAuthorityConfiguration
     ) -> bool:
         """
-        This hook can be defined to implement a connectivity check to the API of a school authority.
-        If any registered ping hooks for a school authority returns ``False``, the communication is
-        considered faulty.
+        This hook can be defined to implement a connectivity check to the API
+        of a school authority.
+        If any registered ping hooks for a school authority returns ``False``,
+        the communication is considered faulty.
 
         :param school_authority: The school authority to check the connectivity to.
         :return: True if check succeeds, otherwise False

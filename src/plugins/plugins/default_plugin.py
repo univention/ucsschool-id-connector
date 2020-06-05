@@ -43,7 +43,8 @@ from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 class DefaultPlugin:
     """
-    This is the default implementation of the Postprocessing hooks. Currently it is targeting the BB-API.
+    This is the default implementation of the Postprocessing hooks. Currently
+    it is targeting the BB-API.
     In the future this entire implementation will be changed to the Kelvin API.
     """
 

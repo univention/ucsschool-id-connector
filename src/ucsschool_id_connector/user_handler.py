@@ -98,8 +98,8 @@ class UnknownSchool(Exception):
 
 class UserHandler:
     """
-    THIS CLASS IS DEPRECATED AND WILL BE REMOVED IN FUTURE VERSIONS OF THE CONNECTOR THAT TARGETS
-    KELVIN AS THE DEFAULT API.
+    THIS CLASS IS DEPRECATED AND WILL BE REMOVED IN FUTURE VERSIONS OF THE
+    CONNECTOR THAT TARGETS KELVIN AS THE DEFAULT API.
     Send current state of user to target system (school authority).
 
     Each out queue has its own :py:class:`UserHandler` instance which handles

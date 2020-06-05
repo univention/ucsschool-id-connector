@@ -514,7 +514,8 @@ class OutQueue(FileQueue):
             connection_ok = all(await asyncio.gather(*school_authority_ping_coros))
             if not connection_ok:
                 self.logger.error(
-                    "One or more school_authority_ping hooks reported a faulty connection!"
+                    "One or more school_authority_ping hooks reported a faulty"
+                    "connection!"
                 )
                 await asyncio.sleep(API_COMMUNICATION_ERROR_WAIT)
                 continue
