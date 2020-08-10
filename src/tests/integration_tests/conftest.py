@@ -27,11 +27,12 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import asyncio
+import datetime
 import json
 import os
-import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
 
 import faker
@@ -40,6 +41,7 @@ import requests
 from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
 
+from ucsschool.kelvin.client import KelvinObject, KelvinResource, NoObject, Session
 from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.constants import APP_ID, OUT_QUEUE_TOP_DIR
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
@@ -53,6 +55,9 @@ except ImportError:  # pragma: no cover
 
 fake = faker.Faker()
 AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
+KELVIN_API_USERNAME = "Administrator"
+KELVIN_API_PASSWORD = "univention"
+KELVIN_API_CA_CERT_PATH = "/tmp/pytest_cacert_{date:%Y-%m-%d}_{host}.crt"
 
 
 @pytest.fixture(scope="session")
@@ -101,84 +106,24 @@ def http_request():
 
 
 @pytest.fixture(scope="session")
-def wait_for_status_code(http_request):  # noqa: C901
-    def check_response(expected_json, json_result):
-        if not expected_json:
-            return True
-        for k, v in expected_json.items():
-            if json_result.get(k) != v:
-                return False
-        return True
-
-    def _func(
-        method: str,
-        url: str,
-        status_code: int,
-        headers: Dict[str, str] = None,
-        json: Dict[str, Any] = None,
-        expected_json: Dict[str, Any] = None,
-        timeout: int = 60,
-        raise_assert: bool = True,
-    ) -> Tuple[bool, Optional[requests.Response]]:
-        """
-        Sends defined request repeatedly until the desired status code is returned
-        or the timeout occurs.
-
-        :param str method: The requests methods name to use
-        :param str url: The url to request
-        :param int status_code: The desired status code to wait for
-        :param headers: The headers of the request
-        :param json: The json data of the request
-        :param dict expected_json: key-value pairs that should exist in JSON response
-        :param int timeout: The timeout
-        :param bool raise_assert: whether to raise an AssertionError if the desired
-            status code was not reached
-        :return: Tuple[bool, response], with bool being True if desired status code
-            was reached, otherwise False
-        """
-        start = time.time()
-        response = None
-        msg = ""
-        while (time.time() - start) < timeout:
-            headers = headers or {}
-            json = json or {}
-            response = http_request(
-                method,
-                url,
-                headers=headers,
-                json_data=json,
-                verify=False,
-                check_status=False,
-            )
-            if response.status_code == status_code:
-                if check_response(expected_json, response.json()):
-                    return True, response
-            print(
-                f"{msg}\nexpected status={status_code!r} and "
-                f"json={expected_json!r}... sleeping..."
-            )
-            time.sleep(1)
-        if raise_assert:  # pragma: no cover
-            raise AssertionError(msg)
-        return False, response  # pragma: no cover
-
-    return _func
-
-
-@pytest.fixture(scope="session")
-def school_auth_config(docker_hostname: str, http_request):
-    """
-    Fixture to create configurations for school authorities. It expects a
-    specific environment for the integration tests and can provide a maximum
-    of two distinct configurations.
-    """
-    requested_data = dict()
+def school_auth_host_configs(docker_hostname: str, http_request):
+    configs = {}
     for fnf in ("bb-api-IP_traeger", "bb-api-key_traeger"):
         for i in ("1", "2"):
             url = urljoin(f"https://{docker_hostname}", f"{fnf}{i}.txt")
             resp = http_request("get", url, verify=False)
             assert resp.status_code == 200, (resp.status_code, resp.reason, url)
-            requested_data[fnf + i] = resp.text.strip("\n")
+            configs[fnf + i] = resp.text.strip("\n")
+    return configs
+
+
+@pytest.fixture(scope="session")
+def school_auth_config(docker_hostname: str, http_request, school_auth_host_configs):
+    """
+    Fixture to create configurations for school authorities. It expects a
+    specific environment for the integration tests and can provide a maximum
+    of two distinct configurations.
+    """
 
     def _school_auth_config(auth_nr: int) -> Dict[str, str]:
         """
@@ -189,10 +134,12 @@ def school_auth_config(docker_hostname: str, http_request):
         :return: The school authority configuration in dictionary form
         """
         assert 0 < auth_nr < 3
+        ip = school_auth_host_configs[f"bb-api-IP_traeger{auth_nr}"]
+        password = school_auth_host_configs[f"bb-api-key_traeger{auth_nr}"]
         config = {
             "name": f"auth{auth_nr}",
-            "url": f"https://{requested_data[f'bb-api-IP_traeger{auth_nr}']}/api-bb/",
-            "password": requested_data[f"bb-api-key_traeger{auth_nr}"],
+            "url": f"https://{ip}/api-bb/",
+            "password": password,
             "mapping": {
                 "firstname": "firstname",
                 "lastname": "lastname",
@@ -606,7 +553,7 @@ def create_schools(
 
 
 @pytest.fixture()
-async def make_host_user(
+async def make_sender_user(
     host_bb_token: str,
     random_name,
     random_int,
@@ -622,7 +569,7 @@ async def make_host_user(
     """
     created_users = list()
 
-    def _make_host_user(roles=("student",), ous=("DEMOSCHOOL",)):
+    def _make_sender_user(roles=("student",), ous=("DEMOSCHOOL",)):
         """
         Creates a user on the hosts UCS system via BB-API
 
@@ -663,7 +610,7 @@ async def make_host_user(
         created_users.append(response_user)
         return user_data
 
-    yield _make_host_user
+    yield _make_sender_user
 
     for user in created_users:
         print(f"Deleting user {user['name']!r} in source system...")
@@ -677,8 +624,136 @@ async def make_host_user(
 
 @pytest.fixture
 def check_password(http_request):
+    """Check authentication with `username` and `password` using UMC on `host`."""
+
     def _func(username: str, password: str, host: str):
         url = f"https://{host}/univention/auth/"
         http_request("get", url, params={"username": username, "password": password})
+
+    return _func
+
+
+@pytest.fixture(scope="session")
+def ca_cert():
+    """Downloaded CA certificate of UCS server `host`."""
+
+    def _func(host: str) -> Path:
+        path = Path(
+            KELVIN_API_CA_CERT_PATH.format(date=datetime.date.today(), host=host)
+        )
+        if not path.is_file():
+            url = f"http://{host}/ucs-root-ca.crt"
+            try:
+                resp = requests.get(url)
+            except requests.RequestException as exc:
+                print(f"Error downloading CA from host {host!r}: {exc!s}")
+                raise
+            path.write_bytes(resp.content)
+        return path
+
+    return _func
+
+
+@pytest.fixture(scope="session")
+def kelvin_session_kwargs(ca_cert):
+    """Dict to open a Kelvin API client session to `host`."""
+
+    def is_ip(host: str) -> bool:
+        for c in host:
+            if c != "." and not c.isnumeric():
+                return False
+        return True
+
+    def _func(host: str) -> Dict[str, Union[str, bool]]:
+        res = {
+            "username": KELVIN_API_USERNAME,
+            "password": KELVIN_API_PASSWORD,
+            "host": host,
+            "verify": False if is_ip(host) else str(ca_cert(host)),
+        }
+        return res
+
+    return _func
+
+
+@pytest.fixture
+async def kelvin_session(kelvin_session_kwargs):
+    """
+    An open Kelvin API client session to `host`, that will close automatically
+    after the test.
+    """
+    sessions: Dict[str, Session] = {}
+
+    def _func(host: str) -> Session:
+        if host not in sessions:
+            sessions[host] = Session(**kelvin_session_kwargs(host))
+            sessions[host].open()
+        return sessions[host]
+
+    yield _func
+
+    for session in sessions.values():
+        await session.close()
+
+
+@pytest.fixture(scope="session")
+def wait_for_kelvin_object_exists():
+    """
+    Repeat executing `await resource_cls(session=session).method(**method_kwargs)`
+    as long as `NoObject` is raised or until the timeout hits.
+    """
+
+    async def _func(
+        resource_cls: Type[KelvinResource],
+        method: str,
+        session: Session,
+        wait_timeout: int = 60,
+        **method_kwargs,
+    ) -> KelvinObject:
+        end = datetime.datetime.now() + datetime.timedelta(seconds=wait_timeout)
+        error: Optional[NoObject] = None
+        while datetime.datetime.now() < end:
+            resource = resource_cls(session=session)
+            func = getattr(resource, method)
+            try:
+                return await func(**method_kwargs)
+            except NoObject as exc:
+                error = exc
+                print(
+                    f"Waiting for {resource_cls.__name__}.{method}({method_kwargs!r}):"
+                    f" {exc!s}"
+                )
+                await asyncio.sleep(1)
+        raise AssertionError(f"No object found after {wait_timeout} seconds: {error!s}")
+
+    return _func
+
+
+@pytest.fixture(scope="session")
+def wait_for_kelvin_object_not_exists():
+    """
+    Repeat executing `await resource_cls(session=session).method(**method_kwargs)`
+    until `NoObject` is raised or until the timeout hits.
+    """
+
+    async def _func(
+        resource_cls: Type[KelvinResource],
+        method: str,
+        session: Session,
+        wait_timeout: int = 60,
+        **method_kwargs,
+    ) -> None:
+        end = datetime.datetime.now() + datetime.timedelta(seconds=wait_timeout)
+        obj: Optional[KelvinObject] = None
+        while datetime.datetime.now() < end:
+            resource = resource_cls(session=session)
+            func = getattr(resource, method)
+            try:
+                obj: KelvinObject = await func(**method_kwargs)
+                print(f"Object {obj!r} still exists...")
+                await asyncio.sleep(1)
+            except NoObject:
+                return
+        raise AssertionError(f"Still finding {obj!r} after {wait_timeout} seconds.")
 
     return _func

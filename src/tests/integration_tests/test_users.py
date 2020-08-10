@@ -35,6 +35,8 @@ from urllib.parse import urlsplit
 import faker
 import pytest
 
+from ucsschool.kelvin.client import NoObject, User, UserResource
+
 try:
     from simplejson.errors import JSONDecodeError
 except ImportError:  # pragma: no cover
@@ -94,23 +96,23 @@ def filter_ous(
 @pytest.mark.asyncio
 async def test_create_user(
     make_school_authority,
-    make_host_user,
-    req_headers,
+    make_sender_user,
     school_auth_config,
     save_mapping,
     create_schools,
-    bb_api_url,
     docker_hostname,
     check_password,
-    http_request,
-    host_bb_token,
     compare_user,
-    wait_for_status_code,
+    kelvin_session,
+    school_auth_host_configs,
+    wait_for_kelvin_object_exists,
 ):
     """
     Tests if ucsschool_id_connector distributes a newly created User to the correct school
     authorities.
     """
+    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
+    target_ip_2 = school_auth_host_configs["bb-api-IP_traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -130,69 +132,57 @@ async def test_create_user(
     for num, ous in enumerate(
         ((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)), start=1
     ):
-        print(f"===> Case {num}/3: Creating user in ous={ous!r}...")
-        user: Dict[str, Any] = make_host_user(ous=ous)
-        # verify user on source system
-        http_request(
-            "get",
-            bb_api_url(docker_hostname, "users", user["name"]),
-            headers=req_headers(token=host_bb_token, content_type="application/json"),
-            verify=False,
-            expected_statuses=(200,),
+        print(f"===> Case {num}/3: Creating user on sender in ous={ous!r}...")
+        sender_user: Dict[str, Any] = make_sender_user(ous=ous)
+        # verify user on sender system
+        await UserResource(session=kelvin_session(docker_hostname)).get(
+            name=sender_user["name"]
         )
-        check_password(user["name"], user["password"], docker_hostname)
-        auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-        auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
+        check_password(sender_user["name"], sender_user["password"], docker_hostname)
         print(
-            f"Created user {user['name']!r}, looking for it in auth1 at {auth1_url!r}..."
+            f"Created user {sender_user['name']!r} on sender, looking for it in auth1..."
         )
-        result = wait_for_status_code(
-            "get",
-            auth1_url,
-            200,
-            headers=req_headers(
-                token=school_auth1.password.get_secret_value(),
-                content_type="application/json",
-            ),
+        user_remote: User = await wait_for_kelvin_object_exists(
+            resource_cls=UserResource,
+            method="get",
+            session=kelvin_session(target_ip_1),
+            name=sender_user["name"],
         )
-        user_remote = result[1].json()
-        print(f"Found user {user_remote['name']!r}, checking its attributes...")
-
-        expected_target_user1 = filter_ous(user, school_auth1.name, mapping)
-        compare_user(expected_target_user1, user_remote)
-        check_password(user["name"], user["password"], urlsplit(auth1_url).netloc)
+        print(f"Found {user_remote!r}, checking its attributes...")
+        expected_target_user1 = filter_ous(sender_user, school_auth1.name, mapping)
+        compare_user(expected_target_user1, user_remote.as_dict())
+        check_password(
+            sender_user["name"],
+            sender_user["password"],
+            urlsplit(school_auth1.url).netloc,
+        )
         if ou_auth2 in ous:
             print(f"User should also be in OU2 ({ou_auth2!r}), checking...")
-            result = wait_for_status_code(
-                "get",
-                auth2_url,
-                200,
-                headers=req_headers(
-                    token=school_auth2.password.get_secret_value(),
-                    content_type="application/json",
-                ),
+            user_remote: User = await wait_for_kelvin_object_exists(
+                resource_cls=UserResource,
+                method="get",
+                session=kelvin_session(target_ip_2),
+                name=sender_user["name"],
             )
-            user_remote = result[1].json()
-            expected_target_user2 = filter_ous(user, school_auth2.name, mapping)
-            compare_user(expected_target_user2, user_remote)
-            check_password(user["name"], user["password"], urlsplit(auth2_url).netloc)
+            expected_target_user2 = filter_ous(sender_user, school_auth2.name, mapping)
+            compare_user(expected_target_user2, user_remote.as_dict())
+            check_password(
+                sender_user["name"],
+                sender_user["password"],
+                urlsplit(school_auth2.url).netloc,
+            )
         else:
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
-            wait_for_status_code(
-                "get",
-                auth2_url,
-                404,
-                headers=req_headers(
-                    token=school_auth2.password.get_secret_value(),
-                    content_type="application/json",
-                ),
-            )
+            with pytest.raises(NoObject):
+                await UserResource(session=kelvin_session(target_ip_2)).get(
+                    name=sender_user["name"]
+                )
 
 
 @pytest.mark.asyncio
 async def test_delete_user(
     make_school_authority,
-    make_host_user,
+    make_sender_user,
     host_bb_token,
     req_headers,
     school_auth_config,
@@ -201,12 +191,17 @@ async def test_delete_user(
     bb_api_url,
     docker_hostname,
     http_request,
-    wait_for_status_code,
+    school_auth_host_configs,
+    kelvin_session,
+    wait_for_kelvin_object_exists,
+    wait_for_kelvin_object_not_exists,
 ):
     """
     Tests if ucsschool_id_connector distributes the deletion of an existing
     user correctly.
     """
+    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
+    target_ip_2 = school_auth_host_configs["bb-api-IP_traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -220,75 +215,59 @@ async def test_delete_user(
     }
     await save_mapping(mapping)
     print(f"Mapping: {mapping!r}")
-    user = make_host_user(ous=(ou_auth1, ou_auth2))
-    auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    auth2_url = bb_api_url(school_auth2.url, "users", user["name"])
+    sender_user = make_sender_user(ous=(ou_auth1, ou_auth2))
     print(
-        f"Created user {user['name']!r} in sender. Looking for it now in "
-        f"ou_auth1 at {auth1_url!r}..."
+        f"Created user {sender_user['name']!r} in sender. Looking for it now in auth1..."
     )
-    wait_for_status_code(
-        "get",
-        auth1_url,
-        200,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_1),
+        name=sender_user["name"],
     )
     print(
-        f"Found user {user['name']!r} in ou_auth1. Looking for it now in "
-        f"ou_auth2 at {auth2_url!r}..."
+        f"Found user {sender_user['name']!r} in ou_auth1. Looking for it now in auth2..."
     )
-    wait_for_status_code(
-        "get",
-        auth2_url,
-        200,
-        headers=req_headers(
-            token=school_auth2.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_2),
+        name=sender_user["name"],
     )
-    print(f"Deleting user {user['name']!r} in sender...")
+    print(f"Deleting user {sender_user['name']!r} in sender...")
     http_request(
         "delete",
-        bb_api_url(docker_hostname, "users", user["name"]),
+        bb_api_url(docker_hostname, "users", sender_user["name"]),
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         verify=False,
         expected_statuses=(204,),
     )
     print(
-        f"User {user['name']!r} was deleted in sender, waiting for it to "
+        f"User {sender_user['name']!r} was deleted in sender, waiting for it to "
         f"disappear in ou_auth1..."
     )
-    wait_for_status_code(
-        "get",
-        auth1_url,
-        404,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    await wait_for_kelvin_object_not_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_1),
+        name=sender_user["name"],
     )
     print(
-        f"User {user['name']!r} disappeared in ou_auth1, waiting for it to "
+        f"User {sender_user['name']!r} disappeared in ou_auth1, waiting for it to "
         f"also disappear in ou_auth2..."
     )
-    wait_for_status_code(
-        "get",
-        auth2_url,
-        404,
-        headers=req_headers(
-            token=school_auth2.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    await wait_for_kelvin_object_not_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_2),
+        name=sender_user["name"],
     )
 
 
 @pytest.mark.asyncio
 async def test_modify_user(
     make_school_authority,
-    make_host_user,
+    make_sender_user,
     req_headers,
     bb_api_url,
     host_bb_token,
@@ -299,12 +278,15 @@ async def test_modify_user(
     http_request,
     check_password,
     compare_user,
-    wait_for_status_code,
+    school_auth_host_configs,
+    kelvin_session,
+    wait_for_kelvin_object_exists,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
     authority
     """
+    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -318,58 +300,53 @@ async def test_modify_user(
             ou_auth2: school_auth2.name,
         }
     )
-    user = make_host_user(ous=[ou_auth1])
+    sender_user = make_sender_user(ous=[ou_auth1])
     # check user exists on sender
-    wait_for_status_code(
-        "get",
-        bb_api_url(docker_hostname, "users", user["name"]),
-        200,
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(docker_hostname),
+        name=sender_user["name"],
     )
-    check_password(user["name"], user["password"], docker_hostname)
+    check_password(sender_user["name"], sender_user["password"], docker_hostname)
     # check user exists on auth1
-    auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    wait_for_status_code(
-        "get",
-        auth1_url,
-        200,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_1),
+        name=sender_user["name"],
     )
-    check_password(user["name"], user["password"], urlsplit(auth1_url).netloc)
+    check_password(
+        sender_user["name"], sender_user["password"], urlsplit(school_auth1.url).netloc
+    )
     # Modify user
     new_value = {
         "firstname": fake.first_name(),
         "lastname": fake.last_name(),
-        "disabled": not user["disabled"],
+        "disabled": not sender_user["disabled"],
         "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime(
             "%Y-%m-%d"
         ),
     }
     response = http_request(
         "patch",
-        bb_api_url(docker_hostname, "users", user["name"]),
+        bb_api_url(docker_hostname, "users", sender_user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         json_data=new_value,
     )
-    user_on_host = response.json()
+    user_on_host: Dict[str, Any] = response.json()
     compare_user(new_value, user_on_host, new_value.keys())
+    user_on_host: User = await UserResource(
+        session=kelvin_session(docker_hostname)
+    ).get(name=sender_user["name"])
+    compare_user(new_value, user_on_host.as_dict(), new_value.keys())
     # Check if user was modified on target host
     time.sleep(10)
-    result = wait_for_status_code(
-        "get",
-        auth1_url,
-        200,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+        name=sender_user["name"]
     )
-    remote_user = result[1].json()
-    compare_user(user_on_host, remote_user)
+    compare_user(user_on_host.as_dict(), remote_user.as_dict())
 
 
 @pytest.mark.asyncio
@@ -378,88 +355,70 @@ async def test_class_change(
     school_auth_config,
     create_schools,
     save_mapping,
-    make_host_user,
+    make_sender_user,
     bb_api_url,
     req_headers,
     docker_hostname,
     host_bb_token,
     random_name,
     http_request,
-    wait_for_status_code,
+    school_auth_host_configs,
+    kelvin_session,
+    wait_for_kelvin_object_exists,
 ):
     """
     Tests if the modification of a users class is properly distributed by
     ucsschool-id-connector.
     """
+    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     await save_mapping({ou_auth1: school_auth1.name})
-    user = make_host_user(ous=[ou_auth1])
-    response = http_request(
-        "get",
-        bb_api_url(docker_hostname, "users", user["name"]),
-        verify=False,
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
-    )
-    school_classes_at_sender = response.json()["school_classes"]
-    assert school_classes_at_sender == user["school_classes"]
+    sender_user = make_sender_user(ous=[ou_auth1])
+    sender_user_kelvin: User = await UserResource(
+        session=kelvin_session(docker_hostname)
+    ).get(name=sender_user["name"])
+    assert sender_user_kelvin.school_classes == sender_user["school_classes"]
     print(
-        f"1. Created user {user['name']} with school_classes="
-        f"{user['school_classes']!r} on sender."
+        f"1. Created user {sender_user['name']} with school_classes="
+        f"{sender_user['school_classes']!r} on sender."
     )
-    auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    _, response = wait_for_status_code(
-        "get",
-        auth1_url,
-        200,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
-        expected_json={"school_classes": user["school_classes"]},
+    user_auth1: User = await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_1),
+        name=sender_user["name"],
     )
-    school_classes_at_auth1 = response.json()["school_classes"]
-    assert school_classes_at_auth1 == user["school_classes"]
+    assert user_auth1.school_classes == sender_user["school_classes"]
     print(
-        f"2. User was created in auth1 ({auth1_url!r}) with school_classes"
-        f"={school_classes_at_auth1!r}."
+        f"2. User was created in auth1 with school_classes={user_auth1.school_classes!r}."
     )
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
     print(f"3. setting new value for school_classes on sender: {new_value!r}")
     response = http_request(
         "patch",
-        bb_api_url(docker_hostname, "users", user["name"]),
+        bb_api_url(docker_hostname, "users", sender_user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         json_data=new_value,
     )
     school_classes_at_sender = response.json()["school_classes"]
     assert school_classes_at_sender == new_value["school_classes"]
-    _, response = wait_for_status_code(
-        "get",
-        bb_api_url(docker_hostname, "users", user["name"]),
-        200,
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
-    )
-    school_classes_at_sender = response.json()["school_classes"]
-    assert school_classes_at_sender == new_value["school_classes"]
+    sender_user_kelvin: User = await UserResource(
+        session=kelvin_session(docker_hostname)
+    ).get(name=sender_user["name"])
+    assert sender_user_kelvin.school_classes == new_value["school_classes"]
     print(
         f"4. User was modified at sender, has now "
         f"school_classes={school_classes_at_sender!r}."
     )
-    _, response = wait_for_status_code(
-        "get",
-        auth1_url,
-        200,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
-        expected_json=new_value,
+    # Check if user was modified on target host
+    time.sleep(10)
+    remote_user: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
     )
-    remote_user = response.json()
-    assert remote_user["school_classes"] == new_value["school_classes"]
+    assert remote_user.school_classes == new_value["school_classes"]
 
 
 @pytest.mark.asyncio
@@ -468,77 +427,68 @@ async def test_school_change(
     school_auth_config,
     create_schools,
     save_mapping,
-    make_host_user,
+    make_sender_user,
     bb_api_url,
     req_headers,
     docker_hostname,
     host_bb_token,
     random_name,
     http_request,
-    wait_for_status_code,
+    kelvin_session,
+    school_auth_host_configs,
+    wait_for_kelvin_object_exists,
 ):
     """
     Tests if the modification of a users school is properly distributed by
     ucsschool-id-connector.
     """
+    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 2)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     await save_mapping({ou_auth1: school_auth1.name, ou_auth1_2: school_auth1.name})
-    user = make_host_user(ous=[ou_auth1])
-    auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    wait_for_status_code(
-        "get",
-        auth1_url,
-        200,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    sender_user = make_sender_user(ous=[ou_auth1])
+    print(
+        f"Created user {sender_user['name']} with school={sender_user['school']!r} and "
+        f"and schools={sender_user['schools']!r} on sender."
     )
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_1),
+        name=sender_user["name"],
+    )
+    new_school = ou_auth1_2
     new_value = {
-        "school_classes": {ou_auth1_2: [random_name()]},
-        "school": bb_api_url(docker_hostname, "schools", ou_auth1_2),
-        "schools": [bb_api_url(docker_hostname, "schools", ou_auth1_2)],
+        "school_classes": {new_school: [random_name()]},
+        "school": bb_api_url(docker_hostname, "schools", new_school),
+        "schools": [bb_api_url(docker_hostname, "schools", new_school)],
     }
+    print(f"Changing user on sender: {new_value!r}")
     http_request(
         "patch",
-        bb_api_url(docker_hostname, "users", user["name"]),
+        bb_api_url(docker_hostname, "users", sender_user["name"]),
         verify=False,
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         json_data=new_value,
     )
-    _, response = wait_for_status_code(
-        "get",
-        bb_api_url(docker_hostname, "users", user["name"]),
-        200,
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
-    )
-    sender_user = response.json()
+    sender_user_kelvin: User = await UserResource(
+        session=kelvin_session(docker_hostname)
+    ).get(name=sender_user["name"])
     print(
-        f"User was modified at sender, has now school={sender_user['school']!r} "
-        f"schools={sender_user['schools']!r} "
-        f"school_classes={sender_user['school_classes']!r}."
+        f"User was modified at sender, has now school={sender_user_kelvin.school!r} "
+        f"schools={sender_user_kelvin.schools!r} "
+        f"school_classes={sender_user_kelvin.school_classes!r}."
     )
-    assert sender_user["school"] == new_value["school"]
-    assert sender_user["schools"] == new_value["schools"]
-    assert sender_user["school_classes"] == new_value["school_classes"]
+    assert sender_user_kelvin.school == new_school
+    assert sender_user_kelvin.schools == [new_school]
+    assert sender_user_kelvin.school_classes == new_value["school_classes"]
 
     time.sleep(10)
-    auth1_url = bb_api_url(school_auth1.url, "users", user["name"])
-    _, response = wait_for_status_code(
-        "get",
-        auth1_url,
-        200,
-        headers=req_headers(
-            token=school_auth1.password.get_secret_value(),
-            content_type="application/json",
-        ),
+    remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+        name=sender_user["name"]
     )
-    remote_user = response.json()
-    assert urlsplit(remote_user["school"]).path == urlsplit(new_value["school"]).path
-    assert [urlsplit(school).path for school in remote_user["schools"]] == [
-        urlsplit(school).path for school in new_value["schools"]
-    ]
-    assert remote_user["school_classes"] == new_value["school_classes"]
+    assert remote_user.school == new_school
+    assert remote_user.schools == [new_school]
+    assert remote_user.school_classes == new_value["school_classes"]
