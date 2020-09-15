@@ -511,7 +511,13 @@ class OutQueue(FileQueue):
             school_authority_ping_coros: List[Coroutine] = school_authority_ping_caller(
                 school_authority=self.school_authority
             )
-            connection_ok = all(await asyncio.gather(*school_authority_ping_coros))
+            try:
+                connection_ok = all(await asyncio.gather(*school_authority_ping_coros))
+            except Exception as exc:
+                self.logger.error(
+                    f"The following exception was thrown during school authority pings:\n {exc}"
+                )
+                connection_ok = False
             if not connection_ok:
                 self.logger.error(
                     "One or more school_authority_ping hooks reported a faulty"
