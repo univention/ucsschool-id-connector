@@ -514,8 +514,9 @@ class OutQueue(FileQueue):
             try:
                 connection_ok = all(await asyncio.gather(*school_authority_ping_coros))
             except Exception as exc:
-                self.logger.error(
-                    f"The following exception was thrown during school authority pings:\n {exc}"
+                self.logger.exception(
+                    "An exception was thrown during school authority pings",
+                    exc_info=exc,
                 )
                 connection_ok = False
             if not connection_ok:
@@ -527,6 +528,7 @@ class OutQueue(FileQueue):
                 continue
             # communication is OK, handle queue
             while True:
+                self.logger.info("Communication OK")
                 api_error = False
                 for path in self.queue_files():
                     self.head = path.name
