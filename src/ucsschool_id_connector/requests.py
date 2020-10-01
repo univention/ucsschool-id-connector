@@ -29,7 +29,7 @@
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import aiofiles
 import aiohttp
@@ -82,7 +82,7 @@ async def _do_request(  # noqa: C901
     acceptable_statuses: List[int] = None,
     data=None,
     session=None,
-) -> Tuple[int, Dict[str, Any]]:
+) -> Tuple[int, Optional[Dict[str, Any]]]:
     acceptable_statuses = acceptable_statuses or [200]
     http_method = http_method.lower()
     if session:
@@ -139,7 +139,7 @@ async def _do_request(  # noqa: C901
 
 async def http_delete(
     url, school_authority, acceptable_statuses: List[int] = None, session=None
-) -> Tuple[int, Dict[str, Any]]:
+) -> Tuple[int, Optional[Dict[str, Any]]]:
     acceptable_statuses = acceptable_statuses or [204]
     return await _do_request(
         http_method="delete",
@@ -156,7 +156,7 @@ async def http_get(
     params: ParamType = None,
     acceptable_statuses: List[int] = None,
     session=None,
-) -> Tuple[int, Dict[str, Any]]:
+) -> Tuple[int, Optional[Dict[str, Any]]]:
     return await _do_request(
         http_method="get",
         url=url,
@@ -169,7 +169,7 @@ async def http_get(
 
 async def http_patch(
     url, school_authority, data, acceptable_statuses: List[int] = None, session=None,
-) -> Tuple[int, Dict[str, Any]]:
+) -> Tuple[int, Optional[Dict[str, Any]]]:
     acceptable_statuses = acceptable_statuses or [200]
     return await _do_request(
         http_method="patch",
@@ -183,7 +183,7 @@ async def http_patch(
 
 async def http_post(
     url, school_authority, data, acceptable_statuses: List[int] = None, session=None,
-) -> Tuple[int, Dict[str, Any]]:
+) -> Tuple[int, Optional[Dict[str, Any]]]:
     acceptable_statuses = acceptable_statuses or [201]
     return await _do_request(
         http_method="post",

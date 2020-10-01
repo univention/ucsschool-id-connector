@@ -104,7 +104,9 @@ class GroupBBDistributionImpl:
             if not dn.startswith("uid="):
                 self.logger.info("Ignoring non-user DN in group %r: %r", group_name, dn)
                 continue
-            self.logger.info("Adding member of group %r to in-queue: %r...", dn)
+            self.logger.info(
+                "Adding member of group %r to in-queue: %r...", group_name, dn
+            )
             user_dn_parts = parse_dn(dn)
             username = user_dn_parts[0][1]
             await self.user_scheduler.queue_user(username)

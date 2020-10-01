@@ -10,7 +10,7 @@ diskcache
 factory_boy
 faker
 fastapi==0.42.0
-lazy-object-proxy
+lazy-object-proxy==1.5.0
 ldap3
 pluggy
 pydantic[ujson,email]==0.32.2
