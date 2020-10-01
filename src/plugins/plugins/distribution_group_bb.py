@@ -83,7 +83,6 @@ class GroupBBDistributionImpl:
 
         bb_school_authorities = self.bb_school_authorities(in_queue)
         if not bb_school_authorities:
-            # no SchoolAuthorityConfiguration for BB-API exists
             self.logger.debug(
                 "Ignoring group: no SchoolAuthorityConfiguration for BB-API found."
             )

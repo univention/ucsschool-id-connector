@@ -160,7 +160,7 @@ class ConsoleAndFileLogging:
 class RegExpsGroups(NamedTuple):
     domain_users_ou: Pattern
     lehrer_ou: Pattern
-    schuler_ou: Pattern
+    schueler_ou: Pattern
     school_class: Pattern
     workgroup: Pattern
 
@@ -197,7 +197,7 @@ def lehrer_ou_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def schuler_ou_dn_regex():
+def schueler_ou_dn_regex():
     """Regex to match 'cn=schueler-demoschool,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     prefix_students = (

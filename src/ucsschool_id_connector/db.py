@@ -27,70 +27,89 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import abc
 from pathlib import Path
-from typing import Type, TypeVar
+from typing import Any, Generic, Type, TypeVar, Union, cast
 
 from diskcache import Cache
 
 from .models import ListenerOldDataEntry
 
+NativeType = TypeVar("NativeType")
+StorageType = TypeVar("StorageType")
 ListenerOldDataEntryType = TypeVar(
     "ListenerOldDataEntryType", bound=ListenerOldDataEntry
 )
 
 
-class KeyValueDB:
+class KeyValueDB(Generic[NativeType, StorageType], abc.ABC):
     """Interface for concrete DB backend."""
+
+    _native_type: NativeType
+    _storage_type: StorageType
 
     def __init__(self, datebase_dir: Path):
         if not datebase_dir.exists():
             datebase_dir.mkdir(mode=0o750, parents=True)
         self._cache = Cache(str(datebase_dir))
 
-    def __contains__(self, key):
+    def __contains__(self, key: Any) -> bool:
         return self._cache.__contains__(key)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Any) -> bool:
         return self._cache.__delitem__(key)
 
-    def __getitem__(self, key):
-        return self._cache.__getitem__(key)
+    def __getitem__(self, key: Any) -> NativeType:
+        return self._storage_to_native_type(self._cache.__getitem__(key))
 
-    def __setitem__(self, key, value):
-        return self._cache.__setitem__(key, value)
+    def __setitem__(self, key: Any, value: NativeType) -> None:
+        return self._cache.__setitem__(key, self._native_to_storage_type(value))
 
-    def close(self, *args, **kwargs):
+    def _native_to_storage_type(self, value: NativeType) -> StorageType:
+        if self._native_type is self._storage_type or self._storage_type is None:
+            return cast(StorageType, value)
+        else:
+            return self._storage_type(value)
+
+    def _storage_to_native_type(self, value: StorageType) -> NativeType:
+        if self._native_type is self._storage_type or self._native_type is None:
+            return cast(NativeType, value)
+        else:
+            return self._native_type(value)
+
+    def close(self, *args, **kwargs) -> None:
         return self._cache.close()
 
-    def get(self, key, default=None, *args, **kwargs):
-        return self._cache.get(key, default, *args, **kwargs)
+    def get(
+        self, key: Any, default: Any = None, *args, **kwargs
+    ) -> Union[Any, NativeType]:
+        value = self._cache.get(key, default, *args, **kwargs)
+        if value is default:
+            return default
+        else:
+            return self._storage_to_native_type(value)
 
-    def set(self, key, value, *args, **kwargs):
-        return self._cache.set(key, value, *args, **kwargs)
+    def set(self, key: Any, value: NativeType, *args, **kwargs) -> bool:
+        return self._cache.set(
+            key, self._native_to_storage_type(value), *args, **kwargs
+        )
 
-    def touch(self, *args, **kwargs):
+    def touch(self, *args, **kwargs) -> bool:
         return self._cache.touch(*args, **kwargs)
 
 
 class OldDataDB(KeyValueDB):
-    """Typed wrapper of KeyValueDB"""
+    """Wrapper of KeyValueDB typed to a specific ListenerOldDataEntryType subclass"""
+
+    _native_type = ListenerOldDataEntryType
+    _storage_type = dict
 
     def __init__(self, datebase_dir: Path, data_type: Type[ListenerOldDataEntryType]):
         super().__init__(datebase_dir)
-        self._data_type = data_type
+        self._native_type = data_type
 
-    def __getitem__(self, key: str) -> ListenerOldDataEntryType:
-        return self._data_type(**super().__getitem__(key))
+    def _native_to_storage_type(self, value: ListenerOldDataEntryType) -> dict:
+        return value.dict()
 
-    def __setitem__(self, key: str, value: ListenerOldDataEntryType):
-        return super().__setitem__(key, value.dict())
-
-    def get(self, key, default=None, *args, **kwargs) -> ListenerOldDataEntryType:
-        res = super().get(key, default, *args, **kwargs)
-        if res is default:
-            return default
-        else:
-            return self._data_type(**res)
-
-    def set(self, key, value, *args, **kwargs):
-        return super().set(key, value.dict(), *args, **kwargs)
+    def _storage_to_native_type(self, value: dict) -> ListenerOldDataEntryType:
+        return self._native_type(**value)
