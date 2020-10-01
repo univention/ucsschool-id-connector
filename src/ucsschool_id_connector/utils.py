@@ -33,7 +33,7 @@ import re
 from functools import lru_cache
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from typing import TextIO, Union
+from typing import NamedTuple, Pattern, TextIO, Union
 from uuid import UUID
 
 import aiofiles
@@ -52,7 +52,11 @@ from .constants import (
     SERVICE_NAME,
     UCR_CONTAINER_CLASS,
     UCR_CONTAINER_PUPILS,
+    UCR_CONTAINER_TEACHERS,
+    UCR_CONTAINER_TEACHERS_AND_STAFF,
     UCR_DB_FILE,
+    UCR_GROUP_PREFIX_STUDENTS,
+    UCR_GROUP_PREFIX_TEACHERS,
     UCR_REGEX,
     UCRV_SOURCE_UID,
     UCRV_TOKEN_TTL,
@@ -153,16 +157,126 @@ class ConsoleAndFileLogging:
         logger.addHandler(handler)
 
 
+class RegExpsGroups(NamedTuple):
+    domain_users_ou: Pattern
+    lehrer_ou: Pattern
+    schuler_ou: Pattern
+    school_class: Pattern
+    workgroup: Pattern
+
+
+class RegExpsUsers(NamedTuple):
+    student: Pattern
+    teacher: Pattern
+    teacher_and_staff: Pattern
+
+
 @lru_cache(maxsize=1)
-def class_dn_regex():
+def domain_users_ou_dn_regex():
+    """Regex to match 'cn=Domain Users DEMOSCHOOL,cn=groups,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    return re.compile(
+        f"cn=Domain Users (?P<ou>.+?)," f"cn=groups," f"ou=(?P=ou)," f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def lehrer_ou_dn_regex():
+    """Regex to match 'cn=lehrer-demoschool,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     # default value of env.get("ucsschool_ldap_default_...") can be the
     # empty string, because of the apps 'env' file
+    prefix_teacher = (
+        os.environ.get(UCR_GROUP_PREFIX_TEACHERS[0]) or UCR_GROUP_PREFIX_TEACHERS[1]
+    )
+    return re.compile(
+        f"cn={prefix_teacher}(?P<ou>.+?)," f"cn=groups," f"ou=(?P=ou)," f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def schuler_ou_dn_regex():
+    """Regex to match 'cn=schueler-demoschool,cn=groups,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    prefix_students = (
+        os.environ.get(UCR_GROUP_PREFIX_STUDENTS[0]) or UCR_GROUP_PREFIX_STUDENTS[1]
+    )
+    return re.compile(
+        f"cn={prefix_students}(?P<ou>.+?)," f"cn=groups," f"ou=(?P=ou)," f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def school_class_dn_regex():
+    """Regex to match 'cn=DEMOSCHOOL-1a,cn=klassen,cn=schueler,cn=groups,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
     c_class = os.environ.get(UCR_CONTAINER_CLASS[0]) or UCR_CONTAINER_CLASS[1]
     c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
     return re.compile(
         f"cn=(?P<ou>.+?)-(?P<name>.+?),"
         f"cn={c_class},cn={c_student},cn=groups,"
+        f"ou=(?P=ou),"
+        f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def student_dn_regex():
+    """Regex to match 'uid=demo_student,cn=schueler,cn=users,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
+    return re.compile(
+        f"uid=(?P<name>.+?),"
+        f"cn={c_student},cn=users,"
+        f"ou=(?P<ou>.+?),"
+        f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def teacher_dn_regex():
+    """Regex to match 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    c_teachers = os.environ.get(UCR_CONTAINER_TEACHERS[0]) or UCR_CONTAINER_TEACHERS[1]
+    return re.compile(
+        f"uid=(?P<name>.+?),"
+        f"cn={c_teachers},cn=users,"
+        f"ou=(?P<ou>.+?),"
+        f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def teacher_and_staff_dn_regex():
+    """Regex to match 'uid=demo_teachstaff,cn=lehrer und mitarbeiter,cn=users,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    c_teacher_staff = (
+        os.environ.get(UCR_CONTAINER_TEACHERS_AND_STAFF[0])
+        or UCR_CONTAINER_TEACHERS_AND_STAFF[1]
+    )
+    return re.compile(
+        f"uid=(?P<name>.+?),"
+        f"cn={c_teacher_staff},cn=users,"
+        f"ou=(?P<ou>.+?),"
+        f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def workgroup_dn_regex():
+    """Regex to match 'cn=DEMOSCHOOL-wg1,cn=schueler,cn=groups,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
+    return re.compile(
+        f"cn=(?P<ou>.+?)-(?P<name>.+?),"
+        f"cn={c_student},cn=groups,"
         f"ou=(?P=ou),"
         f"{base_dn}",
         flags=re.IGNORECASE,

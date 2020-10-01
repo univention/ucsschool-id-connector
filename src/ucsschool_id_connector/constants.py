@@ -91,3 +91,10 @@ PLUGIN_DIRS = (
 )
 UCR_CONTAINER_CLASS = ("ucsschool_ldap_default_container_class", "klassen")
 UCR_CONTAINER_PUPILS = ("ucsschool_ldap_default_container_pupils", "schueler")
+UCR_CONTAINER_TEACHERS = ("ucsschool_ldap_default_container_teachers", "lehrer")
+UCR_CONTAINER_TEACHERS_AND_STAFF = (
+    "ucsschool_ldap_default_container_teachers_and_staff",
+    "lehrer und mitarbeiter",
+)
+UCR_GROUP_PREFIX_STUDENTS = ("ucsschool_ldap_default_groupprefix_pupils", "schueler-")
+UCR_GROUP_PREFIX_TEACHERS = ("ucsschool_ldap_default_groupprefix_teachers", "lehrer-")
