@@ -27,7 +27,8 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-from typing import Iterable
+import re
+from typing import Iterable, List, Pattern
 
 from ldap3.utils.dn import parse_dn
 
@@ -35,18 +36,21 @@ from ucsschool_id_connector.models import (
     ListenerGroupAddModifyObject,
     ListenerGroupRemoveObject,
     ListenerObject,
+    SchoolAuthorityConfiguration,
 )
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.queues import InQueue
 from ucsschool_id_connector.user_handler import UserScheduler
-from ucsschool_id_connector.utils import ConsoleAndFileLogging, class_dn_regex
+from ucsschool_id_connector.utils import ConsoleAndFileLogging, school_class_dn_regex
 
 
 class GroupBBDistributionImpl:
     """Distribute school classes"""
 
+    _bb_api_regex: Pattern = None
+
     def __init__(self):
-        self.class_dn_regex = class_dn_regex()
+        self.class_dn_regex = school_class_dn_regex()
         self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__)
         self.user_scheduler = UserScheduler()
 
@@ -77,6 +81,14 @@ class GroupBBDistributionImpl:
         ):
             return []
 
+        bb_school_authorities = self.bb_school_authorities(in_queue)
+        if not bb_school_authorities:
+            # no SchoolAuthorityConfiguration for BB-API exists
+            self.logger.debug(
+                "Ignoring group: no SchoolAuthorityConfiguration for BB-API found."
+            )
+            return []
+
         group_match = self.class_dn_regex.match(obj.dn)
         if not group_match:
             self.logger.debug("Ignoring non-school_class group: %r", obj)
@@ -99,6 +111,21 @@ class GroupBBDistributionImpl:
         # Always return an emtpy list, because as we cannot distribute the
         # group itself, there is never a school authority to send to.
         return []
+
+    def bb_school_authorities(
+        self, in_queue: InQueue
+    ) -> List[SchoolAuthorityConfiguration]:
+        return [
+            out_queue.school_authority
+            for out_queue in in_queue.out_queues
+            if self.is_bb_api_url(out_queue.school_authority.url)
+        ]
+
+    @classmethod
+    def is_bb_api_url(cls, url: str) -> bool:
+        if not cls._bb_api_regex:
+            cls._bb_api_regex = re.compile(r"^http.?://.+/api-bb")
+        return bool(cls._bb_api_regex.match(url))
 
 
 plugin_manager.register(GroupBBDistributionImpl())
