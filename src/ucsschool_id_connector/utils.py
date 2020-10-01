@@ -34,8 +34,10 @@ from functools import lru_cache
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from typing import TextIO, Union
+from uuid import UUID
 
 import aiofiles
+import base58
 import colorlog
 import pkg_resources
 from async_lru import alru_cache
@@ -175,3 +177,15 @@ def get_app_version():
         # not yet installed (running tests prior to installation)
         with (Path(__file__).parent.parent.parent / "VERSION.txt").open("r") as fp:
             return fp.read().strip()
+
+
+def entry_uuid_to_base58(entry_uuid: str) -> str:
+    uuid = UUID(entry_uuid)
+    b58_b = base58.b58encode_int(uuid.int)
+    return b58_b.decode()
+
+
+def base58_to_entry_uuid(b58_s: str) -> str:
+    uuid_as_int = base58.b58decode_int(b58_s)
+    uuid = UUID(int=uuid_as_int)
+    return str(uuid)

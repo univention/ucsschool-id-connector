@@ -3,6 +3,7 @@ aiohttp
 aiojobs
 async-lru
 async-property
+base58>=2.0.1
 click
 colorlog
 diskcache

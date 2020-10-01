@@ -28,10 +28,10 @@ repos:
     rev: v1.0.0
     hooks:
     -   id: rst-linter
--   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
-    rev: v1.1.0
-    hooks:
-    -   id: python-safety-dependencies-check
+#-   repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+#    rev: v1.1.0
+#    hooks:
+#    -   id: python-safety-dependencies-check
 #-   repo: git://github.com/detailyang/pre-commit-shell
 #    rev: v1.0.6
 #    hooks:
