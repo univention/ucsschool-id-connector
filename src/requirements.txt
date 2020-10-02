@@ -3,13 +3,14 @@ aiohttp
 aiojobs
 async-lru
 async-property
+base58>=2.0.1
 click
 colorlog
 diskcache
 factory_boy
 faker
 fastapi==0.42.0
-lazy-object-proxy
+lazy-object-proxy==1.5.0
 ldap3
 pluggy
 pydantic[ujson,email]==0.32.2

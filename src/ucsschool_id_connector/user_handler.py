@@ -60,8 +60,8 @@ from ucsschool_id_connector.models import (
 from ucsschool_id_connector.requests import http_delete, http_get, http_patch, http_post
 from ucsschool_id_connector.utils import (
     ConsoleAndFileLogging,
-    class_dn_regex,
     get_source_uid,
+    school_class_dn_regex,
 )
 
 BB_API_MAIN_ATTRIBUTES = {
@@ -123,7 +123,7 @@ class UserHandler:
         self._api_schools_cache_creation = datetime.datetime(1970, 1, 1)
         timeout = aiohttp.ClientTimeout(total=HTTP_CLIENT_TIMEOUT)
         self._session = aiohttp.ClientSession(timeout=timeout)
-        self.class_dn_regex = class_dn_regex()
+        self.class_dn_regex = school_class_dn_regex()
 
     async def shutdown(self):
         """Clean shutdown procedure."""

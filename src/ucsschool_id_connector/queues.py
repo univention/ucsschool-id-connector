@@ -528,7 +528,6 @@ class OutQueue(FileQueue):
                 continue
             # communication is OK, handle queue
             while True:
-                self.logger.info("Communication OK")
                 api_error = False
                 for path in self.queue_files():
                     self.head = path.name
