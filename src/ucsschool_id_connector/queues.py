@@ -492,6 +492,8 @@ class InQueue(FileQueue):
 
 
 class OutQueue(FileQueue):
+    queue_sort_order = ("users/user", "groups/group")
+
     def __init__(
         self,
         name: str = None,
@@ -501,6 +503,17 @@ class OutQueue(FileQueue):
         super(OutQueue, self).__init__(name, path)
         self.school_authority = school_authority
         # TODO: project specific handler class? GroupHandler?:
+
+    async def udm_object_queue_order(self, path: Path) -> int:
+        """
+        Return index of UDM object type in `self.queue_sort_order`, for use as
+        `key` argument in `list.sort()`.
+        """
+        obj = await self.load_listener_file(path)
+        try:
+            return self.queue_sort_order.index(obj.udm_object_type)
+        except ValueError:
+            return 999  # object type not in self.queue_sort_order
 
     async def scan(self) -> None:  # noqa: C901
         self.logger.info("Handling out queue %r (%s)...", self.name, self.path)
@@ -530,7 +543,23 @@ class OutQueue(FileQueue):
             # communication is OK, handle queue
             while True:
                 api_error = False
-                for path in self.queue_files():
+                # Cannot use `key` in list.sort() with async function. Creating
+                # tuple with key output instead and sorting that.
+                paths = [
+                    (await self.udm_object_queue_order(path), path)
+                    for path in self.queue_files()
+                ]
+                paths.sort()
+                if paths:
+                    lowest_queue_order_num = paths[0][0]
+                else:
+                    lowest_queue_order_num = 999  # make linter happy
+                for queue_order, path in paths:
+                    if queue_order > lowest_queue_order_num:
+                        # The UDM object type changed in `paths`. For example: e.g. was `users/user`, is
+                        # now `groups/group`. Before continuing, reread the queue directory (and sort
+                        # again) to see if new files of a higher priority (lower number) arrived.
+                        break
                     self.head = path.name
                     try:
                         await self.handle(path)
