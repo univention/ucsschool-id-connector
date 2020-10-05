@@ -172,7 +172,7 @@ class RegExpsUsers(NamedTuple):
 
 
 @lru_cache(maxsize=1)
-def domain_users_ou_dn_regex():
+def domain_users_ou_dn_regex() -> Pattern:
     """Regex to match 'cn=Domain Users DEMOSCHOOL,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     return re.compile(
@@ -182,7 +182,7 @@ def domain_users_ou_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def lehrer_ou_dn_regex():
+def lehrer_ou_dn_regex() -> Pattern:
     """Regex to match 'cn=lehrer-demoschool,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     # default value of env.get("ucsschool_ldap_default_...") can be the
@@ -197,7 +197,7 @@ def lehrer_ou_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def schueler_ou_dn_regex():
+def schueler_ou_dn_regex() -> Pattern:
     """Regex to match 'cn=schueler-demoschool,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     prefix_students = (
@@ -210,13 +210,13 @@ def schueler_ou_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def school_class_dn_regex():
+def school_class_dn_regex() -> Pattern:
     """Regex to match 'cn=DEMOSCHOOL-1a,cn=klassen,cn=schueler,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     c_class = os.environ.get(UCR_CONTAINER_CLASS[0]) or UCR_CONTAINER_CLASS[1]
     c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
     return re.compile(
-        f"cn=(?P<ou>.+?)-(?P<name>.+?),"
+        f"cn=(?P<ou>[^,]+?)-(?P<name>[^,]+?),"
         f"cn={c_class},cn={c_student},cn=groups,"
         f"ou=(?P=ou),"
         f"{base_dn}",
@@ -225,7 +225,7 @@ def school_class_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def student_dn_regex():
+def student_dn_regex() -> Pattern:
     """Regex to match 'uid=demo_student,cn=schueler,cn=users,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
@@ -239,7 +239,7 @@ def student_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def teacher_dn_regex():
+def teacher_dn_regex() -> Pattern:
     """Regex to match 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     c_teachers = os.environ.get(UCR_CONTAINER_TEACHERS[0]) or UCR_CONTAINER_TEACHERS[1]
@@ -253,7 +253,7 @@ def teacher_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def teacher_and_staff_dn_regex():
+def teacher_and_staff_dn_regex() -> Pattern:
     """Regex to match 'uid=demo_teachstaff,cn=lehrer und mitarbeiter,cn=users,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     c_teacher_staff = (
@@ -270,12 +270,12 @@ def teacher_and_staff_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def workgroup_dn_regex():
+def workgroup_dn_regex() -> Pattern:
     """Regex to match 'cn=DEMOSCHOOL-wg1,cn=schueler,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
     return re.compile(
-        f"cn=(?P<ou>.+?)-(?P<name>.+?),"
+        f"cn=(?P<ou>[^,]+?)-(?P<name>[^,]+?),"
         f"cn={c_student},cn=groups,"
         f"ou=(?P=ou),"
         f"{base_dn}",
@@ -284,7 +284,7 @@ def workgroup_dn_regex():
 
 
 @lru_cache(maxsize=1)
-def get_app_version():
+def get_app_version() -> str:
     try:
         return pkg_resources.get_distribution(APP_ID).version
     except pkg_resources.DistributionNotFound:
