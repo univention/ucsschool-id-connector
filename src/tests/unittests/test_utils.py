@@ -52,8 +52,8 @@ DN_REGEX = {
 }
 
 
-@pytest.fixture(scope="session")
-def ldap_base() -> str:
+@pytest.fixture
+def ldap_base(setup_environ) -> str:
     return os.environ["ldap_base"]
 
 
