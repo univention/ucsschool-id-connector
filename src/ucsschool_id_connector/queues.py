@@ -125,7 +125,7 @@ class FileQueue:
 
     def queue_files(self, path: Path = None) -> List[Path]:
         """
-        Sorted list of JSON files in `path` or :py:attr:`self.path`.
+        List of JSON files in `path` or :py:attr:`self.path`, sorted by filename.
 
         :param Path path: path to list, if unset, self.path will be used
         :return: list of paths
@@ -143,7 +143,8 @@ class FileQueue:
                     self.discard_file(Path(entry.path))
                     continue
                 res.append(Path(entry.path))
-        return sorted(res)
+        res.sort()
+        return res
 
     @classmethod
     async def load_school_authority_mapping(cls) -> Dict[str, str]:
@@ -299,7 +300,7 @@ class InQueue(FileQueue):
         hashes.
 
         :param Path path: path of listener file to analyze
-        :return: new path if file was precessed sucessfully
+        :return: new path if file was precessed successfully
         :raises InvalidListenerFile: if file contains invalid/incomplete data
         """
         try:
@@ -339,7 +340,7 @@ class InQueue(FileQueue):
     async def distribute_loop(self) -> None:
         """
         Main loop of in queue task: only preprocessing of JSON files. The
-        actual distribution to out queues happend in :py:meth:`distribute()`.
+        actual distribution to out queues happens in :py:meth:`distribute()`.
         """
         self.logger.info("Distributing in-queue (%s)...", self.path)
         if list(self.out_queues):
