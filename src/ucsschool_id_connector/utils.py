@@ -114,9 +114,7 @@ async def get_source_uid() -> str:
 class ConsoleAndFileLogging:
     @classmethod
     def get_formatter(cls) -> logging.Formatter:
-        return logging.Formatter(
-            fmt=LOG_ENTRY_DEBUG_FORMAT, datefmt=LOG_DATETIME_FORMAT
-        )
+        return logging.Formatter(fmt=LOG_ENTRY_DEBUG_FORMAT, datefmt=LOG_DATETIME_FORMAT)
 
     @classmethod
     def get_stream_handler(cls, stream: TextIO = DOCKER_LOG_FD) -> logging.Handler:
@@ -135,17 +133,11 @@ class ConsoleAndFileLogging:
         return handler
 
     @classmethod
-    def get_logger(
-        cls, name: str = None, path: Path = LOG_FILE_PATH_QUEUES
-    ) -> logging.Logger:
+    def get_logger(cls, name: str = None, path: Path = LOG_FILE_PATH_QUEUES) -> logging.Logger:
         logger = logging.getLogger(name or SERVICE_NAME)
-        if not any(
-            isinstance(handler, logging.StreamHandler) for handler in logger.handlers
-        ):
+        if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
             logger.addHandler(cls.get_stream_handler())
-        if not any(
-            isinstance(handler, TimedRotatingFileHandler) for handler in logger.handlers
-        ):
+        if not any(isinstance(handler, TimedRotatingFileHandler) for handler in logger.handlers):
             logger.addHandler(cls.get_file_handler(path))
         logger.setLevel(logging.DEBUG)
         return logger
@@ -176,7 +168,7 @@ def domain_users_ou_dn_regex() -> Pattern:
     """Regex to match 'cn=Domain Users DEMOSCHOOL,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     return re.compile(
-        f"cn=Domain Users (?P<ou>.+?)," f"cn=groups," f"ou=(?P=ou)," f"{base_dn}",
+        f"cn=Domain Users (?P<ou>.+?),cn=groups,ou=(?P=ou),{base_dn}",
         flags=re.IGNORECASE,
     )
 
@@ -187,11 +179,9 @@ def lehrer_ou_dn_regex() -> Pattern:
     base_dn = os.environ["ldap_base"]
     # default value of env.get("ucsschool_ldap_default_...") can be the
     # empty string, because of the apps 'env' file
-    prefix_teacher = (
-        os.environ.get(UCR_GROUP_PREFIX_TEACHERS[0]) or UCR_GROUP_PREFIX_TEACHERS[1]
-    )
+    prefix_teacher = os.environ.get(UCR_GROUP_PREFIX_TEACHERS[0]) or UCR_GROUP_PREFIX_TEACHERS[1]
     return re.compile(
-        f"cn={prefix_teacher}(?P<ou>.+?)," f"cn=groups," f"ou=(?P=ou)," f"{base_dn}",
+        f"cn={prefix_teacher}(?P<ou>.+?),cn=groups,ou=(?P=ou),{base_dn}",
         flags=re.IGNORECASE,
     )
 
@@ -200,11 +190,9 @@ def lehrer_ou_dn_regex() -> Pattern:
 def schueler_ou_dn_regex() -> Pattern:
     """Regex to match 'cn=schueler-demoschool,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
-    prefix_students = (
-        os.environ.get(UCR_GROUP_PREFIX_STUDENTS[0]) or UCR_GROUP_PREFIX_STUDENTS[1]
-    )
+    prefix_students = os.environ.get(UCR_GROUP_PREFIX_STUDENTS[0]) or UCR_GROUP_PREFIX_STUDENTS[1]
     return re.compile(
-        f"cn={prefix_students}(?P<ou>.+?)," f"cn=groups," f"ou=(?P=ou)," f"{base_dn}",
+        f"cn={prefix_students}(?P<ou>.+?),cn=groups,ou=(?P=ou),{base_dn}",
         flags=re.IGNORECASE,
     )
 
@@ -230,10 +218,7 @@ def student_dn_regex() -> Pattern:
     base_dn = os.environ["ldap_base"]
     c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
     return re.compile(
-        f"uid=(?P<name>.+?),"
-        f"cn={c_student},cn=users,"
-        f"ou=(?P<ou>.+?),"
-        f"{base_dn}",
+        f"uid=(?P<name>.+?),cn={c_student},cn=users,ou=(?P<ou>.+?),{base_dn}",
         flags=re.IGNORECASE,
     )
 
@@ -244,10 +229,7 @@ def teacher_dn_regex() -> Pattern:
     base_dn = os.environ["ldap_base"]
     c_teachers = os.environ.get(UCR_CONTAINER_TEACHERS[0]) or UCR_CONTAINER_TEACHERS[1]
     return re.compile(
-        f"uid=(?P<name>.+?),"
-        f"cn={c_teachers},cn=users,"
-        f"ou=(?P<ou>.+?),"
-        f"{base_dn}",
+        f"uid=(?P<name>.+?),cn={c_teachers},cn=users,ou=(?P<ou>.+?),{base_dn}",
         flags=re.IGNORECASE,
     )
 
@@ -257,14 +239,10 @@ def teacher_and_staff_dn_regex() -> Pattern:
     """Regex to match 'uid=demo_teachstaff,cn=lehrer und mitarbeiter,cn=users,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
     c_teacher_staff = (
-        os.environ.get(UCR_CONTAINER_TEACHERS_AND_STAFF[0])
-        or UCR_CONTAINER_TEACHERS_AND_STAFF[1]
+        os.environ.get(UCR_CONTAINER_TEACHERS_AND_STAFF[0]) or UCR_CONTAINER_TEACHERS_AND_STAFF[1]
     )
     return re.compile(
-        f"uid=(?P<name>.+?),"
-        f"cn={c_teacher_staff},cn=users,"
-        f"ou=(?P<ou>.+?),"
-        f"{base_dn}",
+        f"uid=(?P<name>.+?),cn={c_teacher_staff},cn=users,ou=(?P<ou>.+?),{base_dn}",
         flags=re.IGNORECASE,
     )
 
@@ -275,10 +253,7 @@ def workgroup_dn_regex() -> Pattern:
     base_dn = os.environ["ldap_base"]
     c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
     return re.compile(
-        f"cn=(?P<ou>[^,]+?)-(?P<name>[^,]+?),"
-        f"cn={c_student},cn=groups,"
-        f"ou=(?P=ou),"
-        f"{base_dn}",
+        f"cn=(?P<ou>[^,]+?)-(?P<name>[^,]+?),cn={c_student},cn=groups,ou=(?P=ou),{base_dn}",
         flags=re.IGNORECASE,
     )
 

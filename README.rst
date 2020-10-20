@@ -172,7 +172,7 @@ To run integration tests (*not safe, will modify source and target systems!*), r
     :target: https://www.python.org/downloads/release/python-382/
 .. |code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Code style: black
-    :target: https://github.com/python/black
+    :target: https://github.com/psf/black
 .. |diagram_overview| image:: src/static/ucsschool-id-connector_overview.png
     :alt: Diagram with an overview of the master 2 master sync
 .. |diagram_details| image:: src/static/ucsschool-id-connector_details.png

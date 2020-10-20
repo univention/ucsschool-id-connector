@@ -41,20 +41,12 @@ import aiojobs
 from service import Service
 
 from ucsschool_id_connector.config_storage import ConfigurationStorage
-from ucsschool_id_connector.constants import (
-    LOG_FILE_PATH_QUEUES,
-    RPC_ADDR,
-    SERVICE_NAME,
-)
+from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
 from ucsschool_id_connector.plugin_loader import load_plugins
 from ucsschool_id_connector.plugins import plugin_manager
 from ucsschool_id_connector.queues import InQueue, OutQueue, get_out_queue_dirs
 from ucsschool_id_connector.rpc import SimpleRPCServer
-from ucsschool_id_connector.utils import (
-    ConsoleAndFileLogging,
-    close_ucr_cache,
-    get_app_version,
-)
+from ucsschool_id_connector.utils import ConsoleAndFileLogging, close_ucr_cache, get_app_version
 
 
 class IDConnectorService(Service):
@@ -64,12 +56,8 @@ class IDConnectorService(Service):
 
     def __init__(self, *args, **kwargs):
         super(IDConnectorService, self).__init__(*args, **kwargs)
-        self.files_preserve.extend(
-            (sys.stderr.fileno(), sys.stderr.fileno())
-        )  # doesn't work :/
-        self.logger = ConsoleAndFileLogging.get_logger(
-            self.__class__.__name__, LOG_FILE_PATH_QUEUES
-        )
+        self.files_preserve.extend((sys.stderr.fileno(), sys.stderr.fileno()))  # doesn't work :/
+        self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__, LOG_FILE_PATH_QUEUES)
 
     def run(self) -> None:
         self.logger.info("%s %s starting...", SERVICE_NAME, get_app_version())
@@ -93,14 +81,10 @@ class IDConnectorService(Service):
         self.out_queues.sort(key=lambda x: x.name)
         out_queue_dirs = [q.path for q in self.out_queues]
         abandoned_out_queue_dirs = [
-            path.name
-            async for path in get_out_queue_dirs()
-            if path not in out_queue_dirs
+            path.name async for path in get_out_queue_dirs() if path not in out_queue_dirs
         ]
         if abandoned_out_queue_dirs:
-            self.logger.warning(
-                "Found abandoned out queue directories: %r", abandoned_out_queue_dirs
-            )
+            self.logger.warning("Found abandoned out queue directories: %r", abandoned_out_queue_dirs)
         self.in_queue = InQueue(out_queues=self.out_queues)
         if list(self.out_queues):
             self.logger.info("Running initial distribution of in-queue...")
@@ -123,9 +107,7 @@ class IDConnectorService(Service):
         self.rpc_server = SimpleRPCServer(
             addr=RPC_ADDR, in_queue=self.in_queue, out_queues=self.out_queues
         )
-        self.rpc_server.task = await scheduler.spawn(
-            self.rpc_server.simple_rpc_server()
-        )
+        self.rpc_server.task = await scheduler.spawn(self.rpc_server.simple_rpc_server())
         self.logger.info("Started %d background tasks.", len(scheduler))
         self.logger.info("Sleeping until shutdown is requested (SIGTERM).")
         while not self.got_sigterm():  # sleep until SIGTERM
@@ -144,9 +126,7 @@ if __name__ == "__main__":  # noqa: C901
         sys.exit(f"Syntax: {sys.argv[0]} <start|stop|restart|status|test>")
 
     cmd = sys.argv[1].lower()
-    service = IDConnectorService(
-        SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1]  # nosec
-    )
+    service = IDConnectorService(SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1])  # nosec
 
     def _start():
         service.start()

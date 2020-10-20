@@ -40,9 +40,7 @@ from pydantic import BaseModel, PydanticValueError, SecretStr, UrlStr, validator
 from .utils import ConsoleAndFileLogging
 
 # for debugging during coding
-logger: logging.Logger = lazy_object_proxy.Proxy(
-    lambda: ConsoleAndFileLogging.get_logger(__name__)
-)
+logger: logging.Logger = lazy_object_proxy.Proxy(lambda: ConsoleAndFileLogging.get_logger(__name__))
 
 
 class ListenerFileAttributeError(PydanticValueError):
@@ -168,15 +166,10 @@ class ListenerAddModifyObject(ListenerObject, abc.ABC):
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
-        raise NotImplementedError(
-            "Implement this in a subclass specific for each UDM object type."
-        )
+        raise NotImplementedError("Implement this in a subclass specific for each UDM object type.")
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, "
-            f"{self.old_data!r})"
-        )
+        return f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, {self.old_data!r})"
 
 
 class ListenerGroupAddModifyObject(ListenerAddModifyObject):
@@ -220,9 +213,7 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         options = set(value)
         if not {"default"}.intersection(options):
             raise ListenerFileAttributeError(key="options", value=value)
-        if not {"ucsschoolStaff", "ucsschoolStudent", "ucsschoolTeacher"}.intersection(
-            options
-        ):
+        if not {"ucsschoolStaff", "ucsschoolStudent", "ucsschoolTeacher"}.intersection(options):
             raise ListenerFileAttributeError(
                 key="options",
                 value=value,
@@ -259,8 +250,7 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
                 return ou_from_dn
             else:
                 logger.error(
-                    "OU found in DN (%r) not in 'school' attribute (%r) of user with "
-                    "DN %r.",
+                    "OU found in DN (%r) not in 'school' attribute (%r) of user with " "DN %r.",
                     ou_from_dn,
                     self.object["school"],
                     self.dn,
@@ -283,9 +273,7 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         if "ucsschoolStudent" in options:
             return [SchoolUserRole.student]
         # administrator and exam_user are not supported
-        raise UnknownSchoolUserRole(
-            f"Unknown or missing school user type in options: {self.options!r}"
-        )
+        raise UnknownSchoolUserRole(f"Unknown or missing school user type in options: {self.options!r}")
 
     @property
     def username(self) -> str:
@@ -325,20 +313,14 @@ class ListenerGroupRemoveObject(ListenerRemoveObject):
     old_data: ListenerGroupOldDataEntry = None
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r},"
-            f" {self.old_data!r})"
-        )
+        return f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, {self.old_data!r})"
 
 
 class ListenerUserRemoveObject(ListenerRemoveObject):
     old_data: ListenerUserOldDataEntry = None
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r},"
-            f" {self.old_data!r})"
-        )
+        return f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, {self.old_data!r})"
 
 
 class SchoolAuthorityConfiguration(BaseModel):

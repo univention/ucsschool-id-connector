@@ -32,17 +32,7 @@ import datetime
 import os
 import shutil
 from pathlib import Path
-from typing import (
-    AsyncIterator,
-    Coroutine,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Set,
-    TypeVar,
-    cast,
-)
+from typing import AsyncIterator, Coroutine, Dict, Iterator, List, Optional, Set, TypeVar, cast
 
 import aiofiles
 import ujson
@@ -137,9 +127,7 @@ class FileQueue:
                 if entry.is_dir() and entry.name in ("keep", "trash"):
                     continue
                 if not entry.is_file() or not entry.name.lower().endswith(".json"):
-                    self.logger.warning(
-                        "Non-JSON file found in queue %r: %r.", self.name, entry.name
-                    )
+                    self.logger.warning("Non-JSON file found in queue %r: %r.", self.name, entry.name)
                     self.discard_file(Path(entry.path))
                     continue
                 res.append(Path(entry.path))
@@ -158,32 +146,20 @@ class FileQueue:
             name=self.name,
             head=self.head,
             length=len(self),
-            school_authority=self.school_authority.name
-            if self.school_authority
-            else "",
+            school_authority=self.school_authority.name if self.school_authority else "",
         )
 
-    async def start_task(
-        self, method: str, ignore_inactive: bool = False, *args, **kwargs
-    ):
+    async def start_task(self, method: str, ignore_inactive: bool = False, *args, **kwargs):
         """Start `method` as a background task."""
         if self.scheduler is None:
-            raise RuntimeError(
-                f'Cannot start task for {self!r}, "scheduler" was not set.'
-            )
+            raise RuntimeError(f'Cannot start task for {self!r}, "scheduler" was not set.')
         if self._deleted:
-            raise RuntimeError(
-                f"Cannot start task for {self!r}, queue directory has been deleted."
-            )
+            raise RuntimeError(f"Cannot start task for {self!r}, queue directory has been deleted.")
 
-        if not ignore_inactive and (
-            not self.school_authority or not self.school_authority.active
-        ):
+        if not ignore_inactive and (not self.school_authority or not self.school_authority.active):
             self.logger.warning("Starting task %r of inactive queue %r.", method, self)
         else:
-            self.logger.debug(
-                "Starting background task %r for queue %r...", method, self.name
-            )
+            self.logger.debug("Starting background task %r for queue %r...", method, self.name)
         meth = getattr(self, method)
         self.task = await self.scheduler.spawn(meth(*args, **kwargs))
 
@@ -259,13 +235,9 @@ class FileQueue:
                 else:
                     success |= await coro
             if not success:
-                raise ListenerSavingError(
-                    f"No 'save_listener_object' hook saved {obj!r}."
-                )
+                raise ListenerSavingError(f"No 'save_listener_object' hook saved {obj!r}.")
         except (OSError, ValueError) as exc:
-            self.logger.exception(
-                "Saving obj to %s: %s\nobj=%r", path.name, exc, obj.dict()
-            )
+            self.logger.exception("Saving obj to %s: %s\nobj=%r", path.name, exc, obj.dict())
             raise ListenerSavingError(f"{path.name} -> {exc}")
 
     def _signal_alive(self):
@@ -310,23 +282,17 @@ class InQueue(FileQueue):
 
         changed = False
         if isinstance(obj, ListenerAddModifyObject):
-            result_coros: List[
-                Coroutine
-            ] = plugin_manager.hook.preprocess_add_mod_object(obj=obj)
+            result_coros: List[Coroutine] = plugin_manager.hook.preprocess_add_mod_object(obj=obj)
             # await all elements of list of coroutine objects
             changed |= any([await coro for coro in result_coros])
 
         if isinstance(obj, ListenerRemoveObject):
-            result_coros: List[
-                Coroutine
-            ] = plugin_manager.hook.preprocess_remove_object(obj=obj)
+            result_coros: List[Coroutine] = plugin_manager.hook.preprocess_remove_object(obj=obj)
             changed |= any([await coro for coro in result_coros])
 
         if changed:
             try:
-                self.logger.debug(
-                    "A preprocessing hook modified %r, saving it back to JSON...", obj
-                )
+                self.logger.debug("A preprocessing hook modified %r, saving it back to JSON...", obj)
                 await self.save_listener_file(obj, path)
             except ListenerSavingError as exc:
                 raise InvalidListenerFile(str(exc))
@@ -351,10 +317,11 @@ class InQueue(FileQueue):
         else:
             self.logger.warning("No out queues configured!")
         while True:
-            queue_files = [
-                p for p in self.queue_files() if not p.name.endswith("_ready.json")
-            ]
-            for num, path in enumerate(queue_files, start=1,):
+            queue_files = [p for p in self.queue_files() if not p.name.endswith("_ready.json")]
+            for num, path in enumerate(
+                queue_files,
+                start=1,
+            ):
                 try:
                     new_path = await self.preprocess_file(path)
                     self.logger.info(
@@ -411,12 +378,8 @@ class InQueue(FileQueue):
             JSON files
         :return: None
         """
-        queue_paths = queue_paths or [
-            p for p in self.queue_files() if p.name.endswith("_ready.json")
-        ]
-        s_a_name_to_out_queue = dict(
-            (q.school_authority.name, q) for q in self.out_queues
-        )
+        queue_paths = queue_paths or [p for p in self.queue_files() if p.name.endswith("_ready.json")]
+        s_a_name_to_out_queue = dict((q.school_authority.name, q) for q in self.out_queues)
         for path in queue_paths:
             self.head = path.name
             try:
@@ -482,9 +445,7 @@ class InQueue(FileQueue):
         current_queues = {q.name for q in self.out_queues}
         removed_queues = self._old_out_queues - current_queues
         if removed_queues:
-            self.logger.debug(
-                "Out queues have been removed: %s", ", ".join(removed_queues)
-            )
+            self.logger.debug("Out queues have been removed: %s", ", ".join(removed_queues))
         added_queues = current_queues - self._old_out_queues
         if added_queues:
             self.logger.debug("Out queues have been added: %s", ", ".join(added_queues))
@@ -535,8 +496,7 @@ class OutQueue(FileQueue):
                 connection_ok = False
             if not connection_ok:
                 self.logger.error(
-                    "One or more school_authority_ping hooks reported a faulty"
-                    "connection!"
+                    "One or more school_authority_ping hooks reported a faulty" "connection!"
                 )
                 await asyncio.sleep(API_COMMUNICATION_ERROR_WAIT)
                 continue
@@ -545,10 +505,7 @@ class OutQueue(FileQueue):
                 api_error = False
                 # Cannot use `key` in list.sort() with async function. Creating
                 # tuple with key output instead and sorting that.
-                paths = [
-                    (await self.udm_object_queue_order(path), path)
-                    for path in self.queue_files()
-                ]
+                paths = [(await self.udm_object_queue_order(path), path) for path in self.queue_files()]
                 paths.sort()
                 if paths:
                     lowest_queue_order_num = paths[0][0]
@@ -601,9 +558,7 @@ class OutQueue(FileQueue):
             handle_listener_object_caller = filter_plugins(
                 "handle_listener_object", self.school_authority.plugins
             )
-            handle_listener_object_coros: List[
-                Coroutine
-            ] = handle_listener_object_caller(
+            handle_listener_object_coros: List[Coroutine] = handle_listener_object_caller(
                 school_authority=self.school_authority, obj=obj
             )
             handled = any(await asyncio.gather(*handle_listener_object_coros))
@@ -615,9 +570,7 @@ class OutQueue(FileQueue):
         self.logger.debug("finished handling %r.", path.name)
 
     @classmethod
-    def from_school_authority(
-        cls, school_authority: SchoolAuthorityConfiguration
-    ) -> "OutQueue":
+    def from_school_authority(cls, school_authority: SchoolAuthorityConfiguration) -> "OutQueue":
         logger = ConsoleAndFileLogging.get_logger(cls.__name__, LOG_FILE_PATH_QUEUES)
         res = cls(
             name=school_authority.name,

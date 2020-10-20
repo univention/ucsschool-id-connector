@@ -94,20 +94,14 @@ class LDAPAccess:
             )
             return False
 
-    async def check_auth_and_get_user(
-        self, username: str, password: str
-    ) -> Optional[User]:
+    async def check_auth_and_get_user(self, username: str, password: str) -> Optional[User]:
         user_dn = await self.get_dn_of_user(username)
         if user_dn:
             admin_group_members = await self.admin_group_members()
             if user_dn in admin_group_members:
-                return await self.get_user(
-                    username, user_dn, password, school_only=False
-                )
+                return await self.get_user(username, user_dn, password, school_only=False)
             else:
-                self.logger.debug(
-                    "User %r not member of group %r.", username, ADMIN_GROUP_NAME
-                )
+                self.logger.debug("User %r not member of group %r.", username, ADMIN_GROUP_NAME)
                 return None
         else:
             self.logger.debug("No such user in LDAP: %r.", username)
@@ -154,8 +148,7 @@ class LDAPAccess:
             return results[0].entry_dn
         elif len(results) > 1:
             raise RuntimeError(
-                f"More than 1 result when searching LDAP with filter {filter_s!r}: "
-                f"{results!r}."
+                f"More than 1 result when searching LDAP with filter {filter_s!r}: {results!r}."
             )
         else:
             return ""
@@ -181,8 +174,7 @@ class LDAPAccess:
             )
         elif len(results) > 1:
             raise RuntimeError(
-                f"More than 1 result when searching LDAP with filter {filter_s!r}: "
-                f"{results!r}."
+                f"More than 1 result when searching LDAP with filter {filter_s!r}: {results!r}."
             )
         else:
             return None
@@ -195,8 +187,7 @@ class LDAPAccess:
             or (
                 "shadowExpire" in ldap_result
                 and ldap_result["shadowExpire"].value
-                and ldap_result["shadowExpire"].value
-                < datetime.now().timestamp() / 3600 / 24
+                and ldap_result["shadowExpire"].value < datetime.now().timestamp() / 3600 / 24
             )
         )
 
@@ -243,8 +234,7 @@ class LDAPAccess:
             )
         elif len(results) > 1:
             raise RuntimeError(
-                f"More than 1 result when searching LDAP with filter {filter_s!r}: "
-                f"{results!r}."
+                f"More than 1 result when searching LDAP with filter {filter_s!r}: {results!r}."
             )
         else:
             return None
@@ -256,26 +246,15 @@ class LDAPAccess:
         if len(results) == 1:
             return results[0]["uniqueMember"].values
         else:
-            self.logger.error(
-                "Reading %r from LDAP: results=%r", ADMIN_GROUP_NAME, results
-            )
+            self.logger.error("Reading %r from LDAP: results=%r", ADMIN_GROUP_NAME, results)
             return []
 
-    async def extended_attribute_ldap_mapping(
-        self, udm_property_name: str
-    ) -> Optional[str]:
-        filter_s = (
-            f"(&(objectClass=univentionUDMProperty)"
-            f"(cn={escape_filter_chars(udm_property_name)}))"
-        )
+    async def extended_attribute_ldap_mapping(self, udm_property_name: str) -> Optional[str]:
+        filter_s = f"(&(objectClass=univentionUDMProperty)(cn={escape_filter_chars(udm_property_name)}))"
         base = f"cn=custom attributes,cn=univention,{self.ldap_base}"
-        results = await self.search(
-            filter_s, ["univentionUDMPropertyLdapMapping"], base=base
-        )
+        results = await self.search(filter_s, ["univentionUDMPropertyLdapMapping"], base=base)
         if len(results) == 1:
             return results[0]["univentionUDMPropertyLdapMapping"].value
         else:
-            self.logger.error(
-                "Reading %r from LDAP: results=%r", udm_property_name, results
-            )
+            self.logger.error("Reading %r from LDAP: results=%r", udm_property_name, results)
             return None

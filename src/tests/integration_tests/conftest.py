@@ -87,11 +87,7 @@ def http_request():
         try:
             msg = response.json()
         except JSONDecodeError:
-            msg = (
-                "<no JSON>"
-                if response.status_code in expected_statuses
-                else response.text
-            )
+            msg = "<no JSON>" if response.status_code in expected_statuses else response.text
         msg = (
             f"Status {response.status_code} (reason: {response.reason}) for "
             f"{method.upper()} {url!r} using headers={headers!r} and "
@@ -236,9 +232,7 @@ def ucsschool_id_connector_api_url(docker_hostname):
         :param entity: If given it builds the URL for the specific resource entity
         :return: The UCS@school ID Connector API URL
         """
-        return urljoin(
-            f"https://{docker_hostname}/{APP_ID}/api/v1/", f"{resource}/{entity}"
-        ).rstrip("/")
+        return urljoin(f"https://{docker_hostname}/{APP_ID}/api/v1/", f"{resource}/{entity}").rstrip("/")
 
     return _ucsschool_id_connector_api_url
 
@@ -354,10 +348,7 @@ async def make_school_authority(
             expected_statuses=(201,),
         )
         async for loaded_s_a in ConfigurationStorage.load_school_authorities():
-            if (
-                loaded_s_a.name == name
-                and loaded_s_a.password.get_secret_value() == password
-            ):
+            if loaded_s_a.name == name and loaded_s_a.password.get_secret_value() == password:
                 break
         else:
             raise AssertionError(
@@ -381,8 +372,7 @@ async def make_school_authority(
         async for loaded_s_a in ConfigurationStorage.load_school_authorities():
             if loaded_s_a.name == school_authority_name:
                 raise AssertionError(
-                    f"SchoolAuthorityConfiguration(name={school_authority_name!r})"
-                    f" was not deleted."
+                    f"SchoolAuthorityConfiguration(name={school_authority_name!r}) was not deleted."
                 )  # pragma: no cover
         out_queue_dir = OUT_QUEUE_TOP_DIR / school_authority_name
         assert not out_queue_dir.exists()
@@ -446,9 +436,7 @@ async def save_mapping(
 
 
 @pytest.fixture()
-def create_schools(
-    random_name, docker_hostname, bb_api_url, host_bb_token, req_headers, http_request
-):
+def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_headers, http_request):
     """
     Fixture factory to create OUs. The OUs are cached during multiple test runs
     to save development time.
@@ -477,18 +465,14 @@ def create_schools(
             except KeyError:
                 auth_school_mapping[auth.name] = []
                 ous = []
-            ous.extend(
-                ["testou-{}".format(random_name()) for i in range(amount - len(ous))]
-            )
+            ous.extend(["testou-{}".format(random_name()) for i in range(amount - len(ous))])
             print(f"Creating OUs: {ous!r}...")
             for ou in ous:
                 url = bb_api_url(docker_hostname, "schools")
                 response = http_request(
                     "get",
                     bb_api_url(docker_hostname, "schools", ou),
-                    headers=req_headers(
-                        token=host_bb_token, content_type="application/json"
-                    ),
+                    headers=req_headers(token=host_bb_token, content_type="application/json"),
                     expected_statuses=(200, 404),
                 )
                 if response.status_code == 200:
@@ -498,18 +482,14 @@ def create_schools(
                     http_request(
                         "post",
                         url,
-                        headers=req_headers(
-                            token=host_bb_token, content_type="application/json"
-                        ),
+                        headers=req_headers(token=host_bb_token, content_type="application/json"),
                         json_data={"name": ou, "display_name": ou},
                         expected_statuses=(201, 400),
                     )
                     http_request(
                         "get",
                         bb_api_url(docker_hostname, "schools", ou),
-                        headers=req_headers(
-                            token=host_bb_token, content_type="application/json"
-                        ),
+                        headers=req_headers(token=host_bb_token, content_type="application/json"),
                     )
                 url = bb_api_url(auth.url, "schools")
                 http_request(
@@ -581,9 +561,7 @@ async def make_sender_user(
         lastname = fake.last_name()
         user_data = {
             "name": "test{}".format(fake.user_name())[:15],
-            "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime(
-                "%Y-%m-%d"
-            ),
+            "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
             "disabled": False,
             "firstname": firstname,
             "lastname": lastname,
@@ -638,9 +616,7 @@ def ca_cert():
     """Downloaded CA certificate of UCS server `host`."""
 
     def _func(host: str) -> Path:
-        path = Path(
-            KELVIN_API_CA_CERT_PATH.format(date=datetime.date.today(), host=host)
-        )
+        path = Path(KELVIN_API_CA_CERT_PATH.format(date=datetime.date.today(), host=host))
         if not path.is_file():
             url = f"http://{host}/ucs-root-ca.crt"
             try:
@@ -719,10 +695,7 @@ def wait_for_kelvin_object_exists():
                 return await func(**method_kwargs)
             except NoObject as exc:
                 error = exc
-                print(
-                    f"Waiting for {resource_cls.__name__}.{method}({method_kwargs!r}):"
-                    f" {exc!s}"
-                )
+                print(f"Waiting for {resource_cls.__name__}.{method}({method_kwargs!r}): {exc!s}")
                 await asyncio.sleep(1)
         raise AssertionError(f"No object found after {wait_timeout} seconds: {error!s}")
 

@@ -37,9 +37,7 @@ from .models import ListenerOldDataEntry
 
 NativeType = TypeVar("NativeType")
 StorageType = TypeVar("StorageType")
-ListenerOldDataEntryType = TypeVar(
-    "ListenerOldDataEntryType", bound=ListenerOldDataEntry
-)
+ListenerOldDataEntryType = TypeVar("ListenerOldDataEntryType", bound=ListenerOldDataEntry)
 
 
 class KeyValueDB(Generic[NativeType, StorageType], abc.ABC):
@@ -80,9 +78,7 @@ class KeyValueDB(Generic[NativeType, StorageType], abc.ABC):
     def close(self, *args, **kwargs) -> None:
         return self._cache.close()
 
-    def get(
-        self, key: Any, default: Any = None, *args, **kwargs
-    ) -> Union[Any, NativeType]:
+    def get(self, key: Any, default: Any = None, *args, **kwargs) -> Union[Any, NativeType]:
         value = self._cache.get(key, default, *args, **kwargs)
         if value is default:
             return default
@@ -90,9 +86,7 @@ class KeyValueDB(Generic[NativeType, StorageType], abc.ABC):
             return self._storage_to_native_type(value)
 
     def set(self, key: Any, value: NativeType, *args, **kwargs) -> bool:
-        return self._cache.set(
-            key, self._native_to_storage_type(value), *args, **kwargs
-        )
+        return self._cache.set(key, self._native_to_storage_type(value), *args, **kwargs)
 
     def touch(self, *args, **kwargs) -> bool:
         return self._cache.touch(*args, **kwargs)

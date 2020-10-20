@@ -44,9 +44,7 @@ client = TestClient(ucsschool_id_connector.http_api.app)
 
 
 async def override_get_current_active_user():
-    return ucsschool_id_connector.models.User(
-        username="tester", disabled=False, dn="uid=tester,dc=test"
-    )
+    return ucsschool_id_connector.models.User(username="tester", disabled=False, dn="uid=tester,dc=test")
 
 
 def override_setup_logging():
@@ -196,9 +194,7 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
 
 
 @patch("ucsschool_id_connector.http_api.zmq_context")
-def test_create_school_authorities(
-    zmq_context_mock, random_name, random_int, zmq_socket
-):
+def test_create_school_authorities(zmq_context_mock, random_name, random_int, zmq_socket):
     # oder matters in this dict, as socket.send_string.assert_called_with() below
     # compares the json representation
     school_authority_data = {

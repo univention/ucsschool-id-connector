@@ -57,17 +57,13 @@ def load_plugins() -> None:  # noqa: C901
         if not plugin_dir.exists():  # pragma: no cover
             plugin_dir.mkdir(mode=0o755, parents=True)
             with (plugin_dir / "README.txt").open("w") as fp:
-                fp.write(
-                    "This directory will be searched for Python modules with plugins.\n"
-                )
+                fp.write("This directory will be searched for Python modules with plugins.\n")
         with cast(Iterator[os.DirEntry], os.scandir(plugin_dir)) as dir_entries:
             for entry in dir_entries:
                 if entry.is_file() and entry.name.lower().endswith(".py"):
                     module_name = entry.name[:-3]
                     logger.debug("Loading module %r in %r...", module_name, entry.path)
-                    spec = importlib.util.spec_from_file_location(
-                        module_name, entry.path
-                    )
+                    spec = importlib.util.spec_from_file_location(module_name, entry.path)
                     module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(module)
 

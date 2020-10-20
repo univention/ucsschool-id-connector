@@ -35,11 +35,7 @@ import aiofiles
 import aiohttp
 import lazy_object_proxy
 
-from ucsschool_id_connector.constants import (
-    CHECK_SSL_CERTS,
-    HTTP_CLIENT_TIMEOUT,
-    LOG_FILE_PATH_QUEUES,
-)
+from ucsschool_id_connector.constants import CHECK_SSL_CERTS, HTTP_CLIENT_TIMEOUT, LOG_FILE_PATH_QUEUES
 from ucsschool_id_connector.plugins import filter_plugins
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
@@ -96,9 +92,7 @@ async def _do_request(  # noqa: C901
         request_kwargs["json"] = data
     if params:
         request_kwargs["params"] = params
-    create_request_kwargs_caller = filter_plugins(
-        "create_request_kwargs", school_authority.plugins
-    )
+    create_request_kwargs_caller = filter_plugins("create_request_kwargs", school_authority.plugins)
     for update_kwargs in await asyncio.gather(
         *create_request_kwargs_caller(
             http_method=http_method, url=url, school_authority=school_authority
@@ -168,7 +162,11 @@ async def http_get(
 
 
 async def http_patch(
-    url, school_authority, data, acceptable_statuses: List[int] = None, session=None,
+    url,
+    school_authority,
+    data,
+    acceptable_statuses: List[int] = None,
+    session=None,
 ) -> Tuple[int, Optional[Dict[str, Any]]]:
     acceptable_statuses = acceptable_statuses or [200]
     return await _do_request(
@@ -182,7 +180,11 @@ async def http_patch(
 
 
 async def http_post(
-    url, school_authority, data, acceptable_statuses: List[int] = None, session=None,
+    url,
+    school_authority,
+    data,
+    acceptable_statuses: List[int] = None,
+    session=None,
 ) -> Tuple[int, Optional[Dict[str, Any]]]:
     acceptable_statuses = acceptable_statuses or [201]
     return await _do_request(

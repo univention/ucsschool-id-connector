@@ -88,8 +88,7 @@ class UserDistributionImpl:
                 s_a_names.add(in_queue.school_authority_mapping[school])
             except KeyError:
                 self.logger.error(
-                    "School from 'old_data' missing in school authority"
-                    " mapping, ignoring: %r",
+                    "School from 'old_data' missing in school authority" " mapping, ignoring: %r",
                     school,
                 )
         return s_a_names

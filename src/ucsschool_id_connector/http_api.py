@@ -52,14 +52,7 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from .constants import (
-    HISTORY_FILE,
-    LOG_FILE_PATH_HTTP,
-    README_FILE,
-    RPC_ADDR,
-    TOKEN_URL,
-    URL_PREFIX,
-)
+from .constants import HISTORY_FILE, LOG_FILE_PATH_HTTP, README_FILE, RPC_ADDR, TOKEN_URL, URL_PREFIX
 from .ldap_access import LDAPAccess
 from .models import (
     AllQueues,
@@ -93,9 +86,7 @@ async def read_school_to_school_authority_mapping(
 ) -> School2SchoolAuthorityMapping:
     res = await query_service(cmd="get_school_to_authority_mapping")
     if res.get("errors"):
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=res["errors"]
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=res["errors"])
     return School2SchoolAuthorityMapping(**res["result"])
 
 
@@ -105,17 +96,13 @@ async def put_school_to_school_authority_mapping(
     current_user: User = Depends(get_current_active_user),
     logger: logging.Logger = Depends(get_logger),
 ) -> School2SchoolAuthorityMapping:
-    logger.info(
-        "User %r modifying school to school authority mapping...", current_user.username
-    )
+    logger.info("User %r modifying school to school authority mapping...", current_user.username)
     res = await query_service(
         cmd="put_school_to_authority_mapping",
         school_to_authority_mapping=school_to_authority_mapping,
     )
     if res.get("errors"):
-        raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=res["errors"]
-        )
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=res["errors"])
     return School2SchoolAuthorityMapping(**res["result"])
 
 
@@ -147,14 +134,10 @@ async def read_school_authorities(
     logger: logging.Logger = Depends(get_logger),
 ) -> List[SchoolAuthorityConfiguration]:
     res = await query_service(cmd="get_school_authorities")
-    return sorted(
-        [SchoolAuthorityConfiguration(**r) for r in res["result"]], key=lambda x: x.name
-    )
+    return sorted([SchoolAuthorityConfiguration(**r) for r in res["result"]], key=lambda x: x.name)
 
 
-@router.post(
-    "/school_authorities", tags=["school_authorities"], status_code=HTTP_201_CREATED
-)
+@router.post("/school_authorities", tags=["school_authorities"], status_code=HTTP_201_CREATED)
 async def create_school_authorities(
     school_authority: SchoolAuthorityConfiguration,
     current_user: User = Depends(get_current_active_user),
@@ -165,9 +148,7 @@ async def create_school_authorities(
         current_user.username,
         school_authority,
     )
-    res = await query_service(
-        cmd="create_school_authority", school_authority=school_authority
-    )
+    res = await query_service(cmd="create_school_authority", school_authority=school_authority)
     if res.get("errors"):
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=res["errors"])
     return SchoolAuthorityConfiguration(**res["result"])
@@ -202,9 +183,7 @@ async def delete_school_authority(
     return None
 
 
-@router.patch(
-    "/school_authorities/{name}", tags=["school_authorities"], status_code=HTTP_200_OK
-)
+@router.patch("/school_authorities/{name}", tags=["school_authorities"], status_code=HTTP_200_OK)
 async def patch_school_authority(
     name: str,
     school_authority: SchoolAuthorityConfigurationPatchDocument,
@@ -214,9 +193,7 @@ async def patch_school_authority(
     # We could use status_code=204 for PATCH, but then we must not return anything.
     # IMHO that is less useful than using 200 and returning the modified resource.
     logger.info("User %r modifying school authority %r...", current_user.username, name)
-    res = await query_service(
-        cmd="patch_school_authority", name=name, school_authority=school_authority
-    )
+    res = await query_service(cmd="patch_school_authority", name=name, school_authority=school_authority)
     if res.get("errors"):
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=res["errors"])
     return SchoolAuthorityConfiguration(**res["result"])
@@ -244,13 +221,9 @@ def query_service(
     if school_authority is not None:
         request_kwargs["school_authority"] = school_authority.dict()
         if school_authority.password:
-            request_kwargs["school_authority"][
-                "password"
-            ] = school_authority.password.get_secret_value()
+            request_kwargs["school_authority"]["password"] = school_authority.password.get_secret_value()
     if school_to_authority_mapping is not None:
-        request_kwargs[
-            "school_to_authority_mapping"
-        ] = school_to_authority_mapping.dict()
+        request_kwargs["school_to_authority_mapping"] = school_to_authority_mapping.dict()
     request = RPCRequest(**request_kwargs)
     # logger.debug("Querying queue daemon: %r", request.dict())
     socket = zmq_context.socket(zmq.REQ)
@@ -277,13 +250,9 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     logger: logging.Logger = Depends(get_logger),
 ):
-    user = await ldap_auth_instance.check_auth_and_get_user(
-        form_data.username, form_data.password
-    )
+    user = await ldap_auth_instance.check_auth_and_get_user(form_data.username, form_data.password)
     if not user:
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect username or password"
-        )
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
     access_token_expires = timedelta(minutes=await get_token_ttl())
     access_token = await create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires

@@ -66,13 +66,13 @@ setup_devel_env: ## setup development environment (virtualenv)
 	fi
 
 lint: ## check style (requires Python interpreter activated from venv)
-	isort --check-only --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --recursive src src/queue_management src/schedule_user
-	black --check --target-version py38 --exclude src/static/ucsschool_id_connector_password_hook.py src src/queue_management src/schedule_user
-	flake8 --max-line-length=90 --ignore=W503 src src/queue_management src/schedule_user
+	isort --check-only src src/queue_management src/schedule_user
+	black --config .black --check src src/queue_management src/schedule_user
+	flake8 src src/queue_management src/schedule_user
 
 format: ## format source code (requires Python interpreter activated from venv)
-	isort --apply --multi-line=3 --trailing-comma --force-grid-wrap=0 --combine-as --line-width 88 --recursive src src/queue_management src/schedule_user
-	black --target-version py38 --exclude src/static/ucsschool_id_connector_password_hook.py src src/queue_management src/schedule_user
+	isort src src/queue_management src/schedule_user
+	black --config .black src src/queue_management src/schedule_user
 
 test: ## run tests with the Python interpreter from 'venv'
 	python3 -m pytest -l -v src/tests/unittests

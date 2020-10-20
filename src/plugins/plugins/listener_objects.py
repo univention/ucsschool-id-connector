@@ -66,9 +66,7 @@ class ListenerObjectHandlerImpl:
 
     def __init__(self):
         self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__)
-        self.old_data_db = OldDataDB(
-            OLD_DATA_DB_PATH, self.listener_old_data_entry_type
-        )
+        self.old_data_db = OldDataDB(OLD_DATA_DB_PATH, self.listener_old_data_entry_type)
 
     @hook_impl
     async def shutdown(self) -> None:
@@ -204,9 +202,7 @@ class ListenerObjectHandlerImpl:
             return True
         else:
             self.logger.error("*** CANNOT DELETE OBJECT FROM TARGET SYSTEM(S)! ***")
-            self.logger.error(
-                "No previous data stored for DN %r (entryUUID %r).", obj.dn, obj.id
-            )
+            self.logger.error("No previous data stored for DN %r (entryUUID %r).", obj.dn, obj.id)
             return False
 
 
@@ -227,9 +223,7 @@ class ListenerUserObjectHandlerImpl(ListenerObjectHandlerImpl):
             obj_as_dict = obj.dict_krb5_key_base64_encoded()
         else:
             obj_as_dict = obj.dict()
-        if isinstance(obj, ListenerUserAddModifyObject) or isinstance(
-            obj, ListenerUserRemoveObject
-        ):
+        if isinstance(obj, ListenerUserAddModifyObject) or isinstance(obj, ListenerUserRemoveObject):
             if obj_as_dict.get("old_data") == {}:
                 # prevent validation error when loading into
                 # ListenerUserAddModifyObject or ListenerUserRemoveObject

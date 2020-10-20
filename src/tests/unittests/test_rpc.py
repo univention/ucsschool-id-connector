@@ -35,9 +35,7 @@ import ucsschool_id_connector.queues
 
 
 def test_command_with_valid_enum():
-    ucsschool_id_connector.models.RPCRequest(
-        cmd=ucsschool_id_connector.models.RPCCommand.get_queues
-    )
+    ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queues)
 
 
 def test_command_with_valid_str():
@@ -60,9 +58,7 @@ def test_command_with_required_name_args():
 
 def test_command_without_required_name_arg():
     with pytest.raises(ValidationError):
-        ucsschool_id_connector.models.RPCRequest(
-            cmd=ucsschool_id_connector.models.RPCCommand.get_queue
-        )
+        ucsschool_id_connector.models.RPCRequest(cmd=ucsschool_id_connector.models.RPCCommand.get_queue)
     with pytest.raises(ValidationError):
         ucsschool_id_connector.models.RPCRequest(
             cmd=ucsschool_id_connector.models.RPCCommand.get_queue, name=""

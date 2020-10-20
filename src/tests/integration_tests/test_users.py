@@ -47,9 +47,7 @@ fake = faker.Faker()
 
 @pytest.fixture(scope="session")
 def compare_user(compare_dicts):
-    def _func(
-        source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None
-    ):
+    def _func(source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None):
         """
         This function compares two dictionaries. Specifically it checks if all
         key-value pairs from the source also exist in the other dictionary. It
@@ -75,9 +73,7 @@ def compare_user(compare_dicts):
     return _func
 
 
-def filter_ous(
-    user: Dict[str, Any], auth: str, mapping: Dict[str, str]
-) -> Dict[str, Any]:
+def filter_ous(user: Dict[str, Any], auth: str, mapping: Dict[str, str]) -> Dict[str, Any]:
     """
     Remove OUs from `users` 'schools' and 'school_classes' attributes,
     that belong to auth other than `auth`.
@@ -129,19 +125,13 @@ async def test_create_user(
     print(f"===> ou_auth1  : OU {ou_auth1!r} @ auth {school_auth1.name!r}")
     print(f"===> ou_auth1_2: OU {ou_auth1_2!r} @ auth {school_auth1.name!r}")
     print(f"===> ou_auth2  : OU {ou_auth2!r} @ auth {school_auth2.name!r}")
-    for num, ous in enumerate(
-        ((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)), start=1
-    ):
+    for num, ous in enumerate(((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)), start=1):
         print(f"===> Case {num}/3: Creating user on sender in ous={ous!r}...")
         sender_user: Dict[str, Any] = make_sender_user(ous=ous)
         # verify user on sender system
-        await UserResource(session=kelvin_session(docker_hostname)).get(
-            name=sender_user["name"]
-        )
+        await UserResource(session=kelvin_session(docker_hostname)).get(name=sender_user["name"])
         check_password(sender_user["name"], sender_user["password"], docker_hostname)
-        print(
-            f"Created user {sender_user['name']!r} on sender, looking for it in auth1..."
-        )
+        print(f"Created user {sender_user['name']!r} on sender, looking for it in auth1...")
         user_remote: User = await wait_for_kelvin_object_exists(
             resource_cls=UserResource,
             method="get",
@@ -174,9 +164,7 @@ async def test_create_user(
         else:
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
             with pytest.raises(NoObject):
-                await UserResource(session=kelvin_session(target_ip_2)).get(
-                    name=sender_user["name"]
-                )
+                await UserResource(session=kelvin_session(target_ip_2)).get(name=sender_user["name"])
 
 
 @pytest.mark.asyncio
@@ -216,18 +204,14 @@ async def test_delete_user(
     await save_mapping(mapping)
     print(f"Mapping: {mapping!r}")
     sender_user = make_sender_user(ous=(ou_auth1, ou_auth2))
-    print(
-        f"Created user {sender_user['name']!r} in sender. Looking for it now in auth1..."
-    )
+    print(f"Created user {sender_user['name']!r} in sender. Looking for it now in auth1...")
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
         session=kelvin_session(target_ip_1),
         name=sender_user["name"],
     )
-    print(
-        f"Found user {sender_user['name']!r} in ou_auth1. Looking for it now in auth2..."
-    )
+    print(f"Found user {sender_user['name']!r} in ou_auth1. Looking for it now in auth2...")
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
@@ -316,17 +300,13 @@ async def test_modify_user(
         session=kelvin_session(target_ip_1),
         name=sender_user["name"],
     )
-    check_password(
-        sender_user["name"], sender_user["password"], urlsplit(school_auth1.url).netloc
-    )
+    check_password(sender_user["name"], sender_user["password"], urlsplit(school_auth1.url).netloc)
     # Modify user
     new_value = {
         "firstname": fake.first_name(),
         "lastname": fake.last_name(),
         "disabled": not sender_user["disabled"],
-        "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime(
-            "%Y-%m-%d"
-        ),
+        "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
     }
     response = http_request(
         "patch",
@@ -337,9 +317,9 @@ async def test_modify_user(
     )
     user_on_host: Dict[str, Any] = response.json()
     compare_user(new_value, user_on_host, new_value.keys())
-    user_on_host: User = await UserResource(
-        session=kelvin_session(docker_hostname)
-    ).get(name=sender_user["name"])
+    user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
+    )
     compare_user(new_value, user_on_host.as_dict(), new_value.keys())
     # Check if user was modified on target host
     time.sleep(10)
@@ -376,9 +356,9 @@ async def test_class_change(
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     await save_mapping({ou_auth1: school_auth1.name})
     sender_user = make_sender_user(ous=[ou_auth1])
-    sender_user_kelvin: User = await UserResource(
-        session=kelvin_session(docker_hostname)
-    ).get(name=sender_user["name"])
+    sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
+    )
     assert sender_user_kelvin.school_classes == sender_user["school_classes"]
     print(
         f"1. Created user {sender_user['name']} with school_classes="
@@ -391,9 +371,7 @@ async def test_class_change(
         name=sender_user["name"],
     )
     assert user_auth1.school_classes == sender_user["school_classes"]
-    print(
-        f"2. User was created in auth1 with school_classes={user_auth1.school_classes!r}."
-    )
+    print(f"2. User was created in auth1 with school_classes={user_auth1.school_classes!r}.")
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
     print(f"3. setting new value for school_classes on sender: {new_value!r}")
     response = http_request(
@@ -405,14 +383,11 @@ async def test_class_change(
     )
     school_classes_at_sender = response.json()["school_classes"]
     assert school_classes_at_sender == new_value["school_classes"]
-    sender_user_kelvin: User = await UserResource(
-        session=kelvin_session(docker_hostname)
-    ).get(name=sender_user["name"])
-    assert sender_user_kelvin.school_classes == new_value["school_classes"]
-    print(
-        f"4. User was modified at sender, has now "
-        f"school_classes={school_classes_at_sender!r}."
+    sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
     )
+    assert sender_user_kelvin.school_classes == new_value["school_classes"]
+    print(f"4. User was modified at sender, has now school_classes={school_classes_at_sender!r}.")
     # Check if user was modified on target host
     time.sleep(10)
     remote_user: User = await UserResource(session=kelvin_session(docker_hostname)).get(
@@ -473,9 +448,9 @@ async def test_school_change(
         headers=req_headers(token=host_bb_token, content_type="application/json"),
         json_data=new_value,
     )
-    sender_user_kelvin: User = await UserResource(
-        session=kelvin_session(docker_hostname)
-    ).get(name=sender_user["name"])
+    sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
+    )
     print(
         f"User was modified at sender, has now school={sender_user_kelvin.school!r} "
         f"schools={sender_user_kelvin.schools!r} "

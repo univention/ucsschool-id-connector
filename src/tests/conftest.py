@@ -194,9 +194,7 @@ class UserFactory(factory.Factory):
     full_name = factory.Faker("name")
     disabled = False
     dn = factory.LazyFunction(
-        lambda: f"uid={fake.first_name()},cn=users,"
-        f"dc={fake.first_name()},"
-        f"dc={fake.first_name()}"
+        lambda: f"uid={fake.first_name()},cn=users,dc={fake.first_name()},dc={fake.first_name()}"
     )
     attributes = factory.Dict({"entryUUID": factory.List([factory.Faker("uuid4")])})
 
@@ -212,9 +210,7 @@ class UserPasswordsFactory(factory.Factory):
         ]
     )
     sambaNTPassword = "470A9B46CC8EC53B76D7AEB21B9A9255"
-    krb5Key = factory.LazyFunction(
-        lambda: [fake.password().encode(), fake.password().encode()]
-    )
+    krb5Key = factory.LazyFunction(lambda: [fake.password().encode(), fake.password().encode()])
     krb5KeyVersionNumber = factory.Faker("pyint", min_value=1)
     sambaPwdLastSet = factory.Faker("pyint", min_value=1566029000, max_value=1566029100)
 
@@ -224,17 +220,11 @@ class ListenerObjectFactory(factory.Factory):
         model = ucsschool_id_connector.models.ListenerObject
 
     dn = factory.LazyFunction(
-        lambda: f"uid={fake.first_name()},cn=users,"
-        f"dc={fake.first_name()},"
-        f"dc={fake.first_name()}"
+        lambda: f"uid={fake.first_name()},cn=users,dc={fake.first_name()},dc={fake.first_name()}"
     )
     id = factory.Faker("uuid4")
-    udm_object_type = factory.LazyFunction(
-        lambda: f"{fake.first_name()}/" f"{fake.first_name()}"
-    )
-    action = factory.LazyFunction(
-        lambda: ucsschool_id_connector.models.ListenerActionEnum.add_mod
-    )
+    udm_object_type = factory.LazyFunction(lambda: f"{fake.first_name()}/{fake.first_name()}")
+    action = factory.LazyFunction(lambda: ucsschool_id_connector.models.ListenerActionEnum.add_mod)
 
 
 class ListenerAddModifyObjectFactory(ListenerObjectFactory):
@@ -289,9 +279,7 @@ class School2SchoolAuthorityMappingFactory(factory.Factory):
         model = ucsschool_id_connector.models.School2SchoolAuthorityMapping
 
     mapping = factory.LazyFunction(
-        lambda: dict(
-            (fake.domain_word(), fake.domain_word()) for _ in range(fake.pyint(2, 10))
-        )
+        lambda: dict((fake.domain_word(), fake.domain_word()) for _ in range(fake.pyint(2, 10)))
     )
 
 
@@ -302,19 +290,13 @@ def _listener_dump_user_object(
     options: List[str] = None,
     source_uid: str = None,
 ) -> Dict[str, Any]:
-    base_dn = (
-        base_dn
-        or f"dc={fake.domain_name().split('.')[0]},"
-        f"dc={fake.domain_name().split('.')[-1]}"
-    )
+    base_dn = base_dn or f"dc={fake.domain_name().split('.')[0]},dc={fake.domain_name().split('.')[-1]}"
     ou = ou or fake.domain_word()
     ous = ous or [ou]
     options = options or []
     if "default" not in options:
         options.append("default")
-    if not {"ucsschoolStaff", "ucsschoolStudent", "ucsschoolTeacher"}.intersection(
-        set(options)
-    ):
+    if not {"ucsschoolStaff", "ucsschoolStudent", "ucsschoolTeacher"}.intersection(set(options)):
         options.append("ucsschoolTeacher")
     source_uid = source_uid or "TESTID"
     fn = fake.first_name()
@@ -493,9 +475,7 @@ def mock_plugin_impls(temp_dir_session):
     custom_plugin_path = custom_plugin_dir / f"{custom_plugin_name}.py"
     with open(custom_plugin_path, "w") as fp:
         fp.write(
-            CUSTOM_DUMMY_PLUGIN.format(
-                module_name=custom_module_name, package_name=custom_package_name
-            )
+            CUSTOM_DUMMY_PLUGIN.format(module_name=custom_module_name, package_name=custom_package_name)
         )
     default_plugin_name = fake.pystr(min_chars=5, max_chars=8)
     default_plugin_path = default_plugin_dir / f"{default_plugin_name}.py"
@@ -507,9 +487,7 @@ def mock_plugin_impls(temp_dir_session):
     ucsschool_id_connector.plugins.plugin_manager.unregister("DummyPlugin")
     ucsschool_id_connector.plugins.plugin_manager.unregister("DefaultDummyPlugin")
     default_plugin_path.unlink()
-    for path in (default_plugin_dir / "__pycache__").glob(
-        f"{default_plugin_name}.*.pyc"
-    ):
+    for path in (default_plugin_dir / "__pycache__").glob(f"{default_plugin_name}.*.pyc"):
         path.unlink()
     try:
         (default_plugin_dir / "__pycache__").rmdir()
@@ -558,9 +536,7 @@ def mock_plugins(
 
     with patch.object(
         ucsschool_id_connector.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
-    ), patch.object(
-        ucsschool_id_connector.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs
-    ), patch.object(
+    ), patch.object(ucsschool_id_connector.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs), patch.object(
         ucsschool_id_connector.constants, "OLD_DATA_DB_PATH", db_path
     ), patch(
         "ucsschool_id_connector.ldap_access.LDAPAccess", ldap_access_mock
@@ -584,9 +560,7 @@ def example_user_remove_json_path_real():
 def example_user_json_path_copy(example_user_json_path_real, temp_file_func):
     def _func(temp_dir):
         path_of_copy = temp_file_func(dir=str(temp_dir), suffix=".json")
-        with open(path_of_copy, "w") as fpw, open(
-            example_user_json_path_real, "r"
-        ) as fpr:
+        with open(path_of_copy, "w") as fpw, open(example_user_json_path_real, "r") as fpr:
             fpw.write(fpr.read())
             fpw.flush()
         return path_of_copy
@@ -595,14 +569,10 @@ def example_user_json_path_copy(example_user_json_path_real, temp_file_func):
 
 
 @pytest.fixture
-def example_user_remove_json_path_copy(
-    example_user_remove_json_path_real, temp_file_func
-):
+def example_user_remove_json_path_copy(example_user_remove_json_path_real, temp_file_func):
     def _func(temp_dir):
         path_of_copy = temp_file_func(dir=str(temp_dir), suffix=".json")
-        with open(path_of_copy, "w") as fpw, open(
-            example_user_remove_json_path_real, "r"
-        ) as fpr:
+        with open(path_of_copy, "w") as fpw, open(example_user_remove_json_path_real, "r") as fpr:
             fpw.write(fpr.read())
             fpw.flush()
         return Path(fpw.name)
@@ -612,9 +582,7 @@ def example_user_remove_json_path_copy(
 
 @pytest.fixture(scope="session")
 def compare_dicts():
-    def _func(
-        source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None
-    ):
+    def _func(source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None):
         """
         This function compares two dictionaries. Specifically it checks if all
         key-value pairs from the source also exist in the other dictionary. It

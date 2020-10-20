@@ -83,9 +83,7 @@ class GroupBBDistributionImpl:
 
         bb_school_authorities = self.bb_school_authorities(in_queue)
         if not bb_school_authorities:
-            self.logger.debug(
-                "Ignoring group: no SchoolAuthorityConfiguration for BB-API found."
-            )
+            self.logger.debug("Ignoring group: no SchoolAuthorityConfiguration for BB-API found.")
             return []
 
         group_match = self.class_dn_regex.match(obj.dn)
@@ -103,9 +101,7 @@ class GroupBBDistributionImpl:
             if not dn.startswith("uid="):
                 self.logger.info("Ignoring non-user DN in group %r: %r", group_name, dn)
                 continue
-            self.logger.info(
-                "Adding member of group %r to in-queue: %r...", group_name, dn
-            )
+            self.logger.info("Adding member of group %r to in-queue: %r...", group_name, dn)
             user_dn_parts = parse_dn(dn)
             username = user_dn_parts[0][1]
             await self.user_scheduler.queue_user(username)
@@ -113,9 +109,7 @@ class GroupBBDistributionImpl:
         # group itself, there is never a school authority to send to.
         return []
 
-    def bb_school_authorities(
-        self, in_queue: InQueue
-    ) -> List[SchoolAuthorityConfiguration]:
+    def bb_school_authorities(self, in_queue: InQueue) -> List[SchoolAuthorityConfiguration]:
         return [
             out_queue.school_authority
             for out_queue in in_queue.out_queues

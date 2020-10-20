@@ -62,9 +62,9 @@ class PasswordSync(UserPyHook):
                 )
             )
         self.password_hashes[user.record_uid] = pw_hashes
-        user.udm_properties[
-            "ucsschool_id_connector_last_update"
-        ] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        user.udm_properties["ucsschool_id_connector_last_update"] = datetime.datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
 
     def set_hashes_in_ldap(self, user):
         """
@@ -76,11 +76,7 @@ class PasswordSync(UserPyHook):
             self.logger.warning("No password hashes found for user %s.", user.name)
             return
         if not isinstance(pw_hashes, dict):
-            raise TypeError(
-                "Value of cached password_hashes for user {!r} is not a dict.".format(
-                    user
-                )
-            )
+            raise TypeError("Value of cached password_hashes for user {!r} is not a dict.".format(user))
         ml = []
         old_data = self.lo.get(user.dn, attr=map(str, pw_hashes.keys()))  # no unicode
         for key, value in pw_hashes.items():
@@ -92,9 +88,7 @@ class PasswordSync(UserPyHook):
             if not set(value).issubset(set(old_data.get(key, []))):
                 ml.append((key, old_data.get(key, []), value))
         if self.dry_run:
-            self.logger.info(
-                "(dry-run) would now set password hashes for user %s.", user.name
-            )
+            self.logger.info("(dry-run) would now set password hashes for user %s.", user.name)
         elif not ml:
             self.logger.info("Passwords unchanged for user %s.", user.name)
         else:

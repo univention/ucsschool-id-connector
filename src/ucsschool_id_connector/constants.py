@@ -42,9 +42,7 @@ OLD_DATA_DB_PATH = Path(APP_DATA_BASE_PATH, "old_data_db")
 OUT_QUEUE_TOP_DIR = Path(APP_DATA_BASE_PATH, "out_queues")
 OUT_QUEUE_TRASH_DIR = Path(APP_DATA_BASE_PATH, "out_queues_trash")
 SCHOOL_AUTHORITIES_CONFIG_PATH = Path(APP_CONFIG_BASE_PATH, "school_authorities")
-SCHOOLS_TO_AUTHORITIES_MAPPING_PATH = Path(
-    APP_CONFIG_BASE_PATH, "schools_authorities_mapping.json"
-)
+SCHOOLS_TO_AUTHORITIES_MAPPING_PATH = Path(APP_CONFIG_BASE_PATH, "schools_authorities_mapping.json")
 AUTO_CHECK_INTERVAL = 60
 try:
     # Service.files_preserve doesn't work, so acquiring
@@ -57,9 +55,7 @@ LOG_DIR = Path(f"/var/log/univention/{APP_ID}")
 LOG_FILE_PATH_HTTP = Path(LOG_DIR, "http.log")
 LOG_FILE_PATH_QUEUES = Path(LOG_DIR, "queues.log")
 LOG_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-LOG_ENTRY_DEBUG_FORMAT = (
-    "%(asctime)s %(levelname)-5s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
-)
+LOG_ENTRY_DEBUG_FORMAT = "%(asctime)s %(levelname)-5s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
 LOG_ENTRY_CMDLINE_FORMAT = "%(log_color)s%(levelname)-5s: %(message)s"
 
 RPC_ADDR = "tcp://127.0.0.1:5678"

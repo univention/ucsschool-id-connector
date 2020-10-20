@@ -65,9 +65,7 @@ class SimpleRPCServer:
         self.in_queue = in_queue
         self.out_queues = out_queues
         self.task: Optional[Job] = None
-        self.logger = ConsoleAndFileLogging.get_logger(
-            self.__class__.__name__, LOG_FILE_PATH_QUEUES
-        )
+        self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__, LOG_FILE_PATH_QUEUES)
         context = zmq.asyncio.Context()
         self.socket = context.socket(zmq.REP)
 
@@ -116,9 +114,7 @@ class SimpleRPCServer:
                 request = RPCRequest(**req)
                 response = yield from self.handle_request(request)
             except TypeError:
-                response = RPCResponseModel(
-                    errors=[ErrorWrapper(DictError(), loc=("body",)).dict()]
-                )
+                response = RPCResponseModel(errors=[ErrorWrapper(DictError(), loc=("body",)).dict()])
             except ValidationError as exc:
                 response = RPCResponseModel(errors=exc.errors())
             except (ObjectExistsError, NoObjectError) as exc:
@@ -149,30 +145,20 @@ class SimpleRPCServer:
         try:
             method = getattr(self, request.cmd)
         except AttributeError:
-            raise UnknownRPCCommand(
-                f"Unknown RPC command {request.cmd!r} in request {request!r}."
-            )
+            raise UnknownRPCCommand(f"Unknown RPC command {request.cmd!r} in request {request!r}.")
         return await method(request)
 
-    async def get_school_to_authority_mapping(
-        self, request: RPCRequest
-    ) -> RPCResponseModel:
+    async def get_school_to_authority_mapping(self, request: RPCRequest) -> RPCResponseModel:
         return RPCResponseModel(
-            result=School2SchoolAuthorityMapping(
-                mapping=self.in_queue.school_authority_mapping
-            )
+            result=School2SchoolAuthorityMapping(mapping=self.in_queue.school_authority_mapping)
         )
 
-    async def put_school_to_authority_mapping(
-        self, request: RPCRequest
-    ) -> RPCResponseModel:
+    async def put_school_to_authority_mapping(self, request: RPCRequest) -> RPCResponseModel:
         obj = School2SchoolAuthorityMapping(**request.school_to_authority_mapping)
         await ConfigurationStorage.save_school2target_mapping(obj)
         # update class attribute inplace
         self.in_queue.school_authority_mapping.clear()
-        self.in_queue.school_authority_mapping.update(
-            request.school_to_authority_mapping["mapping"]
-        )
+        self.in_queue.school_authority_mapping.update(request.school_to_authority_mapping["mapping"])
         self.logger.info(
             "School2SchoolAuthorityMapping was updated. New mapping: %r",
             self.in_queue.school_authority_mapping,
@@ -217,10 +203,7 @@ class SimpleRPCServer:
 
         # make sure there is no such queue already
         for out_queue in self.out_queues:
-            if (
-                out_queue.school_authority
-                and out_queue.school_authority.name == school_authority.name
-            ):
+            if out_queue.school_authority and out_queue.school_authority.name == school_authority.name:
                 raise ObjectExistsError(key="name", value=school_authority.name)
 
         # create new school_authority and out queue
@@ -254,18 +237,14 @@ class SimpleRPCServer:
                 self.out_queues.remove(out_queue)
                 await out_queue.stop_task()
                 await out_queue.delete_queue()
-                await ConfigurationStorage.delete_school_authority(
-                    out_queue.school_authority.name
-                )
+                await ConfigurationStorage.delete_school_authority(out_queue.school_authority.name)
                 return RPCResponseModel()
         else:
             raise NoObjectError(key="name", value=request.name)
 
     async def patch_school_authority(self, request: RPCRequest) -> RPCResponseModel:
         name = request.name
-        school_authority_doc = SchoolAuthorityConfigurationPatchDocument(
-            **request.school_authority
-        )
+        school_authority_doc = SchoolAuthorityConfigurationPatchDocument(**request.school_authority)
 
         # find and update school_authority_doc and out queue
         for out_queue in self.out_queues:
@@ -281,9 +260,7 @@ class SimpleRPCServer:
                     value = getattr(school_authority_doc, field)
                     if value is not None:
                         setattr(out_queue.school_authority, field, value)
-                self.logger.info(
-                    "Updated school authority %r.", out_queue.school_authority.name
-                )
+                self.logger.info("Updated school authority %r.", out_queue.school_authority.name)
                 break
         else:
             raise NoObjectError(key="name", value=name)

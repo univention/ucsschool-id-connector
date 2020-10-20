@@ -50,19 +50,13 @@ class DefaultPlugin:
 
     def __init__(self):
         self._user_handler_cache: Dict[str, UserHandler] = dict()
-        self.logger = ConsoleAndFileLogging.get_logger(
-            self.__class__.__name__, LOG_FILE_PATH_QUEUES
-        )
+        self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__, LOG_FILE_PATH_QUEUES)
 
-    def _get_user_handler(
-        self, school_authority: SchoolAuthorityConfiguration
-    ) -> UserHandler:
+    def _get_user_handler(self, school_authority: SchoolAuthorityConfiguration) -> UserHandler:
         if result := self._user_handler_cache.get(school_authority.name):
             return result
         else:
-            self._user_handler_cache[school_authority.name] = UserHandler(
-                school_authority
-            )
+            self._user_handler_cache[school_authority.name] = UserHandler(school_authority)
             return self._user_handler_cache[school_authority.name]
 
     @hook_impl
@@ -71,13 +65,9 @@ class DefaultPlugin:
             await user_handler.shutdown()
 
     @hook_impl
-    async def create_request_kwargs(
-        self, http_method: str, url, school_authority
-    ) -> Dict[Any, Any]:
+    async def create_request_kwargs(self, http_method: str, url, school_authority) -> Dict[Any, Any]:
         result = dict()
-        result["headers"] = {
-            "Authorization": f"Token {school_authority.password.get_secret_value()}"
-        }
+        result["headers"] = {"Authorization": f"Token {school_authority.password.get_secret_value()}"}
         return result
 
     @hook_impl
@@ -94,9 +84,7 @@ class DefaultPlugin:
         return True
 
     @hook_impl
-    async def school_authority_ping(
-        self, school_authority: SchoolAuthorityConfiguration
-    ) -> bool:
+    async def school_authority_ping(self, school_authority: SchoolAuthorityConfiguration) -> bool:
         user_handler = self._get_user_handler(school_authority)
         await user_handler.fetch_roles()
         try:

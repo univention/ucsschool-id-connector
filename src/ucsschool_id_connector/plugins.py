@@ -63,9 +63,7 @@ def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
     for plugin_name in plugins:
         hcallers = [
             hcaller.name
-            for hcaller in plugin_manager.get_hookcallers(
-                plugin_manager.get_plugin(plugin_name)
-            )
+            for hcaller in plugin_manager.get_hookcallers(plugin_manager.get_plugin(plugin_name))
         ]
         all_hcaller_names.update(hcallers)
     if hook_name not in all_hcaller_names:
@@ -185,9 +183,7 @@ class Distribution:
     """
 
     @hook_spec
-    async def school_authorities_to_distribute_to(
-        self, obj: ListenerObject, in_queue
-    ) -> Iterable[str]:
+    async def school_authorities_to_distribute_to(self, obj: ListenerObject, in_queue) -> Iterable[str]:
         """
         Create list of school authorities this object should be sent to.
 
@@ -249,9 +245,7 @@ class Postprocessing:
         """
 
     @hook_spec
-    async def school_authority_ping(
-        self, school_authority: SchoolAuthorityConfiguration
-    ) -> bool:
+    async def school_authority_ping(self, school_authority: SchoolAuthorityConfiguration) -> bool:
         """
         This hook can be defined to implement a connectivity check to the API
         of a school authority.

@@ -58,11 +58,7 @@ from ucsschool_id_connector.models import (
     UserPasswords,
 )
 from ucsschool_id_connector.requests import http_delete, http_get, http_patch, http_post
-from ucsschool_id_connector.utils import (
-    ConsoleAndFileLogging,
-    get_source_uid,
-    school_class_dn_regex,
-)
+from ucsschool_id_connector.utils import ConsoleAndFileLogging, get_source_uid, school_class_dn_regex
 
 BB_API_MAIN_ATTRIBUTES = {
     "name",
@@ -152,8 +148,7 @@ class UserHandler:
         else:
             old_schools = "<no old_data>"
         self.logger.debug(
-            "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) "
-            "source_uid=(%r->%r).",
+            "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) " "source_uid=(%r->%r).",
             obj.username,
             old_schools,
             current_schools,
@@ -163,9 +158,7 @@ class UserHandler:
             obj.source_uid,
         )
         request_body = await self.map_attributes(obj)
-        self.logger.debug(
-            "*** request_body=%r", request_body
-        )  # TODO: remove when stable
+        self.logger.debug("*** request_body=%r", request_body)  # TODO: remove when stable
         await self._do_create_or_update(request_body)
 
     async def handle_has_no_schools(self, obj: ListenerUserAddModifyObject) -> None:
@@ -220,8 +213,7 @@ class UserHandler:
         """Verify that all schools are known by the target system."""
         # update list of school URLs
         if not self._api_schools_cache or (
-            self._api_schools_cache_creation
-            + datetime.timedelta(seconds=API_SCHOOL_CACHE_TTL)
+            self._api_schools_cache_creation + datetime.timedelta(seconds=API_SCHOOL_CACHE_TTL)
             < datetime.datetime.now()
         ):
             self._api_schools_cache.clear()
@@ -238,23 +230,17 @@ class UserHandler:
         # TODO: this should be in a plugin
         if not self.api_roles_cache:
             await self.fetch_roles()
-            self.logger.debug(
-                "Roles known by API server: %s", ", ".join(self.api_roles_cache.keys())
-            )
+            self.logger.debug("Roles known by API server: %s", ", ".join(self.api_roles_cache.keys()))
         try:
             return [self.api_roles_cache[role] for role in roles]
         except KeyError:
-            raise UnknownSchoolUserRole(
-                f"Role(s) unknown on API server: {roles!r}.", roles=roles
-            )
+            raise UnknownSchoolUserRole(f"Role(s) unknown on API server: {roles!r}.", roles=roles)
 
     async def fetch_roles(self) -> None:
         """Fetch all roles from API of school authority."""
         # TODO: this should be in a plugin
         url = f"{self.school_authority.url}/roles/"
-        status, json_resp = await http_get(
-            url, self.school_authority, session=self._session
-        )
+        status, json_resp = await http_get(url, self.school_authority, session=self._session)
         for role in json_resp["results"]:
             self.api_roles_cache[role["name"]] = role["url"]
 
@@ -262,9 +248,7 @@ class UserHandler:
         """Fetch all schools from API of school authority."""
         # TODO: this should be in a plugin
         url = f"{self.school_authority.url}/schools/"
-        status, json_resp = await http_get(
-            url, self.school_authority, session=self._session
-        )
+        status, json_resp = await http_get(url, self.school_authority, session=self._session)
         return dict((school["name"], school["url"]) for school in json_resp["results"])
 
     async def _do_create_or_update(self, data: Dict[str, Any]) -> None:
@@ -276,13 +260,10 @@ class UserHandler:
         }
         if not all(list(params.values())):
             raise MissingData(
-                f"Cannot add/modify user: missing record_uid or source_uid in "
-                f"data: {data!r}."
+                f"Cannot add/modify user: missing record_uid or source_uid in data: {data!r}."
             )
         url = f"{self.school_authority.url}/users/"
-        status, json_resp = await http_get(
-            url, self.school_authority, params, session=self._session
-        )
+        status, json_resp = await http_get(url, self.school_authority, params, session=self._session)
         if json_resp:
             # user exists, modify it
             user_url = json_resp[0]["url"]
@@ -308,20 +289,14 @@ class UserHandler:
             "source_uid": obj.old_data.source_uid or await get_source_uid(),
         }
         if not all(list(params.values())):
-            raise MissingData(
-                f"Cannot remove user: missing record_uid or source_uid in {obj!r}."
-            )
+            raise MissingData(f"Cannot remove user: missing record_uid or source_uid in {obj!r}.")
         url = f"{self.school_authority.url}/users/"
-        status, json_resp = await http_get(
-            url, self.school_authority, params, session=self._session
-        )
+        status, json_resp = await http_get(url, self.school_authority, params, session=self._session)
         if json_resp:
             # user exists, delete it
             user_url = json_resp[0]["url"]
             self.logger.info("User exists at %r.", user_url)
-            status, json_resp = await http_delete(
-                user_url, self.school_authority, session=self._session
-            )
+            status, json_resp = await http_delete(user_url, self.school_authority, session=self._session)
             if status == 204:
                 self.logger.info("User deleted (status: %r): %r", status, json_resp)
             else:
@@ -336,10 +311,7 @@ class UserHandler:
         res = {}
         # set attributes configured in mapping
         for key_here, key_there in self.school_authority.mapping.items():
-            if (
-                key_here == "password"
-                and self.school_authority.passwords_target_attribute
-            ):
+            if key_here == "password" and self.school_authority.passwords_target_attribute:
                 self.logger.warning(
                     "'passwords_target_attribute' is set, please remove 'password' "
                     "from 'mapping'. Not sending value for 'password'."
@@ -349,9 +321,7 @@ class UserHandler:
             _handle_attr_method_name = f"_handle_attr_{key_here}"
             if hasattr(self, _handle_attr_method_name):
                 # handling of special attributes: try using a _handle_attr_* method
-                meth: Callable[[ListenerAddModifyObject], Any] = getattr(
-                    self, _handle_attr_method_name
-                )
+                meth: Callable[[ListenerAddModifyObject], Any] = getattr(self, _handle_attr_method_name)
                 value_here = await meth(obj)
             else:
                 # no such method, use value from listener file directly
@@ -400,9 +370,7 @@ class UserHandler:
         """
         # TODO: this should be in a plugin
         try:
-            bb_api_roles = (
-                self.school_role_to_bb_api_role[role] for role in obj.school_user_roles
-            )
+            bb_api_roles = (self.school_role_to_bb_api_role[role] for role in obj.school_user_roles)
         except KeyError:
             raise UnknownSchoolUserRole(
                 f"Role unknown in internal mapping: {obj.school_user_roles!r}.",
@@ -420,13 +388,10 @@ class UserHandler:
             try:
                 return api_schools_cache[school]
             except KeyError:
-                self.logger.warning(
-                    "Ignoring unknown OU %r in 'school[s]' of %r.", school, obj
-                )
+                self.logger.warning("Ignoring unknown OU %r in 'school[s]' of %r.", school, obj)
         else:
             raise UnknownSchool(
-                f"None of the users schools ({schools!r}) are known on the "
-                f"target server.",
+                f"None of the users schools ({schools!r}) are known on the target server.",
                 school=obj.school,
             )
 
@@ -442,15 +407,12 @@ class UserHandler:
             try:
                 res.append(api_schools_cache[school])
             except KeyError:
-                self.logger.warning(
-                    "Ignoring unknown OU %r in 'school[s]' of %r.", school, obj
-                )
+                self.logger.warning("Ignoring unknown OU %r in 'school[s]' of %r.", school, obj)
         if res:
             return res
         else:
             raise UnknownSchool(
-                f"None of the users schools ({schools!r}) are known on the "
-                f"target server.",
+                f"None of the users schools ({schools!r}) are known on the target server.",
                 school=obj.school,
             )
 
@@ -524,6 +486,4 @@ class UserScheduler:
             self.logger.info("Adding user to in-queue: %r.", user.dn)
             await self.write_listener_file(user)
         else:
-            self.logger.error(
-                "No school user with username %r could be found.", username
-            )
+            self.logger.error("No school user with username %r could be found.", username)
