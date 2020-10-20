@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.1.0
+    rev: v3.2.0
     hooks:
     -   id: check-added-large-files
     -   id: check-ast
@@ -13,7 +13,7 @@ repos:
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
 -   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.5.1
+    rev: v1.6.0
     hooks:
     -   id: python-check-blanket-noqa
     -   id: python-no-eval
@@ -38,7 +38,7 @@ repos:
 #    -   id: shell-lint
 #        args: [--format=json]
 -   repo: https://github.com/asottile/seed-isort-config
-    rev: v2.1.1
+    rev: v2.2.0
     hooks:
     -   id: seed-isort-config
         args: [--application-directories, src]
@@ -59,7 +59,7 @@ repos:
 #    -   id: dockerfilelint
 #        stages: [commit]
 -   repo: https://gitlab.com/PyCQA/flake8
-    rev: 3.8.2
+    rev: 3.8.4
     hooks:
     -   id: flake8
 -   repo: https://github.com/PyCQA/bandit
