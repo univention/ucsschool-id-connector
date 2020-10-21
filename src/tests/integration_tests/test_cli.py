@@ -34,15 +34,6 @@ import pytest
 from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.constants import SCHOOL_AUTHORITIES_CONFIG_PATH
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
-from ucsschool_id_connector.utils import get_app_version
-
-
-def test_version():
-    process = subprocess.Popen(
-        ["python3", "-m", "ucsschool_id_connector", "version"], stdout=subprocess.PIPE
-    )
-    stdout, stderr = process.communicate()
-    assert stdout.decode().strip() == get_app_version()
 
 
 @pytest.mark.asyncio

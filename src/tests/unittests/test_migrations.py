@@ -56,7 +56,6 @@ async def test_migrate_school_authority_configuration_to_plugins(
     old_config["postprocessing_plugins"] = ["default"]
 
     ori_path: Path = temp_file_func(suffix=".json")
-    # old_config["name"] = ori_path.stem
     with open(ori_path, "w") as fp:
         json.dump(
             old_config,
