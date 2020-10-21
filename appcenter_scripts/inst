@@ -43,7 +43,7 @@ TOKEN_SIGN_SECRET_FILE="/var/lib/univention-appcenter/apps/$APP_ID/conf/tokens.s
 . /usr/share/univention-appcenter/joinscripthelper.sh || exit 1
 
 
-main () {
+create_token_sign_secret_file () {
     if ! [ -e "$TOKEN_SIGN_SECRET_FILE" ]; then
         echo "Storing token key in $TOKEN_SIGN_SECRET_FILE."
         touch "$TOKEN_SIGN_SECRET_FILE"
@@ -55,7 +55,9 @@ main () {
     else
         echo "Using existing token key."
     fi
+}
 
+create_id_connector_admin_group () {
 	univention-directory-manager groups/group create "$@" --ignore_exists \
 		--position "cn=groups,$ldap_base" \
 		--set name="$ADMIN_GROUP" \
@@ -67,7 +69,8 @@ joinscript_init
 
 eval $(ucr shell ldap/base)
 
-main "$@"
+create_token_sign_secret_file "$@"
+create_id_connector_admin_group "$@"
 
 joinscript_save_current_version
 exit $?
