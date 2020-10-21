@@ -51,6 +51,10 @@ class SchoolMappingLoadingError(Exception):
     pass
 
 
+class SchoolAuthorityConfigurationLoadingError(Exception):
+    pass
+
+
 class ConfigurationStorage:
     logger: logging.Logger = lazy_object_proxy.Proxy(
         lambda: ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_QUEUES)
@@ -142,6 +146,8 @@ class ConfigurationStorage:
     async def load_school2target_mapping(
         cls, path: Path = SCHOOLS_TO_AUTHORITIES_MAPPING_PATH
     ) -> School2SchoolAuthorityMapping:
+        """May raise SchoolMappingLoadingError."""
+        cls.logger.debug("Loading school to authorities mapping configuration %r...", str(path))
         cls.mkdir_p(path.parent)
         if not path.exists():
             return School2SchoolAuthorityMapping(mapping={})

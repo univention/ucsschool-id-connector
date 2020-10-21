@@ -40,7 +40,11 @@ from typing import List
 import aiojobs
 from service import Service
 
-from ucsschool_id_connector.config_storage import ConfigurationStorage
+from ucsschool_id_connector.config_storage import (
+    ConfigurationStorage,
+    SchoolAuthorityConfigurationLoadingError,
+    SchoolMappingLoadingError,
+)
 from ucsschool_id_connector.constants import LOG_FILE_PATH_QUEUES, RPC_ADDR, SERVICE_NAME
 from ucsschool_id_connector.plugin_loader import load_plugins
 from ucsschool_id_connector.plugins import plugin_manager
@@ -66,7 +70,13 @@ class IDConnectorService(Service):
 
     async def manage_queues(self) -> None:
         load_plugins()
-        await InQueue.load_school_authority_mapping()
+        try:
+            await InQueue.load_school_authority_mapping()
+        except SchoolMappingLoadingError as exc:
+            self.logger.fatal("Configuration error, aborting: %s", exc)
+            await self.shutdown()
+            return
+
         self.logger.info(
             "Loaded school to school authority mapping:\n%s",
             pprint.pformat(InQueue.school_authority_mapping),
@@ -74,10 +84,15 @@ class IDConnectorService(Service):
         scheduler = await aiojobs.create_scheduler()
         InQueue.scheduler = scheduler
         OutQueue.scheduler = scheduler
-        self.out_queues = [
-            OutQueue.from_school_authority(school_authority)
-            async for school_authority in ConfigurationStorage.load_school_authorities()
-        ]
+        try:
+            self.out_queues = [
+                OutQueue.from_school_authority(school_authority)
+                async for school_authority in ConfigurationStorage.load_school_authorities()
+            ]
+        except SchoolAuthorityConfigurationLoadingError:
+            self.logger.fatal("Configuration error, aborting.")
+            await self.shutdown(scheduler)
+            return
         self.out_queues.sort(key=lambda x: x.name)
         out_queue_dirs = [q.path for q in self.out_queues]
         abandoned_out_queue_dirs = [
@@ -112,8 +127,12 @@ class IDConnectorService(Service):
         self.logger.info("Sleeping until shutdown is requested (SIGTERM).")
         while not self.got_sigterm():  # sleep until SIGTERM
             await asyncio.sleep(1)
-        self.logger.info("Shutting down all running tasks...")
-        await scheduler.close()
+        await self.shutdown(scheduler)
+
+    async def shutdown(self, scheduler: aiojobs.Scheduler = None):
+        if scheduler:
+            self.logger.info("Shutting down all running tasks...")
+            await scheduler.close()
         self.logger.info("Closing cache and DB connections...")
         await close_ucr_cache()
         self.logger.info("Shutting down all outgoing connections...")

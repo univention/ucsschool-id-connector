@@ -136,6 +136,7 @@ class FileQueue:
 
     @classmethod
     async def load_school_authority_mapping(cls) -> Dict[str, str]:
+        """May raise SchoolMappingLoadingError."""
         mapping_obj = await ConfigurationStorage.load_school2target_mapping()
         cls.school_authority_mapping.clear()
         cls.school_authority_mapping.update(mapping_obj.mapping)
