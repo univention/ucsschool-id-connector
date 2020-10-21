@@ -46,6 +46,8 @@ hook_impl = pluggy.HookimplMarker(PLUGIN_NAMESPACE)
 hook_spec = pluggy.HookspecMarker(PLUGIN_NAMESPACE)
 plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
+DEFAULT_PLUGIN = "bb"
+
 
 def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
     """
@@ -67,7 +69,7 @@ def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
         ]
         all_hcaller_names.update(hcallers)
     if hook_name not in all_hcaller_names:
-        plugins = ["default"]
+        plugins = [DEFAULT_PLUGIN]
     plugins_to_remove = [
         plugin
         for plugin in plugin_manager.get_plugins()
