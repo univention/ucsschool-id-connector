@@ -157,7 +157,11 @@ class UserHandler:
             obj.old_data.source_uid if obj.old_data else "<no old_data>",
             obj.source_uid,
         )
-        request_body = await self.map_attributes(obj)
+        try:
+            request_body = await self.map_attributes(obj)
+        except Exception as exc:
+            self.logger.exception("Mapping attributes: %s", exc)
+            raise
         self.logger.debug("*** request_body=%r", request_body)  # TODO: remove when stable
         await self._do_create_or_update(request_body)
 
@@ -311,7 +315,9 @@ class UserHandler:
         res = {}
         # set attributes configured in mapping
         for key_here, key_there in self.school_authority.mapping.items():
-            if key_here == "password" and self.school_authority.passwords_target_attribute:
+            if key_here == "password" and self.school_authority.plugin_configs["bb"].get(
+                "passwords_target_attribute"
+            ):
                 self.logger.warning(
                     "'passwords_target_attribute' is set, please remove 'password' "
                     "from 'mapping'. Not sending value for 'password'."
@@ -339,13 +345,16 @@ class UserHandler:
 
         if isinstance(obj, ListenerUserAddModifyObject):
             # set password hashes
-            if self.school_authority.passwords_target_attribute and obj.user_passwords:
+            if (
+                self.school_authority.plugin_configs["bb"].get("passwords_target_attribute")
+                and obj.user_passwords
+            ):
                 pw_hashes = obj.user_passwords.dict()
                 # hashes are already base64 encoded by inqueue->prepare->save
                 # but have been made bytes by the pydantic Model definition
                 pw_hashes["krb5Key"] = [k.decode("ascii") for k in pw_hashes["krb5Key"]]
                 res.setdefault("udm_properties", {})[
-                    self.school_authority.passwords_target_attribute
+                    self.school_authority.plugin_configs["bb"]["passwords_target_attribute"]
                 ] = pw_hashes
 
         return res
