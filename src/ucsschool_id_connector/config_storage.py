@@ -60,13 +60,9 @@ class ConfigurationStorage:
     async def load_school_authorities(
         cls,
     ) -> AsyncIterator[SchoolAuthorityConfiguration]:
-        cls.logger.debug(
-            "Looking for configuration in %s...", SCHOOL_AUTHORITIES_CONFIG_PATH
-        )
+        cls.logger.debug("Looking for configuration in %s...", SCHOOL_AUTHORITIES_CONFIG_PATH)
         cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
-        with cast(
-            Iterator[os.DirEntry], os.scandir(SCHOOL_AUTHORITIES_CONFIG_PATH)
-        ) as dir_entries:
+        with cast(Iterator[os.DirEntry], os.scandir(SCHOOL_AUTHORITIES_CONFIG_PATH)) as dir_entries:
             for entry in dir_entries:
                 if not entry.is_file() or not entry.name.lower().endswith(".json"):
                     cls.logger.warning(
@@ -87,9 +83,7 @@ class ConfigurationStorage:
                     )
                     yield school_authority
                 except (IOError, OSError, ValueError, ValidationError) as exc:
-                    cls.logger.error(
-                        "Error loading configuration file %r: %s", entry.path, exc
-                    )
+                    cls.logger.error("Error loading configuration file %r: %s", entry.path, exc)
                     continue
 
     @classmethod
