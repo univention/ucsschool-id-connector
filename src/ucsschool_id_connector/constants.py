@@ -77,6 +77,7 @@ MACHINE_PASSWORD_FILE = "/etc/machine.secret"  # nosec
 HTTP_CLIENT_TIMEOUT = 60
 HISTORY_FILE = "HISTORY.html"
 README_FILE = "README.html"
+RPC_CLIENT_TIMEOUT = 5000  # ms
 PLUGIN_NAMESPACE = "ucsschool_id_connector"
 PLUGIN_PACKAGE_DIRS = (
     APP_SRC_PATH / "plugins/packages",

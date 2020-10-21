@@ -52,7 +52,15 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from .constants import HISTORY_FILE, LOG_FILE_PATH_HTTP, README_FILE, RPC_ADDR, TOKEN_URL, URL_PREFIX
+from .constants import (
+    HISTORY_FILE,
+    LOG_FILE_PATH_HTTP,
+    README_FILE,
+    RPC_ADDR,
+    RPC_CLIENT_TIMEOUT,
+    TOKEN_URL,
+    URL_PREFIX,
+)
 from .ldap_access import LDAPAccess
 from .models import (
     AllQueues,
@@ -229,9 +237,16 @@ def query_service(
     request = RPCRequest(**request_kwargs)
     # logger.debug("Querying queue daemon: %r", request.dict())
     socket = zmq_context.socket(zmq.REQ)
+    socket.RCVTIMEO = RPC_CLIENT_TIMEOUT
     socket.connect(RPC_ADDR)
     yield from socket.send_string(request.json())
-    response = yield from socket.recv_string()
+    try:
+        response = yield from socket.recv_string()
+    except zmq.error.ZMQError as exc:
+        get_logger().fatal("Error waiting for response from RPC server: %s", exc)
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="No/Bad response from connector."
+        )
     # logger.debug("Received response: %r", response)
     return ujson.loads(response)
 
