@@ -135,7 +135,6 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
         config = {
             "name": f"auth{auth_nr}",
             "url": f"https://{ip}/api-bb/",
-            "password": password,
             "mapping": {
                 "firstname": "firstname",
                 "lastname": "lastname",
@@ -155,6 +154,12 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
                 "userexpiry": "userexpiry",
                 "phone": "phone",
                 "ucsschoolRecordUID": "record_uid",
+            },
+            "plugin_configs": {
+                "bb": {
+                    "token": password,
+                    "passwords_target_attribute": "ucsschool_id_connector_pw",
+                },
             },
         }
         return config
@@ -311,15 +316,18 @@ async def make_school_authority(
     )
 
     async def _make_school_authority(
-        name: str, url: UrlStr, password: str, mapping: Dict[str, Any]
+        name: str,
+        url: UrlStr,
+        mapping: Dict[str, Any],
+        plugin_configs: Dict[str, Dict[str, Any]],
     ) -> SchoolAuthorityConfiguration:
         """
         Creates and saves a school authority
 
         :param name: The school authorities name
         :param url: The url for the school authorities endpoint
-        :param password: The secret to access the school authorities endpoint
         :param mapping: The school authorities mapping
+        :param plugin_configs: configuration of plugins
         :return: A saved school authority
         """
         # try to delete possible leftovers from previous failed test
@@ -333,12 +341,13 @@ async def make_school_authority(
         school_authority = school_authority_configuration(
             name=name,
             url=url,
-            password=password,
             mapping=mapping,
-            password_target_attribute="ucsschool_id_connector_pw",
+            plugin_configs=plugin_configs,
         )
         config_as_dict = school_authority.dict()
-        config_as_dict["password"] = school_authority.password.get_secret_value()
+        config_as_dict["plugin_configs"]["bb"]["token"] = school_authority.plugin_configs["bb"][
+            "token"
+        ].get_secret_value()
         url = ucsschool_id_connector_api_url("school_authorities")
         http_request(
             "post",
@@ -348,7 +357,11 @@ async def make_school_authority(
             expected_statuses=(201,),
         )
         async for loaded_s_a in ConfigurationStorage.load_school_authorities():
-            if loaded_s_a.name == name and loaded_s_a.password.get_secret_value() == password:
+            if (
+                loaded_s_a.name == name
+                and loaded_s_a.plugin_configs["bb"]["token"].get_secret_value()
+                == plugin_configs["bb"]["token"]
+            ):
                 break
         else:
             raise AssertionError(
@@ -496,7 +509,7 @@ def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_
                     "get",
                     bb_api_url(auth.url, "schools", ou),
                     headers=req_headers(
-                        token=auth.password.get_secret_value(),
+                        token=auth.plugin_configs["bb"]["token"].get_secret_value(),
                         content_type="application/json",
                     ),
                     expected_statuses=(200, 404),
@@ -509,7 +522,7 @@ def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_
                         "post",
                         url,
                         headers=req_headers(
-                            token=auth.password.get_secret_value(),
+                            token=auth.plugin_configs["bb"]["token"].get_secret_value(),
                             content_type="application/json",
                         ),
                         json_data={"name": ou, "display_name": ou},
@@ -519,7 +532,7 @@ def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_
                         "get",
                         bb_api_url(auth.url, "schools", ou),
                         headers=req_headers(
-                            token=auth.password.get_secret_value(),
+                            token=auth.plugin_configs["bb"]["token"].get_secret_value(),
                             content_type="application/json",
                         ),
                     )

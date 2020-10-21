@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import json
 import logging
 from unittest.mock import patch
 
@@ -123,17 +124,20 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
             "name": random_name(),
             "active": bool(random_int(0, 1)),
             "url": f"http://{random_name()}.{random_name()}/",
-            "password": random_name(),
             "mapping": {random_name(): random_name()},
-            "passwords_target_attribute": random_name(),
-            "plugins": ["default"],
+            "plugins": ["bb"],
+            "plugin_configs": {
+                "bb": {"token": "foo", "passwords_target_attribute": random_name()},
+            },
         },
         {
             "name": random_name(),
             "active": bool(random_int(0, 1)),
             "url": f"http://{random_name()}.{random_name()}/",
-            "password": random_name(),
-            "plugins": ["default"],
+            "plugins": ["bb"],
+            "plugin_configs": {
+                "bb": {"token": "foo"},
+            },
         },
     ]
     socket = zmq_socket({"result": school_authority_data})
@@ -151,14 +155,13 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
         ).json()
     )
     for data in school_authority_data:
-        data["password"] = SecretStr("foo").display()  # '**********'
         if "mapping" not in data:
             data["mapping"] = {}
-        if "passwords_target_attribute" not in data:
-            data["passwords_target_attribute"] = None
+        data["plugin_configs"]["bb"]["token"] = SecretStr("foo").display()  # '**********'
     assert res.status_code == 200
+    res_json = res.json()
     school_authority_data.sort(key=lambda x: x["name"])
-    assert res.json() == school_authority_data
+    assert res_json == school_authority_data
 
 
 @patch("ucsschool_id_connector.http_api.zmq_context")
@@ -167,10 +170,9 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         "name": random_name(),
         "active": bool(random_int(0, 1)),
         "url": f"http://{random_name()}.{random_name()}/",
-        "password": random_name(),
         "mapping": {random_name(): random_name()},
-        "passwords_target_attribute": random_name(),
-        "plugins": ["default"],
+        "plugins": ["bb"],
+        "plugin_configs": {"bb": {"token": random_name(), "passwords_target_attribute": random_name()}},
     }
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
@@ -189,7 +191,7 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         ).json()
     )
     assert res.status_code == 200
-    school_authority_data["password"] = SecretStr("foo").display()  # '**********'
+    school_authority_data["plugin_configs"]["bb"]["token"] = SecretStr("foo").display()  # '**********'
     assert res.json() == school_authority_data
 
 
@@ -200,11 +202,10 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
     school_authority_data = {
         "name": random_name(),
         "url": f"http://{random_name()}.{random_name()}/",
-        "password": random_name(),
         "active": bool(random_int(0, 1)),
         "mapping": {random_name(): random_name()},
-        "passwords_target_attribute": random_name(),
-        "plugins": ["default"],
+        "plugins": ["bb"],
+        "plugin_configs": {"bb": {"token": random_name(), "passwords_target_attribute": random_name()}},
     }
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
@@ -216,14 +217,16 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
         timeout=4.0,
         headers={"Authorization": "Bearer TODO da token"},
     )
-    socket.send_string.assert_called_with(
-        ucsschool_id_connector.models.RPCRequest(
-            cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority,
-            school_authority=school_authority_data,
-        ).json()
-    )
+    args, kwargs = socket.send_string.call_args_list[0]
+    call_kargs = json.loads(args[0])
+    req_str = ucsschool_id_connector.models.RPCRequest(
+        cmd=ucsschool_id_connector.models.RPCCommand.create_school_authority,
+        school_authority=school_authority_data,
+    ).json()
+    req_obj = json.loads(req_str)
+    assert call_kargs == req_obj
     assert res.status_code == 201
-    school_authority_data["password"] = SecretStr("foo").display()  # '**********'
+    school_authority_data["plugin_configs"]["bb"]["token"] = SecretStr("foo").display()  # '**********'
     assert res.json() == school_authority_data
 
 

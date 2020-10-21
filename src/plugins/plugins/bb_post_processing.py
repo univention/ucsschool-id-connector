@@ -41,7 +41,7 @@ from ucsschool_id_connector.user_handler import UserHandler
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
-class DefaultPlugin:
+class BBPostprocessingPlugin:
     """
     This is the default implementation of the Postprocessing hooks. Currently
     it is targeting the BB-API.
@@ -61,13 +61,17 @@ class DefaultPlugin:
 
     @hook_impl
     async def shutdown(self) -> None:
+        """Impl for PreProcessing, not Postprocessing, but doesn't matter to pluggy."""
         for user_handler in self._user_handler_cache.values():
             await user_handler.shutdown()
 
     @hook_impl
     async def create_request_kwargs(self, http_method: str, url, school_authority) -> Dict[Any, Any]:
         result = dict()
-        result["headers"] = {"Authorization": f"Token {school_authority.password.get_secret_value()}"}
+        result["headers"] = {
+            "Authorization": f"Token "
+            f"{school_authority.plugin_configs['bb']['token'].get_secret_value()}"
+        }
         return result
 
     @hook_impl
@@ -110,4 +114,4 @@ class DefaultPlugin:
         return True
 
 
-plugin_manager.register(DefaultPlugin(), "default")
+plugin_manager.register(BBPostprocessingPlugin(), "bb")
