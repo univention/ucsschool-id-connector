@@ -1,7 +1,6 @@
 {
   "name": "Traeger1",
   "url": "https://10.200.3.241/api-bb/",
-  "password": "a827ea2e0b1363d2e72a6067775db5ec884dc77f",
   "active": true,
   "mapping": {
     "firstname": "firstname",
@@ -22,5 +21,10 @@
     "phone": "phone",
     "ucsschoolRecordUID": "record_uid"
   },
-  "passwords_target_attribute": "ucsschool_id_connector_pw"
+  "plugin_configs": {
+    "bb": {
+      "token": "a827ea2e0b1363d2e72a6067775db5ec884dc77f",
+      "passwords_target_attribute": "ucsschool_id_connector_pw"
+    }
+  }
 }

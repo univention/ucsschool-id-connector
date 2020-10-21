@@ -42,6 +42,7 @@ import factory
 import pytest
 import ujson
 from faker import Faker
+from pydantic import SecretStr
 
 import ucsschool_id_connector.constants
 import ucsschool_id_connector.models
@@ -96,6 +97,11 @@ class ExampleTestClass:
         )
         return arg1 + arg2
 """
+
+
+@pytest.fixture(scope="session")
+def faker_obj() -> Faker:
+    return fake
 
 
 @pytest.fixture
@@ -162,6 +168,33 @@ def temp_file_func():
             tf.unlink()
         except FileNotFoundError:
             pass
+
+
+@pytest.fixture
+def temp_clear_dir():
+    """Temporarily clear a directory by moving its content away and later back."""
+    ori_tmp_paths = []
+
+    def _func(path: Path) -> None:
+        temp_dir = path.parent / fake.user_name()
+        ori_tmp_paths.append((path, temp_dir))
+        temp_dir.mkdir()
+        print(f"Temporarily moving content of '{path!s}' to '{temp_dir!s}'.")
+        for p in os.listdir(path):
+            shutil.move(os.path.join(path, p), temp_dir)
+
+    yield _func
+
+    for path, temp_dir in ori_tmp_paths:
+        for p in os.listdir(path):
+            pp = Path(path, p)
+            if pp.is_dir():
+                shutil.rmtree(pp)
+            else:
+                pp.unlink()
+        for p in os.listdir(temp_dir):
+            shutil.move(os.path.join(temp_dir, p), path)
+        temp_dir.rmdir()
 
 
 # Monkey patch get_logger() for the whole test session
@@ -255,8 +288,7 @@ class SchoolAuthorityConfigurationFactory(factory.Factory):
 
     name = factory.Faker("first_name")
     active = factory.LazyFunction(lambda: True)
-    url = factory.Faker("uri")
-    password = factory.Faker("password")
+    url = factory.LazyFunction(lambda: f"https://{fake.hostname()}/api-bb/")
     mapping = factory.Dict(
         {
             "firstname": "firstname",
@@ -271,7 +303,17 @@ class SchoolAuthorityConfigurationFactory(factory.Factory):
             "ucsschoolRecordUID": "record_uid",
         }
     )
-    passwords_target_attribute = "ucsschool_id_connector_pw"
+    plugins = ["bb"]
+    plugin_configs = factory.Dict(
+        {
+            "bb": factory.Dict(
+                {
+                    "token": factory.LazyFunction(lambda: SecretStr(fake.password())),
+                    "passwords_target_attribute": "ucsschool_id_connector_pw",
+                }
+            )
+        }
+    )
 
 
 class School2SchoolAuthorityMappingFactory(factory.Factory):

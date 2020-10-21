@@ -32,10 +32,13 @@ import base64
 import logging
 import re
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Type, Union
 
 import lazy_object_proxy
 from pydantic import BaseModel, PydanticValueError, SecretStr, UrlStr, validator
+
+if TYPE_CHECKING:  # pragma: no cover
+    from pydantic.main import Model
 
 from .utils import ConsoleAndFileLogging
 
@@ -330,16 +333,40 @@ class SchoolAuthorityConfiguration(BaseModel):
     """(de)activate sending updates to this school authority"""
     url: UrlStr
     """target HTTP API URL"""
-    password: SecretStr
-    """password/token to access the target HTTP API"""
-    mapping: Dict[str, Any] = {}
+    mapping: Dict[str, str] = {}
     """mapping from attribute names on the source system to attribute names on
      the target system"""
-    passwords_target_attribute: str = None
-    """attribute on the target system to write password hashes object to"""
-    plugins: List[str] = ["default"]
+    plugins: List[str] = ["bb"]
     """the plugins that should be executed for this specific school
     authority during handling in the out queue"""
+    plugin_configs: Dict[str, Dict[str, Any]]
+    """Plugin specific configurations,
+    e.g. {
+        "kelvin": {"username": "..", "password": "..", "passwords_target_attribute": ".."},
+        "bb": {"token": "...", "passwords_target_attribute": ".."},
+    }
+    Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
+    """
+
+    def __init__(self, **data: Any) -> None:
+        super(SchoolAuthorityConfiguration, self).__init__(**data)
+        # when passed into a HTTP resource, parse_obj() is not called
+        self.password_to_secret_str(self)
+
+    @staticmethod
+    def password_to_secret_str(
+        obj: Union["SchoolAuthorityConfiguration", "SchoolAuthorityConfigurationPatchDocument"]
+    ):
+        for plugin_config in obj.plugin_configs.values():
+            for key in plugin_config.keys():
+                if key in ("key", "password", "token") and not isinstance(plugin_config[key], SecretStr):
+                    plugin_config[key] = SecretStr(plugin_config[key])
+
+    @classmethod
+    def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
+        res: SchoolAuthorityConfiguration = super(SchoolAuthorityConfiguration, cls).parse_obj(obj)
+        cls.password_to_secret_str(res)
+        return res
 
 
 class SchoolAuthorityConfigurationPatchDocument(BaseModel):
@@ -347,16 +374,33 @@ class SchoolAuthorityConfigurationPatchDocument(BaseModel):
     """(de)activate sending updates to this school authority"""
     url: UrlStr = None
     """target HTTP API URL"""
-    password: SecretStr = None
-    """password/token to access the target HTTP API"""
     mapping: Dict[str, Any] = None
     """mapping from attribute names on the source system to attribute names on
     the target system"""
-    passwords_target_attribute: str = None
-    """attribute on the target system to write password hashes object to"""
     plugins: List[str] = None
     """the plugins that should be executed for this specific school
     authority during handling in the out queue"""
+    plugin_configs: Dict[str, Dict[str, Any]]
+    """Plugin specific configurations,
+    e.g. {
+        "kelvin": {"username": "..", "password": "..", "passwords_target_attribute": ".."},
+        "bb": {"token": "...", "passwords_target_attribute": ".."},
+    }
+    Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
+    """
+
+    def __init__(self, **data: Any) -> None:
+        super(SchoolAuthorityConfigurationPatchDocument, self).__init__(**data)
+        # when passed into a HTTP resource, parse_obj() is not called
+        SchoolAuthorityConfiguration.password_to_secret_str(self)
+
+    @classmethod
+    def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
+        res: SchoolAuthorityConfigurationPatchDocument = super(
+            SchoolAuthorityConfigurationPatchDocument, cls
+        ).parse_obj(obj)
+        SchoolAuthorityConfiguration.password_to_secret_str(res)
+        return res
 
 
 class School2SchoolAuthorityMapping(BaseModel):

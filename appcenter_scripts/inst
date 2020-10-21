@@ -33,7 +33,7 @@
 #  Join script that runs on the docker host.
 #
 
-VERSION=1
+VERSION=2
 
 APP_ID="ucsschool-id-connector"
 ADMIN_GROUP="$APP_ID-admins"
@@ -65,12 +65,21 @@ create_id_connector_admin_group () {
 		--append "users=uid=Administrator,cn=users,$ldap_base" || die
 }
 
+migrate_school_authority_configurations_to_plugins() {
+  echo "Migrating school authority configuration files..."
+  univention-app shell "$APP_ID" /usr/bin/python3 -m ucsschool_id_connector migrate-school-authority-configurations || die
+}
+
 joinscript_init
 
 eval $(ucr shell ldap/base)
 
 create_token_sign_secret_file "$@"
 create_id_connector_admin_group "$@"
+
+if [ $JS_LAST_EXECUTED_VERSION -lt 2 ] ; then
+  migrate_school_authority_configurations_to_plugins
+fi
 
 joinscript_save_current_version
 exit $?

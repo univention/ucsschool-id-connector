@@ -53,6 +53,7 @@ except PermissionError:
     DOCKER_LOG_FD = open("/proc/self/fd/2", "w")
 LOG_DIR = Path(f"/var/log/univention/{APP_ID}")
 LOG_FILE_PATH_HTTP = Path(LOG_DIR, "http.log")
+LOG_FILE_PATH_MIGRATION = Path(LOG_DIR, "migration.log")
 LOG_FILE_PATH_QUEUES = Path(LOG_DIR, "queues.log")
 LOG_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 LOG_ENTRY_DEBUG_FORMAT = "%(asctime)s %(levelname)-5s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"

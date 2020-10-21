@@ -57,12 +57,11 @@ class ConfigurationStorage:
     )
 
     @classmethod
-    async def load_school_authorities(
-        cls,
-    ) -> AsyncIterator[SchoolAuthorityConfiguration]:
+    def school_authority_config_files(cls) -> Iterator[Path]:
         cls.logger.debug("Looking for configuration in %s...", SCHOOL_AUTHORITIES_CONFIG_PATH)
         cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
-        with cast(Iterator[os.DirEntry], os.scandir(SCHOOL_AUTHORITIES_CONFIG_PATH)) as dir_entries:
+        with os.scandir(SCHOOL_AUTHORITIES_CONFIG_PATH) as dir_entries:
+            dir_entries = cast(Iterator[os.DirEntry], dir_entries)
             for entry in dir_entries:
                 if not entry.is_file() or not entry.name.lower().endswith(".json"):
                     cls.logger.warning(
@@ -71,20 +70,34 @@ class ConfigurationStorage:
                         entry.name,
                     )
                     continue
-                cls.logger.debug("Loading configuration %r...", entry.name)
-                try:
-                    async with aiofiles.open(entry.path, "r") as fp:
-                        obj = ujson.loads(await fp.read())
-                    school_authority = SchoolAuthorityConfiguration.parse_obj(obj)
-                    school_authority.url.rstrip("/")
-                    cls.logger.info(
-                        "Loaded school authority configuration:\n%s",
-                        pprint.pformat(school_authority.dict()),
-                    )
-                    yield school_authority
-                except (IOError, OSError, ValueError, ValidationError) as exc:
-                    cls.logger.error("Error loading configuration file %r: %s", entry.path, exc)
-                    continue
+                yield Path(entry.path)
+
+    @classmethod
+    async def load_school_authority(cls, path: Path) -> SchoolAuthorityConfiguration:
+        """
+        May raise IOError, OSError, ValueError or ValidationError.
+        """
+        cls.logger.debug("Loading configuration %r...", path.name)
+        async with aiofiles.open(path, "r") as fp:
+            obj = ujson.loads(await fp.read())
+        school_authority = SchoolAuthorityConfiguration.parse_obj(obj)
+        cls.logger.info(
+            "Loaded school authority configuration:\n%s",
+            pprint.pformat(school_authority.dict()),
+        )
+        return school_authority
+
+    @classmethod
+    async def load_school_authorities(
+        cls,
+    ) -> AsyncIterator[SchoolAuthorityConfiguration]:
+        """May raise SchoolAuthorityConfigurationLoadingError."""
+        for path in cls.school_authority_config_files():
+            try:
+                yield await cls.load_school_authority(path)
+            except (IOError, OSError, ValueError, ValidationError) as exc:
+                cls.logger.error("Error loading configuration file %r: %s", str(path), exc)
+                raise SchoolAuthorityConfigurationLoadingError(str(exc)) from exc
 
     @classmethod
     async def save_school_authorities(
@@ -92,13 +105,23 @@ class ConfigurationStorage:
     ) -> None:
         cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
         for config in school_authority_configs:
-            config.url.rstrip("/")
             path = SCHOOL_AUTHORITIES_CONFIG_PATH / f"{config.name}.json"
-            cls.logger.info("Writing configuration of %r to %s...", config.name, path)
-            config_as_dict = config.dict()
-            config_as_dict["password"] = config.password.get_secret_value()
-            async with aiofiles.open(path, "w") as fp:
-                await fp.write(ujson.dumps(config_as_dict, sort_keys=True, indent=4))
+            await cls.save_school_authority(config, path)
+
+    @classmethod
+    async def save_school_authority(
+        cls,
+        config: SchoolAuthorityConfiguration,
+        path: Path,
+    ) -> None:
+        cls.mkdir_p(path.parent)
+        cls.logger.info("Writing configuration of %r to %s...", config.name, path)
+        config_as_dict = config.dict()
+        config_as_dict["plugin_configs"]["bb"]["token"] = config.plugin_configs["bb"][
+            "token"
+        ].get_secret_value()
+        async with aiofiles.open(path, "w") as fp:
+            await fp.write(ujson.dumps(config_as_dict, sort_keys=True, indent=4))
 
     @classmethod
     async def delete_school_authority(cls, name: str) -> None:
