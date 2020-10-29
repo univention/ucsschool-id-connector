@@ -5,6 +5,11 @@
 Changelog
 ---------
 
+v2.0.0 (2020-11-??)
+...................
+* Add Kelvin API plugin, which can be used with the ID Connector.
+* The BB API group handler will be skipped, if there is no school authority using the BB API.
+
 v1.1.0 (2020-06-02)
 ...................
 * The source code that is responsible for replicating users to specific target systems has been moved to plugins.
