@@ -555,6 +555,7 @@ class OutQueue(FileQueue):
             self.discard_file(path)
             self.logger.debug("finished handling %r.", path.name)
             return
+        self.logger.info("Looking for handlers for %r...", obj)
         try:
             handle_listener_object_caller = filter_plugins(
                 "handle_listener_object", self.school_authority.plugins
@@ -566,7 +567,7 @@ class OutQueue(FileQueue):
             if not handled:
                 raise NotImplementedError(f"No registered plugin handled obj={obj!r}.")
         except Exception as exc:
-            self.logger.error(exc)
+            self.logger.exception(exc)
             self.discard_file(path)
         self.logger.debug("finished handling %r.", path.name)
 

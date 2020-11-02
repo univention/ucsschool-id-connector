@@ -65,7 +65,7 @@ class UserDistributionImpl:
         if not isinstance(obj, ListenerUserAddModifyObject) and not isinstance(
             obj, ListenerUserRemoveObject
         ):
-            return s_a_names
+            return []
 
         if isinstance(obj, ListenerUserAddModifyObject):
             for school in obj.schools:

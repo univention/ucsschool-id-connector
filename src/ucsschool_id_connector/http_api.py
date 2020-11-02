@@ -188,6 +188,10 @@ async def delete_school_authority(
     res = await query_service(cmd="delete_school_authority", name=name)
     if res.get("errors"):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=res["errors"])
+    # this is raising: h11._util.LocalProtocolError: Too much data for declared Content-Length
+    # but I don't think we're doing anything wrong
+    # the traceback is only in the logfile, no problem for the client
+    # TODO: investigate
     return None
 
 

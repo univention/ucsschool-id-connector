@@ -214,7 +214,7 @@ class Postprocessing:
 
     @hook_spec
     async def create_request_kwargs(
-        self, http_method: str, url, school_authority: SchoolAuthorityConfiguration
+        self, http_method: str, url: str, school_authority: SchoolAuthorityConfiguration
     ) -> Dict[Any, Any]:
         """
         Creates a dictionary the kwargs for the aiohttp request should be updated with.
