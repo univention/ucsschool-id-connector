@@ -36,7 +36,7 @@ import asyncio
 
 import click
 
-from ucsschool_id_connector.user_handler import UserScheduler
+from ucsschool_id_connector.user_scheduler import UserScheduler
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 

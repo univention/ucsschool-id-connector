@@ -33,7 +33,7 @@ import re
 from functools import lru_cache
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-from typing import NamedTuple, Pattern, TextIO, Union
+from typing import Any, Dict, NamedTuple, Pattern, TextIO, Union
 from uuid import UUID
 
 import aiofiles
@@ -278,3 +278,24 @@ def base58_to_entry_uuid(b58_s: str) -> str:
     uuid_as_int = base58.b58decode_int(b58_s)
     uuid = UUID(int=uuid_as_int)
     return str(uuid)
+
+
+def recursive_dict_update(ori: Dict[Any, Any], updater: Dict[Any, Any]) -> Dict[Any, Any]:
+    """
+    *In-place* update the dict `ori` with the content of `updater`.
+
+    :param dict ori: dict to change
+    :param dict updater: data to change in `ori`
+    :return: the changed `ori` - beware: the change is done *in-place*, this
+        return value is only for convenience
+    :raises ValueError: if an existing dict in `ori` should be overwritten by a
+        non-dict
+    """
+    for k, v in updater.items():
+        if isinstance(ori.get(k), dict):
+            if not isinstance(v, dict):
+                raise ValueError(f"Cannot update dict from non-dict: k={k!r} ori={ori!r} v={v!r}")
+            recursive_dict_update(ori[k], v)
+        else:
+            ori[k] = v
+    return ori

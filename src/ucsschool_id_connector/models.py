@@ -336,7 +336,7 @@ class SchoolAuthorityConfiguration(BaseModel):
     mapping: Dict[str, str] = {}
     """mapping from attribute names on the source system to attribute names on
      the target system"""
-    plugins: List[str] = ["bb"]
+    plugins: List[str] = []
     """the plugins that should be executed for this specific school
     authority during handling in the out queue"""
     plugin_configs: Dict[str, Dict[str, Any]]
@@ -351,21 +351,41 @@ class SchoolAuthorityConfiguration(BaseModel):
     def __init__(self, **data: Any) -> None:
         super(SchoolAuthorityConfiguration, self).__init__(**data)
         # when passed into a HTTP resource, parse_obj() is not called
-        self.password_to_secret_str(self)
+        self.plugin_configs_plain_to_secret(self.plugin_configs)
+
+    def dict_secrets_as_str(self, *args, **kwargs) -> Dict[str, Any]:
+        """
+        Same as `.dict()` but values of `key`, `password`, `token` in
+        `plugin_configs` will be plain str.
+        """
+        res = self.dict(*args, **kwargs)
+        self.plugin_configs_secrets_to_plain(res["plugin_configs"])
+        return res
 
     @staticmethod
-    def password_to_secret_str(
-        obj: Union["SchoolAuthorityConfiguration", "SchoolAuthorityConfigurationPatchDocument"]
-    ):
-        for plugin_config in obj.plugin_configs.values():
-            for key in plugin_config.keys():
-                if key in ("key", "password", "token") and not isinstance(plugin_config[key], SecretStr):
-                    plugin_config[key] = SecretStr(plugin_config[key])
+    def plugin_configs_secrets_to_plain(plugin_configs: Dict[str, Dict[str, Any]]) -> None:
+        """
+        In-place modification of secret values in `plugin_configs` SecretStr -> str.
+        """
+        for plugin_name, plugin_config in plugin_configs.items():
+            for key, value in plugin_config.items():
+                if key in ("key", "password", "token") and isinstance(value, SecretStr):
+                    plugin_configs[plugin_name][key] = value.get_secret_value()
+
+    @staticmethod
+    def plugin_configs_plain_to_secret(plugin_configs: Dict[str, Dict[str, Any]]) -> None:
+        """
+        In-place modification of secret values in `plugin_configs` str -> SecretStr.
+        """
+        for plugin_name, plugin_config in plugin_configs.items():
+            for key, value in plugin_config.items():
+                if key in ("key", "password", "token") and isinstance(value, str):
+                    plugin_configs[plugin_name][key] = SecretStr(value)
 
     @classmethod
     def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
         res: SchoolAuthorityConfiguration = super(SchoolAuthorityConfiguration, cls).parse_obj(obj)
-        cls.password_to_secret_str(res)
+        cls.plugin_configs_plain_to_secret(res.plugin_configs)
         return res
 
 
@@ -392,14 +412,14 @@ class SchoolAuthorityConfigurationPatchDocument(BaseModel):
     def __init__(self, **data: Any) -> None:
         super(SchoolAuthorityConfigurationPatchDocument, self).__init__(**data)
         # when passed into a HTTP resource, parse_obj() is not called
-        SchoolAuthorityConfiguration.password_to_secret_str(self)
+        SchoolAuthorityConfiguration.plugin_configs_plain_to_secret(self.plugin_configs)
 
     @classmethod
     def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
         res: SchoolAuthorityConfigurationPatchDocument = super(
             SchoolAuthorityConfigurationPatchDocument, cls
         ).parse_obj(obj)
-        SchoolAuthorityConfiguration.password_to_secret_str(res)
+        SchoolAuthorityConfiguration.plugin_configs_plain_to_secret(res.plugin_configs)
         return res
 
 

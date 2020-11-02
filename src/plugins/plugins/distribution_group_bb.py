@@ -27,8 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import re
-from typing import Iterable, List, Pattern
+from typing import Iterable, Union, cast
 
 from ldap3.utils.dn import parse_dn
 
@@ -36,67 +35,49 @@ from ucsschool_id_connector.models import (
     ListenerGroupAddModifyObject,
     ListenerGroupRemoveObject,
     ListenerObject,
-    SchoolAuthorityConfiguration,
 )
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.queues import InQueue
-from ucsschool_id_connector.user_handler import UserScheduler
-from ucsschool_id_connector.utils import ConsoleAndFileLogging, school_class_dn_regex
+from ucsschool_id_connector.user_scheduler import UserScheduler
+from ucsschool_id_connector_defaults.distribution_group_base import GroupDistributionImplBase
 
 
-class GroupBBDistributionImpl:
+class BBGroupDistribution(GroupDistributionImplBase):
     """Distribute school classes"""
 
-    _bb_api_regex: Pattern = None
+    plugin_name = "bb"
+    target_api_name = "BB-API"
+    _user_scheduler: UserScheduler = None
 
-    def __init__(self):
-        self.class_dn_regex = school_class_dn_regex()
-        self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__)
-        self.user_scheduler = UserScheduler()
+    @property
+    def user_scheduler(self):
+        # Made this a property, so that if BB-API is not used, no UserScheduler
+        # object is ever created.
+        if not self._user_scheduler:
+            self.__class__._user_scheduler = UserScheduler()
+        return self._user_scheduler
 
     @hook_impl
     async def school_authorities_to_distribute_to(
         self, obj: ListenerObject, in_queue: InQueue
     ) -> Iterable[str]:
-        """
-        Create list of school authorities this object should be sent to.
-
-        All `school_authorities_to_distribute_to` hook implementations will be
-        executed and the result lists will be merged. If the object type cannot
-        or should not be handled by the plugin, return an empty list.
-
-        :param ListenerObject obj: of a concrete subclass of ListenerObject
-        :param InQueue in_queue: the in-queue
-        :return: list of names of school authorities, they should match those
-            in ``SchoolAuthorityConfiguration.name``
-        :rtype: list
-        """
         # The BB-API does not have a group resource, so we cannot send groups
         # to the target API - only implicitly:
         # Users can have a 'school_class' attribute. So what we do is, that we
         # trigger the (re)distribution of the groups members.
         # Only added or removed members have to be (re)sent.
-        if not isinstance(obj, ListenerGroupAddModifyObject) and not isinstance(
-            obj, ListenerGroupRemoveObject
-        ):
+        res = await super(BBGroupDistribution, self).school_authorities_to_distribute_to(obj, in_queue)
+        if not res:
             return []
-
-        bb_school_authorities = self.bb_school_authorities(in_queue)
-        if not bb_school_authorities:
-            self.logger.debug("Ignoring group: no SchoolAuthorityConfiguration for BB-API found.")
-            return []
-
-        group_match = self.class_dn_regex.match(obj.dn)
-        if not group_match:
-            self.logger.debug("Ignoring non-school_class group: %r", obj)
-            return []
-
-        group_name = group_match.groupdict()["name"]
+        # else ignore, see comment above
+        obj = cast(Union[ListenerGroupAddModifyObject, ListenerGroupRemoveObject], obj)
         old_users = set(obj.old_data.users if obj.old_data else [])
         if isinstance(obj, ListenerGroupAddModifyObject):
             new_users = set(obj.users)
         else:
             new_users = set()
+        group_match = self.class_dn_regex.match(obj.dn)
+        group_name = group_match.groupdict()["name"]
         for dn in old_users.symmetric_difference(new_users):
             if not dn.startswith("uid="):
                 self.logger.info("Ignoring non-user DN in group %r: %r", group_name, dn)
@@ -109,18 +90,5 @@ class GroupBBDistributionImpl:
         # group itself, there is never a school authority to send to.
         return []
 
-    def bb_school_authorities(self, in_queue: InQueue) -> List[SchoolAuthorityConfiguration]:
-        return [
-            out_queue.school_authority
-            for out_queue in in_queue.out_queues
-            if self.is_bb_api_url(out_queue.school_authority.url)
-        ]
 
-    @classmethod
-    def is_bb_api_url(cls, url: str) -> bool:
-        if not cls._bb_api_regex:
-            cls._bb_api_regex = re.compile(r"^http.?://.+/api-bb")
-        return bool(cls._bb_api_regex.match(url))
-
-
-plugin_manager.register(GroupBBDistributionImpl())
+plugin_manager.register(BBGroupDistribution())

@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import copy
 import os
 import time
 from unittest.mock import patch
@@ -180,3 +181,49 @@ def test_entry_uuid_to_base58_to_entry_uuid():
     uuid_s = fake.uuid4(cast_to=str)
     uuid_as_b58 = ucsschool_id_connector.utils.entry_uuid_to_base58(uuid_s)
     assert ucsschool_id_connector.utils.base58_to_entry_uuid(uuid_as_b58) == uuid_s
+
+
+def test_recursive_dict_update():
+    ori = {
+        "a": "A",
+        "b": "B",
+        "c": ["C"],
+        "d": {
+            1: 2,
+            None: 3,
+            "4": 5,
+        },
+        "e": None,
+        "f": {"g": {"h": "H", "i": "I"}},
+    }
+    updater = {}
+    assert ucsschool_id_connector.utils.recursive_dict_update(ori, updater) == ori
+
+    updater = {"a": "X", "k": "K"}
+    result = copy.deepcopy(ori)
+    result["a"] = "X"
+    result["k"] = "K"
+    assert ucsschool_id_connector.utils.recursive_dict_update(ori, updater) == result
+
+    updater["d"] = {1: 4}
+    result["d"] = {
+        1: 4,
+        None: 3,
+        "4": 5,
+    }
+    assert ucsschool_id_connector.utils.recursive_dict_update(result, updater) == result
+
+    updater["f"] = {"g": {"h": "HAHA"}}
+    result["f"] = {"g": {"h": "HAHA", "i": "I"}}
+    assert ucsschool_id_connector.utils.recursive_dict_update(result, updater) == result
+
+    unchanged_result = copy.deepcopy(result)
+    updater["f"] = "boom"
+    with pytest.raises(ValueError):
+        ucsschool_id_connector.utils.recursive_dict_update(result, updater)
+    assert result == unchanged_result
+
+    updater["f"] = {"g": "boom"}
+    with pytest.raises(ValueError):
+        ucsschool_id_connector.utils.recursive_dict_update(result, updater)
+    assert result == unchanged_result

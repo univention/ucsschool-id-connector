@@ -119,11 +119,7 @@ class ConfigurationStorage:
         path: Path,
     ) -> None:
         cls.mkdir_p(path.parent)
-        cls.logger.info("Writing configuration of %r to %s...", config.name, path)
-        config_as_dict = config.dict()
-        config_as_dict["plugin_configs"]["bb"]["token"] = config.plugin_configs["bb"][
-            "token"
-        ].get_secret_value()
+        config_as_dict = config.dict_secrets_as_str()
         async with aiofiles.open(path, "w") as fp:
             await fp.write(ujson.dumps(config_as_dict, sort_keys=True, indent=4))
 

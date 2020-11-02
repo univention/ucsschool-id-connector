@@ -227,11 +227,7 @@ def query_service(
     if name is not None:
         request_kwargs["name"] = name
     if school_authority is not None:
-        request_kwargs["school_authority"] = school_authority.dict()
-        if school_authority.plugin_configs["bb"]["token"]:
-            request_kwargs["school_authority"]["plugin_configs"]["bb"][
-                "token"
-            ] = school_authority.plugin_configs["bb"]["token"].get_secret_value()
+        request_kwargs["school_authority"] = school_authority.dict_secrets_as_str()
     if school_to_authority_mapping is not None:
         request_kwargs["school_to_authority_mapping"] = school_to_authority_mapping.dict()
     request = RPCRequest(**request_kwargs)

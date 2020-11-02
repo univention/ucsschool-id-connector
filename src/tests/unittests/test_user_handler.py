@@ -33,33 +33,49 @@ import pytest
 from faker import Faker
 
 import ucsschool_id_connector.models as models
-import ucsschool_id_connector.user_handler
+from ucsschool_id_connector.plugin_loader import load_plugins
+from ucsschool_id_connector.plugins import plugin_manager
 
 fake = Faker()
 
+HANDLER_CLASS = "BBUserHandler"
+PLUGIN_NAME = "bb"
+
 
 @pytest.mark.asyncio
-async def test_map_attributes(listener_user_add_modify_object, school_authority_configuration):
+async def test_map_attributes(
+    mock_plugins, listener_user_add_modify_object, school_authority_configuration
+):
+    load_plugins()
+    for plugin in plugin_manager.get_plugins():
+        if plugin.__class__.__name__ == HANDLER_CLASS:
+            break
+    else:
+        raise AssertionError(f"Cannot find {HANDLER_CLASS!r} class in plugins.")
     s_a_config = school_authority_configuration()
-    user_handler = ucsschool_id_connector.user_handler.UserHandler(s_a_config)
+    user_handler = plugin.user_handler_class(s_a_config, PLUGIN_NAME)
     user_obj: models.ListenerUserAddModifyObject = listener_user_add_modify_object()
-    user_handler._api_schools_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
-    user_handler._api_schools_cache_creation = datetime.datetime.now()
-    user_handler.api_roles_cache = dict((role.name, fake.uri()) for role in user_obj.school_user_roles)
+    user_handler._school_ids_on_target_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
+    user_handler._school_ids_on_target_cache_creation = datetime.datetime.now()
+    user_handler._roles_on_target_cache = dict(
+        (role.name, fake.uri()) for role in user_obj.school_user_roles
+    )
 
     res = await user_handler.map_attributes(user_obj)
     school = [ou for ou in user_obj.schools if ou in user_obj.dn][0]
-    school_uri = (await user_handler.api_schools_cache)[school]
+    schools_ids_on_target = await user_handler.schools_ids_on_target
+    roles_on_target = await user_handler.roles_on_target
+    school_uri = schools_ids_on_target[school]
     assert res == {
         "disabled": user_obj.object["disabled"] == "1",
         "firstname": user_obj.object["firstname"],
         "lastname": user_obj.object["lastname"],
         "name": user_obj.username,
         "record_uid": user_obj.record_uid,
-        "roles": list(user_handler.api_roles_cache.values()),
+        "roles": list(roles_on_target.values()),
         "school": school_uri,
         "school_classes": user_obj.object.get("school_classes", {}),
-        "schools": list((await user_handler.api_schools_cache).values()),
+        "schools": list(schools_ids_on_target.values()),
         "source_uid": user_obj.source_uid,
         "udm_properties": {
             "ucsschool_id_connector_pw": {
