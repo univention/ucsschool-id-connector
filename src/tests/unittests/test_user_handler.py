@@ -87,3 +87,6 @@ async def test_map_attributes(
             }
         },
     }
+
+
+# TODO: add test for user_handler_base.PerSchoolAuthorityUserHandlerBase.user_search_params

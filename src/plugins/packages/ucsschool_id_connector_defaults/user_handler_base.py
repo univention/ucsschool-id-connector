@@ -350,22 +350,20 @@ class PerSchoolAuthorityUserHandlerBase(abc.ABC):
             `record_uid` and `source_uid`
         :rtype: dict
         """
-        params = {"entryUUID": obj.id}
-        if obj.old_data or isinstance(obj, ListenerUserRemoveObject):
-            if isinstance(obj, ListenerUserAddModifyObject):
-                # modify, try current record_uid and source_uid
-                params["record_uid"] = obj.object.get("record_uid")
-                params["source_uid"] = obj.object.get("source_uid")
-            # delete, use old_data (or modify and *_uid were unset - should not happen)
-            params["record_uid"] = params.get("record_uid") or obj.old_data.record_uid
-            params["source_uid"] = params.get("source_uid") or obj.old_data.source_uid
-            # if unset, source_uid can be taken from import configuration (although record_uid will most
-            # likely be missing)
-            params["source_uid"] = params["source_uid"] or await get_source_uid()
-        else:
-            # add user
-            params["record_uid"] = obj.object.get("record_uid")
-            params["source_uid"] = obj.object.get("source_uid") or await get_source_uid()
+        params = {"entryUUID": obj.id, "record_uid": "", "source_uid": ""}
+        if isinstance(obj, ListenerUserAddModifyObject):
+            # add or modify
+            params["record_uid"] = obj.record_uid
+            params["source_uid"] = obj.source_uid
+        if obj.old_data:
+            # modify or delete
+            if obj.old_data.record_uid:
+                params["record_uid"] = obj.old_data.record_uid
+            if obj.old_data.source_uid:
+                params["source_uid"] = obj.old_data.source_uid
+        # if unset, source_uid can be taken from import configuration (although record_uid will most
+        # likely be missing)
+        params["source_uid"] = params["source_uid"] or await get_source_uid()
         return params
 
     async def fetch_user(self, search_params: Dict[str, Any]) -> UserObject:
