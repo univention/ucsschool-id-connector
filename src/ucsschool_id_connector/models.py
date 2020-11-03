@@ -326,30 +326,9 @@ class ListenerUserRemoveObject(ListenerRemoveObject):
         return f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, {self.old_data!r})"
 
 
-class SchoolAuthorityConfiguration(BaseModel):
-    name: str
-    """name of school authority"""
-    active: bool = False
-    """(de)activate sending updates to this school authority"""
-    url: UrlStr
-    """target HTTP API URL"""
-    mapping: Dict[str, str] = {}
-    """mapping from attribute names on the source system to attribute names on
-     the target system"""
-    plugins: List[str] = []
-    """the plugins that should be executed for this specific school
-    authority during handling in the out queue"""
-    plugin_configs: Dict[str, Dict[str, Any]]
-    """Plugin specific configurations,
-    e.g. {
-        "kelvin": {"username": "..", "password": "..", "passwords_target_attribute": ".."},
-        "bb": {"token": "...", "passwords_target_attribute": ".."},
-    }
-    Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
-    """
-
+class SecretsMixin:
     def __init__(self, **data: Any) -> None:
-        super(SchoolAuthorityConfiguration, self).__init__(**data)
+        super(SecretsMixin, self).__init__(**data)
         # when passed into a HTTP resource, parse_obj() is not called
         self.plugin_configs_plain_to_secret(self.plugin_configs)
 
@@ -384,12 +363,35 @@ class SchoolAuthorityConfiguration(BaseModel):
 
     @classmethod
     def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
-        res: SchoolAuthorityConfiguration = super(SchoolAuthorityConfiguration, cls).parse_obj(obj)
+        res: SchoolAuthorityConfiguration = super(SecretsMixin, cls).parse_obj(obj)
         cls.plugin_configs_plain_to_secret(res.plugin_configs)
         return res
 
 
-class SchoolAuthorityConfigurationPatchDocument(BaseModel):
+class SchoolAuthorityConfiguration(SecretsMixin, BaseModel):
+    name: str
+    """name of school authority"""
+    active: bool = False
+    """(de)activate sending updates to this school authority"""
+    url: UrlStr
+    """target HTTP API URL"""
+    mapping: Dict[str, str] = {}
+    """mapping from attribute names on the source system to attribute names on
+     the target system"""
+    plugins: List[str] = []
+    """the plugins that should be executed for this specific school
+    authority during handling in the out queue"""
+    plugin_configs: Dict[str, Dict[str, Any]]
+    """Plugin specific configurations,
+    e.g. {
+        "kelvin": {"username": "..", "password": "..", "passwords_target_attribute": ".."},
+        "bb": {"token": "...", "passwords_target_attribute": ".."},
+    }
+    Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
+    """
+
+
+class SchoolAuthorityConfigurationPatchDocument(SecretsMixin, BaseModel):
     active: bool = None
     """(de)activate sending updates to this school authority"""
     url: UrlStr = None
@@ -408,19 +410,6 @@ class SchoolAuthorityConfigurationPatchDocument(BaseModel):
     }
     Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
     """
-
-    def __init__(self, **data: Any) -> None:
-        super(SchoolAuthorityConfigurationPatchDocument, self).__init__(**data)
-        # when passed into a HTTP resource, parse_obj() is not called
-        SchoolAuthorityConfiguration.plugin_configs_plain_to_secret(self.plugin_configs)
-
-    @classmethod
-    def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
-        res: SchoolAuthorityConfigurationPatchDocument = super(
-            SchoolAuthorityConfigurationPatchDocument, cls
-        ).parse_obj(obj)
-        SchoolAuthorityConfiguration.plugin_configs_plain_to_secret(res.plugin_configs)
-        return res
 
 
 class School2SchoolAuthorityMapping(BaseModel):
