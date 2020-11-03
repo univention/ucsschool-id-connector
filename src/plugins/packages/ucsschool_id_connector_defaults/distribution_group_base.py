@@ -62,6 +62,8 @@ class GroupDistributionImplBase(abc.ABC):
         """
         Create list of school authorities this object should be sent to.
 
+        Impl of ucsschool_id_connector.plugins.Distribution.school_authorities_to_distribute_to
+
         All `school_authorities_to_distribute_to` hook implementations will be
         executed and the result lists will be merged. If the object type cannot
         or should not be handled by the plugin, return an empty list.
@@ -94,17 +96,17 @@ class GroupDistributionImplBase(abc.ABC):
             )
             return []
 
-        school_authority_names = {school_authority.name for school_authority in school_authorities}
-        school_authority_ous = {
-            ou.lower()
+        our_school_authority_names = {school_authority.name for school_authority in school_authorities}
+        school_authority_mapping_filtered = dict(
+            (ou.lower(), s_a)
             for ou, s_a in in_queue.school_authority_mapping.items()
-            if s_a in school_authority_names
-        }
+            if s_a in our_school_authority_names
+        )
         group_ou = group_match.groupdict()["ou"]
 
-        if group_ou.lower() in school_authority_ous:
-            return [group_ou]
-        else:
+        try:
+            return [school_authority_mapping_filtered[group_ou.lower()]]
+        except KeyError:
             self.logger.debug(
                 "Ignoring group in OU %r that is not synced to any %r system: %r",
                 group_ou,
