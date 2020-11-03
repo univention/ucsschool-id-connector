@@ -302,7 +302,7 @@ async def make_school_authority(
     ucsschool_id_connector_api_url,
     req_headers,
     http_request,
-    school_authority_configuration,
+    bb_school_authority_configuration,
 ) -> SchoolAuthorityConfiguration:
     """
     Fixture factory to create (and at the same time save) school authorities.
@@ -338,7 +338,7 @@ async def make_school_authority(
             expected_statuses=(204, 404),
         )
         # (re)create school authority configuration
-        school_authority = school_authority_configuration(
+        school_authority = bb_school_authority_configuration(
             name=name,
             url=url,
             mapping=mapping,

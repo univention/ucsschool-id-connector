@@ -54,11 +54,11 @@ async def test_load_school_authorities_empty(temp_dir_func):
 
 
 @pytest.mark.asyncio
-async def test_load_school_authorities(temp_dir_func, school_authority_configuration):
+async def test_load_school_authorities(temp_dir_func, bb_school_authority_configuration):
     """open a config"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    sac = school_authority_configuration()
+    sac = bb_school_authority_configuration()
     sac_dict = sac.dict()
     sac_dict["plugin_configs"]["bb"]["token"] = sac.plugin_configs["bb"]["token"].get_secret_value()
     with open(sac_dir / f"{sac.name}.json", "w") as fp:
@@ -102,11 +102,11 @@ async def test_delete_school_authority_not_a_file(temp_dir_func):
 
 
 @pytest.mark.asyncio
-async def test_delete_school_authority(temp_dir_func, school_authority_configuration):
+async def test_delete_school_authority(temp_dir_func, bb_school_authority_configuration):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    sac = school_authority_configuration()
+    sac = bb_school_authority_configuration()
     sac_dict = sac.dict()
     sac_dict["plugin_configs"]["bb"]["token"] = sac.plugin_configs["bb"]["token"].get_secret_value()
     with open(sac_dir / f"{sac.name}.json", "w") as fp:
@@ -119,12 +119,12 @@ async def test_delete_school_authority(temp_dir_func, school_authority_configura
 
 
 @pytest.mark.asyncio
-async def test_save_school_authorities(temp_dir_func, school_authority_configuration):
+async def test_save_school_authorities(temp_dir_func, bb_school_authority_configuration):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    sac1 = school_authority_configuration()
-    sac2 = school_authority_configuration()
+    sac1 = bb_school_authority_configuration()
+    sac2 = bb_school_authority_configuration()
     sac1_dict = sac1.dict()
     sac1_dict["plugin_configs"]["bb"]["token"] = sac1.plugin_configs["bb"]["token"].get_secret_value()
     sac2_dict = sac2.dict()
@@ -143,7 +143,7 @@ async def test_save_school_authorities(temp_dir_func, school_authority_configura
 
 
 @pytest.mark.asyncio
-async def test_load_school2target_mapping(temp_dir_func, school_authority_configuration):
+async def test_load_school2target_mapping(temp_dir_func, bb_school_authority_configuration):
     """test loading a School2SchoolAuthorityMapping"""
     log_dir = temp_dir_func()
     s2sam_dir = temp_dir_func()
@@ -161,7 +161,7 @@ async def test_load_school2target_mapping(temp_dir_func, school_authority_config
 
 
 @pytest.mark.asyncio
-async def test_save_school2target_mapping(temp_dir_func, school_authority_configuration):
+async def test_save_school2target_mapping(temp_dir_func, bb_school_authority_configuration):
     """test saving School2SchoolAuthorityMapping"""
     log_dir = temp_dir_func()
     s2sam_dir = temp_dir_func()

@@ -38,10 +38,10 @@ from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 
 @pytest.mark.asyncio
 async def test_migrate_school_authority_configuration_to_plugins_ok(
-    temp_clear_dir, school_authority_configuration
+    temp_clear_dir, bb_school_authority_configuration
 ):
     temp_clear_dir(SCHOOL_AUTHORITIES_CONFIG_PATH)
-    sac: SchoolAuthorityConfiguration = school_authority_configuration()
+    sac: SchoolAuthorityConfiguration = bb_school_authority_configuration()
     path = SCHOOL_AUTHORITIES_CONFIG_PATH / f"{sac.name}.json"
     try:
         await ConfigurationStorage.save_school_authority(sac, path)

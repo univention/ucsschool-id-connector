@@ -44,7 +44,7 @@ PLUGIN_NAME = "bb"
 
 @pytest.mark.asyncio
 async def test_map_attributes(
-    mock_plugins, listener_user_add_modify_object, school_authority_configuration
+    mock_plugins, listener_user_add_modify_object, bb_school_authority_configuration
 ):
     load_plugins()
     for plugin in plugin_manager.get_plugins():
@@ -52,7 +52,7 @@ async def test_map_attributes(
             break
     else:
         raise AssertionError(f"Cannot find {HANDLER_CLASS!r} class in plugins.")
-    s_a_config = school_authority_configuration()
+    s_a_config = bb_school_authority_configuration()
     user_handler = plugin.user_handler_class(s_a_config, PLUGIN_NAME)
     user_obj: models.ListenerUserAddModifyObject = listener_user_add_modify_object()
     user_handler._school_ids_on_target_cache = dict((ou, fake.uri()) for ou in user_obj.schools)

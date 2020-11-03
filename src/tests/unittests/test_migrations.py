@@ -42,11 +42,11 @@ from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 
 @pytest.mark.asyncio
 async def test_migrate_school_authority_configuration_to_plugins(
-    school_authority_configuration, temp_file_func
+    bb_school_authority_configuration, temp_file_func
 ):
     logger.addHandler(logging.StreamHandler(stream=sys.stdout))
     logger.setLevel(logging.DEBUG)
-    expected: SchoolAuthorityConfiguration = school_authority_configuration()
+    expected: SchoolAuthorityConfiguration = bb_school_authority_configuration()
     old_config = expected.dict()
     old_config["password"] = old_config["plugin_configs"]["bb"].pop("token").get_secret_value()
     old_config["passwords_target_attribute"] = old_config["plugin_configs"]["bb"].pop(

@@ -282,13 +282,13 @@ class ListenerRemoveObjectFactory(ListenerObjectFactory):
     action = ucsschool_id_connector.models.ListenerActionEnum.delete
 
 
-class SchoolAuthorityConfigurationFactory(factory.Factory):
+class BaseSchoolAuthorityConfigurationFactory(factory.Factory):
     class Meta:
         model = ucsschool_id_connector.models.SchoolAuthorityConfiguration
 
     name = factory.Faker("first_name")
     active = factory.LazyFunction(lambda: True)
-    url = factory.LazyFunction(lambda: f"https://{fake.hostname()}/api-bb/")
+    url = factory.Faker("url")
     mapping = factory.Dict(
         {
             "firstname": "firstname",
@@ -303,12 +303,34 @@ class SchoolAuthorityConfigurationFactory(factory.Factory):
             "ucsschoolRecordUID": "record_uid",
         }
     )
+    plugins = factory.List([])
+    plugin_configs = factory.Dict({})
+
+
+class BBSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfigurationFactory):
+    url = factory.LazyFunction(lambda: f"https://{fake.hostname()}/api-bb/")
     plugins = ["bb"]
     plugin_configs = factory.Dict(
         {
             "bb": factory.Dict(
                 {
                     "token": factory.LazyFunction(lambda: SecretStr(fake.password())),
+                    "passwords_target_attribute": "ucsschool_id_connector_pw",
+                }
+            )
+        }
+    )
+
+
+class KelvinSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfigurationFactory):
+    url = factory.LazyFunction(lambda: f"https://{fake.hostname()}/ucsschool/kelvin/v1/")
+    plugins = ["kelvin"]
+    plugin_configs = factory.Dict(
+        {
+            "kelvin": factory.Dict(
+                {
+                    "username": factory.Faker("user_name"),
+                    "password": factory.LazyFunction(lambda: SecretStr(fake.password())),
                     "passwords_target_attribute": "ucsschool_id_connector_pw",
                 }
             )
@@ -437,9 +459,17 @@ def listener_user_add_modify_object(listener_dump_user_object):
 
 
 @pytest.fixture
-def school_authority_configuration():
+def bb_school_authority_configuration():
     def _func(**kwargs) -> ucsschool_id_connector.models.SchoolAuthorityConfiguration:
-        return SchoolAuthorityConfigurationFactory(**kwargs)
+        return BBSchoolAuthorityConfigurationFactory(**kwargs)
+
+    return _func
+
+
+@pytest.fixture
+def kelvin_school_authority_configuration():
+    def _func(**kwargs) -> ucsschool_id_connector.models.SchoolAuthorityConfiguration:
+        return KelvinSchoolAuthorityConfigurationFactory(**kwargs)
 
     return _func
 
