@@ -27,12 +27,30 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+"""
+Base classes for plugins handling user objects.
+
+The plugin entry code is in the class `UserHandlerPluginBase`.
+The "per school authority code" goes into `PerSchoolAuthorityUserHandlerBase`.
+
+To implement a UCS@school ID connector plugin :
+
+1. subclass both `UserHandlerPluginBase` and `PerSchoolAuthorityUserHandlerBase`
+2. set `UserHandlerPluginBase.plugin_name` to the name used in the school
+   authority `plugins_config`
+3. set `UserHandlerPluginBase.user_handler_class` to your subclass of
+   `PerSchoolAuthorityUserHandlerBase`
+4. import `from ucsschool_id_connector.plugins import plugin_manager` and at
+   the bottom of your plugin module write:
+   `plugin_manager.register(MyUserHandler(), MyUserHandler.plugin_name)
+"""
+
 import abc
 import datetime
 import random
 import string
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Tuple, Type
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 from async_property import async_property
 
@@ -57,40 +75,29 @@ from ucsschool_id_connector.utils import (
     school_class_dn_regex,
 )
 
-BB_API_MAIN_ATTRIBUTES = {
-    "name",
-    "birthday",
-    "disabled",
-    "email",
-    "firstname",
-    "lastname",
-    "password",
-    "record_uid",
-    "roles",
-    "school",
-    "school_classes",
-    "schools",
-    "source_uid",
-    "ucsschool_roles",
-}
+UserObject = Any
 
 
 class ConfigurationError(Exception):
-    pass
+    ...
 
 
 class MissingData(Exception):
-    pass
+    ...
 
 
 class SkipAttribute(Exception):
-    pass
+    ...
 
 
 class UnknownSchool(Exception):
-    def __init__(self, *args, school: str, **kwargs):
+    def __init__(self, *args, school: str):
         self.school = school
-        super().__init__(*args, **kwargs)
+        super().__init__(*args)
+
+
+class UserNotFoundError(Exception):
+    ...
 
 
 class PerSchoolAuthorityUserHandlerBase(abc.ABC):
@@ -101,6 +108,8 @@ class PerSchoolAuthorityUserHandlerBase(abc.ABC):
     """
 
     _password_attributes = set(UserPasswords.__fields__.keys())
+    # list of attributes required to find a single user:
+    _required_search_params = ("record_uid", "source_uid")
     school_role_to_api_role = {
         SchoolUserRole.staff: "staff",
         SchoolUserRole.student: "student",
@@ -125,19 +134,21 @@ class PerSchoolAuthorityUserHandlerBase(abc.ABC):
         if not await self.user_has_schools(obj):
             return
         await self.print_users_ids(obj)
-        try:
-            request_body = await self.map_attributes(obj)
-        except Exception as exc:
-            self.logger.exception("Mapping attributes: %s", exc)
-            raise
-        self.logger.debug("*** request_body=%r", request_body)
-        await self.do_create_or_update(request_body)
+        await self.do_create_or_update(obj)
 
     async def handle_remove(self, obj: ListenerUserRemoveObject) -> None:
         """Remove user."""
         self.logger.info("Going to remove %r.", obj)
         self.logger.debug("*** obj.dict()=%r", obj.dict())
-        await self.do_remove(obj)
+        try:
+            exists, api_user_data = await self.user_exists_on_target(obj)
+        except MissingData as exc:
+            self.logger.error(str(exc))
+            return
+        if exists:
+            await self.do_remove(obj, api_user_data)
+        else:
+            self.logger.info("Skipping deletion of user not found on the target system: %r.", obj)
 
     async def user_has_schools(self, obj: ListenerUserAddModifyObject) -> bool:
         """
@@ -190,7 +201,7 @@ class PerSchoolAuthorityUserHandlerBase(abc.ABC):
             )
             old_data = obj.old_data
         else:
-            self.logger.debug("User %r has no 'old_data'.")
+            self.logger.debug("User %r has no 'old_data'.", obj.username)
             self.logger.debug(
                 "User %r has currently: schools=%r record_uid=%r source_uid=%r",
                 obj.username,
@@ -208,7 +219,7 @@ class PerSchoolAuthorityUserHandlerBase(abc.ABC):
             action=ListenerActionEnum.delete,
             old_data=old_data,
         )
-        await self.do_remove(remove_obj)
+        await self.handle_remove(remove_obj)
 
     @async_property
     async def schools_ids_on_target(self) -> Dict[str, str]:
@@ -272,46 +283,129 @@ class PerSchoolAuthorityUserHandlerBase(abc.ABC):
         """
         raise NotImplementedError()
 
-    async def do_create_or_update(self, request_body: Dict[str, Any]) -> None:
-        exists, api_user_data = await self.user_exists_on_target(request_body)
+    async def do_create_or_update(self, obj: ListenerUserAddModifyObject) -> None:
+        try:
+            request_body = await self.map_attributes(obj)
+        except Exception as exc:
+            self.logger.exception("Mapping attributes: %s", exc)
+            raise
+        try:
+            exists, api_user_data = await self.user_exists_on_target(obj)
+        except MissingData as exc:
+            self.logger.error(str(exc))
+            return
         if exists:
             self.logger.info("User exists on target system, modifying it.")
             await self.do_modify(request_body, api_user_data)
         else:
             self.logger.info("User does not exist on target system, creating it.")
-            await self.do_create(request_body, api_user_data)
+            await self.do_create(request_body)
 
-    async def user_exists_on_target(self, request_body: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
+    async def user_exists_on_target(
+        self, obj: Union[ListenerUserAddModifyObject, ListenerUserRemoveObject]
+    ) -> Tuple[bool, Optional[UserObject]]:
         """
         Check if the user exists on the school authorities system.
 
-        :param dict request_body: output of `map_attributes`
-        :return: tuple(bool, dict) indicating if the user exists, and a
-            (possibly empty) dict that will be passed to `_do_create` or
-            `_do_modify`.
+        :param obj: user listener object
+        :type obj: ListenerUserAddModifyObject or ListenerUserRemoveObject
+        :return: boolean indicating whether the user exists, and a (possibly
+            `None`) object of undefined type that will be passed as-is to
+            `do_create` or `do_modify`.
+        :rtype: tuple(bool, object)
+        :raises MissingData: if data of any attribute in `self._required_search_params`
+            is missing or empty on the user object
+        """
+        search_params = await self.user_search_params(obj)
+        for param in self._required_search_params:
+            if not search_params.get(param):
+                raise MissingData(
+                    f"Cannot search for user: missing {param} in user object:"
+                    f" {obj!r} (search_params: {search_params!r})."
+                )
+        try:
+            user_repr = await self.fetch_user(search_params)
+        except UserNotFoundError:
+            return False, None
+        return True, user_repr
+
+    async def user_search_params(
+        self, obj: Union[ListenerUserAddModifyObject, ListenerUserRemoveObject]
+    ) -> Dict[str, Any]:
+        """
+        Usually the user is searched for using the `entryUUID` or the
+        `record_uid` plus the `source_uid`.
+
+        While the `entryUUID` is always in `obj.id`, `ListenerUserAddModifyObject`
+        and `ListenerUserRemoveObject` have `record_uid` and `source_uid` in
+        different parts:
+        * `ListenerUserAddModifyObject`:
+           - new + existing object: `obj.object["record_uid"]`, `obj.object["source_uid"]`
+           - existing object: `obj.old_data.record_uid`, `obj.old_data.source_uid`
+        * `ListenerUserRemoveObject`: `obj.old_data.record_uid`, `obj.old_data.source_uid`
+
+        :param obj: user listener object
+        :type obj: ListenerUserAddModifyObject or ListenerUserRemoveObject
+        :return: possible parameters to use in search, currently `entryUUID´,
+            `record_uid` and `source_uid`
+        :rtype: dict
+        """
+        params = {"entryUUID": obj.id}
+        if obj.old_data or isinstance(obj, ListenerUserRemoveObject):
+            if isinstance(obj, ListenerUserAddModifyObject):
+                # modify, try current record_uid and source_uid
+                params["record_uid"] = obj.object.get("record_uid")
+                params["source_uid"] = obj.object.get("source_uid")
+            # delete, use old_data (or modify and *_uid were unset - should not happen)
+            params["record_uid"] = params.get("record_uid") or obj.old_data.record_uid
+            params["source_uid"] = params.get("source_uid") or obj.old_data.source_uid
+            # if unset, source_uid can be taken from import configuration (although record_uid will most
+            # likely be missing)
+            params["source_uid"] = params["source_uid"] or await get_source_uid()
+        else:
+            # add user
+            params["record_uid"] = obj.object.get("record_uid")
+            params["source_uid"] = obj.object.get("source_uid") or await get_source_uid()
+        return params
+
+    async def fetch_user(self, search_params: Dict[str, Any]) -> UserObject:
+        """
+        Retrieve a user from API of school authority.
+
+        :param dict search_params: parameters for search
+        :return: representation of user in remote resource
+        :rtype: object
+        :raises UserNotFoundError: if user was not found on the school
+            authorities system.
         """
         raise NotImplementedError()
 
-    async def do_create(self, request_body: Dict[str, Any], api_user_data: Dict[str, Any]) -> None:
+    async def do_create(self, request_body: Dict[str, Any]) -> None:
         """
         Create a user object at the target.
 
         :param dict request_body: output of `map_attributes`
-        :param dict api_user_data: output of `user_exists_on_target`
         """
         raise NotImplementedError()
 
-    async def do_modify(self, request_body: Dict[str, Any], api_user_data: Dict[str, Any]) -> None:
+    async def do_modify(self, request_body: Dict[str, Any], api_user_data: UserObject) -> None:
         """
         Modify a user object at the target.
 
         :param dict request_body: output of `map_attributes`
-        :param dict api_user_data: output of `user_exists_on_target`
+        :param object api_user_data: output of `user_exists_on_target`
         """
         raise NotImplementedError()
 
-    async def do_remove(self, obj: ListenerUserRemoveObject) -> None:
-        """Delete a user object at the target."""
+    async def do_remove(self, obj: ListenerUserRemoveObject, api_user_data: UserObject) -> None:
+        """
+        Delete a user object at the target.
+
+        Will only be called, if `user_exists_on_target()` returned True.
+
+        :param ListenerUserAddModifyObject obj: user listener object
+        :param object api_user_data: output of `user_exists_on_target`
+        """
         raise NotImplementedError()
 
     async def map_attributes(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
