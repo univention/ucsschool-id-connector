@@ -27,7 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-from typing import Any, Dict, List, Tuple, cast
+from typing import Any, Dict, List, Union, cast
 
 import aiohttp
 
@@ -39,11 +39,11 @@ from ucsschool_id_connector.models import (
 )
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.requests import http_delete, http_get, http_patch, http_post
-from ucsschool_id_connector.utils import get_source_uid
 from ucsschool_id_connector_defaults.user_handler_base import (
     PerSchoolAuthorityUserHandlerBase,
     SkipAttribute,
     UserHandlerPluginBase,
+    UserNotFoundError,
 )
 
 BB_API_MAIN_ATTRIBUTES = {
@@ -63,9 +63,11 @@ BB_API_MAIN_ATTRIBUTES = {
     "ucsschool_roles",
 }
 
+UserObject = Dict[str, Any]
+
 
 class MissingData(Exception):
-    pass
+    ...
 
 
 class BBPerSAUserHandler(PerSchoolAuthorityUserHandlerBase):
@@ -107,27 +109,30 @@ class BBPerSAUserHandler(PerSchoolAuthorityUserHandlerBase):
         status, json_resp = await http_get(url, self.school_authority, session=self._session)
         return dict((school["name"], school["url"]) for school in json_resp["results"])
 
-    async def user_exists_on_target(self, request_body: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
-        """Check if the user exists on the school authorities system."""
-        params = {
-            "record_uid": str(request_body.get("record_uid")),
-            "source_uid": request_body.get("source_uid") or await get_source_uid(),
+    async def user_search_params(
+        self, obj: Union[ListenerUserAddModifyObject, ListenerUserRemoveObject]
+    ) -> Dict[str, Any]:
+        res = await super(BBPerSAUserHandler, self).user_search_params(obj)
+        # filter out unwanted search parameters
+        return {
+            "record_uid": res["record_uid"],
+            "source_uid": res["source_uid"],
         }
-        if not all(list(params.values())):
-            raise MissingData(
-                f"Cannot add/modify user: missing 'record_uid' or 'source_uid' in request_body:"
-                f" {request_body!r}."
-            )
+
+    async def fetch_user(self, search_params: Dict[str, Any]) -> UserObject:
+        """Retrieve a user from API of school authority."""
         url = f"{self.school_authority.url}/users/"
-        status, json_resp = await http_get(url, self.school_authority, params, session=self._session)
+        status, json_resp = await http_get(
+            url, self.school_authority, search_params, session=self._session
+        )
         json_resp = cast(List[Dict[Any, Any]], json_resp)
         self.logger.debug("status=%r json_resp=%r", status, json_resp)
         if json_resp:
-            return True, json_resp[0]
+            return json_resp[0]
         else:
-            return False, {}
+            raise UserNotFoundError(f"No user found with search params: {search_params!r}.")
 
-    async def do_create(self, request_body: Dict[str, Any], api_user_data: Dict[str, Any]) -> None:
+    async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
         status, json_resp = await http_post(
             f"{self.school_authority.url}/users/",
@@ -137,40 +142,22 @@ class BBPerSAUserHandler(PerSchoolAuthorityUserHandlerBase):
         )
         self.logger.info("User created (status: %r): %r", status, json_resp)
 
-    async def do_modify(self, request_body: Dict[str, Any], api_user_data: Dict[str, Any]) -> None:
-        """
-        Modify a user object at the target.
-
-        :param dict request_body: output of `map_attributes`
-        :param dict api_user_data: output of `user_exists_on_target`
-        """
+    async def do_modify(self, request_body: Dict[str, Any], api_user_data: UserObject) -> None:
+        """Modify a user object at the target."""
         status, json_resp = await http_patch(
             api_user_data["url"], self.school_authority, session=self._session, data=request_body
         )
         self.logger.info("User modified (status: %r): %r", status, json_resp)
 
-    async def do_remove(self, obj: ListenerUserRemoveObject) -> None:
+    async def do_remove(self, obj: ListenerUserRemoveObject, api_user_data: UserObject) -> None:
         """Delete a user object at the target."""
-        params = {
-            "record_uid": obj.old_data.record_uid,
-            "source_uid": obj.old_data.source_uid or await get_source_uid(),
-        }
-        if not all(list(params.values())):
-            raise MissingData(f"Cannot remove user: missing record_uid or source_uid in {obj!r}.")
-        url = f"{self.school_authority.url}/users/"
-        status, json_resp = await http_get(url, self.school_authority, params, session=self._session)
-        if json_resp:
-            # user exists, delete it
-            user_url = json_resp[0]["url"]
-            self.logger.info("User exists at %r.", user_url)
-            status, json_resp = await http_delete(user_url, self.school_authority, session=self._session)
-            if status == 204:
-                self.logger.info("User deleted (status: %r): %r", status, json_resp)
-            else:
-                self.logger.error("Deleting user (status: %r): %r", status, json_resp)
+        status, json_resp = await http_delete(
+            api_user_data["url"], self.school_authority, session=self._session
+        )
+        if status == 204:
+            self.logger.info("User deleted (status: %r): %r", status, json_resp)
         else:
-            # nothing to do
-            self.logger.info("User not found, finished.")
+            self.logger.error("Deleting user (status: %r): %r", status, json_resp)
 
     def _handle_none_value(self, key_here: str) -> Any:
         """`none` is mostly invalid for the school authorities API"""
@@ -206,8 +193,8 @@ class BBUserHandler(UserHandlerPluginBase):
 
     Send current state of user to target system (school authority).
 
-    Each out queue has its own :py:class:`UserHandler` instance which handles
-    user data for the queues school authority.
+    Each out queue has its own :py:class:`BBPerSAUserHandler` instance which
+    handles user data for the queues school authority.
     """
 
     plugin_name = "bb"
@@ -228,4 +215,4 @@ class BBUserHandler(UserHandlerPluginBase):
         return result
 
 
-plugin_manager.register(BBUserHandler(), "bb")
+plugin_manager.register(BBUserHandler(), BBUserHandler.plugin_name)
