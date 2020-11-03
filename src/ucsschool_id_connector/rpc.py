@@ -84,10 +84,6 @@ class SimpleRPCServer:
                 out_queue.school_authority.name,
             )
             await out_queue.start_task("scan")
-            self.logger.info(
-                "Starting out queue background task for school authority %r...",
-                out_queue.school_authority.name,
-            )
         else:
             self.logger.info(
                 "Not starting out queue tasks for deactivated school authority %r.",

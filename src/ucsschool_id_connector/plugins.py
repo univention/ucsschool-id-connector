@@ -217,7 +217,7 @@ class Postprocessing:
         self, http_method: str, url: str, school_authority: SchoolAuthorityConfiguration
     ) -> Dict[Any, Any]:
         """
-        Creates a dictionary the kwargs for the aiohttp request should be updated with.
+        Creates a dictionary the kwargs for the http request should be updated with.
 
         The configured ``create_request_kwargs`` hooks for a given school authority will
         be executed. The returned dictionaries are used to update the kwargs for

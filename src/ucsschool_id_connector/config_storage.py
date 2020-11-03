@@ -63,7 +63,7 @@ class ConfigurationStorage:
     @classmethod
     def school_authority_config_files(cls) -> Iterator[Path]:
         cls.logger.debug("Looking for configuration in %s...", SCHOOL_AUTHORITIES_CONFIG_PATH)
-        cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
+        SCHOOL_AUTHORITIES_CONFIG_PATH.mkdir(mode=0o750, parents=True, exist_ok=True)
         with os.scandir(SCHOOL_AUTHORITIES_CONFIG_PATH) as dir_entries:
             dir_entries = cast(Iterator[os.DirEntry], dir_entries)
             for entry in dir_entries:
@@ -107,7 +107,7 @@ class ConfigurationStorage:
     async def save_school_authorities(
         cls, school_authority_configs: Iterable[SchoolAuthorityConfiguration]
     ) -> None:
-        cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
+        SCHOOL_AUTHORITIES_CONFIG_PATH.mkdir(mode=0o750, parents=True, exist_ok=True)
         for config in school_authority_configs:
             path = SCHOOL_AUTHORITIES_CONFIG_PATH / f"{config.name}.json"
             await cls.save_school_authority(config, path)
@@ -118,14 +118,14 @@ class ConfigurationStorage:
         config: SchoolAuthorityConfiguration,
         path: Path,
     ) -> None:
-        cls.mkdir_p(path.parent)
+        path.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
         config_as_dict = config.dict_secrets_as_str()
         async with aiofiles.open(path, "w") as fp:
             await fp.write(ujson.dumps(config_as_dict, sort_keys=True, indent=4))
 
     @classmethod
     async def delete_school_authority(cls, name: str) -> None:
-        cls.mkdir_p(SCHOOL_AUTHORITIES_CONFIG_PATH)
+        SCHOOL_AUTHORITIES_CONFIG_PATH.mkdir(mode=0o750, parents=True, exist_ok=True)
         path = SCHOOL_AUTHORITIES_CONFIG_PATH / f"{name}.json"
         if path.exists() and not path.is_file():
             cls.logger.error("Not a file: %s", path)
@@ -144,7 +144,7 @@ class ConfigurationStorage:
     ) -> School2SchoolAuthorityMapping:
         """May raise SchoolMappingLoadingError."""
         cls.logger.debug("Loading school to authorities mapping configuration %r...", str(path))
-        cls.mkdir_p(path.parent)
+        path.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
         if not path.exists():
             return School2SchoolAuthorityMapping(mapping={})
         try:
@@ -160,14 +160,7 @@ class ConfigurationStorage:
         obj: School2SchoolAuthorityMapping,
         path: Path = SCHOOLS_TO_AUTHORITIES_MAPPING_PATH,
     ) -> None:
-        cls.mkdir_p(path.parent)
+        path.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
         cls.logger.info("Writing school to school authority mapping to %s...", path)
         async with aiofiles.open(path, "w") as fp:
             await fp.write(ujson.dumps(obj.dict(), sort_keys=True, indent=4))
-
-    @staticmethod
-    def mkdir_p(path):
-        try:
-            path.mkdir(mode=0o750, parents=True)
-        except FileExistsError:
-            pass
