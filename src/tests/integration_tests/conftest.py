@@ -31,6 +31,8 @@ import asyncio
 import datetime
 import json
 import os
+import re
+import subprocess
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
@@ -223,6 +225,11 @@ def bb_api_url():
     return _bb_api_url
 
 
+@pytest.fixture(scope="session")
+def url_fragment(docker_hostname):
+    return f"http://{docker_hostname}/ucsschool/kelvin/v1"
+
+
 @pytest.fixture()
 def ucsschool_id_connector_api_url(docker_hostname):
     """
@@ -270,6 +277,21 @@ def host_bb_token(docker_hostname: str, http_request) -> str:
     )
     assert resp.status_code == 200, (resp.status_code, resp.reason, resp.url)
     return resp.text.strip("\n")
+
+
+@pytest.fixture(scope="session")
+def kelvin_auth_header(docker_hostname: str):
+    url = f"http://{docker_hostname}/ucsschool/kelvin/token"
+    print(url)
+    response = requests.post(
+        url,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        data=dict(username="Administrator", password="univention"),
+    )
+    assert response.status_code == 200, f"{response.__dict__!r}"
+    response_json = response.json()
+    auth_header = {"Authorization": f"Bearer {response_json['access_token']}"}
+    return auth_header
 
 
 @pytest.fixture(scope="session")
@@ -448,8 +470,33 @@ async def save_mapping(
     print(f"Restored original s2s mapping: {s2s_mapping.dict()!r}")
 
 
+def create_school(host: str, ou_name: str):
+    subprocess.Popen(["apk", "add", "--no-cache", "openssh", "sshpass"], close_fds=True)
+    print(f"ssh to {host} to create {ou_name} with /usr/share/ucs-school-import/scripts/create_ou")
+    process = subprocess.Popen(
+        [
+            "sshpass",
+            "-p",
+            "univention",
+            "ssh",
+            "-o",
+            "StrictHostKeyChecking no",
+            f"root@{host}",
+            "/usr/share/ucs-school-import/scripts/create_ou",
+            ou_name,
+        ],
+        stderr=subprocess.PIPE,
+        close_fds=True,
+    )
+    stdout, stderr = process.communicate()
+    stderr = stderr.decode()
+    assert (not stderr) or ("Already attached!" in stderr) or ("created successfully" in stderr)
+    if "Already attached!" in stderr:
+        print(f"OU {ou_name} exists in {host}.")
+
+
 @pytest.fixture()
-def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_headers, http_request):
+def create_schools(random_name):
     """
     Fixture factory to create OUs. The OUs are cached during multiple test runs
     to save development time.
@@ -481,61 +528,12 @@ def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_
             ous.extend(["testou-{}".format(random_name()) for i in range(amount - len(ous))])
             print(f"Creating OUs: {ous!r}...")
             for ou in ous:
-                url = bb_api_url(docker_hostname, "schools")
-                response = http_request(
-                    "get",
-                    bb_api_url(docker_hostname, "schools", ou),
-                    headers=req_headers(token=host_bb_token, content_type="application/json"),
-                    expected_statuses=(200, 404),
-                )
-                if response.status_code == 200:
-                    print(f"OU {ou} exists in sender.")
-                else:
-                    print(f"Creating OU {ou!r} in sender ({url!r})...")
-                    http_request(
-                        "post",
-                        url,
-                        headers=req_headers(token=host_bb_token, content_type="application/json"),
-                        json_data={"name": ou, "display_name": ou},
-                        expected_statuses=(201, 400),
-                    )
-                    http_request(
-                        "get",
-                        bb_api_url(docker_hostname, "schools", ou),
-                        headers=req_headers(token=host_bb_token, content_type="application/json"),
-                    )
-                url = bb_api_url(auth.url, "schools")
-                http_request(
-                    "get",
-                    bb_api_url(auth.url, "schools", ou),
-                    headers=req_headers(
-                        token=auth.plugin_configs["bb"]["token"].get_secret_value(),
-                        content_type="application/json",
-                    ),
-                    expected_statuses=(200, 404),
-                )
-                if response.status_code == 200:
-                    print(f"OU {ou} exists in {auth.name!r}.")
-                else:
-                    print(f"Creating OU {ou!r} in {auth.name!r} ({url!r})...")
-                    http_request(
-                        "post",
-                        url,
-                        headers=req_headers(
-                            token=auth.plugin_configs["bb"]["token"].get_secret_value(),
-                            content_type="application/json",
-                        ),
-                        json_data={"name": ou, "display_name": ou},
-                        expected_statuses=(201,),
-                    )
-                    http_request(
-                        "get",
-                        bb_api_url(auth.url, "schools", ou),
-                        headers=req_headers(
-                            token=auth.plugin_configs["bb"]["token"].get_secret_value(),
-                            content_type="application/json",
-                        ),
-                    )
+                create_school(os.environ["nameserver1"], ou)
+
+                print(f"Creating OU {ou!r} in {auth.name!r} ...")
+                if ip := re.search(r"[\d+\.]+", auth.url).group():
+                    create_school(ip, ou)
+
                 if ou not in auth_school_mapping[auth.name]:
                     auth_school_mapping[auth.name].append(ou)
         with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:
@@ -547,24 +545,20 @@ def create_schools(random_name, docker_hostname, bb_api_url, host_bb_token, req_
 
 @pytest.fixture()
 async def make_sender_user(
-    host_bb_token: str,
+    kelvin_auth_header,
     random_name,
-    random_int,
-    bb_api_url,
     source_uid: str,
-    req_headers,
-    docker_hostname: str,
-    http_request,
+    url_fragment,
 ):
     """
     Fixture factory to create users on the apps host system. They are created
-    via the BB-API and automatically removed when the fixture goes out of scope.
+    via the Kelvin-API and automatically removed when the fixture goes out of scope.
     """
     created_users = list()
 
     def _make_sender_user(roles=("student",), ous=("DEMOSCHOOL",)):
         """
-        Creates a user on the hosts UCS system via BB-API
+        Creates a user on the hosts UCS system via Kelvin-API
 
         :param roles: The new users roles
         :param ous: The new users ous
@@ -572,31 +566,28 @@ async def make_sender_user(
         """
         firstname = fake.first_name()
         lastname = fake.last_name()
-        user_data = {
-            "name": "test{}".format(fake.user_name())[:15],
-            "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
-            "disabled": False,
-            "firstname": firstname,
-            "lastname": lastname,
-            "password": fake.password(length=15),
-            "record_uid": "{}.{}".format(firstname, lastname),
-            "roles": [bb_api_url(docker_hostname, "roles", role) for role in roles],
-            "school": bb_api_url(docker_hostname, "schools", ous[0]),
-            "school_classes": {}
+        user_data = dict(
+            name="test{}".format(fake.user_name())[:15],
+            birthday=fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
+            disabled=False,
+            firstname=firstname,
+            lastname=lastname,
+            password=fake.password(length=15),
+            record_uid="{}.{}".format(firstname, lastname),
+            roles=[f"{url_fragment}/roles/{role}" for role in roles],
+            school=f"{url_fragment}/schools/{ous[0]}",
+            schools=[f"{url_fragment}/schools/{ou}" for ou in ous],
+            school_classes={}
             if roles == ("staff",)
             else dict((ou, sorted([random_name(4), random_name(4)])) for ou in ous),
-            "schools": [bb_api_url(docker_hostname, "schools", ou) for ou in ous],
-            "source_uid": source_uid,
-        }
-        print(f"Creating user {user_data['name']!r} in source system...")
-        resp = http_request(
-            "post",
-            bb_api_url(docker_hostname, "users"),
-            headers=req_headers(token=host_bb_token, content_type="application/json"),
-            json_data=user_data,
-            expected_statuses=(201,),
+            source_uid=source_uid,
         )
-        print(resp.json())
+        resp = requests.post(
+            f"{url_fragment}/users/",
+            headers={"Content-Type": "application/json", **kelvin_auth_header},
+            data=json.dumps(user_data),
+        )
+        assert resp.status_code == 201, f"{resp.__dict__}"
         response_user = resp.json()
         created_users.append(response_user)
         return user_data
@@ -605,12 +596,8 @@ async def make_sender_user(
 
     for user in created_users:
         print(f"Deleting user {user['name']!r} in source system...")
-        http_request(
-            "delete",
-            bb_api_url(docker_hostname, "users", user["name"]),
-            headers=req_headers(token=host_bb_token),
-            expected_statuses=(204, 404),
-        )
+        response = requests.delete(f"{url_fragment}/users/{user['name']}", headers=kelvin_auth_header)
+        assert response.status_code in (204, 404)
 
 
 @pytest.fixture
@@ -696,7 +683,7 @@ def wait_for_kelvin_object_exists():
         resource_cls: Type[KelvinResource],
         method: str,
         session: Session,
-        wait_timeout: int = 60,
+        wait_timeout: int = 100,
         **method_kwargs,
     ) -> KelvinObject:
         end = datetime.datetime.now() + datetime.timedelta(seconds=wait_timeout)
@@ -726,7 +713,7 @@ def wait_for_kelvin_object_not_exists():
         resource_cls: Type[KelvinResource],
         method: str,
         session: Session,
-        wait_timeout: int = 60,
+        wait_timeout: int = 100,
         **method_kwargs,
     ) -> None:
         end = datetime.datetime.now() + datetime.timedelta(seconds=wait_timeout)
