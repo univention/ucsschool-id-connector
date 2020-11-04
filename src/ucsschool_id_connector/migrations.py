@@ -110,7 +110,15 @@ async def migrate_school_authority_configuration_to_plugins(paths: List[Path] = 
                         _die(f"Missing {attr!r} in JSON object.")
                 obj["plugin_configs"] = {
                     "bb": {
-                        "mapping": obj.pop("mapping"),
+                        "mapping": {
+                            "users": obj.pop("mapping"),
+                            "groups": {
+                                "name": "name",
+                                "description": "description",
+                                "school": "school",
+                                "users": "users",
+                            },
+                        },
                         "token": obj.pop("password"),
                         "passwords_target_attribute": obj.pop("passwords_target_attribute"),
                     },

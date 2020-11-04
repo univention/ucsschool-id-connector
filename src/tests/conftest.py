@@ -302,16 +302,28 @@ class BBSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfigurationFact
                 {
                     "mapping": factory.Dict(
                         {
-                            "firstname": "firstname",
-                            "lastname": "lastname",
-                            "username": "name",
-                            "disabled": "disabled",
-                            "school": "school",
-                            "schools": "schools",
-                            "school_classes": "school_classes",
-                            "ucsschoolSourceUID": "source_uid",
-                            "roles": "roles",
-                            "ucsschoolRecordUID": "record_uid",
+                            "groups": factory.Dict(
+                                {
+                                    "name": "name",
+                                    "description": "description",
+                                    "school": "school",
+                                    "users": "users",
+                                }
+                            ),
+                            "users": factory.Dict(
+                                {
+                                    "firstname": "firstname",
+                                    "lastname": "lastname",
+                                    "username": "name",
+                                    "disabled": "disabled",
+                                    "school": "school",
+                                    "schools": "schools",
+                                    "school_classes": "school_classes",
+                                    "ucsschoolSourceUID": "source_uid",
+                                    "roles": "roles",
+                                    "ucsschoolRecordUID": "record_uid",
+                                }
+                            ),
                         }
                     ),
                     "token": factory.LazyFunction(lambda: SecretStr(fake.password())),
@@ -331,16 +343,28 @@ class KelvinSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfiguration
                 {
                     "mapping": factory.Dict(
                         {
-                            "firstname": "firstname",
-                            "lastname": "lastname",
-                            "username": "name",
-                            "disabled": "disabled",
-                            "school": "school",
-                            "schools": "schools",
-                            "school_classes": "school_classes",
-                            "ucsschoolSourceUID": "source_uid",
-                            "roles": "roles",
-                            "ucsschoolRecordUID": "record_uid",
+                            "groups": factory.Dict(
+                                {
+                                    "name": "name",
+                                    "description": "description",
+                                    "school": "school",
+                                    "users": "users",
+                                }
+                            ),
+                            "users": factory.Dict(
+                                {
+                                    "firstname": "firstname",
+                                    "lastname": "lastname",
+                                    "username": "name",
+                                    "disabled": "disabled",
+                                    "school": "school",
+                                    "schools": "schools",
+                                    "school_classes": "school_classes",
+                                    "ucsschoolSourceUID": "source_uid",
+                                    "roles": "roles",
+                                    "ucsschoolRecordUID": "record_uid",
+                                }
+                            ),
                         }
                     ),
                     "username": factory.Faker("user_name"),

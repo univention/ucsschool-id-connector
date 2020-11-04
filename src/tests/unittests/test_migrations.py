@@ -48,7 +48,7 @@ async def test_migrate_school_authority_configuration_to_plugins(
     logger.setLevel(logging.DEBUG)
     expected: SchoolAuthorityConfiguration = bb_school_authority_configuration()
     old_config = expected.dict()
-    old_config["mapping"] = old_config["plugin_configs"]["bb"].pop("mapping")
+    old_config["mapping"] = old_config["plugin_configs"]["bb"]["mapping"].pop("users")
     old_config["password"] = old_config["plugin_configs"]["bb"].pop("token").get_secret_value()
     old_config["passwords_target_attribute"] = old_config["plugin_configs"]["bb"].pop(
         "passwords_target_attribute"
