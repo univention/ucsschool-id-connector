@@ -86,9 +86,11 @@ The school authorities configuration must be done through the *UCS\@school ID Co
         "plugin_configs": {
             "bb": {
                 "mapping": {
-                    "ucsschoolRecordUID": "record_uid",
-                    "ucsschoolSourceUID": "source_uid",
-                    "roles": "roles"
+                    "users": {
+                        "ucsschoolRecordUID": "record_uid",
+                        "ucsschoolSourceUID": "source_uid",
+                        "roles": "roles"
+                    }
                 }
             }
         }

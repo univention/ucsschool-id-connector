@@ -135,7 +135,13 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
             "url": f"http://{random_name()}.{random_name()}/",
             "plugins": ["bb"],
             "plugin_configs": {
-                "bb": {"mapping": {random_name(): random_name()}, "token": "foo"},
+                "bb": {
+                    "mapping": {
+                        "groups": {random_name(): random_name()},
+                        "users": {random_name(): random_name()},
+                    },
+                    "token": "foo",
+                },
             },
         },
     ]
@@ -170,7 +176,10 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         "plugins": ["bb"],
         "plugin_configs": {
             "bb": {
-                "mapping": {random_name(): random_name()},
+                "mapping": {
+                    "groups": {random_name(): random_name()},
+                    "users": {random_name(): random_name()},
+                },
                 "token": random_name(),
                 "passwords_target_attribute": random_name(),
             },
@@ -208,7 +217,10 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
         "plugins": ["bb"],
         "plugin_configs": {
             "bb": {
-                "mapping": {random_name(): random_name()},
+                "mapping": {
+                    "groups": {random_name(): random_name()},
+                    "users": {random_name(): random_name()},
+                },
                 "token": random_name(),
                 "passwords_target_attribute": random_name(),
             },

@@ -5,23 +5,31 @@
   "plugin_configs": {
     "bb": {
       "mapping": {
-        "firstname": "firstname",
-        "lastname": "lastname",
-        "username": "name",
-        "disabled": "disabled",
-        "mailPrimaryAddress": "email",
-        "e-mail": "email",
-        "birthday": "birthday",
-        "school": "school",
-        "schools": "schools",
-        "school_classes": "school_classes",
-        "ucsschoolSourceUID": "source_uid",
-        "roles": "roles",
-        "title": "title",
-        "displayName": "displayName",
-        "userexpiry": "userexpiry",
-        "phone": "phone",
-        "ucsschoolRecordUID": "record_uid"
+        "groups": {
+          "name": "name",
+          "description": "description",
+          "school": "school",
+          "users": "users"
+        },
+        "users": {
+          "firstname": "firstname",
+          "lastname": "lastname",
+          "username": "name",
+          "disabled": "disabled",
+          "mailPrimaryAddress": "email",
+          "e-mail": "email",
+          "birthday": "birthday",
+          "school": "school",
+          "schools": "schools",
+          "school_classes": "school_classes",
+          "ucsschoolSourceUID": "source_uid",
+          "roles": "roles",
+          "title": "title",
+          "displayName": "displayName",
+          "userexpiry": "userexpiry",
+          "phone": "phone",
+          "ucsschoolRecordUID": "record_uid"
+        }
       },
       "token": "2c9ec561871d522c3be2d652a3bbf34f45fa2ec7",
       "passwords_target_attribute": "ucsschool_id_connector_pw"
