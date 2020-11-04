@@ -137,7 +137,7 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
             "plugin_configs": {
                 "bb": {
                     "mapping": {
-                        "groups": {random_name(): random_name()},
+                        "school_classes": {random_name(): random_name()},
                         "users": {random_name(): random_name()},
                     },
                     "token": "foo",
@@ -177,7 +177,7 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         "plugin_configs": {
             "bb": {
                 "mapping": {
-                    "groups": {random_name(): random_name()},
+                    "school_classes": {random_name(): random_name()},
                     "users": {random_name(): random_name()},
                 },
                 "token": random_name(),
@@ -218,7 +218,7 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
         "plugin_configs": {
             "bb": {
                 "mapping": {
-                    "groups": {random_name(): random_name()},
+                    "school_classes": {random_name(): random_name()},
                     "users": {random_name(): random_name()},
                 },
                 "token": random_name(),

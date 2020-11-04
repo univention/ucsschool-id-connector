@@ -5,7 +5,7 @@
   "plugin_configs": {
     "bb": {
       "mapping": {
-        "groups": {
+        "school_classes": {
           "name": "name",
           "description": "description",
           "school": "school",

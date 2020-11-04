@@ -302,7 +302,7 @@ class BBSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfigurationFact
                 {
                     "mapping": factory.Dict(
                         {
-                            "groups": factory.Dict(
+                            "school_classes": factory.Dict(
                                 {
                                     "name": "name",
                                     "description": "description",
@@ -343,7 +343,7 @@ class KelvinSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfiguration
                 {
                     "mapping": factory.Dict(
                         {
-                            "groups": factory.Dict(
+                            "school_classes": factory.Dict(
                                 {
                                     "name": "name",
                                     "description": "description",

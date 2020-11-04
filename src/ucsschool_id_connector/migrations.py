@@ -112,7 +112,7 @@ async def migrate_school_authority_configuration_to_plugins(paths: List[Path] = 
                     "bb": {
                         "mapping": {
                             "users": obj.pop("mapping"),
-                            "groups": {
+                            "school_classes": {
                                 "name": "name",
                                 "description": "description",
                                 "school": "school",

@@ -140,7 +140,7 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
             "plugin_configs": {
                 "bb": {
                     "mapping": {
-                        "groups": {
+                        "school_classes": {
                             "name": "name",
                             "description": "description",
                             "school": "school",
