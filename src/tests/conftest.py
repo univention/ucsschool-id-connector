@@ -289,20 +289,6 @@ class BaseSchoolAuthorityConfigurationFactory(factory.Factory):
     name = factory.Faker("first_name")
     active = factory.LazyFunction(lambda: True)
     url = factory.Faker("url")
-    mapping = factory.Dict(
-        {
-            "firstname": "firstname",
-            "lastname": "lastname",
-            "username": "name",
-            "disabled": "disabled",
-            "school": "school",
-            "schools": "schools",
-            "school_classes": "school_classes",
-            "ucsschoolSourceUID": "source_uid",
-            "roles": "roles",
-            "ucsschoolRecordUID": "record_uid",
-        }
-    )
     plugins = factory.List([])
     plugin_configs = factory.Dict({})
 
@@ -314,6 +300,20 @@ class BBSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfigurationFact
         {
             "bb": factory.Dict(
                 {
+                    "mapping": factory.Dict(
+                        {
+                            "firstname": "firstname",
+                            "lastname": "lastname",
+                            "username": "name",
+                            "disabled": "disabled",
+                            "school": "school",
+                            "schools": "schools",
+                            "school_classes": "school_classes",
+                            "ucsschoolSourceUID": "source_uid",
+                            "roles": "roles",
+                            "ucsschoolRecordUID": "record_uid",
+                        }
+                    ),
                     "token": factory.LazyFunction(lambda: SecretStr(fake.password())),
                     "passwords_target_attribute": "ucsschool_id_connector_pw",
                 }
@@ -329,6 +329,20 @@ class KelvinSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfiguration
         {
             "kelvin": factory.Dict(
                 {
+                    "mapping": factory.Dict(
+                        {
+                            "firstname": "firstname",
+                            "lastname": "lastname",
+                            "username": "name",
+                            "disabled": "disabled",
+                            "school": "school",
+                            "schools": "schools",
+                            "school_classes": "school_classes",
+                            "ucsschoolSourceUID": "source_uid",
+                            "roles": "roles",
+                            "ucsschoolRecordUID": "record_uid",
+                        }
+                    ),
                     "username": factory.Faker("user_name"),
                     "password": factory.LazyFunction(lambda: SecretStr(fake.password())),
                     "passwords_target_attribute": "ucsschool_id_connector_pw",

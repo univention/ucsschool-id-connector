@@ -137,28 +137,28 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
         config = {
             "name": f"auth{auth_nr}",
             "url": f"https://{ip}/api-bb/",
-            "mapping": {
-                "firstname": "firstname",
-                "lastname": "lastname",
-                "username": "name",
-                "disabled": "disabled",
-                "mailPrimaryAddress": "email",
-                "e-mail": "email",
-                "birthday": "birthday",
-                "password": "password",
-                "school": "school",
-                "schools": "schools",
-                "school_classes": "school_classes",
-                "ucsschoolSourceUID": "source_uid",
-                "roles": "roles",
-                "title": "title",
-                "displayName": "displayName",
-                "userexpiry": "userexpiry",
-                "phone": "phone",
-                "ucsschoolRecordUID": "record_uid",
-            },
             "plugin_configs": {
                 "bb": {
+                    "mapping": {
+                        "firstname": "firstname",
+                        "lastname": "lastname",
+                        "username": "name",
+                        "disabled": "disabled",
+                        "mailPrimaryAddress": "email",
+                        "e-mail": "email",
+                        "birthday": "birthday",
+                        "password": "password",
+                        "school": "school",
+                        "schools": "schools",
+                        "school_classes": "school_classes",
+                        "ucsschoolSourceUID": "source_uid",
+                        "roles": "roles",
+                        "title": "title",
+                        "displayName": "displayName",
+                        "userexpiry": "userexpiry",
+                        "phone": "phone",
+                        "ucsschoolRecordUID": "record_uid",
+                    },
                     "token": password,
                     "passwords_target_attribute": "ucsschool_id_connector_pw",
                 },
@@ -340,7 +340,6 @@ async def make_school_authority(
     async def _make_school_authority(
         name: str,
         url: UrlStr,
-        mapping: Dict[str, Any],
         plugin_configs: Dict[str, Dict[str, Any]],
     ) -> SchoolAuthorityConfiguration:
         """
@@ -348,7 +347,6 @@ async def make_school_authority(
 
         :param name: The school authorities name
         :param url: The url for the school authorities endpoint
-        :param mapping: The school authorities mapping
         :param plugin_configs: configuration of plugins
         :return: A saved school authority
         """
@@ -363,7 +361,6 @@ async def make_school_authority(
         school_authority = bb_school_authority_configuration(
             name=name,
             url=url,
-            mapping=mapping,
             plugin_configs=plugin_configs,
         )
         config_as_dict = school_authority.dict()

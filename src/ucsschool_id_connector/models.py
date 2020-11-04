@@ -375,17 +375,23 @@ class SchoolAuthorityConfiguration(SecretsMixin, BaseModel):
     """(de)activate sending updates to this school authority"""
     url: UrlStr
     """target HTTP API URL"""
-    mapping: Dict[str, str] = {}
-    """mapping from attribute names on the source system to attribute names on
-     the target system"""
     plugins: List[str] = []
     """the plugins that should be executed for this specific school
     authority during handling in the out queue"""
     plugin_configs: Dict[str, Dict[str, Any]]
     """Plugin specific configurations,
     e.g. {
-        "kelvin": {"username": "..", "password": "..", "passwords_target_attribute": ".."},
-        "bb": {"token": "...", "passwords_target_attribute": ".."},
+        "kelvin": {
+            "mapping": { .. },
+            "username": "..",
+            "password": "..",
+            "passwords_target_attribute": ".."
+        },
+        "bb": {
+            "mapping": { .. },
+            "token": "...",
+            "passwords_target_attribute": ".."
+        },
     }
     Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
     """
@@ -396,9 +402,6 @@ class SchoolAuthorityConfigurationPatchDocument(SecretsMixin, BaseModel):
     """(de)activate sending updates to this school authority"""
     url: UrlStr = None
     """target HTTP API URL"""
-    mapping: Dict[str, Any] = None
-    """mapping from attribute names on the source system to attribute names on
-    the target system"""
     plugins: List[str] = None
     """the plugins that should be executed for this specific school
     authority during handling in the out queue"""

@@ -90,23 +90,27 @@ async def migrate_school_authority_configuration_to_plugins(paths: List[Path] = 
     for path in paths or ConfigurationStorage.school_authority_config_files():
         logger.info("Checking if migration is required for %r...", str(path))
         obj = _read_school_auth_config(path)
-        if "plugin_configs" in obj:
-            logger.info("    Has 'plugin_configs', trying to load as 'SchoolAuthorityConfiguration'...")
+        if "plugin_configs" in obj and "mapping" not in obj:
+            logger.info(
+                "    Has 'plugin_configs' and not 'mapping', trying to load as "
+                "'SchoolAuthorityConfiguration'..."
+            )
             await _test_load_as_school_authority_configuration(path)
             logger.info("    No migration necessary.")
             continue
         else:
-            logger.info("    No 'plugin_configs' found, converting...")
+            logger.info("    No 'plugin_configs' found or 'mapping' found, converting...")
             logger.info("    Original JSON:\n%s", pprint.pformat(obj))
             if "url" not in obj:
                 _die("Missing 'url' in JSON object.")
             if "api-bb" in obj["url"]:
                 logger.info("    Detected a configuration for the BB-API.")
-                for attr in ("password", "passwords_target_attribute"):
+                for attr in ("mapping", "password", "passwords_target_attribute"):
                     if attr not in obj:
                         _die(f"Missing {attr!r} in JSON object.")
                 obj["plugin_configs"] = {
                     "bb": {
+                        "mapping": obj.pop("mapping"),
                         "token": obj.pop("password"),
                         "passwords_target_attribute": obj.pop("passwords_target_attribute"),
                     },

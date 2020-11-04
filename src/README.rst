@@ -83,11 +83,15 @@ The school authorities configuration must be done through the *UCS\@school ID Co
 * The *virtual* (special handling by the *UCS\@school ID Connector* app) ``roles`` property should be synced as ``roles``::
 
     {
-        "mapping": {
-            "ucsschoolRecordUID": "record_uid",
-            "ucsschoolSourceUID": "source_uid",
-            "roles": "roles"
+        "plugin_configs": {
+            "bb": {
+                "mapping": {
+                    "ucsschoolRecordUID": "record_uid",
+                    "ucsschoolSourceUID": "source_uid",
+                    "roles": "roles"
+                }
             }
+        }
     }
 
 See ``src/example_configs.json`` for an example.

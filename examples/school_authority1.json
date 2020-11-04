@@ -2,27 +2,27 @@
   "name": "Traeger1",
   "url": "https://10.200.3.241/api-bb/",
   "active": true,
-  "mapping": {
-    "firstname": "firstname",
-    "lastname": "lastname",
-    "username": "name",
-    "disabled": "disabled",
-    "mailPrimaryAddress": "email",
-    "e-mail": "email",
-    "birthday": "birthday",
-    "school": "school",
-    "schools": "schools",
-    "school_classes": "school_classes",
-    "ucsschoolSourceUID": "source_uid",
-    "roles": "roles",
-    "title": "title",
-    "displayName": "displayName",
-    "userexpiry": "userexpiry",
-    "phone": "phone",
-    "ucsschoolRecordUID": "record_uid"
-  },
   "plugin_configs": {
     "bb": {
+      "mapping": {
+        "firstname": "firstname",
+        "lastname": "lastname",
+        "username": "name",
+        "disabled": "disabled",
+        "mailPrimaryAddress": "email",
+        "e-mail": "email",
+        "birthday": "birthday",
+        "school": "school",
+        "schools": "schools",
+        "school_classes": "school_classes",
+        "ucsschoolSourceUID": "source_uid",
+        "roles": "roles",
+        "title": "title",
+        "displayName": "displayName",
+        "userexpiry": "userexpiry",
+        "phone": "phone",
+        "ucsschoolRecordUID": "record_uid"
+      },
       "token": "a827ea2e0b1363d2e72a6067775db5ec884dc77f",
       "passwords_target_attribute": "ucsschool_id_connector_pw"
     }

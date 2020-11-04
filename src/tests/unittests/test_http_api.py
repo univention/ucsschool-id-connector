@@ -124,7 +124,6 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
             "name": random_name(),
             "active": bool(random_int(0, 1)),
             "url": f"http://{random_name()}.{random_name()}/",
-            "mapping": {random_name(): random_name()},
             "plugins": ["bb"],
             "plugin_configs": {
                 "bb": {"token": "foo", "passwords_target_attribute": random_name()},
@@ -136,7 +135,7 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
             "url": f"http://{random_name()}.{random_name()}/",
             "plugins": ["bb"],
             "plugin_configs": {
-                "bb": {"token": "foo"},
+                "bb": {"mapping": {random_name(): random_name()}, "token": "foo"},
             },
         },
     ]
@@ -155,8 +154,6 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
         ).json()
     )
     for data in school_authority_data:
-        if "mapping" not in data:
-            data["mapping"] = {}
         data["plugin_configs"]["bb"]["token"] = SecretStr("foo").display()  # '**********'
     assert res.status_code == 200
     res_json = res.json()
@@ -170,9 +167,14 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         "name": random_name(),
         "active": bool(random_int(0, 1)),
         "url": f"http://{random_name()}.{random_name()}/",
-        "mapping": {random_name(): random_name()},
         "plugins": ["bb"],
-        "plugin_configs": {"bb": {"token": random_name(), "passwords_target_attribute": random_name()}},
+        "plugin_configs": {
+            "bb": {
+                "mapping": {random_name(): random_name()},
+                "token": random_name(),
+                "passwords_target_attribute": random_name(),
+            },
+        },
     }
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
@@ -203,9 +205,14 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
         "name": random_name(),
         "url": f"http://{random_name()}.{random_name()}/",
         "active": bool(random_int(0, 1)),
-        "mapping": {random_name(): random_name()},
         "plugins": ["bb"],
-        "plugin_configs": {"bb": {"token": random_name(), "passwords_target_attribute": random_name()}},
+        "plugin_configs": {
+            "bb": {
+                "mapping": {random_name(): random_name()},
+                "token": random_name(),
+                "passwords_target_attribute": random_name(),
+            },
+        },
     }
     socket = zmq_socket({"result": school_authority_data})
     zmq_context_mock.socket.return_value = socket
