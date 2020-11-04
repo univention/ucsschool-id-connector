@@ -40,9 +40,9 @@ from ucsschool_id_connector.models import (
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.requests import http_delete, http_get, http_patch, http_post
 from ucsschool_id_connector_defaults.user_handler_base import (
-    PerSchoolAuthorityUserHandlerBase,
+    PerSchoolAuthorityUserDispatcherBase,
     SkipAttribute,
-    UserHandlerPluginBase,
+    UserDispatcherPluginBase,
     UserNotFoundError,
 )
 
@@ -66,11 +66,7 @@ BB_API_MAIN_ATTRIBUTES = {
 UserObject = Dict[str, Any]
 
 
-class MissingData(Exception):
-    ...
-
-
-class BBPerSAUserHandler(PerSchoolAuthorityUserHandlerBase):
+class BBPerSAUserHandler(PerSchoolAuthorityUserDispatcherBase):
     """
     THIS CLASS IS DEPRECATED AND WILL BE REMOVED IN FUTURE VERSIONS OF THE
     CONNECTOR THAT TARGETS KELVIN AS THE DEFAULT API.
@@ -80,6 +76,7 @@ class BBPerSAUserHandler(PerSchoolAuthorityUserHandlerBase):
 
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         super(BBPerSAUserHandler, self).__init__(school_authority, plugin_name)
+        self.attribute_mapping = self.school_authority.plugin_configs[plugin_name]["mapping"]["users"]
         timeout = aiohttp.ClientTimeout(total=HTTP_CLIENT_TIMEOUT)
         self._session = aiohttp.ClientSession(timeout=timeout)
 
@@ -109,17 +106,17 @@ class BBPerSAUserHandler(PerSchoolAuthorityUserHandlerBase):
         status, json_resp = await http_get(url, self.school_authority, session=self._session)
         return dict((school["name"], school["url"]) for school in json_resp["results"])
 
-    async def user_search_params(
+    async def search_params(
         self, obj: Union[ListenerUserAddModifyObject, ListenerUserRemoveObject]
     ) -> Dict[str, Any]:
-        res = await super(BBPerSAUserHandler, self).user_search_params(obj)
+        res = await super(BBPerSAUserHandler, self).search_params(obj)
         # filter out unwanted search parameters
         return {
             "record_uid": res["record_uid"],
             "source_uid": res["source_uid"],
         }
 
-    async def fetch_user(self, search_params: Dict[str, Any]) -> UserObject:
+    async def fetch_obj(self, search_params: Dict[str, Any]) -> UserObject:
         """Retrieve a user from API of school authority."""
         url = f"{self.school_authority.url}/users/"
         status, json_resp = await http_get(
@@ -186,7 +183,7 @@ class BBPerSAUserHandler(PerSchoolAuthorityUserHandlerBase):
         await self._session.close()
 
 
-class BBUserHandler(UserHandlerPluginBase):
+class BBUserDispatcher(UserDispatcherPluginBase):
     """
     THIS CLASS IS DEPRECATED AND WILL BE REMOVED IN FUTURE VERSIONS OF THE
     CONNECTOR THAT TARGETS KELVIN AS THE DEFAULT API.
@@ -198,14 +195,14 @@ class BBUserHandler(UserHandlerPluginBase):
     """
 
     plugin_name = "bb"
-    user_handler_class = BBPerSAUserHandler
+    per_s_a_handler_class = BBPerSAUserHandler
 
     @hook_impl
     async def create_request_kwargs(
         self, http_method: str, url: str, school_authority: SchoolAuthorityConfiguration
     ) -> Dict[Any, Any]:
         """impl for ucsschool_id_connector.plugins.Postprocessing.create_request_kwargs"""
-        result = await super(BBUserHandler, self).create_request_kwargs(
+        result = await super(BBUserDispatcher, self).create_request_kwargs(
             http_method, url, school_authority
         )
         result["headers"] = {
@@ -215,4 +212,4 @@ class BBUserHandler(UserHandlerPluginBase):
         return result
 
 
-plugin_manager.register(BBUserHandler(), BBUserHandler.plugin_name)
+plugin_manager.register(BBUserDispatcher(), BBUserDispatcher.plugin_name)

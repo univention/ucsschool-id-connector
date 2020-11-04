@@ -38,7 +38,7 @@ from ucsschool_id_connector.plugins import plugin_manager
 
 fake = Faker()
 
-HANDLER_CLASS = "BBUserHandler"
+HANDLER_CLASS = "BBUserDispatcher"
 PLUGIN_NAME = "bb"
 
 
@@ -53,7 +53,7 @@ async def test_map_attributes(
     else:
         raise AssertionError(f"Cannot find {HANDLER_CLASS!r} class in plugins.")
     s_a_config = bb_school_authority_configuration()
-    user_handler = plugin.user_handler_class(s_a_config, PLUGIN_NAME)
+    user_handler = plugin.per_s_a_handler_class(s_a_config, PLUGIN_NAME)
     user_obj: models.ListenerUserAddModifyObject = listener_user_add_modify_object()
     user_handler._school_ids_on_target_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
     user_handler._school_ids_on_target_cache_creation = datetime.datetime.now()
@@ -61,7 +61,9 @@ async def test_map_attributes(
         (role.name, fake.uri()) for role in user_obj.school_user_roles
     )
 
-    res = await user_handler.map_attributes(user_obj)
+    res = await user_handler.map_attributes(
+        user_obj, s_a_config.plugin_configs["bb"]["mapping"]["users"]
+    )
     school = [ou for ou in user_obj.schools if ou in user_obj.dn][0]
     schools_ids_on_target = await user_handler.schools_ids_on_target
     roles_on_target = await user_handler.roles_on_target
@@ -89,4 +91,4 @@ async def test_map_attributes(
     }
 
 
-# TODO: add test for user_handler_base.PerSchoolAuthorityUserHandlerBase.user_search_params
+# TODO: add test for user_handler_base.PerSchoolAuthorityUserDispatcherBase.search_params
