@@ -43,6 +43,7 @@ OUT_QUEUE_TOP_DIR = Path(APP_DATA_BASE_PATH, "out_queues")
 OUT_QUEUE_TRASH_DIR = Path(APP_DATA_BASE_PATH, "out_queues_trash")
 SCHOOL_AUTHORITIES_CONFIG_PATH = Path(APP_CONFIG_BASE_PATH, "school_authorities")
 SCHOOLS_TO_AUTHORITIES_MAPPING_PATH = Path(APP_CONFIG_BASE_PATH, "schools_authorities_mapping.json")
+SSL_CERTIFICATES = APP_CONFIG_BASE_PATH / "ssl_certs"
 AUTO_CHECK_INTERVAL = 60
 try:
     # Service.files_preserve doesn't work, so acquiring

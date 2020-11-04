@@ -259,6 +259,11 @@ def workgroup_dn_regex() -> Pattern:
 
 
 @lru_cache(maxsize=1)
+def kelvin_url_regex() -> Pattern:
+    return re.compile(r"^https://(?P<host>.+?)/ucsschool/kelvin/v(?P<version>.+?)/?")
+
+
+@lru_cache(maxsize=1)
 def get_app_version() -> str:
     try:
         return pkg_resources.get_distribution(APP_ID).version

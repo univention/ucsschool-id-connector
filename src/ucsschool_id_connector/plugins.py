@@ -46,7 +46,7 @@ hook_impl = pluggy.HookimplMarker(PLUGIN_NAMESPACE)
 hook_spec = pluggy.HookspecMarker(PLUGIN_NAMESPACE)
 plugin_manager = pluggy.PluginManager(PLUGIN_NAMESPACE)
 
-DEFAULT_PLUGIN = "bb"
+DEFAULT_PLUGIN = "kelvin"
 
 
 def filter_plugins(hook_name: str, plugins: List[str]) -> Any:

@@ -1,9 +1,10 @@
 {
-  "name": "Traeger1",
-  "url": "https://10.200.3.241/api-bb/",
+  "name": "Traeger2",
+  "url": "https://10.200.3.242/ucsschool/kelvin/v1/",
   "active": true,
+  "plugins": ["kelvin"],
   "plugin_configs": {
-    "bb": {
+    "kelvin": {
       "mapping": {
         "school_classes": {
           "name": "name",
@@ -31,8 +32,12 @@
           "ucsschoolRecordUID": "record_uid"
         }
       },
-      "token": "a827ea2e0b1363d2e72a6067775db5ec884dc77f",
-      "passwords_target_attribute": "ucsschool_id_connector_pw"
+      "password": "univention",
+      "passwords_target_attribute": "ucsschool_id_connector_pw",
+      "ssl_context": {
+        "check_hostname": false
+      },
+      "username": "Administrator"
     }
   }
 }
