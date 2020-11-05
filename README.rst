@@ -88,6 +88,8 @@ Inside the container you can use the systems Python::
 Install BB-API on sender for integration tests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+TODO: -> Kelvin
+
 A HTTP-API is required for the integration tests (running in the container) to be able to create/modify/delete users in the host and the target systems::
 
     $ ucr set bb/http_api/users/django_debug=yes bb/http_api/users/wsgi_server_capture_output=yes bb/http_api/users/wsgi_server_loglevel=debug bb/http_api/users/enable_session_authentication=yes

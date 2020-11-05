@@ -156,9 +156,8 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
             )
             old_data = obj.old_data
         else:
-            self.logger.debug("User %r has no 'old_data'.", obj.username)
             self.logger.debug(
-                "User %r has currently: schools=%r record_uid=%r source_uid=%r",
+                "User %r has no 'old_data', currently: schools=%r record_uid=%r source_uid=%r",
                 obj.username,
                 obj.schools,
                 obj.record_uid,
@@ -312,7 +311,6 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
                         group_dn,
                     )
         res = dict(res.items())
-        self.logger.debug("User %r has school_classes: %r.", obj.username, res)
         return res
 
     @staticmethod

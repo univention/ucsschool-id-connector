@@ -107,6 +107,7 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> User:
         """Retrieve a user from API of school authority."""
+        self.logger.debug("Retrieving user with search parameters: %r", search_params)
         users: List[User] = [
             user async for user in UserResource(session=self.session).search(**search_params)
         ]
@@ -122,7 +123,7 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
-        self.logger.info("Going to create user: %r...", request_body["name"])
+        self.logger.info("Going to create user %r: %r...", request_body["name"], request_body)
         user = User(
             session=self.session,
             **request_body,
@@ -132,7 +133,7 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
     async def do_modify(self, request_body: Dict[str, Any], api_user_data: User) -> None:
         """Modify a user object at the target."""
-        self.logger.info("Going to modify user: %r...", api_user_data.name)
+        self.logger.info("Going to modify user %r: %r...", api_user_data.name, request_body)
         user: User = await UserResource(session=self.session).get(name=api_user_data.name)
         for k, v in request_body.items():
             setattr(user, k, v)

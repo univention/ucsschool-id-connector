@@ -476,6 +476,7 @@ async def save_mapping(
 
 
 def create_school(host: str, ou_name: str):
+    print(f"Creating school {ou_name!r} on host {host!r}...")
     subprocess.Popen(["apk", "add", "--no-cache", "openssh", "sshpass"], close_fds=True)
     print(f"ssh to {host} to create {ou_name} with /usr/share/ucs-school-import/scripts/create_ou")
     process = subprocess.Popen(

@@ -29,7 +29,7 @@
 
 from typing import Any, Dict, List, Union
 
-from ucsschool.kelvin.client import SchoolClass, SchoolClassResource, SchoolResource
+from ucsschool.kelvin.client import NoObject, SchoolClass, SchoolClassResource, SchoolResource
 from ucsschool_id_connector.models import (
     ListenerGroupAddModifyObject,
     ListenerGroupRemoveObject,
@@ -125,6 +125,7 @@ class KelvinPerSASchoolClassDispatcher(PerSchoolAuthorityGroupDispatcherBase):
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> SchoolClass:
         """Retrieve a user from API of school authority."""
+        self.logger.debug("Retrieving school class with search parameters: %r", search_params)
         users: List[SchoolClass] = [
             user async for user in SchoolClassResource(session=self.session).search(**search_params)
         ]
@@ -140,17 +141,25 @@ class KelvinPerSASchoolClassDispatcher(PerSchoolAuthorityGroupDispatcherBase):
 
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a school class object at the target."""
-        self.logger.info("Going to create school class: %r...", request_body)
+        self.logger.info("Going to create school class %r: %r...", request_body["name"], request_body)
         school_class = SchoolClass(
             session=self.session,
             **request_body,
         )
-        await school_class.save()
+        try:
+            await school_class.save()
+        except NoObject as exc:
+            self.logger.error(
+                "Kelvin API responded with 'no object'. This usually means that a user in the school "
+                "class doesn't exist on the server: %s",
+                exc,
+            )
+            # TODO: find out which user, create class without it, maybe schedule user sync
         self.logger.info("School class created: %r.", school_class)
 
     async def do_modify(self, request_body: Dict[str, Any], api_user_data: SchoolClass) -> None:
         """Modify a school class object at the target."""
-        self.logger.info("Going to modify school class: %r...", api_user_data.name)
+        self.logger.info("Going to modify school class %r: %r...", api_user_data.name, request_body)
         school_class: SchoolClass = await SchoolClassResource(session=self.session).get(
             name=api_user_data.name,
             school=api_user_data.school,
@@ -158,7 +167,15 @@ class KelvinPerSASchoolClassDispatcher(PerSchoolAuthorityGroupDispatcherBase):
         for k, v in request_body.items():
             setattr(school_class, k, v)
         self.logger.debug("New state to save: %r", school_class.as_dict())
-        await school_class.save()
+        try:
+            await school_class.save()
+        except NoObject as exc:
+            self.logger.error(
+                "Kelvin API responded with 'no object'. This usually means that a user in the school "
+                "class doesn't exist on the server: %s",
+                exc,
+            )
+            # TODO: find out which user, modify class without it, maybe schedule user sync
         self.logger.info("School class modified: %r.", school_class)
 
     async def do_remove(self, obj: ListenerGroupRemoveObject, api_user_data: SchoolClass) -> None:
