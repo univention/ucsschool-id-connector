@@ -29,9 +29,8 @@ Installation
 On the server system
 ^^^^^^^^^^^^^^^^^^^^
 
-The app is currently only available in the test appcenter. Installation::
+The app is  available in the appcenter. Installation::
 
-    $ univention-install univention-appcenter-dev && univention-app dev-use-test-appcenter
     $ univention-app install ucsschool-id-connector
 
 The join script ``50ucsschool-id-connector.inst`` must run and create:
@@ -47,7 +46,7 @@ If they didn't get created, run::
 On the target systems
 ^^^^^^^^^^^^^^^^^^^^^
 
-A HTTP-API is required for the *UCS\@school ID Connector* app to be able to create/modify/delete users on the target systems. Currently only the BB-API is supported. Instructions for installation and configuration can be found in a later section.
+A HTTP-API is required for the *UCS\@school ID Connector* app to be able to create/modify/delete users on the target systems. Currently only the Kelvin API is supported. Instructions for installation and configuration can be found in a later section.
 
 
 Update
@@ -84,7 +83,7 @@ The school authorities configuration must be done through the *UCS\@school ID Co
 
     {
         "plugin_configs": {
-            "bb": {
+            "kelvin": {
                 "mapping": {
                     "users": {
                         "ucsschoolRecordUID": "record_uid",
@@ -96,7 +95,7 @@ The school authorities configuration must be done through the *UCS\@school ID Co
         }
     }
 
-See ``src/example_configs.json`` for an example.
+See ``examples/school_authority_kelvin.json`` for an example.
 
 
 UCS\@school ID Connector HTTP API
@@ -179,7 +178,7 @@ The file is created by the apps join script (see *Install* above).
 SSL certificates for Kelvin client plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The plugin that connects to the Kelvin API on th school authority side looks for and stores SSL certificates as ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/ssl_certs/HOSTNAME``. In case the certificate cannot be downloaded automatically, it can be saved there manually.
+The plugin that connects to the Kelvin API on the school authority side looks for and stores SSL certificates as ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/ssl_certs/HOSTNAME``. In case the certificate cannot be downloaded automatically, it can be saved there manually.
 
 Volumes
 ^^^^^^^
@@ -193,7 +192,7 @@ Example setting up a second school authority
 
 If we already have a school authority set up and want to basically copy its configuration in order to set up a second one we can do the following:
 
-First make sure the new school authority server has the package ucs-school-http-api-bb from the customer repository installed and running. Configuration is described in a later section.
+First make sure the new school authority server has the Kelvin app installed and running. Configuration is described in a later section.
 
 Then we want to retrieve the configuration for our old school authority.
 For this we open the HTTP-API Swagger UI ( https://FQDN/ucsschool-id-connector/api/v1/doc ) and authenticate ourselves.
@@ -203,7 +202,7 @@ In the response body we get a JSON list of the school authorities that are curre
 We need to copy the one we want to replicate and save it for later.
 Under "POST /ucsschool-id-connector/api/v1/school_authorities" we can create the new school authority.
 Click *try it out* and insert the coped JSON object from before into the request body.
-Now we just have to alter the name, url, and password before executing the request.
+Now we just have to alter the name, url, and login credentials before executing the request.
 The url has to point to the new school authorities HTTP-API.
 The name can be chosen at your leisure and the password is the authentication token of the school authorities HTTP-API (retrieved earlier).
 The tab ``PATCH /ucsschool-id-connector/api/v1/school_authorities/{name}`` can be used to change an already existing configuration.
@@ -218,17 +217,9 @@ Installation of target HTTP-API
 
 On each target system run::
 
-    $ echo -e "deb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/all/\n\
-      deb [trusted=yes] http://192.168.0.10/build2/ ucs_4.4-0-min-brandenburg/amd64/" > \
-      /etc/apt/sources.list.d/30_BB.list
-    $ univention-install -y ucs-school-http-api-bb
+    $ univention-app install ucsschool-kelvin-rest-api
 
-To allow the *UCS\@school ID Connector* app to access the APIs it needs an authentication token. On each target system run::
-
-    $ /usr/share/pyshared/bb/http_api/users/manage.py shell -c \
-      "from rest_framework.authtoken.models import Token; print(Token.objects.first().key)"
-
-This will print the token for writing to the API to the screen. Copy and save it for later use.
+To allow the *UCS\@school ID Connector* app to access the APIs it needs an authorized user account. By default the Administrator account is the only authorized user. To add a dedicated Kelvin API user for the UCS@school ID-Connector consult the Kelvin documentation on how to do that.
 
 
 Configuration of target HTTP-API
@@ -239,7 +230,7 @@ The target system is responsible for handling the data.
 
 For UCS\@school target systems two extended attributes must be created.
 The name of one (``ucsschool_id_connector_pw``) is used in the import hook `ucsschool_id_connector_password_hook.py <static/ucsschool_id_connector_password_hook.py>`_.
-If the extended attributes name is not ``ucsschool_id_connector_pw``, the hook file ``ucsschool_id_connector_password_hook.py`` must be edited, as well as the school authority configuration and the BB-API configuration file (``/var/lib/ucs-school-import/configs/user_import.json``).
+If the extended attributes name is not ``ucsschool_id_connector_pw``, the hook file ``ucsschool_id_connector_password_hook.py`` must be edited, as well as the school authority configuration and the Kelvin-API configuration file (``/var/lib/ucs-school-import/configs/kelvin.json``).
 To install the extended attributes run::
 
     $ udm settings/extended_attribute create \
@@ -299,7 +290,7 @@ To install the extended attributes run::
         -O /usr/share/ucs-school-import/pyhooks/ucsschool_id_connector_password_hook.py
 
 
-Edit ``/var/lib/ucs-school-import/configs/user_import.json`` and add the name of the ``passwords_target_attribute`` (``ucsschool_id_connector_pw``) to ``mapped_udm_properties`` (and ``mapped_udm_properties`` to ``configuration_checks``)::
+Edit ``/var/lib/ucs-school-import/configs/kelvin.json`` and add the name of the ``passwords_target_attribute`` (``ucsschool_id_connector_pw``) to ``mapped_udm_properties`` (and ``mapped_udm_properties`` to ``configuration_checks``)::
 
     "configuration_checks": ["defaults", "mapped_udm_properties"],
     "mapped_udm_properties": ["phone", "e-mail", "ucsschool_id_connector_pw"]
@@ -308,8 +299,8 @@ The ``mapped_udm_properties`` setting lists the names of UDM properties that sho
 The example configuration above can be created with the following command::
 
    $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json \
-      /var/lib/ucs-school-import/configs/user_import.json
-   $ python -c 'import json; fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w"); \
+      /var/lib/ucs-school-import/configs/kelvin.json
+   $ python -c 'import json; fp = open("/var/lib/ucs-school-import/configs/kelvin.json", "r+w"); \
       config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; \
       config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"]; fp.seek(0); \
       json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
