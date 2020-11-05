@@ -450,14 +450,15 @@ async def save_mapping(
 def create_school(host: str, ou_name: str):
     print(f"Creating school {ou_name!r} on host {host!r}...")
     if not Path("/usr/bin/ssh").exists() or not Path("/usr/bin/sshpass").exists():
+        print("Installing 'ssh' and 'sshpass'...")
         subprocess.Popen(["apk", "add", "--no-cache", "openssh", "sshpass"], close_fds=True)
-    print(f"ssh to {host} to create {ou_name} with /usr/share/ucs-school-import/scripts/create_ou")
+    print(f"ssh to {host!r} to create {ou_name!r} with /usr/share/ucs-school-import/scripts/create_ou")
     process = subprocess.Popen(
         [
-            "sshpass",
+            "/usr/bin/sshpass",
             "-p",
             "univention",
-            "ssh",
+            "/usr/bin/ssh",
             "-o",
             "StrictHostKeyChecking no",
             f"root@{host}",
@@ -469,9 +470,13 @@ def create_school(host: str, ou_name: str):
     )
     stdout, stderr = process.communicate()
     stderr = stderr.decode()
+    print(f"stdout={stdout}")
+    print(f"stderr={stdout}")
     assert (not stderr) or ("Already attached!" in stderr) or ("created successfully" in stderr)
     if "Already attached!" in stderr:
-        print(f"OU {ou_name} exists in {host}.")
+        print(f" => OU {ou_name!r} exists in {host!r}.")
+    else:
+        print(f" => OU {ou_name!r} created in {host!r}.")
 
 
 @pytest.fixture()
