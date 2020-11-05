@@ -222,6 +222,7 @@ async def test_delete_user(
         f"{url_fragment}/users/{sender_user['name']}",
         verify=True,
         headers=kelvin_auth_header,
+        expected_statuses=(204,),
     )
     print(
         f"User {sender_user['name']!r} was deleted in sender, waiting for it to "
