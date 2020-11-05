@@ -451,7 +451,15 @@ def create_school(host: str, ou_name: str):
     print(f"Creating school {ou_name!r} on host {host!r}...")
     if not Path("/usr/bin/ssh").exists() or not Path("/usr/bin/sshpass").exists():
         print("Installing 'ssh' and 'sshpass'...")
-        subprocess.Popen(["apk", "add", "--no-cache", "openssh", "sshpass"], close_fds=True)
+        process = subprocess.Popen(
+            ["apk", "add", "--no-cache", "openssh", "sshpass"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout, stderr = process.communicate()
+        stderr = stderr.decode()
+        print(f"stdout={stdout}")
+        print(f"stderr={stderr}")
     print(f"ssh to {host!r} to create {ou_name!r} with /usr/share/ucs-school-import/scripts/create_ou")
     process = subprocess.Popen(
         [
@@ -465,13 +473,13 @@ def create_school(host: str, ou_name: str):
             "/usr/share/ucs-school-import/scripts/create_ou",
             ou_name,
         ],
+        stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        close_fds=True,
     )
     stdout, stderr = process.communicate()
     stderr = stderr.decode()
     print(f"stdout={stdout}")
-    print(f"stderr={stdout}")
+    print(f"stderr={stderr}")
     assert (not stderr) or ("Already attached!" in stderr) or ("created successfully" in stderr)
     if "Already attached!" in stderr:
         print(f" => OU {ou_name!r} exists in {host!r}.")
