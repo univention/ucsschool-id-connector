@@ -34,7 +34,6 @@ from urllib.parse import urlsplit
 
 import faker
 import pytest
-import requests
 
 from ucsschool.kelvin.client import NoObject, User, UserResource
 
@@ -181,6 +180,7 @@ async def test_delete_user(
     kelvin_session,
     wait_for_kelvin_object_exists,
     wait_for_kelvin_object_not_exists,
+    http_request,
 ):
     """
     Tests if ucsschool_id_connector distributes the deletion of an existing
@@ -217,11 +217,12 @@ async def test_delete_user(
         name=sender_user["name"],
     )
     print(f"Deleting user {sender_user['name']!r} in sender...")
-    response = requests.delete(
+    http_request(
+        "delete",
         f"{url_fragment}/users/{sender_user['name']}",
+        verify=True,
         headers=kelvin_auth_header,
     )
-    assert response.status_code == 204, response.reason
     print(
         f"User {sender_user['name']!r} was deleted in sender, waiting for it to "
         f"disappear in ou_auth1..."
@@ -259,6 +260,7 @@ async def test_modify_user(
     wait_for_kelvin_object_exists,
     url_fragment,
     kelvin_auth_header,
+    http_request,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -302,12 +304,13 @@ async def test_modify_user(
         "disabled": not sender_user["disabled"],
         "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
     }
-    response = requests.patch(
+    response = http_request(
+        "patch",
         f"{url_fragment}/users/{sender_user['name']}",
+        verify=False,
         headers=kelvin_auth_header,
-        json=new_value,
+        json_data=new_value,
     )
-
     user_on_host: Dict[str, Any] = response.json()
     compare_user(new_value, user_on_host, new_value.keys())
     user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
@@ -346,6 +349,7 @@ async def test_class_change(
     wait_for_kelvin_object_exists,
     url_fragment,
     kelvin_auth_header,
+    http_request,
 ):
     """
     Tests if the modification of a users class is properly distributed by
@@ -375,10 +379,12 @@ async def test_class_change(
     print(f"2. User was created in auth1 with school_classes={user_auth1.school_classes!r}.")
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
     print(f"3. setting new value for school_classes on sender: {new_value!r}")
-    response = requests.patch(
+    response = http_request(
+        "patch",
         f"{url_fragment}/users/{sender_user['name']}",
+        verify=False,
         headers=kelvin_auth_header,
-        json=new_value,
+        json_data=new_value,
     )
     school_classes_at_sender = response.json()["school_classes"]
     assert school_classes_at_sender == new_value["school_classes"]
@@ -416,6 +422,7 @@ async def test_school_change(
     wait_for_kelvin_object_exists,
     url_fragment,
     kelvin_auth_header,
+    http_request,
 ):
     """
     Tests if the modification of a users school is properly distributed by
@@ -446,10 +453,12 @@ async def test_school_change(
     }
 
     print(f"Changing user on sender: {new_value!r}")
-    requests.patch(
+    http_request(
+        "patch",
         f"{url_fragment}/users/{sender_user['name']}",
+        verify=False,
         headers=kelvin_auth_header,
-        json=new_value,
+        json_data=new_value,
     )
     sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
