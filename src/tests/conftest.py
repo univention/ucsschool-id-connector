@@ -425,7 +425,7 @@ def _listener_dump_user_object(
             "passwordexpiry": None,
             "phone": [fake.phone_number()],
             "primaryGroup": f"cn=Domain Users,cn=groups,{base_dn}",
-            "ucsschoolRecordUID": fake.user_name(),
+            "ucsschoolRecordUID": f"{un}{fake.pyint(1000, 9999)}",
             "sambaRID": str(fake.pyint(4000, 60000)),
             "school": ous,
             "shell": "/bin/bash",

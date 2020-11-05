@@ -486,7 +486,8 @@ async def save_mapping(
 
 def create_school(host: str, ou_name: str):
     print(f"Creating school {ou_name!r} on host {host!r}...")
-    subprocess.Popen(["apk", "add", "--no-cache", "openssh", "sshpass"], close_fds=True)
+    if not Path("/usr/bin/ssh").exists() or not Path("/usr/bin/sshpass").exists():
+        subprocess.Popen(["apk", "add", "--no-cache", "openssh", "sshpass"], close_fds=True)
     print(f"ssh to {host} to create {ou_name} with /usr/share/ucs-school-import/scripts/create_ou")
     process = subprocess.Popen(
         [
@@ -582,13 +583,13 @@ async def make_sender_user(
         firstname = fake.first_name()
         lastname = fake.last_name()
         user_data = dict(
-            name="test{}".format(fake.user_name())[:15],
+            name=f"test.{firstname[:5]}.{lastname}"[:15],
             birthday=fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
             disabled=False,
             firstname=firstname,
             lastname=lastname,
             password=fake.password(length=15),
-            record_uid="{}.{}".format(firstname, lastname),
+            record_uid=f"{firstname[:5]}.{lastname}.{fake.pyint(1000, 9999)}",
             roles=[f"{url_fragment}/roles/{role}" for role in roles],
             school=f"{url_fragment}/schools/{ous[0]}",
             schools=[f"{url_fragment}/schools/{ou}" for ou in ous],

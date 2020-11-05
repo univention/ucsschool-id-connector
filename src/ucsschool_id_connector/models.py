@@ -387,11 +387,6 @@ class SchoolAuthorityConfiguration(SecretsMixin, BaseModel):
             "password": "..",
             "passwords_target_attribute": ".."
         },
-        "bb": {
-            "mapping": { .. },
-            "token": "...",
-            "passwords_target_attribute": ".."
-        },
     }
     Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
     """

@@ -172,7 +172,7 @@ async def test_save_school_authorities(
 
 
 @pytest.mark.asyncio
-async def test_load_school2target_mapping(temp_dir_func, bb_school_authority_configuration):
+async def test_load_school2target_mapping(temp_dir_func):
     """test loading a School2SchoolAuthorityMapping"""
     log_dir = temp_dir_func()
     s2sam_dir = temp_dir_func()
@@ -190,7 +190,7 @@ async def test_load_school2target_mapping(temp_dir_func, bb_school_authority_con
 
 
 @pytest.mark.asyncio
-async def test_save_school2target_mapping(temp_dir_func, bb_school_authority_configuration):
+async def test_save_school2target_mapping(temp_dir_func):
     """test saving School2SchoolAuthorityMapping"""
     log_dir = temp_dir_func()
     s2sam_dir = temp_dir_func()
