@@ -52,6 +52,7 @@ try:
 except PermissionError:
     # not allowed when run by user outside of container (on dev system)
     DOCKER_LOG_FD = open("/proc/self/fd/2", "w")
+HTTP_REQUEST_TIMEOUT = 20.0
 LOG_DIR = Path(f"/var/log/univention/{APP_ID}")
 LOG_FILE_PATH_HTTP = Path(LOG_DIR, "http.log")
 LOG_FILE_PATH_MIGRATION = Path(LOG_DIR, "migration.log")

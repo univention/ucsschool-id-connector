@@ -35,7 +35,7 @@ import httpx
 import lazy_object_proxy
 
 from ucsschool.kelvin.client import Session
-from ucsschool_id_connector.constants import SSL_CERTIFICATES
+from ucsschool_id_connector.constants import HTTP_REQUEST_TIMEOUT, SSL_CERTIFICATES
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 from ucsschool_id_connector.utils import ConsoleAndFileLogging, kelvin_url_regex
 
@@ -61,7 +61,7 @@ def kelvin_client_session(school_authority: SchoolAuthorityConfiguration, plugin
             f"Missing {exc!s} in Kelvin plugin configuration of school authority "
             f"{school_authority.dict()!r}."
         )
-    timeout = httpx.Timeout(timeout=10.0)
+    timeout = httpx.Timeout(timeout=HTTP_REQUEST_TIMEOUT)
     certificate_path = fetch_ucs_certificate(host)
     ssl_context = httpx.create_ssl_context(verify=str(certificate_path))
     for k, v in school_authority.plugin_configs[plugin_name].get("ssl_context", {}).items():
