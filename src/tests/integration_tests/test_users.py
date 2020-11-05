@@ -321,6 +321,7 @@ async def test_modify_user(
     timeout = 40
     while timeout > 0:
         time.sleep(5)
+        timeout -= 5
         remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
             name=sender_user["name"]
         )
@@ -397,6 +398,7 @@ async def test_class_change(
     timeout = 40
     while timeout > 0:
         time.sleep(5)
+        timeout -= 5
         remote_user: User = await UserResource(session=kelvin_session(docker_hostname)).get(
             name=sender_user["name"]
         )
@@ -475,11 +477,17 @@ async def test_school_change(
     timeout = 40
     while timeout > 0:
         time.sleep(5)
+        timeout -= 5
         remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
             name=sender_user["name"]
         )
-        if remote_user.school == new_school:
+        try:
+            assert remote_user.school == new_school
+            assert remote_user.schools == [new_school]
+            assert remote_user.school_classes == new_value["school_classes"]
             break
+        except AssertionError:
+            pass
     else:
         print(f"Waited {timeout}s without the user changing its school, continuing...")
     assert remote_user.school == new_school
