@@ -54,13 +54,23 @@ async def test_load_school_authorities_empty(temp_dir_func):
 
 
 @pytest.mark.asyncio
-async def test_load_school_authorities(temp_dir_func, bb_school_authority_configuration):
+@pytest.mark.parametrize("api", ("bb", "kelvin"))
+async def test_load_school_authorities(
+    api, temp_dir_func, bb_school_authority_configuration, kelvin_school_authority_configuration
+):
     """open a config"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    sac = bb_school_authority_configuration()
+    sac = {
+        "bb": bb_school_authority_configuration(),
+        "kelvin": kelvin_school_authority_configuration(),
+    }[api]
+    password = {
+        "bb": "token",
+        "kelvin": "password",
+    }[api]
     sac_dict = sac.dict()
-    sac_dict["plugin_configs"]["bb"]["token"] = sac.plugin_configs["bb"]["token"].get_secret_value()
+    sac_dict["plugin_configs"][api][password] = sac.plugin_configs[api][password].get_secret_value()
     with open(sac_dir / f"{sac.name}.json", "w") as fp:
         json.dump(sac_dict, fp)
     with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
@@ -69,8 +79,8 @@ async def test_load_school_authorities(temp_dir_func, bb_school_authority_config
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         async for read_sac in cs.load_school_authorities():
             read_sac_dict = read_sac.dict()
-            read_sac_dict["plugin_configs"]["bb"]["token"] = read_sac.plugin_configs["bb"][
-                "token"
+            read_sac_dict["plugin_configs"][api][password] = read_sac.plugin_configs[api][
+                password
             ].get_secret_value()
             assert sac_dict == read_sac_dict
 
@@ -102,13 +112,23 @@ async def test_delete_school_authority_not_a_file(temp_dir_func):
 
 
 @pytest.mark.asyncio
-async def test_delete_school_authority(temp_dir_func, bb_school_authority_configuration):
+@pytest.mark.parametrize("api", ("bb", "kelvin"))
+async def test_delete_school_authority(
+    api, temp_dir_func, bb_school_authority_configuration, kelvin_school_authority_configuration
+):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    sac = bb_school_authority_configuration()
+    sac = {
+        "bb": bb_school_authority_configuration(),
+        "kelvin": kelvin_school_authority_configuration(),
+    }[api]
+    password = {
+        "bb": "token",
+        "kelvin": "password",
+    }[api]
     sac_dict = sac.dict()
-    sac_dict["plugin_configs"]["bb"]["token"] = sac.plugin_configs["bb"]["token"].get_secret_value()
+    sac_dict["plugin_configs"][api][password] = sac.plugin_configs[api][password].get_secret_value()
     with open(sac_dir / f"{sac.name}.json", "w") as fp:
         json.dump(sac_dict, fp)
     with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
@@ -119,16 +139,25 @@ async def test_delete_school_authority(temp_dir_func, bb_school_authority_config
 
 
 @pytest.mark.asyncio
-async def test_save_school_authorities(temp_dir_func, bb_school_authority_configuration):
+@pytest.mark.parametrize("api", ("bb", "kelvin"))
+async def test_save_school_authorities(
+    api, temp_dir_func, bb_school_authority_configuration, kelvin_school_authority_configuration
+):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    sac1 = bb_school_authority_configuration()
-    sac2 = bb_school_authority_configuration()
+    sac1, sac2 = {
+        "bb": (bb_school_authority_configuration(), bb_school_authority_configuration()),
+        "kelvin": (kelvin_school_authority_configuration(), kelvin_school_authority_configuration()),
+    }[api]
+    password = {
+        "bb": "token",
+        "kelvin": "password",
+    }[api]
     sac1_dict = sac1.dict()
-    sac1_dict["plugin_configs"]["bb"]["token"] = sac1.plugin_configs["bb"]["token"].get_secret_value()
+    sac1_dict["plugin_configs"][api][password] = sac1.plugin_configs[api][password].get_secret_value()
     sac2_dict = sac2.dict()
-    sac2_dict["plugin_configs"]["bb"]["token"] = sac2.plugin_configs["bb"]["token"].get_secret_value()
+    sac2_dict["plugin_configs"][api][password] = sac2.plugin_configs[api][password].get_secret_value()
     with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
         "ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir
     ):
