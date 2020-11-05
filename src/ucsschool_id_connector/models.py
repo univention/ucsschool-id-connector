@@ -404,7 +404,6 @@ class SchoolAuthorityConfigurationPatchDocument(SecretsMixin, BaseModel):
     """Plugin specific configurations,
     e.g. {
         "kelvin": {"username": "..", "password": "..", "passwords_target_attribute": ".."},
-        "bb": {"token": "...", "passwords_target_attribute": ".."},
     }
     Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
     """

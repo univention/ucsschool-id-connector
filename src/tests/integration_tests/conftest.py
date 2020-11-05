@@ -106,12 +106,11 @@ def http_request():
 @pytest.fixture(scope="session")
 def school_auth_host_configs(docker_hostname: str, http_request):
     configs = {}
-    for fnf in ("bb-api-IP_traeger", "bb-api-key_traeger"):
-        for i in ("1", "2"):
-            url = urljoin(f"https://{docker_hostname}", f"{fnf}{i}.txt")
-            resp = http_request("get", url, verify=False)
-            assert resp.status_code == 200, (resp.status_code, resp.reason, url)
-            configs[fnf + i] = resp.text.strip("\n")
+    for i in ("1", "2"):
+        url = urljoin(f"https://{docker_hostname}", f"IP_traeger{i}.txt")
+        resp = http_request("get", url, verify=False)
+        assert resp.status_code == 200, (resp.status_code, resp.reason, url)
+        configs["IP_traeger" + i] = resp.text.strip("\n")
     return configs
 
 
@@ -132,7 +131,7 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
         :return: The school authority configuration in dictionary form
         """
         assert 0 < auth_nr < 3
-        ip = school_auth_host_configs[f"bb-api-IP_traeger{auth_nr}"]
+        ip = school_auth_host_configs[f"IP_traeger{auth_nr}"]
         config = {
             "name": f"auth{auth_nr}",
             "active": True,
@@ -216,28 +215,6 @@ def req_headers():
     return _req_headers
 
 
-@pytest.fixture()
-def bb_api_url():
-    """
-    Fixture to create BB-API resource URLs.
-    """
-
-    def _bb_api_url(hostname: str, resource: str, entity: str = "") -> str:
-        """
-        Creates a BB-API resource URL
-
-        :param hostname: The APIs hostname
-        :param resource: The resource to query (schools, users, roles)
-        :param entity: If given it builds the URL for the specific resource entity
-        :return: The BB-API URL
-        """
-        if hostname.endswith("api-bb/"):
-            return urljoin(hostname, f"{resource}/{entity}")
-        return urljoin(f"https://{hostname}/api-bb/", f"{resource}/{entity}/")
-
-    return _bb_api_url
-
-
 @pytest.fixture(scope="session")
 def url_fragment(docker_hostname):
     return f"http://{docker_hostname}/ucsschool/kelvin/v1"
@@ -276,20 +253,6 @@ async def source_uid() -> str:
     The source UID as specified in the ucsschool-id-connector App settings.
     """
     return await get_ucrv(f"{APP_ID}/source_uid")
-
-
-@pytest.fixture(scope="session")
-def host_bb_token(docker_hostname: str, http_request) -> str:
-    """
-    Returns a valid token for the BB-API of the containers host system.
-    """
-    resp = http_request(
-        "get",
-        urljoin(f"https://{docker_hostname}/", "bb-api-key_sender.txt"),
-        verify=False,
-    )
-    assert resp.status_code == 200, (resp.status_code, resp.reason, resp.url)
-    return resp.text.strip("\n")
 
 
 @pytest.fixture(scope="session")

@@ -107,8 +107,8 @@ async def test_create_user(
     Tests if ucsschool_id_connector distributes a newly created User to the correct school
     authorities.
     """
-    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
-    target_ip_2 = school_auth_host_configs["bb-api-IP_traeger2"]
+    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    target_ip_2 = school_auth_host_configs["IP_traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -186,8 +186,8 @@ async def test_delete_user(
     Tests if ucsschool_id_connector distributes the deletion of an existing
     user correctly.
     """
-    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
-    target_ip_2 = school_auth_host_configs["bb-api-IP_traeger2"]
+    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    target_ip_2 = school_auth_host_configs["IP_traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -266,7 +266,7 @@ async def test_modify_user(
     Tests if the modification of a user is properly distributed to the school
     authority
     """
-    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
+    target_ip_1 = school_auth_host_configs["IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     school_auth2 = await make_school_authority(**school_auth_config(2))
     auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -356,7 +356,7 @@ async def test_class_change(
     Tests if the modification of a users class is properly distributed by
     ucsschool-id-connector.
     """
-    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
+    target_ip_1 = school_auth_host_configs["IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
@@ -430,7 +430,7 @@ async def test_school_change(
     Tests if the modification of a users school is properly distributed by
     ucsschool-id-connector.
     """
-    target_ip_1 = school_auth_host_configs["bb-api-IP_traeger1"]
+    target_ip_1 = school_auth_host_configs["IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config(1))
     auth_school_mapping = create_schools([(school_auth1, 2)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
