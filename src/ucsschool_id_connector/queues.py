@@ -542,7 +542,10 @@ class OutQueue(FileQueue):
                     self.keep_file(path)
                     break
                 self.head = ""
-                await asyncio.sleep(1)
+                # Sleep a while, to allow out-queue to be populated by the in-queue so there is actually
+                # something to be sorted, and we don't start with the first item the in-queue provides
+                # (which is usually the group change before the user change):
+                await asyncio.sleep(5)
                 self._signal_alive()
 
     async def handle(self, path: Path) -> None:

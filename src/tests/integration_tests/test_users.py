@@ -322,7 +322,17 @@ async def test_modify_user(
     )
     compare_user(new_value, user_on_host.as_dict(), new_value.keys())
     # Check if user was modified on target host
-    time.sleep(10)
+    timeout = 40
+    while timeout > 0:
+        time.sleep(5)
+        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+            name=sender_user["name"]
+        )
+        if remote_user.firstname == new_value["firstname"]:
+            break
+    else:
+        print(f"Waited {timeout}s without the user changing its firstname, continuing...")
+
     remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
         name=sender_user["name"]
     )
@@ -389,10 +399,17 @@ async def test_class_change(
     assert sender_user_kelvin.school_classes == new_value["school_classes"]
     print(f"4. User was modified at sender, has now school_classes={school_classes_at_sender!r}.")
     # Check if user was modified on target host
-    time.sleep(10)
-    remote_user: User = await UserResource(session=kelvin_session(docker_hostname)).get(
-        name=sender_user["name"]
-    )
+    timeout = 40
+    while timeout > 0:
+        time.sleep(5)
+        remote_user: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+            name=sender_user["name"]
+        )
+        if remote_user.school_classes == new_value["school_classes"]:
+            break
+    else:
+        print(f"Waited {timeout}s without the users school classes changing, continuing...")
+
     assert remote_user.school_classes == new_value["school_classes"]
 
 
@@ -460,10 +477,16 @@ async def test_school_change(
     assert sender_user_kelvin.schools == [new_school]
     assert sender_user_kelvin.school_classes == new_value["school_classes"]
 
-    time.sleep(10)
-    remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
-        name=sender_user["name"]
-    )
+    timeout = 40
+    while timeout > 0:
+        time.sleep(5)
+        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+            name=sender_user["name"]
+        )
+        if remote_user.school == new_school:
+            break
+    else:
+        print(f"Waited {timeout}s without the user changing its school, continuing...")
     assert remote_user.school == new_school
     assert remote_user.schools == [new_school]
     assert remote_user.school_classes == new_value["school_classes"]
