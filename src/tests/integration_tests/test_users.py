@@ -34,6 +34,7 @@ from urllib.parse import urlsplit
 
 import faker
 import pytest
+import requests
 
 from ucsschool.kelvin.client import NoObject, User, UserResource
 
@@ -171,14 +172,11 @@ async def test_create_user(
 async def test_delete_user(
     make_school_authority,
     make_sender_user,
-    host_bb_token,
-    req_headers,
     school_auth_config,
     save_mapping,
     create_schools,
-    bb_api_url,
-    docker_hostname,
-    http_request,
+    kelvin_auth_header,
+    url_fragment,
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
@@ -219,13 +217,11 @@ async def test_delete_user(
         name=sender_user["name"],
     )
     print(f"Deleting user {sender_user['name']!r} in sender...")
-    http_request(
-        "delete",
-        bb_api_url(docker_hostname, "users", sender_user["name"]),
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
-        verify=False,
-        expected_statuses=(204,),
+    response = requests.delete(
+        f"{url_fragment}/users/{sender_user['name']}",
+        headers=kelvin_auth_header,
     )
+    assert response.status_code == 204, response.reason
     print(
         f"User {sender_user['name']!r} was deleted in sender, waiting for it to "
         f"disappear in ou_auth1..."
@@ -252,19 +248,17 @@ async def test_delete_user(
 async def test_modify_user(
     make_school_authority,
     make_sender_user,
-    req_headers,
-    bb_api_url,
-    host_bb_token,
     school_auth_config,
     save_mapping,
     create_schools,
     docker_hostname,
-    http_request,
     check_password,
     compare_user,
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
+    url_fragment,
+    kelvin_auth_header,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -308,13 +302,12 @@ async def test_modify_user(
         "disabled": not sender_user["disabled"],
         "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
     }
-    response = http_request(
-        "patch",
-        bb_api_url(docker_hostname, "users", sender_user["name"]),
-        verify=False,
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
-        json_data=new_value,
+    response = requests.patch(
+        f"{url_fragment}/users/{sender_user['name']}",
+        headers=kelvin_auth_header,
+        json=new_value,
     )
+
     user_on_host: Dict[str, Any] = response.json()
     compare_user(new_value, user_on_host, new_value.keys())
     user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
@@ -346,15 +339,13 @@ async def test_class_change(
     create_schools,
     save_mapping,
     make_sender_user,
-    bb_api_url,
-    req_headers,
     docker_hostname,
-    host_bb_token,
     random_name,
-    http_request,
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
+    url_fragment,
+    kelvin_auth_header,
 ):
     """
     Tests if the modification of a users class is properly distributed by
@@ -384,12 +375,10 @@ async def test_class_change(
     print(f"2. User was created in auth1 with school_classes={user_auth1.school_classes!r}.")
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
     print(f"3. setting new value for school_classes on sender: {new_value!r}")
-    response = http_request(
-        "patch",
-        bb_api_url(docker_hostname, "users", sender_user["name"]),
-        verify=False,
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
-        json_data=new_value,
+    response = requests.patch(
+        f"{url_fragment}/users/{sender_user['name']}",
+        headers=kelvin_auth_header,
+        json=new_value,
     )
     school_classes_at_sender = response.json()["school_classes"]
     assert school_classes_at_sender == new_value["school_classes"]
@@ -420,15 +409,13 @@ async def test_school_change(
     create_schools,
     save_mapping,
     make_sender_user,
-    bb_api_url,
-    req_headers,
     docker_hostname,
-    host_bb_token,
     random_name,
-    http_request,
     kelvin_session,
     school_auth_host_configs,
     wait_for_kelvin_object_exists,
+    url_fragment,
+    kelvin_auth_header,
 ):
     """
     Tests if the modification of a users school is properly distributed by
@@ -454,16 +441,15 @@ async def test_school_change(
     new_school = ou_auth1_2
     new_value = {
         "school_classes": {new_school: [random_name()]},
-        "school": bb_api_url(docker_hostname, "schools", new_school),
-        "schools": [bb_api_url(docker_hostname, "schools", new_school)],
+        "school": f"{url_fragment}/schools/{new_school}",
+        "schools": [f"{url_fragment}/schools/{new_school}"],
     }
+
     print(f"Changing user on sender: {new_value!r}")
-    http_request(
-        "patch",
-        bb_api_url(docker_hostname, "users", sender_user["name"]),
-        verify=False,
-        headers=req_headers(token=host_bb_token, content_type="application/json"),
-        json_data=new_value,
+    requests.patch(
+        f"{url_fragment}/users/{sender_user['name']}",
+        headers=kelvin_auth_header,
+        json=new_value,
     )
     sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
