@@ -127,7 +127,7 @@ async def test_create_user(
     print(f"===> ou_auth2  : OU {ou_auth2!r} @ auth {school_auth2.name!r}")
     for num, ous in enumerate(((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)), start=1):
         print(f"===> Case {num}/3: Creating user on sender in ous={ous!r}...")
-        sender_user: Dict[str, Any] = make_sender_user(ous=ous)
+        sender_user: Dict[str, Any] = await make_sender_user(ous=ous)
         # verify user on sender system
         await UserResource(session=kelvin_session(docker_hostname)).get(name=sender_user["name"])
         check_password(sender_user["name"], sender_user["password"], docker_hostname)
@@ -174,13 +174,11 @@ async def test_delete_user(
     school_auth_config,
     save_mapping,
     create_schools,
-    kelvin_auth_header,
-    url_fragment,
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
     wait_for_kelvin_object_not_exists,
-    http_request,
+    docker_hostname,
 ):
     """
     Tests if ucsschool_id_connector distributes the deletion of an existing
@@ -201,7 +199,7 @@ async def test_delete_user(
     }
     await save_mapping(mapping)
     print(f"Mapping: {mapping!r}")
-    sender_user = make_sender_user(ous=(ou_auth1, ou_auth2))
+    sender_user: Dict[str, Any] = await make_sender_user(ous=(ou_auth1, ou_auth2))
     print(f"Created user {sender_user['name']!r} in sender. Looking for it now in auth1...")
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
@@ -217,13 +215,8 @@ async def test_delete_user(
         name=sender_user["name"],
     )
     print(f"Deleting user {sender_user['name']!r} in sender...")
-    http_request(
-        "delete",
-        f"{url_fragment}/users/{sender_user['name']}",
-        verify=True,
-        headers=kelvin_auth_header,
-        expected_statuses=(204,),
-    )
+    user = await UserResource(session=kelvin_session(docker_hostname)).get(name=sender_user["name"])
+    await user.delete()
     print(
         f"User {sender_user['name']!r} was deleted in sender, waiting for it to "
         f"disappear in ou_auth1..."
@@ -246,6 +239,13 @@ async def test_delete_user(
     )
 
 
+async def change_properties(session, username: str, changes: dict) -> User:
+    user = await UserResource(session=session).get(name=username)
+    for property, value in changes.items():
+        setattr(user, property, value)
+    await user.save()
+
+
 @pytest.mark.asyncio
 async def test_modify_user(
     make_school_authority,
@@ -259,9 +259,6 @@ async def test_modify_user(
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
-    url_fragment,
-    kelvin_auth_header,
-    http_request,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -281,7 +278,7 @@ async def test_modify_user(
             ou_auth2: school_auth2.name,
         }
     )
-    sender_user = make_sender_user(ous=[ou_auth1])
+    sender_user: Dict[str, Any] = await make_sender_user(ous=[ou_auth1])
     # check user exists on sender
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
@@ -305,15 +302,7 @@ async def test_modify_user(
         "disabled": not sender_user["disabled"],
         "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
     }
-    response = http_request(
-        "patch",
-        f"{url_fragment}/users/{sender_user['name']}",
-        verify=False,
-        headers=kelvin_auth_header,
-        json_data=new_value,
-    )
-    user_on_host: Dict[str, Any] = response.json()
-    compare_user(new_value, user_on_host, new_value.keys())
+    await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
     user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
     )
@@ -349,9 +338,6 @@ async def test_class_change(
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
-    url_fragment,
-    kelvin_auth_header,
-    http_request,
 ):
     """
     Tests if the modification of a users class is properly distributed by
@@ -362,7 +348,7 @@ async def test_class_change(
     auth_school_mapping = create_schools([(school_auth1, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     await save_mapping({ou_auth1: school_auth1.name})
-    sender_user = make_sender_user(ous=[ou_auth1])
+    sender_user: Dict[str, Any] = await make_sender_user(ous=[ou_auth1])
     sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
     )
@@ -381,14 +367,11 @@ async def test_class_change(
     print(f"2. User was created in auth1 with school_classes={user_auth1.school_classes!r}.")
     new_value = {"school_classes": {ou_auth1: [random_name()]}}
     print(f"3. setting new value for school_classes on sender: {new_value!r}")
-    response = http_request(
-        "patch",
-        f"{url_fragment}/users/{sender_user['name']}",
-        verify=False,
-        headers=kelvin_auth_header,
-        json_data=new_value,
+    await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
+    user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
     )
-    school_classes_at_sender = response.json()["school_classes"]
+    school_classes_at_sender = user_on_host.school_classes
     assert school_classes_at_sender == new_value["school_classes"]
     sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
@@ -423,9 +406,6 @@ async def test_school_change(
     kelvin_session,
     school_auth_host_configs,
     wait_for_kelvin_object_exists,
-    url_fragment,
-    kelvin_auth_header,
-    http_request,
 ):
     """
     Tests if the modification of a users school is properly distributed by
@@ -437,7 +417,7 @@ async def test_school_change(
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     await save_mapping({ou_auth1: school_auth1.name, ou_auth1_2: school_auth1.name})
-    sender_user = make_sender_user(ous=[ou_auth1])
+    sender_user: Dict[str, Any] = await make_sender_user(ous=[ou_auth1])
     print(
         f"Created user {sender_user['name']} with school={sender_user['school']!r} and "
         f"and schools={sender_user['schools']!r} on sender."
@@ -451,19 +431,13 @@ async def test_school_change(
     new_school = ou_auth1_2
     new_value = {
         "school_classes": {new_school: [random_name()]},
-        "school": f"{url_fragment}/schools/{new_school}",
-        "schools": [f"{url_fragment}/schools/{new_school}"],
+        "school": new_school,
+        "schools": [new_school],
     }
 
     print(f"Changing user on sender: {new_value!r}")
-    http_request(
-        "patch",
-        f"{url_fragment}/users/{sender_user['name']}",
-        verify=False,
-        headers=kelvin_auth_header,
-        json_data=new_value,
-    )
-    sender_user_kelvin: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+    await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
+    sender_user_kelvin = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
     )
     print(
