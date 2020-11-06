@@ -43,7 +43,7 @@ import requests
 from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
 
-from ucsschool.kelvin.client import KelvinObject, KelvinResource, NoObject, Session
+from ucsschool.kelvin.client import KelvinObject, KelvinResource, NoObject, Session, User, UserResource
 from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.constants import APP_ID, OUT_QUEUE_TOP_DIR
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
@@ -184,8 +184,7 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
 @pytest.fixture()
 def req_headers():
     """
-    Fixture to create request headers for BB-API and
-    ucsschool-id-connector-API requests.
+    Fixture to create request headers for ucsschool-id-connector-API requests.
     """
 
     def _req_headers(
@@ -213,11 +212,6 @@ def req_headers():
         return headers
 
     return _req_headers
-
-
-@pytest.fixture(scope="session")
-def url_fragment(docker_hostname):
-    return f"http://{docker_hostname}/ucsschool/kelvin/v1"
 
 
 @pytest.fixture()
@@ -253,21 +247,6 @@ async def source_uid() -> str:
     The source UID as specified in the ucsschool-id-connector App settings.
     """
     return await get_ucrv(f"{APP_ID}/source_uid")
-
-
-@pytest.fixture(scope="session")
-def kelvin_auth_header(docker_hostname: str):
-    url = f"http://{docker_hostname}/ucsschool/kelvin/token"
-    print(url)
-    response = requests.post(
-        url,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        data=dict(username="Administrator", password="univention"),
-    )
-    assert response.status_code == 200, f"{response.__dict__!r}"
-    response_json = response.json()
-    auth_header = {"Authorization": f"Bearer {response_json['access_token']}"}
-    return auth_header
 
 
 @pytest.fixture(scope="session")
@@ -537,10 +516,10 @@ def create_schools(random_name):
 
 @pytest.fixture()
 async def make_sender_user(
-    kelvin_auth_header,
     random_name,
     source_uid: str,
-    url_fragment,
+    kelvin_session,
+    docker_hostname,
 ):
     """
     Fixture factory to create users on the apps host system. They are created
@@ -548,9 +527,9 @@ async def make_sender_user(
     """
     created_users = list()
 
-    def _make_sender_user(roles=("student",), ous=("DEMOSCHOOL",)):
+    async def _make_sender_user(roles=("student",), ous=("DEMOSCHOOL",)):
         """
-        Creates a user on the hosts UCS system via Kelvin-API
+        Creates a user on the hosts UCS system via Kelvin-API-Client
 
         :param roles: The new users roles
         :param ous: The new users ous
@@ -558,7 +537,7 @@ async def make_sender_user(
         """
         firstname = fake.first_name()
         lastname = fake.last_name()
-        user_data = dict(
+        user_obj = User(
             name=f"test.{firstname[:5]}.{lastname}"[:15],
             birthday=fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
             disabled=False,
@@ -566,30 +545,25 @@ async def make_sender_user(
             lastname=lastname,
             password=fake.password(length=15),
             record_uid=f"{firstname[:5]}.{lastname}.{fake.pyint(1000, 9999)}",
-            roles=[f"{url_fragment}/roles/{role}" for role in roles],
-            school=f"{url_fragment}/schools/{ous[0]}",
-            schools=[f"{url_fragment}/schools/{ou}" for ou in ous],
+            roles=[role for role in roles],
+            school=ous[0],
+            schools=[ou for ou in ous],
             school_classes={}
             if roles == ("staff",)
             else dict((ou, sorted([random_name(4), random_name(4)])) for ou in ous),
             source_uid=source_uid,
+            session=kelvin_session(docker_hostname),
         )
-        resp = requests.post(
-            f"{url_fragment}/users/",
-            headers={"Content-Type": "application/json", **kelvin_auth_header},
-            data=json.dumps(user_data),
-        )
-        assert resp.status_code == 201, f"{resp.__dict__}"
-        response_user = resp.json()
-        created_users.append(response_user)
-        return user_data
+        await user_obj.save()
+        print("Created new User in source system: {!r}".format(user_obj.as_dict()))
+        return user_obj.as_dict()
 
     yield _make_sender_user
 
     for user in created_users:
-        print(f"Deleting user {user['name']!r} in source system...")
-        response = requests.delete(f"{url_fragment}/users/{user['name']}", headers=kelvin_auth_header)
-        assert response.status_code in (204, 404)
+        print(f"Deleting User {user['name']!r} in source system...")
+        user = await UserResource(session=kelvin_session(docker_hostname)).get(name=user["name"])
+        await user.delete()
 
 
 @pytest.fixture
