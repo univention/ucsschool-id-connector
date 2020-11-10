@@ -168,7 +168,7 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
                         },
                     },
                     "password": "univention",
-                    "passwords_target_attribute": "ucsschool_id_connector_pw",
+                    "sync_password_hashes": True,
                     "ssl_context": {
                         "check_hostname": False,
                     },

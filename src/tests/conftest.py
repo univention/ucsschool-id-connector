@@ -369,7 +369,7 @@ class KelvinSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfiguration
                     ),
                     "username": factory.Faker("user_name"),
                     "password": factory.LazyFunction(lambda: SecretStr(fake.password())),
-                    "passwords_target_attribute": "ucsschool_id_connector_pw",
+                    "sync_password_hashes": True,
                 }
             )
         }

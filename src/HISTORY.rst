@@ -5,10 +5,10 @@
 Changelog
 ---------
 
-v2.0.0 (2020-11-??)
+v2.0.0 (2020-11-10)
 ...................
-* Add Kelvin API plugin, which can be used with the ID Connector.
-* The BB API group handler will be skipped, if there is no school authority using the BB API.
+* Add Kelvin API plugin, which can be used with the ID Connector. The receiving side is required to have installed at least version ``1.2.0`` of the Kelvin API.
+* The BB API plugin has been removed.
 
 v1.1.0 (2020-06-02)
 ...................

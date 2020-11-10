@@ -29,7 +29,7 @@
 
 from typing import Any, Dict, List, Union
 
-from ucsschool.kelvin.client import RoleResource, SchoolResource, User, UserResource
+from ucsschool.kelvin.client import PasswordsHashes, RoleResource, SchoolResource, User, UserResource
 from ucsschool_id_connector.models import (
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
@@ -59,6 +59,7 @@ KELVIN_API_SCHOOL_ATTRIBUTES = {
     "source_uid",
     "ucsschool_roles",
 }
+KELVIN_API_PASSWORD_HASHES_ATTRIBUTE = "kelvin_password_hashes"
 
 
 class SSLCACertificateDownloadError(Exception):
@@ -160,12 +161,20 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
     def _handle_password_hashes(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
         """If password hashed should be sent, return them here."""
-        passwords_target_attribute_name = self.school_authority.plugin_configs[self.plugin_name].get(
-            "passwords_target_attribute"
-        )
-        if passwords_target_attribute_name and obj.user_passwords:
-            # TODO: impl hook or resource for the Kelvin API
-            self.logger.warning("Sync of password hashes is not yet implemented.")
+        if (
+            self.school_authority.plugin_configs[self.plugin_name].get("sync_password_hashes", False)
+            and obj.user_passwords
+        ):
+            hashes = obj.user_passwords.dict_krb5_key_base64_encoded()
+            return {
+                KELVIN_API_PASSWORD_HASHES_ATTRIBUTE: PasswordsHashes(
+                    user_password=hashes["userPassword"],
+                    samba_nt_password=hashes["sambaNTPassword"],
+                    krb_5_key=hashes["krb5Key"],
+                    krb5_key_version_number=hashes["krb5KeyVersionNumber"],
+                    samba_pwd_last_set=hashes["sambaPwdLastSet"],
+                )
+            }
         return {}
 
     async def shutdown(self) -> None:

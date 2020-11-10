@@ -224,76 +224,8 @@ To allow the *UCS\@school ID Connector* app to access the APIs it needs an autho
 
 Configuration of target HTTP-API
 --------------------------------
+The Kelvin API must be version ``1.2.0`` or higher to work with the UCS@school ID Connector.
 The password hashes for LDAP and Kerberos authentication are collectively transmitted in one JSON object to one target attribute.
-The target attributes name must be set in the school authority configuration attribute ``passwords_target_attribute``.
-The target system is responsible for handling the data.
-
-For UCS\@school target systems two extended attributes must be created.
-The name of one (``ucsschool_id_connector_pw``) is used in the import hook `ucsschool_id_connector_password_hook.py <static/ucsschool_id_connector_password_hook.py>`_.
-If the extended attributes name is not ``ucsschool_id_connector_pw``, the hook file ``ucsschool_id_connector_password_hook.py`` must be edited, as well as the school authority configuration and the Kelvin-API configuration file (``/var/lib/ucs-school-import/configs/kelvin.json``).
-To install the extended attributes run::
-
-    $ udm settings/extended_attribute create \
-        --ignore_exists \
-        --position "cn=custom attributes,cn=univention,$(ucr get ldap/base)" \
-        --set name="ucsschool_id_connector_last_update" \
-        --set CLIName="ucsschool_id_connector_last_update" \
-        --set shortDescription="Date of last update by the UCS@school ID Connector app." \
-        --set module="users/user" \
-        --append options="ucsschoolStudent" \
-        --append options="ucsschoolTeacher" \
-        --append options="ucsschoolStaff" \
-        --append options="ucsschoolAdministrator" \
-        --set tabName="UCS@school" \
-        --set tabPosition=9 \
-        --set groupName="UCS@school ID Connector" \
-        --set groupPosition="2" \
-        --set translationGroupName='"de_DE" "UCS@school ID Connector"' \
-       --set syntax=string \
-        --set default="" \
-        --set multivalue=0 \
-        --set valueRequired=0 \
-        --set mayChange=1 \
-        --set doNotSearch=1 \
-        --set objectClass=univentionFreeAttributes \
-        --set ldapMapping=univentionFreeAttribute14 \
-        --set deleteObjectClass=0 \
-        --set overwriteTab=0 \
-        --set fullWidth=1 \
-        --set disableUDMWeb=0
-
-    $ udm settings/extended_attribute create \
-        --ignore_exists \
-        --position "cn=custom attributes,cn=univention,$(ucr get ldap/base)" \
-        --set name="ucsschool_id_connector_pw" \
-        --set CLIName="ucsschool_id_connector_pw" \
-        --set shortDescription="UCS@school ID Connector password sync." \
-        --set module="users/user" \
-        --append options="ucsschoolStudent" \
-        --append options="ucsschoolTeacher" \
-        --append options="ucsschoolStaff" \
-        --append options="ucsschoolAdministrator" \
-        --set syntax=string \
-        --set default="" \
-        --set multivalue=0 \
-        --set valueRequired=0 \
-        --set mayChange=1 \
-        --set doNotSearch=1 \
-        --set objectClass=univentionFreeAttributes \
-        --set ldapMapping=univentionFreeAttribute15 \
-        --set deleteObjectClass=0 \
-        --set overwriteTab=0 \
-        --set fullWidth=1 \
-        --set disableUDMWeb=0
-
-    $ wget https://SENDER-FQDN/ucsschool-id-connector/api/v1/static/ucsschool_id_connector_password_hook.py \
-        -O /usr/share/ucs-school-import/pyhooks/ucsschool_id_connector_password_hook.py
-
-
-Edit ``/var/lib/ucs-school-import/configs/kelvin.json`` and add the name of the ``passwords_target_attribute`` (``ucsschool_id_connector_pw``) to ``mapped_udm_properties`` (and ``mapped_udm_properties`` to ``configuration_checks``)::
-
-    "configuration_checks": ["defaults", "mapped_udm_properties"],
-    "mapped_udm_properties": ["phone", "e-mail", "ucsschool_id_connector_pw"]
 
 The ``mapped_udm_properties`` setting lists the names of UDM properties that should be available in the API.
 The example configuration above can be created with the following command::

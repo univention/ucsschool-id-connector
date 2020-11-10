@@ -39,9 +39,9 @@ from ucsschool_id_connector.models import (
 )
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.requests import http_delete, http_get, http_patch, http_post
+from ucsschool_id_connector_defaults.output_plugin_handler_base import SkipAttribute
 from ucsschool_id_connector_defaults.user_handler_base import (
     PerSchoolAuthorityUserDispatcherBase,
-    SkipAttribute,
     UserDispatcherPluginBase,
     UserNotFoundError,
 )

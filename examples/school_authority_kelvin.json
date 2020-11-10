@@ -33,7 +33,7 @@
         }
       },
       "password": "univention",
-      "passwords_target_attribute": "ucsschool_id_connector_pw",
+      "sync_password_hashes": true,
       "ssl_context": {
         "check_hostname": false
       },

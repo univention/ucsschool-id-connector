@@ -28,17 +28,17 @@
 # <http://www.gnu.org/licenses/>.
 
 import datetime
+from unittest.mock import patch
 
 import pytest
 from faker import Faker
 
 import ucsschool_id_connector.models as models
+from ucsschool.kelvin.client import PasswordsHashes
 from ucsschool_id_connector.plugin_loader import load_plugins
 from ucsschool_id_connector.plugins import plugin_manager
 
 fake = Faker()
-
-HANDLER_CLASS = "BBUserDispatcher"
 
 
 @pytest.mark.asyncio
@@ -51,16 +51,26 @@ async def test_map_attributes(
     kelvin_school_authority_configuration,
 ):
     load_plugins()
+    user_handler_class = {
+        "bb": "BBUserDispatcher",
+        "kelvin": "KelvinHandler",
+    }[api]
     for plugin in plugin_manager.get_plugins():
-        if plugin.__class__.__name__ == HANDLER_CLASS:
+        if plugin.__class__.__name__ == user_handler_class:
             break
     else:
-        raise AssertionError(f"Cannot find {HANDLER_CLASS!r} class in plugins.")
+        raise AssertionError(f"Cannot find handler class for {api!r} API in plugins.")
     s_a_config = {
         "bb": bb_school_authority_configuration(),
         "kelvin": kelvin_school_authority_configuration(),
     }[api]
-    user_handler = plugin.per_s_a_handler_class(s_a_config, api)
+    # can only be imported after load_plugins():
+    import ucsschool_id_connector_defaults.kelvin_connection
+
+    with patch.object(ucsschool_id_connector_defaults.kelvin_connection, "httpx"), patch.object(
+        ucsschool_id_connector_defaults.kelvin_connection, "fetch_ucs_certificate"
+    ):
+        user_handler = plugin.per_s_a_handler_class(s_a_config, api)
     user_obj: models.ListenerUserAddModifyObject = listener_user_add_modify_object()
     user_handler._school_ids_on_target_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
     user_handler._school_ids_on_target_cache_creation = datetime.datetime.now()
@@ -73,7 +83,7 @@ async def test_map_attributes(
     schools_ids_on_target = await user_handler.schools_ids_on_target
     roles_on_target = await user_handler.roles_on_target
     school_uri = schools_ids_on_target[school]
-    assert res == {
+    exp = {
         "disabled": user_obj.object["disabled"] == "1",
         "firstname": user_obj.object["firstname"],
         "lastname": user_obj.object["lastname"],
@@ -84,7 +94,9 @@ async def test_map_attributes(
         "school_classes": user_obj.object.get("school_classes", {}),
         "schools": list(schools_ids_on_target.values()),
         "source_uid": user_obj.source_uid,
-        "udm_properties": {
+    }
+    if api == "bb":
+        exp["udm_properties"] = {
             "ucsschool_id_connector_pw": {
                 "krb5Key": [k.decode() for k in user_obj.user_passwords.krb5Key],
                 "krb5KeyVersionNumber": user_obj.user_passwords.krb5KeyVersionNumber,
@@ -92,8 +104,19 @@ async def test_map_attributes(
                 "sambaPwdLastSet": user_obj.user_passwords.sambaPwdLastSet,
                 "userPassword": user_obj.user_passwords.userPassword,
             }
-        },
-    }
+        }
+    else:
+        kelvin_password_hashes = user_obj.user_passwords.dict_krb5_key_base64_encoded()
+        exp["kelvin_password_hashes"] = {
+            "krb_5_key": kelvin_password_hashes["krb5Key"],
+            "krb5_key_version_number": kelvin_password_hashes["krb5KeyVersionNumber"],
+            "samba_nt_password": kelvin_password_hashes["sambaNTPassword"],
+            "samba_pwd_last_set": kelvin_password_hashes["sambaPwdLastSet"],
+            "user_password": kelvin_password_hashes["userPassword"],
+        }
+        assert isinstance(res["kelvin_password_hashes"], PasswordsHashes)
+        res["kelvin_password_hashes"] = res["kelvin_password_hashes"].as_dict()
+    assert res == exp
 
 
 # TODO: add test for user_handler_base.PerSchoolAuthorityUserDispatcherBase.search_params
