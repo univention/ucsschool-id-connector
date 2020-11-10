@@ -156,6 +156,16 @@ class BBPerSAUserHandler(PerSchoolAuthorityUserDispatcherBase):
         else:
             self.logger.error("Deleting user (status: %r): %r", status, json_resp)
 
+    async def _handle_attr_password(self, obj: ListenerUserAddModifyObject) -> str:
+        """Generate a random password, unless password hashes are to be sent."""
+        if self.school_authority.plugin_configs[self.plugin_name].get("passwords_target_attribute"):
+            self.logger.warning(
+                "Configuration key 'passwords_target_attribute' is set, please remove 'password' from "
+                "'mapping'. Not sending value for 'password'.",
+            )
+            raise SkipAttribute()
+        return await super(BBPerSAUserHandler, self)._handle_attr_password(obj)
+
     def _handle_none_value(self, key_here: str) -> Any:
         """`none` is mostly invalid for the school authorities API"""
         raise SkipAttribute()

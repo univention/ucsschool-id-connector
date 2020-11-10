@@ -208,7 +208,7 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
 
 @patch("ucsschool_id_connector.http_api.zmq_context")
 def test_create_school_authorities(zmq_context_mock, random_name, random_int, zmq_socket):
-    # oder matters in this dict, as socket.send_string.assert_called_with() below
+    # order matters in this dict, as socket.send_string.assert_called_with() below
     # compares the json representation
     school_authority_data = {
         "name": random_name(),

@@ -38,7 +38,7 @@ from ucsschool_id_connector.models import (
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector_defaults.output_plugin_handler_base import DispatcherPluginBase
 from ucsschool_id_connector_defaults.school_classes_kelvin import KelvinSchoolClassDispatcher
-from ucsschool_id_connector_defaults.users_kelvin import KelvinUserDispatcher
+from ucsschool_id_connector_defaults.users_kelvin import KelvinPerSAUserDispatcher, KelvinUserDispatcher
 
 
 class KelvinHandler(DispatcherPluginBase):
@@ -51,7 +51,7 @@ class KelvinHandler(DispatcherPluginBase):
     """
 
     plugin_name = "kelvin"
-    per_s_a_handler_class = KelvinUserDispatcher  # only here to fulfill the API
+    per_s_a_handler_class = KelvinPerSAUserDispatcher  # only here to fulfill the API
 
     def __init__(self):
         super(KelvinHandler, self).__init__()

@@ -70,7 +70,6 @@ from .output_plugin_handler_base import (
     ObjectNotFoundError,
     PerSchoolAuthorityDispatcherBase,
     RemoteObject,
-    SkipAttribute,
     UnknownSchool,
 )
 
@@ -227,13 +226,8 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
 
     async def _handle_attr_password(self, obj: ListenerUserAddModifyObject) -> str:
         """Generate a random password, unless password hashes are to be sent."""
-        if self.school_authority.plugin_configs[self.plugin_name].get("passwords_target_attribute"):
-            self.logger.warning(
-                "'passwords_target_attribute' is set, please remove 'password' from 'mapping'. Not "
-                "sending value for 'password'."
-            )
-            raise SkipAttribute()
-
+        # Test for password hash handling in subclasses.
+        # If they are used don't generate and set a password.
         pw = list(string.ascii_letters + string.digits + ".-_")
         random.shuffle(pw)
         return "".join(pw[:15])

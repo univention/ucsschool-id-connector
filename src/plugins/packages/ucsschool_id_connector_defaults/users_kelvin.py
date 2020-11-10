@@ -148,6 +148,16 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         await user.delete()
         self.logger.info("User deleted: %r.", user)
 
+    async def _handle_attr_password(self, obj: ListenerUserAddModifyObject) -> str:
+        """Generate a random password, unless password hashes are to be sent."""
+        if self.school_authority.plugin_configs[self.plugin_name].get("sync_password_hashes", False):
+            self.logger.warning(
+                "Configuration key 'sync_password_hashes' is set, please remove 'password' from "
+                "'mapping'. Not sending value for 'password'.",
+            )
+            raise SkipAttribute()
+        return await super(KelvinPerSAUserDispatcher, self)._handle_attr_password(obj)
+
     def _handle_none_value(self, key_here: str) -> Any:
         """`none` can be invalid, for example if a list is expected."""
         raise SkipAttribute()
