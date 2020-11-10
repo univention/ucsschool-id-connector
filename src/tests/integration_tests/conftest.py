@@ -545,9 +545,9 @@ async def make_sender_user(
             lastname=lastname,
             password=fake.password(length=15),
             record_uid=f"{firstname[:5]}.{lastname}.{fake.pyint(1000, 9999)}",
-            roles=[role for role in roles],
+            roles=roles,
             school=ous[0],
-            schools=[ou for ou in ous],
+            schools=ous,
             school_classes={}
             if roles == ("staff",)
             else dict((ou, sorted([random_name(4), random_name(4)])) for ou in ous),
