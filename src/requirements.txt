@@ -10,7 +10,7 @@ diskcache
 factory_boy
 faker
 fastapi==0.42.0
-kelvin-rest-api-client>=0.2.1
+kelvin-rest-api-client>=0.2.2
 lazy-object-proxy==1.5.0
 ldap3
 pluggy
