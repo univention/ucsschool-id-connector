@@ -8,6 +8,9 @@
 	<li>
 	    <b>Important</b>: The support for replicating to target systems exposing the BB API has been dropped.
     </li>
+    <li>
+        The new variable "plugin_configs" now contains configuration details for plugin relevant configuring for each school authority configuration.
+    </li>
 </ul>
 
 <h2>v1.1.0 (2020-06-02)</h2>

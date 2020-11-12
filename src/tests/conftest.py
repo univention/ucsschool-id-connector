@@ -293,47 +293,6 @@ class BaseSchoolAuthorityConfigurationFactory(factory.Factory):
     plugin_configs = factory.Dict({})
 
 
-class BBSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfigurationFactory):
-    url = factory.LazyFunction(lambda: f"https://{fake.hostname()}/api-bb/")
-    plugins = ["bb"]
-    plugin_configs = factory.Dict(
-        {
-            "bb": factory.Dict(
-                {
-                    "mapping": factory.Dict(
-                        {
-                            "school_classes": factory.Dict(
-                                {
-                                    "name": "name",
-                                    "description": "description",
-                                    "school": "school",
-                                    "users": "users",
-                                }
-                            ),
-                            "users": factory.Dict(
-                                {
-                                    "firstname": "firstname",
-                                    "lastname": "lastname",
-                                    "username": "name",
-                                    "disabled": "disabled",
-                                    "school": "school",
-                                    "schools": "schools",
-                                    "school_classes": "school_classes",
-                                    "ucsschoolSourceUID": "source_uid",
-                                    "roles": "roles",
-                                    "ucsschoolRecordUID": "record_uid",
-                                }
-                            ),
-                        }
-                    ),
-                    "token": factory.LazyFunction(lambda: SecretStr(fake.password())),
-                    "passwords_target_attribute": "ucsschool_id_connector_pw",
-                }
-            )
-        }
-    )
-
-
 class KelvinSchoolAuthorityConfigurationFactory(BaseSchoolAuthorityConfigurationFactory):
     url = factory.LazyFunction(lambda: f"https://{fake.hostname()}/ucsschool/kelvin/v1/")
     plugins = ["kelvin"]
@@ -494,14 +453,6 @@ def listener_user_add_modify_object(listener_dump_user_object):
 #         return obj
 #
 #     return _func
-
-
-@pytest.fixture
-def bb_school_authority_configuration():
-    def _func(**kwargs) -> ucsschool_id_connector.models.SchoolAuthorityConfiguration:
-        return BBSchoolAuthorityConfigurationFactory(**kwargs)
-
-    return _func
 
 
 @pytest.fixture

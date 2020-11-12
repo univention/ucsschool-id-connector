@@ -34,32 +34,17 @@ Command line utility.
 Extend the choices list of the "command" argument to dispatch more commands.
 """
 
-import asyncio
-import logging
-import sys
-
 import click
 
-from .constants import LOG_FILE_PATH_MIGRATION
-from .migrations import ConversionError, migrate_school_authority_configuration_to_plugins
-from .utils import ConsoleAndFileLogging, get_app_version
+from .utils import get_app_version
 
 
 @click.command()
 @click.argument(
     "command",
-    type=click.Choice(["migrate-school-authority-configurations", "version"]),
+    type=click.Choice(["version"]),
 )
 def cli(command: str) -> None:
-    if command == "migrate-school-authority-configurations":
-        logger = ConsoleAndFileLogging.get_logger("ucsschool_id_connector", LOG_FILE_PATH_MIGRATION)
-        logger.addHandler(logging.StreamHandler(stream=sys.stdout))
-        logger.info("Logging to %r.", str(LOG_FILE_PATH_MIGRATION))
-        try:
-            asyncio.run(migrate_school_authority_configuration_to_plugins())
-        except ConversionError as exc:
-            click.echo(str(exc))
-            sys.exit(1)
     if command == "version":
         click.echo(get_app_version())
 

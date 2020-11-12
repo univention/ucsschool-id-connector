@@ -42,17 +42,15 @@ fake = Faker()
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("api", ("bb", "kelvin"))
+@pytest.mark.parametrize("api", ("kelvin",))
 async def test_map_attributes(
     api,
     mock_plugins,
     listener_user_add_modify_object,
-    bb_school_authority_configuration,
     kelvin_school_authority_configuration,
 ):
     load_plugins()
     user_handler_class = {
-        "bb": "BBUserDispatcher",
         "kelvin": "KelvinHandler",
     }[api]
     for plugin in plugin_manager.get_plugins():
@@ -61,7 +59,6 @@ async def test_map_attributes(
     else:
         raise AssertionError(f"Cannot find handler class for {api!r} API in plugins.")
     s_a_config = {
-        "bb": bb_school_authority_configuration(),
         "kelvin": kelvin_school_authority_configuration(),
     }[api]
     # can only be imported after load_plugins():
@@ -95,17 +92,7 @@ async def test_map_attributes(
         "schools": list(schools_ids_on_target.values()),
         "source_uid": user_obj.source_uid,
     }
-    if api == "bb":
-        exp["udm_properties"] = {
-            "ucsschool_id_connector_pw": {
-                "krb5Key": [k.decode() for k in user_obj.user_passwords.krb5Key],
-                "krb5KeyVersionNumber": user_obj.user_passwords.krb5KeyVersionNumber,
-                "sambaNTPassword": user_obj.user_passwords.sambaNTPassword,
-                "sambaPwdLastSet": user_obj.user_passwords.sambaPwdLastSet,
-                "userPassword": user_obj.user_passwords.userPassword,
-            }
-        }
-    else:
+    if api == "kelvin":
         kelvin_password_hashes = user_obj.user_passwords.dict_krb5_key_base64_encoded()
         exp["kelvin_password_hashes"] = {
             "krb_5_key": kelvin_password_hashes["krb5Key"],

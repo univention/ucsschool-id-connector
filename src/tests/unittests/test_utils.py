@@ -30,6 +30,7 @@
 import copy
 import os
 import time
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -227,3 +228,18 @@ def test_recursive_dict_update():
     with pytest.raises(ValueError):
         ucsschool_id_connector.utils.recursive_dict_update(result, updater)
     assert result == unchanged_result
+
+
+def test_get_version():
+    get_app_version_result = ucsschool_id_connector.utils.get_app_version()
+    src_path = Path(__file__).parent.parent.parent.parent / "VERSION.txt"
+    app_path = Path("/ucsschool-id-connector/VERSION.txt")
+    for path in (src_path, app_path):
+        try:
+            version_from_file = path.read_text().strip()
+            break
+        except IOError:
+            pass
+    else:
+        raise RuntimeError(f"Could not find 'VERSION.txt' in {src_path!s} or {app_path!s}.")
+    assert version_from_file == get_app_version_result

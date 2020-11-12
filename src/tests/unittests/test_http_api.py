@@ -124,23 +124,33 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
             "name": random_name(),
             "active": bool(random_int(0, 1)),
             "url": f"http://{random_name()}.{random_name()}/",
-            "plugins": ["bb"],
+            "plugins": ["kelvin"],
             "plugin_configs": {
-                "bb": {"token": "foo", "passwords_target_attribute": random_name()},
+                "kelvin": {
+                    "mapping": {
+                        "school_classes": {random_name(): random_name()},
+                        "users": {random_name(): random_name()},
+                    },
+                    "username": "foo",
+                    "password": "bar",
+                    "sync_password_hashes": bool(random_int(0, 1)),
+                },
             },
         },
         {
             "name": random_name(),
             "active": bool(random_int(0, 1)),
             "url": f"http://{random_name()}.{random_name()}/",
-            "plugins": ["bb"],
+            "plugins": ["kelvin"],
             "plugin_configs": {
-                "bb": {
+                "kelvin": {
                     "mapping": {
                         "school_classes": {random_name(): random_name()},
                         "users": {random_name(): random_name()},
                     },
-                    "token": "foo",
+                    "username": "foo",
+                    "password": "bar",
+                    "sync_password_hashes": bool(random_int(0, 1)),
                 },
             },
         },
@@ -160,7 +170,7 @@ def test_read_school_authorities(zmq_context_mock, random_name, random_int, zmq_
         ).json()
     )
     for data in school_authority_data:
-        data["plugin_configs"]["bb"]["token"] = SecretStr("foo").display()  # '**********'
+        data["plugin_configs"]["kelvin"]["password"] = SecretStr("bar").display()  # '**********'
     assert res.status_code == 200
     res_json = res.json()
     school_authority_data.sort(key=lambda x: x["name"])
@@ -173,15 +183,14 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         "name": random_name(),
         "active": bool(random_int(0, 1)),
         "url": f"http://{random_name()}.{random_name()}/",
-        "plugins": ["bb"],
+        "plugins": ["password"],
         "plugin_configs": {
-            "bb": {
+            "kelvin": {
                 "mapping": {
                     "school_classes": {random_name(): random_name()},
                     "users": {random_name(): random_name()},
                 },
-                "token": random_name(),
-                "passwords_target_attribute": random_name(),
+                "password": random_name(),
             },
         },
     }
@@ -202,7 +211,8 @@ def test_read_school_authority(zmq_context_mock, random_name, random_int, zmq_so
         ).json()
     )
     assert res.status_code == 200
-    school_authority_data["plugin_configs"]["bb"]["token"] = SecretStr("foo").display()  # '**********'
+    # SecretStr("...").display() -> '**********'
+    school_authority_data["plugin_configs"]["kelvin"]["password"] = SecretStr("foo").display()
     assert res.json() == school_authority_data
 
 
@@ -214,15 +224,14 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
         "name": random_name(),
         "url": f"http://{random_name()}.{random_name()}/",
         "active": bool(random_int(0, 1)),
-        "plugins": ["bb"],
+        "plugins": ["kelvin"],
         "plugin_configs": {
-            "bb": {
+            "kelvin": {
                 "mapping": {
                     "school_classes": {random_name(): random_name()},
                     "users": {random_name(): random_name()},
                 },
-                "token": random_name(),
-                "passwords_target_attribute": random_name(),
+                "password": random_name(),
             },
         },
     }
@@ -245,7 +254,7 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
     req_obj = json.loads(req_str)
     assert call_kargs == req_obj
     assert res.status_code == 201
-    school_authority_data["plugin_configs"]["bb"]["token"] = SecretStr("foo").display()  # '**********'
+    school_authority_data["plugin_configs"]["kelvin"]["password"] = SecretStr("foo").display()
     assert res.json() == school_authority_data
 
 

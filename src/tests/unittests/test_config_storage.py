@@ -54,19 +54,15 @@ async def test_load_school_authorities_empty(temp_dir_func):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("api", ("bb", "kelvin"))
-async def test_load_school_authorities(
-    api, temp_dir_func, bb_school_authority_configuration, kelvin_school_authority_configuration
-):
+@pytest.mark.parametrize("api", ("kelvin",))
+async def test_load_school_authorities(api, temp_dir_func, kelvin_school_authority_configuration):
     """open a config"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
     sac = {
-        "bb": bb_school_authority_configuration(),
         "kelvin": kelvin_school_authority_configuration(),
     }[api]
     password = {
-        "bb": "token",
         "kelvin": "password",
     }[api]
     sac_dict = sac.dict()
@@ -112,19 +108,15 @@ async def test_delete_school_authority_not_a_file(temp_dir_func):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("api", ("bb", "kelvin"))
-async def test_delete_school_authority(
-    api, temp_dir_func, bb_school_authority_configuration, kelvin_school_authority_configuration
-):
+@pytest.mark.parametrize("api", ("kelvin",))
+async def test_delete_school_authority(api, temp_dir_func, kelvin_school_authority_configuration):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
     sac = {
-        "bb": bb_school_authority_configuration(),
         "kelvin": kelvin_school_authority_configuration(),
     }[api]
     password = {
-        "bb": "token",
         "kelvin": "password",
     }[api]
     sac_dict = sac.dict()
@@ -139,19 +131,15 @@ async def test_delete_school_authority(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("api", ("bb", "kelvin"))
-async def test_save_school_authorities(
-    api, temp_dir_func, bb_school_authority_configuration, kelvin_school_authority_configuration
-):
+@pytest.mark.parametrize("api", ("kelvin",))
+async def test_save_school_authorities(api, temp_dir_func, kelvin_school_authority_configuration):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
     sac1, sac2 = {
-        "bb": (bb_school_authority_configuration(), bb_school_authority_configuration()),
         "kelvin": (kelvin_school_authority_configuration(), kelvin_school_authority_configuration()),
     }[api]
     password = {
-        "bb": "token",
         "kelvin": "password",
     }[api]
     sac1_dict = sac1.dict()
