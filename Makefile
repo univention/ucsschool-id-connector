@@ -98,5 +98,5 @@ build-docker-img: ## build docker image locally quickly
 
 build-docker-img-on-knut: clean ## copy source to docker.knut, build and push docker image
 	# TODO: target should depend on 'lint', but that currently fails
-	rsync -av --delete --exclude .git --exclude-from=.gitignore ./ root@docker.knut.univention.de:ucsschool-id-connector/
+	rsync -av --delete --exclude-from=.gitignore ./ root@docker.knut.univention.de:ucsschool-id-connector/
 	ssh root@docker.knut.univention.de 'cd ucsschool-id-connector && ./build_docker_image --release --push'

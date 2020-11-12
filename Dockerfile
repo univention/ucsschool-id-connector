@@ -1,6 +1,8 @@
 FROM alpine:3.12
 
 ARG app_id
+ARG commit
+ARG date
 ARG version
 
 VOLUME /var/log
@@ -11,8 +13,11 @@ EXPOSE 8911
 
 CMD ["/sbin/init"]
 
-LABEL "description"="$app_id app image" \
-    "version"="$version"
+LABEL "description"="Image of UCS app 'UCS@school ID Connector' ('$app_id')." \
+    "url"="https://www.univention.com/products/univention-app-center/app-catalog/$app_id/" \
+    "version"="$version" \
+    "release date"="$date" \
+    "commit"="$commit"
 
 # package and Python dependency installation, base system configuration,
 # and uninstallation - all in one step to keep image small
@@ -58,7 +63,6 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
     apk del --no-cache mybuilddeps
 
 # install app
-LABEL "release date"="$date"
 COPY src/ /ucsschool-id-connector/src/
 COPY VERSION.txt /ucsschool-id-connector
 COPY examples/ /ucsschool-id-connector/examples/
