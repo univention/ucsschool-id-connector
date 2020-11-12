@@ -1,14 +1,27 @@
 <h1>Changelog</h1>
 
-<h2>v2.0.0 (2020-11-??)</h2>
+<h2>v2.0.0 (2020-11-10)</h2>
 <ul>
     <li>
-	    Support for replicating to target systems exposing the <a href="https://docs.software-univention.de/ucsschool-kelvin-rest-api">UCS@school Kelvin REST API</a> was added. <b>Important</b>: The support for replicating to target systems exposing the BB API will be dropped in one of the following releases.
+	    Support for replicating to target systems exposing the <a href="https://docs.software-univention.de/ucsschool-kelvin-rest-api">UCS@school Kelvin REST API</a> was added.
 	</li>
 	<li>
-	    The school authority configuration was changed to allow the configuration of plugins. An automatic migration will be done in the join script. If it fails, the UCS@school ID connector will not start. Please read the log file <code>/var/log/univention/ucsschool-id-connector/queues.log</code>. To rerun the migration script, execute: <code>univention-run-join-scripts --run-scripts --force 50ucsschool-id-connector.inst</code>. It is discouraged to edit the configuration files directly. But in case it becomes necessary, they are located in <code>/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities</code>. To restart the UCS@school ID Connector, execute: <code>univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart</code>
-	</li>
-	<li>
+	    <b>Important</b>: The support for replicating to target systems exposing the BB API has been dropped.
+    </li>
+</ul>
+
+<h2>v1.1.0 (2020-06-02)</h2>
+<ul>
+    <li>
+        The source code that is responsible for replicating users to specific target systems has been moved to plugins.
+    </li>
+    <li>
+        The new variable "plugins" allows configuring which plugin to use for each school authority configuration.
+    </li>
+    <li>
+        In combination the previous two features allow the connector to target a different API for each school authority.
+    </li>
+    <li>
 	    Update to Python 3.8.
     </li>
 </ul>
