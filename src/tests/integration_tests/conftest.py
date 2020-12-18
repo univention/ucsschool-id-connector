@@ -451,6 +451,7 @@ def create_school(host: str, ou_name: str):
             f"root@{host}",
             "/usr/share/ucs-school-import/scripts/create_ou",
             ou_name,
+            f"dc{ou_name}"[:13],
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

@@ -28,6 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 import logging
+import ssl
 from pathlib import Path
 from typing import Match
 
@@ -63,7 +64,7 @@ def kelvin_client_session(school_authority: SchoolAuthorityConfiguration, plugin
         )
     timeout = httpx.Timeout(timeout=HTTP_REQUEST_TIMEOUT)
     certificate_path = fetch_ucs_certificate(host)
-    ssl_context = httpx.create_ssl_context(verify=str(certificate_path))
+    ssl_context: ssl.SSLContext = httpx.create_ssl_context(verify=str(certificate_path))
     for k, v in school_authority.plugin_configs[plugin_name].get("ssl_context", {}).items():
         logger.info("Applying to SSL context: %r=%r", k, v)
         setattr(ssl_context, k, v)
