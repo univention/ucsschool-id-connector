@@ -18,7 +18,6 @@ py3-pyzmq@stable-community
 py3-requests
 py3-setproctitle
 py3-simplejson
-py3-virtualenv
 py3-wheel
 py3-yarl
 tzdata

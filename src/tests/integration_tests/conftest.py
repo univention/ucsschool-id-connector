@@ -497,7 +497,7 @@ def create_schools(random_name):
             except KeyError:
                 auth_school_mapping[auth.name] = []
                 ous = []
-            ous.extend(["testou-{}".format(random_name()) for i in range(amount - len(ous))])
+            ous.extend(["ou-{}".format(random_name())[:13] for i in range(amount - len(ous))])
             print(f"Creating OUs: {ous!r}...")
             for ou in ous:
                 create_school(os.environ["nameserver1"], ou)
