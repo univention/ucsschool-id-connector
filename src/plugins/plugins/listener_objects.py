@@ -114,7 +114,7 @@ class ListenerObjectHandlerImpl:
         """
         Store `obj` JSON encoded into file at `path`.
 
-        Multiple `get_listener_object` hook implementations may run, until one
+        Multiple `save_listener_object` hook implementations may run, until one
         returns `True`. Further implementations will not be executed.
 
         :param ListenerObject obj: instance of a subclass of `ListenerObject`

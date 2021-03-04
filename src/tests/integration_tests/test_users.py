@@ -35,7 +35,7 @@ from urllib.parse import urlsplit
 import faker
 import pytest
 
-from ucsschool.kelvin.client import NoObject, User, UserResource
+from ucsschool.kelvin.client import NoObject, Session, User, UserResource
 
 try:
     from simplejson.errors import JSONDecodeError
@@ -239,11 +239,12 @@ async def test_delete_user(
     )
 
 
-async def change_properties(session, username: str, changes: dict) -> User:
-    user = await UserResource(session=session).get(name=username)
+async def change_properties(session: Session, username: str, changes: Dict[str, Any]) -> User:
+    user: User = await UserResource(session=session).get(name=username)
     for property, value in changes.items():
+        assert hasattr(user, property)
         setattr(user, property, value)
-    await user.save()
+    return await user.save()
 
 
 @pytest.mark.asyncio

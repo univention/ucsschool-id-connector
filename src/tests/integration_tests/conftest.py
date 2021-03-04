@@ -33,6 +33,7 @@ import json
 import os
 import re
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
@@ -60,6 +61,14 @@ AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.js
 KELVIN_API_USERNAME = "Administrator"
 KELVIN_API_PASSWORD = "univention"
 KELVIN_API_CA_CERT_PATH = "/tmp/pytest_cacert_{date:%Y-%m-%d}_{host}.crt"
+
+
+@pytest.fixture(scope="session")
+def event_loop(request):
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="session")
@@ -468,7 +477,7 @@ def create_school(host: str, ou_name: str):
 
 
 @pytest.fixture()
-def create_schools(random_name):
+def create_schools(docker_hostname, random_name):
     """
     Fixture factory to create OUs. The OUs are cached during multiple test runs
     to save development time.
@@ -497,15 +506,18 @@ def create_schools(random_name):
             except KeyError:
                 auth_school_mapping[auth.name] = []
                 ous = []
-            ous.extend(["ou-{}".format(random_name())[:10] for i in range(amount - len(ous))])
+            ous.extend(["ou-{}".format(random_name())[:10] for _ in range(amount - len(ous))])
             print(f"Creating OUs: {ous!r}...")
             for ou in ous:
-                create_school(os.environ["nameserver1"], ou)
-
-                print(f"Creating OU {ou!r} in {auth.name!r} ...")
+                hosts = [docker_hostname]
                 if ip := re.search(r"[\d+\.]+", auth.url).group():
-                    create_school(ip, ou)
-
+                    hosts.append(ip)
+                print(f"Creating OU {ou!r} on hosts {hosts!r}) in parallel...")
+                with ThreadPoolExecutor(max_workers=len(hosts)) as executor:
+                    res = executor.map(
+                        create_school, hosts, [ou for _ in range(len(hosts))], timeout=120
+                    )
+                list(res)  # for the side effect of actually evaluating map()
                 if ou not in auth_school_mapping[auth.name]:
                     auth_school_mapping[auth.name].append(ou)
         with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:
@@ -520,13 +532,15 @@ async def make_sender_user(
     random_name,
     source_uid: str,
     kelvin_session,
+    kelvin_session_kwargs,
     docker_hostname,
+    school_auth_host_configs,
 ):
     """
     Fixture factory to create users on the apps host system. They are created
     via the Kelvin-API and automatically removed when the fixture goes out of scope.
     """
-    created_users = list()
+    created_users: List[Dict[str, Any]] = []
 
     async def _make_sender_user(roles=("student",), ous=("DEMOSCHOOL",)):
         """
@@ -561,10 +575,23 @@ async def make_sender_user(
 
     yield _make_sender_user
 
-    for user in created_users:
-        print(f"Deleting User {user['name']!r} in source system...")
-        user = await UserResource(session=kelvin_session(docker_hostname)).get(name=user["name"])
-        await user.delete()
+    for host in (
+        docker_hostname,
+        school_auth_host_configs["IP_traeger1"],
+        school_auth_host_configs["IP_traeger2"],
+    ):
+        for user_dict in created_users:
+            print(f"Deleting user {user_dict['name']!r} from host {host!r}...")
+            # Creating a new session per user deletion, because of a problem in httpx/httpcore/h11.
+            # I think it has a problem with the disconnect happening by Kelvin with FastAPI delete():
+            # h11._util.LocalProtocolError: Too much data for declared Content-Length
+            async with Session(**kelvin_session_kwargs(host)) as session:
+                try:
+                    user = await UserResource(session=session).get(name=user_dict["name"])
+                    await user.delete()
+                    print(f"Success deleting user {user_dict['name']!r} from host {host!r}.")
+                except NoObject:
+                    print(f"No user {user_dict['name']!r} on {host!r}.")
 
 
 @pytest.fixture
@@ -612,13 +639,12 @@ def kelvin_session_kwargs(ca_cert):
         return True
 
     def _func(host: str) -> Dict[str, Union[str, bool]]:
-        res = {
+        return {
             "username": KELVIN_API_USERNAME,
             "password": KELVIN_API_PASSWORD,
             "host": host,
             "verify": False if is_ip(host) else str(ca_cert(host)),
         }
-        return res
 
     return _func
 
