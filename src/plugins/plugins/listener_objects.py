@@ -27,8 +27,10 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import base64
+import binascii
 from pathlib import Path
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, Optional, Type, Union
 
 import aiofiles
 import ujson
@@ -234,6 +236,21 @@ class ListenerUserObjectHandlerImpl(ListenerObjectHandlerImpl):
         self.old_data_db[obj.id] = ListenerUserOldDataEntry(
             schools=obj.schools, record_uid=obj.record_uid, source_uid=obj.source_uid
         )
+
+    @hook_impl
+    def get_listener_object(
+        self, obj_dict: Dict[str, Any]
+    ) -> Optional[Union[ListenerUserAddModifyObject, ListenerUserRemoveObject]]:
+        res = super().get_listener_object(obj_dict)
+        if isinstance(res, ListenerUserAddModifyObject) and res.user_passwords:
+            # When loading a listener object from disk (in an output plugin handler) the krb5Key hashes
+            # will already have been base64 encoded by obj_as_dict() before writing them with
+            # save_listener_object(). Revert them back to binary data.
+            try:
+                res.user_passwords.krb5Key = [base64.b64decode(k) for k in res.user_passwords.krb5Key]
+            except (TypeError, binascii.Error):
+                pass
+        return res
 
     @hook_impl
     async def preprocess_add_mod_object(self, obj: ListenerUserAddModifyObject) -> bool:
