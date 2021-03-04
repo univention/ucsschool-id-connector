@@ -7,6 +7,7 @@ base58>=2.0.1
 click
 colorlog
 diskcache
+distlib==0.3.0  # installed by apk
 factory_boy
 faker
 fastapi==0.42.0
