@@ -36,6 +36,7 @@ import faker
 import pytest
 
 from ucsschool.kelvin.client import NoObject, Session, User, UserResource
+from ucsschool_id_connector.ldap_access import LDAPAccess
 
 try:
     from simplejson.errors import JSONDecodeError
@@ -89,6 +90,29 @@ def filter_ous(user: Dict[str, Any], auth: str, mapping: Dict[str, str]) -> Dict
     return result_user
 
 
+@pytest.fixture(scope="session")
+def assert_equal_password_hashes(school_auth_host_configs):
+    async def _func(username: str, host1: str, host2: str) -> None:
+        print(f"Comparing password hashes of user {username!r} on host {host1!r} and {host2!r}...")
+        ldap_access = LDAPAccess(host=host1)
+        hashes1 = await ldap_access.get_passwords(
+            username,
+            base=school_auth_host_configs["base_dn_traeger1"],
+            bind_dn=school_auth_host_configs["administrator_dn_traeger1"],
+            bind_pw="univention",
+        )
+        ldap_access = LDAPAccess(host=host2)
+        hashes2 = await ldap_access.get_passwords(
+            username,
+            base=school_auth_host_configs["base_dn_traeger2"],
+            bind_dn=school_auth_host_configs["administrator_dn_traeger2"],
+            bind_pw="univention",
+        )
+        assert hashes1 == hashes2
+
+    return _func
+
+
 @pytest.mark.asyncio
 async def test_create_user(
     make_school_authority,
@@ -102,6 +126,7 @@ async def test_create_user(
     kelvin_session,
     school_auth_host_configs,
     wait_for_kelvin_object_exists,
+    assert_equal_password_hashes,
 ):
     """
     Tests if ucsschool_id_connector distributes a newly created User to the correct school
@@ -146,6 +171,7 @@ async def test_create_user(
             sender_user["password"],
             urlsplit(school_auth1.url).netloc,
         )
+        await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
         if ou_auth2 in ous:
             print(f"User should also be in OU2 ({ou_auth2!r}), checking...")
             user_remote: User = await wait_for_kelvin_object_exists(
@@ -161,6 +187,7 @@ async def test_create_user(
                 sender_user["password"],
                 urlsplit(school_auth2.url).netloc,
             )
+            await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_2)
         else:
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
             with pytest.raises(NoObject):
@@ -260,6 +287,7 @@ async def test_modify_user(
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
+    assert_equal_password_hashes,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -295,18 +323,23 @@ async def test_modify_user(
         session=kelvin_session(target_ip_1),
         name=sender_user["name"],
     )
-    check_password(sender_user["name"], sender_user["password"], urlsplit(school_auth1.url).netloc)
+    check_password(sender_user["name"], sender_user["password"], target_ip_1)
+    await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
     # Modify user
+    new_password = fake.password(length=15)
     new_value = {
         "firstname": fake.first_name(),
         "lastname": fake.last_name(),
         "disabled": not sender_user["disabled"],
         "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
+        "password": new_password,
     }
     await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
     user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
     )
+
+    del new_value["password"]
     compare_user(new_value, user_on_host.as_dict(), new_value.keys())
     # Check if user was modified on target host
     timeout = 40
@@ -325,6 +358,14 @@ async def test_modify_user(
         name=sender_user["name"]
     )
     compare_user(user_on_host.as_dict(), remote_user.as_dict())
+
+    print("Checking password change...")
+    await change_properties(kelvin_session(docker_hostname), sender_user["name"], {"disabled": False})
+    check_password(sender_user["name"], new_password, docker_hostname)
+    remote_user.disabled = False
+    await remote_user.save()
+    check_password(sender_user["name"], new_password, target_ip_1)
+    await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
 
 
 @pytest.mark.asyncio

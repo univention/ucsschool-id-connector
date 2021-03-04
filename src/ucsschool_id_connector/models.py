@@ -124,6 +124,17 @@ class UserPasswords(BaseModel):
     krb5KeyVersionNumber: int
     sambaPwdLastSet: int
 
+    def __eq__(self, other: Any):
+        if not isinstance(other, UserPasswords):
+            return False
+        return (
+            set(self.userPassword) == set(other.userPassword)
+            and self.sambaNTPassword == other.sambaNTPassword
+            and set(self.krb5Key) == set(other.krb5Key)
+            and self.krb5KeyVersionNumber == other.krb5KeyVersionNumber
+            and self.sambaPwdLastSet == other.sambaPwdLastSet
+        )
+
     def dict_krb5_key_base64_encoded(
         self,
         *,

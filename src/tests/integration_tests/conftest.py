@@ -120,6 +120,24 @@ def school_auth_host_configs(docker_hostname: str, http_request):
         resp = http_request("get", url, verify=False)
         assert resp.status_code == 200, (resp.status_code, resp.reason, url)
         configs["IP_traeger" + i] = resp.text.strip("\n")
+        resp = http_request(
+            "get",
+            f"https://Administrator:univention@{configs['IP_traeger' + i]}"
+            f"/univention/udm/ldap/base/",
+            headers={"Accept": "application/json"},
+            verify=False,
+        )
+        resp_json = resp.json()
+        configs["base_dn_traeger" + i] = resp_json["dn"]
+        resp = http_request(
+            "get",
+            f"https://Administrator:univention@{configs['IP_traeger' + i]}"
+            f"/univention/udm/users/user/?query[username]=Administrator",
+            headers={"Accept": "application/json"},
+            verify=False,
+        )
+        resp_json = resp.json()
+        configs["administrator_dn_traeger" + i] = resp_json["_embedded"]["udm:object"][0]["dn"]
     return configs
 
 
@@ -569,9 +587,13 @@ async def make_sender_user(
             source_uid=source_uid,
             session=kelvin_session(docker_hostname),
         )
+        password = user_obj.password
         await user_obj.save()
-        print("Created new User in source system: {!r}".format(user_obj.as_dict()))
-        return user_obj.as_dict()
+        user_obj.password = password
+        user_obj_as_dict = user_obj.as_dict()
+        created_users.append(user_obj_as_dict)
+        print("Created new User in source system: {!r}".format(user_obj_as_dict))
+        return user_obj_as_dict
 
     yield _make_sender_user
 
@@ -600,11 +622,15 @@ def check_password(http_request):
 
     def _func(username: str, password: str, host: str) -> None:
         """May raise `AssertionError` if login check fails."""
-        # url = f"https://{host}/univention/auth/"
-        # http_request("get", url, params={"username": username, "password": password})
-        # TODO: Kelvin API does not yet support password sync.
-        print("===> NO PASSWORD CHECK PERFORMED (Kelvin API does not yet support it) <===")
-        return
+        print(f"Password check: username={username!r} password={password!r} host={host!r}...")
+        resp = http_request(
+            "post",
+            f"https://{host}/univention/auth/",
+            params={"username": username, "password": password},
+            expected_statuses=(200,),
+        )
+        json_resp = resp.json()
+        assert json_resp["status"] == 200
 
     return _func
 

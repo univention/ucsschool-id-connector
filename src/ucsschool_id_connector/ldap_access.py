@@ -49,12 +49,12 @@ class LDAPAccess:
     host_dn: str = lazy_object_proxy.Proxy(lambda: os.environ["ldap_hostdn"])
     _machine_pw = MachinePWCache(0, "")
 
-    def __init__(self):
-        self.ldap_base = os.environ["ldap_base"]
+    def __init__(self, host: str = None, port: int = None, ldap_base: str = None):
+        self.ldap_base = ldap_base or os.environ["ldap_base"]
         self.logger = ConsoleAndFileLogging.get_logger(__name__, LOG_FILE_PATH_HTTP)
         self.server = Server(
-            host=os.environ["ldap_server_name"],
-            port=int(os.environ["ldap_server_port"]),
+            host=host or os.environ["ldap_server_name"],
+            port=port or int(os.environ["ldap_server_port"]),
             get_info="ALL",
         )
 
@@ -153,7 +153,13 @@ class LDAPAccess:
         else:
             return ""
 
-    async def get_passwords(self, username: str) -> Optional[UserPasswords]:
+    async def get_passwords(
+        self,
+        username: str,
+        base: str = None,
+        bind_dn: str = None,
+        bind_pw: str = None,
+    ) -> Optional[UserPasswords]:
         filter_s = f"(uid={escape_filter_chars(username)})"
         attributes = [
             "krb5Key",
@@ -162,7 +168,7 @@ class LDAPAccess:
             "sambaNTPassword",
             "userPassword",
         ]
-        results = await self.search(filter_s, attributes)
+        results = await self.search(filter_s, attributes, base=base, bind_dn=bind_dn, bind_pw=bind_pw)
         if len(results) == 1:
             result = results[0]
             return UserPasswords(
