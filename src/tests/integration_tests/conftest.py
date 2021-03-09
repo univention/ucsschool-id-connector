@@ -458,7 +458,7 @@ def create_school(host: str, ou_name: str):
     if not Path("/usr/bin/ssh").exists() or not Path("/usr/bin/sshpass").exists():
         print("Installing 'ssh' and 'sshpass'...")
         process = subprocess.Popen(
-            ["apk", "add", "--no-cache", "openssh", "sshpass"],
+            ["apk", "add", "--no-cache", "openssh-client", "sshpass"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
