@@ -1,4 +1,5 @@
 busybox-initscripts
+ca-certificates
 libstdc++
 openrc
 python3

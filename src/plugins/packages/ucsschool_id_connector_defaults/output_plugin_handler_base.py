@@ -320,7 +320,7 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
 
     async def map_attributes(self, obj: AddModifyObject, mapping: Dict[str, str]) -> Dict[str, Any]:
         """Create dict representing the object."""
-        res = {}
+        res: Dict[str, Any] = {}
         # set attributes configured in mapping
         for key_here, key_there in mapping.items():
             _handle_attr_method_name = f"_handle_attr_{key_here}"
