@@ -1,4 +1,4 @@
 [flake8]
-exclude = docs
+exclude = docs, src/plugins/packages/idbroker/provisioning_api
 max-line-length = 105
 ignore = W503
