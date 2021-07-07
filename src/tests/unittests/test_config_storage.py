@@ -55,12 +55,12 @@ async def test_load_school_authorities_empty(temp_dir_func):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("api", ("kelvin",))
-async def test_load_school_authorities(api, temp_dir_func, kelvin_school_authority_configuration):
+async def test_load_school_authorities(api, temp_dir_func, school_authority_configuration):
     """open a config"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
     sac = {
-        "kelvin": kelvin_school_authority_configuration(),
+        "kelvin": school_authority_configuration(),
     }[api]
     password = {
         "kelvin": "password",
@@ -109,12 +109,12 @@ async def test_delete_school_authority_not_a_file(temp_dir_func):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("api", ("kelvin",))
-async def test_delete_school_authority(api, temp_dir_func, kelvin_school_authority_configuration):
+async def test_delete_school_authority(api, temp_dir_func, school_authority_configuration):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
     sac = {
-        "kelvin": kelvin_school_authority_configuration(),
+        "kelvin": school_authority_configuration(),
     }[api]
     password = {
         "kelvin": "password",
@@ -132,12 +132,12 @@ async def test_delete_school_authority(api, temp_dir_func, kelvin_school_authori
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("api", ("kelvin",))
-async def test_save_school_authorities(api, temp_dir_func, kelvin_school_authority_configuration):
+async def test_save_school_authorities(api, temp_dir_func, school_authority_configuration):
     """handle real school_authority"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
     sac1, sac2 = {
-        "kelvin": (kelvin_school_authority_configuration(), kelvin_school_authority_configuration()),
+        "kelvin": (school_authority_configuration(), school_authority_configuration()),
     }[api]
     password = {
         "kelvin": "password",

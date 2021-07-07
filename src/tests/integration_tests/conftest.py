@@ -32,8 +32,6 @@ import datetime
 import json
 import os
 import re
-import subprocess
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
@@ -44,7 +42,18 @@ import requests
 from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
 
-from ucsschool.kelvin.client import KelvinObject, KelvinResource, NoObject, Session, User, UserResource
+from ucsschool.kelvin.client import (
+    InvalidRequest,
+    KelvinObject,
+    KelvinResource,
+    NoObject,
+    School,
+    SchoolClass,
+    SchoolClassResource,
+    Session,
+    User,
+    UserResource,
+)
 from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.constants import APP_ID, OUT_QUEUE_TOP_DIR
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
@@ -142,14 +151,14 @@ def school_auth_host_configs(docker_hostname: str, http_request):
 
 
 @pytest.fixture(scope="session")
-def school_auth_config(docker_hostname: str, http_request, school_auth_host_configs):
+def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_host_configs):
     """
-    Fixture to create configurations for school authorities. It expects a
-    specific environment for the integration tests and can provide a maximum
+    Fixture to create configurations for school authorities using Kelvin.
+    It expects a specific environment for the integration tests and can provide a maximum
     of two distinct configurations.
     """
 
-    def _school_auth_config(auth_nr: int) -> Dict[str, str]:
+    def _school_auth_config_kelvin(auth_nr: int) -> Dict[str, Any]:
         """
         Generates a configuration for a school authority.
 
@@ -205,7 +214,88 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
         }
         return config
 
-    yield _school_auth_config
+    yield _school_auth_config_kelvin
+
+
+@pytest.fixture(scope="session")
+def id_broker_ip(docker_hostname: str, http_request) -> str:
+    url = urljoin(f"https://{docker_hostname}", "IP_idbroker.txt")
+    resp = http_request("get", url, verify=False)
+    assert resp.status_code == 200, (resp.status_code, resp.reason, url)
+    return resp.text.strip()
+
+
+@pytest.fixture(scope="session")
+def id_connector_host_name(docker_hostname):
+    return docker_hostname
+
+
+@pytest.fixture
+def mock_env(monkeypatch):
+    monkeypatch.setenv("UNSAFE_SSL", "1")
+
+
+@pytest.fixture(scope="session")
+def school_auth_config_id_broker(id_broker_ip):
+    """
+    Fixture to create configurations for replicating to the ID Broker.
+    """
+
+    def _school_auth_config_id_broker(s_a_name: str, password: str) -> Dict[str, Any]:
+        """
+        Generates a configuration for a school authority.
+
+        :return: The school authority configuration in dictionary form
+        """
+        return {
+            "name": s_a_name,
+            "active": True,
+            "url": f"https://{id_broker_ip}/",
+            "plugins": ["id_broker-users", "id_broker-groups"],
+            "plugin_configs": {
+                "id_broker": {
+                    "password": password,
+                    "username": f"provisioning-{s_a_name}",
+                    "version": 1,
+                },
+            },
+        }
+
+    return _school_auth_config_id_broker
+
+
+@pytest.fixture(scope="session")
+async def new_id_broker_school_auth(kelvin_session, id_broker_ip):
+    """
+    create a provisioning-admin user on the id broker system.
+    """
+    s_a_name = "".join(fake.street_name().split())
+    print(f"*** Creating school authority {s_a_name!r}...")
+    password = fake.password(length=15)
+    kelvin_user = User(
+        name=f"provisioning-{s_a_name}",
+        school="DEMOSCHOOL",
+        firstname=fake.first_name(),
+        lastname=fake.last_name(),
+        disabled=False,
+        password=password,
+        record_uid=fake.uuid4(),
+        roles=["teacher"],
+        schools=["DEMOSCHOOL"],
+        session=kelvin_session(id_broker_ip),
+    )
+    await kelvin_user.save()
+    print(f"Created admin user {kelvin_user.name!r}.")
+
+    yield s_a_name, password
+
+
+@pytest.fixture(scope="session")
+async def id_broker_school_auth_conf(
+    new_id_broker_school_auth, school_auth_config_id_broker
+) -> SchoolAuthorityConfiguration:
+    s_a_name, password = new_id_broker_school_auth
+    return school_auth_config_id_broker(s_a_name, password)
 
 
 @pytest.fixture()
@@ -306,7 +396,7 @@ async def make_school_authority(
     ucsschool_id_connector_api_url,
     req_headers,
     http_request,
-    kelvin_school_authority_configuration,
+    school_authority_configuration,
 ) -> SchoolAuthorityConfiguration:
     """
     Fixture factory to create (and at the same time save) school authorities.
@@ -325,6 +415,7 @@ async def make_school_authority(
         url: UrlStr,
         plugins: List[str],
         plugin_configs: Dict[str, Dict[str, Any]],
+        plugin_name: str = "kelvin",
     ) -> SchoolAuthorityConfiguration:
         """
         Creates and saves a school authority
@@ -342,7 +433,7 @@ async def make_school_authority(
             expected_statuses=(204, 404),
         )
         # (re)create school authority configuration
-        school_authority = kelvin_school_authority_configuration(
+        school_authority = school_authority_configuration(
             name=name,
             active=active,
             url=url,
@@ -350,8 +441,8 @@ async def make_school_authority(
             plugin_configs=plugin_configs,
         )
         config_as_dict = school_authority.dict()
-        config_as_dict["plugin_configs"]["kelvin"]["password"] = school_authority.plugin_configs[
-            "kelvin"
+        config_as_dict["plugin_configs"][plugin_name]["password"] = school_authority.plugin_configs[
+            plugin_name
         ]["password"].get_secret_value()
         url = ucsschool_id_connector_api_url("school_authorities")
         http_request(
@@ -364,8 +455,8 @@ async def make_school_authority(
         async for loaded_s_a in ConfigurationStorage.load_school_authorities():
             if (
                 loaded_s_a.name == name
-                and loaded_s_a.plugin_configs["kelvin"]["password"].get_secret_value()
-                == plugin_configs["kelvin"]["password"]
+                and loaded_s_a.plugin_configs[plugin_name]["password"].get_secret_value()
+                == plugin_configs[plugin_name]["password"]
             ):
                 break
         else:
@@ -453,49 +544,35 @@ async def save_mapping(
     print(f"Restored original s2s mapping: {s2s_mapping.dict()!r}")
 
 
-def create_school(host: str, ou_name: str):
-    print(f"Creating school {ou_name!r} on host {host!r}...")
-    if not Path("/usr/bin/ssh").exists() or not Path("/usr/bin/sshpass").exists():
-        print("Installing 'ssh' and 'sshpass'...")
-        process = subprocess.Popen(
-            ["apk", "add", "--no-cache", "openssh-client", "sshpass"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+@pytest.fixture(scope="session")
+async def create_school(kelvin_session):
+    async def _func(host: str, ou_name: str = ""):
+        if not ou_name:
+            ou_name = f"{fake.user_name()}"
+        school = School(
+            name=ou_name,
+            display_name=fake.first_name(),
+            session=kelvin_session(host),
         )
-        stdout, stderr = process.communicate()
-        stderr = stderr.decode()
-        print(f"stdout={stdout}")
-        print(f"stderr={stderr}")
-    print(f"ssh to {host!r} to create {ou_name!r} with /usr/share/ucs-school-import/scripts/create_ou")
-    process = subprocess.Popen(
-        [
-            "/usr/bin/sshpass",
-            "-p",
-            "univention",
-            "/usr/bin/ssh",
-            "-o",
-            "StrictHostKeyChecking no",
-            f"root@{host}",
-            "/usr/share/ucs-school-import/scripts/create_ou",
-            ou_name,
-            f"dc{ou_name}"[:13],
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    stdout, stderr = process.communicate()
-    stderr = stderr.decode()
-    print(f"stdout={stdout}")
-    print(f"stderr={stderr}")
-    assert (not stderr) or ("Already attached!" in stderr) or ("created successfully" in stderr)
-    if "Already attached!" in stderr:
-        print(f" => OU {ou_name!r} exists in {host!r}.")
-    else:
-        print(f" => OU {ou_name!r} created in {host!r}.")
+
+        try:
+            school = await school.save()
+            print(f" => OU {ou_name!r} created in {host!r}.")
+        except InvalidRequest:
+            print(f" => OU {ou_name!r} exists in {host!r}.")
+
+        return school
+
+    return _func
+
+
+@pytest.fixture(scope="function")
+async def kelvin_school_on_sender(create_school, id_connector_host_name):
+    return await create_school(id_connector_host_name)
 
 
 @pytest.fixture()
-def create_schools(docker_hostname, random_name):
+def create_schools(docker_hostname, random_name, create_school):
     """
     Fixture factory to create OUs. The OUs are cached during multiple test runs
     to save development time.
@@ -506,7 +583,7 @@ def create_schools(docker_hostname, random_name):
     else:
         auth_school_mapping = dict()
 
-    def _create_schools(
+    async def _create_schools(
         school_authorities: List[Tuple[SchoolAuthorityConfiguration, int]]
     ) -> Dict[str, List[str]]:
         """
@@ -530,12 +607,8 @@ def create_schools(docker_hostname, random_name):
                 hosts = [docker_hostname]
                 if ip := re.search(r"[\d+\.]+", auth.url).group():
                     hosts.append(ip)
-                print(f"Creating OU {ou!r} on hosts {hosts!r}) in parallel...")
-                with ThreadPoolExecutor(max_workers=len(hosts)) as executor:
-                    res = executor.map(
-                        create_school, hosts, [ou for _ in range(len(hosts))], timeout=120
-                    )
-                list(res)  # for the side effect of actually evaluating map()
+                for ip in hosts:
+                    await create_school(host=ip, ou_name=ou)
                 if ou not in auth_school_mapping[auth.name]:
                     auth_school_mapping[auth.name].append(ou)
         with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:
@@ -572,7 +645,7 @@ async def make_sender_user(
         lastname = fake.last_name()
         user_obj = User(
             name=f"test.{firstname[:5]}.{lastname}"[:15],
-            birthday=fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
+            birthday=fake.date_of_birth(minimum_age=6, maximum_age=67),
             disabled=False,
             firstname=firstname,
             lastname=lastname,
@@ -675,7 +748,7 @@ def kelvin_session_kwargs(ca_cert):
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def kelvin_session(kelvin_session_kwargs):
     """
     An open Kelvin API client session to `host`, that will close automatically
@@ -683,9 +756,11 @@ async def kelvin_session(kelvin_session_kwargs):
     """
     sessions: Dict[str, Session] = {}
 
-    def _func(host: str) -> Session:
+    def _func(host: str, **kwargs) -> Session:
         if host not in sessions:
-            sessions[host] = Session(**kelvin_session_kwargs(host))
+            session_kwargs = kelvin_session_kwargs(host)
+            session_kwargs.update(kwargs)
+            sessions[host] = Session(**session_kwargs)
             sessions[host].open()
         return sessions[host]
 
@@ -693,6 +768,47 @@ async def kelvin_session(kelvin_session_kwargs):
 
     for session in sessions.values():
         await session.close()
+
+
+@pytest.fixture(scope="session")
+def id_broker_kelvin_session(kelvin_session):
+    def _func(sac: SchoolAuthorityConfiguration) -> Session:
+        # TODO check: do we test with https?
+        m = re.match(r"^http://(?P<host>.+?)/", sac.url)
+        assert m
+        host = m.groupdict()["host"]
+        username = sac.plugin_configs["id_broker"]["username"]
+        password = sac.plugin_configs["id_broker"]["password"].get_secret_value()
+        return kelvin_session(host=host, username=username, password=password)
+
+    return _func
+
+
+@pytest.fixture()
+async def make_kelvin_school_class(kelvin_session, id_connector_host_name, id_broker_ip):
+    created_school_classes: List[Tuple[str]] = []
+
+    async def _func(school_name: str, sa_name: str, host: str) -> SchoolClass:
+        sc_obj = SchoolClass(
+            name=fake.user_name(),
+            school=school_name,
+            description=fake.first_name(),
+            session=kelvin_session(id_connector_host_name),
+            users=[],
+        )
+        await sc_obj.save()
+        created_school_classes.append((id_connector_host_name, sc_obj.name, sc_obj.school))
+        return sc_obj
+
+    yield _func
+
+    for host, name, school in created_school_classes:
+        try:
+            _sc = await SchoolClassResource(session=kelvin_session(host)).get(name=name, school=school)
+            await _sc.delete()
+            print(f"Success deleting school class {name!r} from host {host!r}.")
+        except NoObject:
+            print(f"No school class {name!r} on {host!r}.")
 
 
 @pytest.fixture(scope="session")
