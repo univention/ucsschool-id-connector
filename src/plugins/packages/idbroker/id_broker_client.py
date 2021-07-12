@@ -90,6 +90,9 @@ class IDBrokerObjectBase(BaseModel):
         """Convert pydantic object to OpenAPI client object."""
         return self._gen_class(**{k: v for k, v in self.dict().items()})
 
+    def __eq__(self, other):
+        return self.dict() == other.dict()
+
 
 class School(IDBrokerObjectBase):
     name: str
@@ -196,9 +199,7 @@ class Token:
 
 class ProvisioningAPIClient(abc.ABC):
     API_METHODS: Dict[str, str]
-    PROVISIONING_URL_REGEX = (
-        r"^http.?://(?P<host>.+?)/ucsschool/apis/provisioning/v(?P<version>.+?)/(?P<sa_name>.+?)/"
-    )
+    PROVISIONING_URL_REGEX = r"^https://(?P<host>.+?)/"
     _object_type: IDBrokerObjectType
     _gen_api_handler: Type[GenApiHandler]
     _share_token = True  # whether all client instances should use the same Token instance
@@ -210,27 +211,22 @@ class ProvisioningAPIClient(abc.ABC):
         if not m:
             raise ValueError(
                 f"Bad ID Broker Provisioning URL in school authority configuration {school_authority!r}:"
-                f" {school_authority.url!r}."
+                f" {school_authority.url!r}. Correct form is: 'https://FQDN/'."
             )
         host = m.groupdict()["host"]
         target_url = f"https://{host}"
-        version = m.groupdict()["version"]
-        if version != "1":
-            raise ValueError(f"Unsupported ID Broker Provisioning API version {version!r}.")
-        sa_name = m.groupdict()["sa_name"]
-        if sa_name != self.school_authority.name:
-            raise ValueError(
-                f"The name of the school authority in the configuration and in the URL do not match. "
-                f"Name in configuration is {self.school_authority.name!r}, name in URL is {sa_name!r}."
-            )
         try:
+            self.school_authority_name = school_authority.plugin_configs[plugin_name]["tenant"]
             username = school_authority.plugin_configs[plugin_name]["username"]
             password = school_authority.plugin_configs[plugin_name]["password"].get_secret_value()
+            version = school_authority.plugin_configs[plugin_name]["version"]
         except KeyError as exc:
             raise ValueError(
                 f"Missing {exc!s} in ID Broker Provisioning plugin configuration of school authority: "
                 f"{school_authority.dict()!r}."
             )
+        if version != 1:
+            raise ValueError(f"Unsupported ID Broker Provisioning API version {version!r}.")
         self.configuration = GenConfiguration(host=target_url, username=username, password=password)
         self.configuration.verify_ssl = "UNSAFE_SSL" not in os.environ
         shared_token = _get_shared_token()
@@ -264,7 +260,7 @@ class ProvisioningAPIClient(abc.ABC):
                 f"Empty response creating {self._object_type.__name__} object {gen_obj!r}."
             )
         logger.debug("Created %s: %r", self._object_type.__name__, new_obj)
-        if obj.dict() != new_obj.dict():
+        if obj != new_obj:
             logger.warning(
                 "Requested %s to be created and object returned by server differ."
                 "Requested object:\n%r, returned object:\n%r",
@@ -350,7 +346,7 @@ class ProvisioningAPIClient(abc.ABC):
         if not new_obj:
             raise RuntimeError(f"Empty response updating {self._object_type.__name__} {gen_obj!r}.")
         logger.debug("Updated %s: %r", self._object_type.__name__, new_obj)
-        if obj.dict() != new_obj.dict():
+        if obj != new_obj:
             logger.warning(
                 "Requested %s to be updated and object returned by server differ."
                 "Requested object:\n%r, returned object:\n%r",
@@ -388,31 +384,31 @@ class IDBrokerUser(ProvisioningAPIClient):
     async def create(self, user: User) -> User:
         """Create school. Returned value is the school data from the server."""
         res = await super()._create(
-            obj_arg_name="user", school_authority=self.school_authority.name, user=user
+            obj_arg_name="user", school_authority=self.school_authority_name, user=user
         )
         return cast(User, res)
 
     async def delete(self, user_id: str) -> None:
         """Delete user with id `user_id`."""
         await self._delete(
-            id_arg_name="user_id", school_authority=self.school_authority.name, user_id=user_id
+            id_arg_name="user_id", school_authority=self.school_authority_name, user_id=user_id
         )
 
     async def exists(self, user_id: str) -> bool:
         """Check if the user with the ID `user_id` exists on the server."""
         return await self._exists(
-            id_arg_name="user_id", school_authority=self.school_authority.name, user_id=user_id
+            id_arg_name="user_id", school_authority=self.school_authority_name, user_id=user_id
         )
 
     async def get(self, user_id: str) -> User:
-        res = await super()._get(school_authority=self.school_authority.name, user_id=user_id)
+        res = await super()._get(school_authority=self.school_authority_name, user_id=user_id)
         return cast(User, res)
 
     async def update(self, user: User) -> User:
         """Modify the user with the ID `user.id` on the server."""
         res = await super()._update(
             obj_arg_name="user",
-            school_authority=self.school_authority.name,
+            school_authority=self.school_authority_name,
             user_id=user.id,
             user=user,
         )
@@ -431,18 +427,18 @@ class IDBrokerSchool(ProvisioningAPIClient):
     async def create(self, school: School) -> School:
         """Create school. Returned value is the school data from the server."""
         res = await super()._create(
-            obj_arg_name="school", school_authority=self.school_authority.name, school=school
+            obj_arg_name="school", school_authority=self.school_authority_name, school=school
         )
         return cast(School, res)
 
     async def exists(self, name: str) -> bool:
         """Check if the school with the name `name` exists on the server."""
         return await self._exists(
-            id_arg_name="name", school_authority=self.school_authority.name, name=name
+            id_arg_name="name", school_authority=self.school_authority_name, name=name
         )
 
     async def get(self, name: str) -> School:
-        res = await super()._get(school_authority=self.school_authority.name, name=name)
+        res = await super()._get(school_authority=self.school_authority_name, name=name)
         return cast(School, res)
 
 
@@ -460,7 +456,7 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
         """Create school. Returned value is the school data from the server."""
         res = await super()._create(
             obj_arg_name="school_class",
-            school_authority=self.school_authority.name,
+            school_authority=self.school_authority_name,
             school_class=school_class,
         )
         return cast(SchoolClass, res)
@@ -468,18 +464,18 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
     async def exists(self, name: str, school: str) -> bool:
         """Check if the user with the ID `user_id` exists on the server."""
         return await self._exists(
-            id_arg_name="name", school_authority=self.school_authority.name, name=name, school=school
+            id_arg_name="name", school_authority=self.school_authority_name, name=name, school=school
         )
 
     async def get(self, name: str, school: str) -> SchoolClass:
-        res = await super()._get(school_authority=self.school_authority.name, name=name, school=school)
+        res = await super()._get(school_authority=self.school_authority_name, name=name, school=school)
         return cast(SchoolClass, res)
 
     async def update(self, school_class: SchoolClass) -> SchoolClass:
         """Modify the user with the ID `user.id` on the server."""
         res = await super()._update(
             obj_arg_name="school_class",
-            school_authority=self.school_authority.name,
+            school_authority=self.school_authority_name,
             name=school_class.name,
             school=school_class.school,
             school_class=school_class,

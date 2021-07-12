@@ -47,7 +47,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
 
 class IDBrokerUserDispatcher(UserDispatcherPluginBase):
-    plugin_name = "idbroker"
+    plugin_name = "idbroker-users"
     per_s_a_handler_class = IDBrokerPerSAUserDispatcher
 
 
@@ -61,7 +61,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
 
 
 class IDBrokerGroupDispatcher(GroupDispatcherPluginBase):
-    plugin_name = "idbroker"
+    plugin_name = "idbroker-groups"
     per_s_a_handler_class = IDBrokerPerSAGroupDispatcher
 
 

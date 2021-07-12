@@ -212,8 +212,8 @@ To retrieve a list of the extended attributes on the old school authority server
     $ udm settings/extended_attribute list
 
 
-Installation of target HTTP-API
--------------------------------
+Installation of target HTTP-API (Kelvin)
+----------------------------------------
 
 On each target system run::
 
@@ -222,8 +222,8 @@ On each target system run::
 To allow the *UCS\@school ID Connector* app to access the APIs it needs an authorized user account. By default the Administrator account is the only authorized user. To add a dedicated Kelvin API user for the UCS@school ID-Connector consult the Kelvin documentation on how to do that.
 
 
-Configuration of target HTTP-API
---------------------------------
+Configuration of target HTTP-API (Kelvin)
+-----------------------------------------
 The Kelvin API must be version ``1.2.0`` or higher to work with the UCS@school ID Connector.
 The password hashes for LDAP and Kerberos authentication are collectively transmitted in one JSON object to one target attribute.
 
@@ -236,6 +236,29 @@ The example configuration above can be created with the following command::
       config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; \
       config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"]; fp.seek(0); \
       json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
+
+
+Installation and configuration of ID Broker plugin
+--------------------------------------------------
+
+TODO
+
+Configuration::
+
+    {
+        "name": "id broker",
+        "active": True,
+        "url": "https://FQDN/",
+        "plugins": ["id_broker"],
+        "plugin_configs": {
+            "id_broker": {
+                "tenant": "Schultraegername",
+                "password": "g3h31m",
+                "username": "provisioning-Schultraegername",
+                "version": 1
+            }
+        }
+    }
 
 
 Plugins
