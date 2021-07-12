@@ -142,14 +142,14 @@ def school_auth_host_configs(docker_hostname: str, http_request):
 
 
 @pytest.fixture(scope="session")
-def school_auth_config(docker_hostname: str, http_request, school_auth_host_configs):
+def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_host_configs):
     """
-    Fixture to create configurations for school authorities. It expects a
-    specific environment for the integration tests and can provide a maximum
+    Fixture to create configurations for school authorities using Kelvin.
+    It expects a specific environment for the integration tests and can provide a maximum
     of two distinct configurations.
     """
 
-    def _school_auth_config(auth_nr: int) -> Dict[str, str]:
+    def _school_auth_config_kelvin(auth_nr: int) -> Dict[str, Any]:
         """
         Generates a configuration for a school authority.
 
@@ -205,7 +205,45 @@ def school_auth_config(docker_hostname: str, http_request, school_auth_host_conf
         }
         return config
 
-    yield _school_auth_config
+    yield _school_auth_config_kelvin
+
+
+@pytest.fixture(scope="session")
+def id_broker_ip(docker_hostname: str, http_request):
+    url = urljoin(f"https://{docker_hostname}", "IP_idbroker.txt")
+    resp = http_request("get", url, verify=False)
+    assert resp.status_code == 200, (resp.status_code, resp.reason, url)
+    return resp.text.strip()
+
+
+@pytest.fixture(scope="session")
+def school_auth_config_id_broker(id_broker_ip):
+    """
+    Fixture to create configurations for replicating to the ID Broker.
+    """
+
+    def _school_auth_config_id_broker(s_a_name: str) -> Dict[str, Any]:
+        """
+        Generates a configuration for a school authority.
+
+        :return: The school authority configuration in dictionary form
+        """
+        return {
+            "name": "id broker",
+            "active": True,
+            "url": f"https://{id_broker_ip}/",
+            "plugins": ["id_broker"],
+            "plugin_configs": {
+                "id_broker": {
+                    "tenant": s_a_name,
+                    "password": "univention",
+                    "username": f"provisioning-{s_a_name}",
+                    "version": 1,
+                },
+            },
+        }
+
+    return _school_auth_config_id_broker
 
 
 @pytest.fixture()
