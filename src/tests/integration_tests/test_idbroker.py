@@ -49,7 +49,13 @@ from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 # load ID Broker plugin
 ucsschool_id_connector.plugin_loader.load_plugins()
 id_broker = pytest.importorskip("idbroker")
-from idbroker.id_broker_client import IDBrokerUser, SchoolContext, User  # isort:skip  # noqa: E402
+from idbroker.id_broker_client import (  # isort:skip  # noqa: E402
+    IDBrokerSchool,
+    IDBrokerUser,
+    School,
+    SchoolContext,
+    User,
+)
 
 fake = faker.Faker()
 
@@ -212,6 +218,13 @@ def compare_kelvin_and_id_broker_user(kelvin_user: KelvinUser, id_broker_user: U
             assert set(school_context.classes) == set(kelvin_user.school_classes[idb_school])
 
 
+def compare_kelvin_and_id_broker_school(
+    kelvin_school: KelvinSchool, id_broker_school: School, s_a_name: str
+):
+    assert kelvin_school.name == f"{s_a_name}-{id_broker_school.name}"
+    assert kelvin_school.display_name == id_broker_school.display_name
+
+
 @pytest.fixture
 async def schedule_delete_kelvin_user(get_kelvin_user):
     s_a_and_user_names: List[Tuple[str, str]] = []
@@ -231,21 +244,52 @@ async def schedule_delete_kelvin_user(get_kelvin_user):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="TODO")
-async def test_school_create():
-    ...
+async def test_school_create(
+    get_schools,
+    mock_env,
+    school_auth_conf: SchoolAuthorityConfiguration,
+):
+    id_broker_school = IDBrokerSchool(school_auth_conf, "id_broker")
+    s_a_name = id_broker_school.school_authority_name
+    school_name = fake.user_name()
+    school_1 = School(name=school_name, display_name=f"{s_a_name} {school_name}")
+    school_2 = await id_broker_school.create(school_1)
+    assert school_1 == school_2
+    s_a_schools: List[KelvinSchool] = await get_schools(s_a_name)
+    kelvin_school_name = f"{s_a_name}-{school_name}"
+    assert kelvin_school_name in {school.name for school in s_a_schools}
+    kelvin_school = [school for school in s_a_schools if school.name == kelvin_school_name][0]
+    compare_kelvin_and_id_broker_school(kelvin_school, school_2, s_a_name)
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="TODO")
-async def test_school_exists():
-    ...
+async def test_school_exists(
+    get_schools,
+    mock_env,
+    school_auth_conf: SchoolAuthorityConfiguration,
+):
+    id_broker_school = IDBrokerSchool(school_auth_conf, "id_broker")
+    s_a_name = id_broker_school.school_authority_name
+    s_a_schools: List[KelvinSchool] = await get_schools(s_a_name)
+    kelvin_school = random.choice(s_a_schools)
+    res = await id_broker_school.exists(kelvin_school.name.split("-", 1)[-1])
+    assert res is True
+    res = await id_broker_school.exists(fake.user_name())
+    assert res is False
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="TODO")
-async def test_school_get():
-    ...
+async def test_school_get(
+    get_schools,
+    mock_env,
+    school_auth_conf: SchoolAuthorityConfiguration,
+):
+    id_broker_school = IDBrokerSchool(school_auth_conf, "id_broker")
+    s_a_name = id_broker_school.school_authority_name
+    s_a_schools: List[KelvinSchool] = await get_schools(s_a_name)
+    kelvin_school = random.choice(s_a_schools)
+    school = await id_broker_school.get(kelvin_school.name.split("-", 1)[-1])
+    compare_kelvin_and_id_broker_school(kelvin_school, school, s_a_name)
 
 
 @pytest.mark.asyncio
