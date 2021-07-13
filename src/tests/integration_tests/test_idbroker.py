@@ -28,9 +28,11 @@
 # <http://www.gnu.org/licenses/>.
 
 import random
+import zlib
 from typing import List, Tuple
 
 import faker
+import httpx
 import pytest
 
 import ucsschool_id_connector.plugin_loader
@@ -57,26 +59,79 @@ def mock_env(monkeypatch):
     monkeypatch.setenv("UNSAFE_SSL", "1")
 
 
-@pytest.fixture
-async def school_auth_conf(school_auth_config_id_broker) -> SchoolAuthorityConfiguration:
-    sac = school_auth_config_id_broker("Berlin")
+@pytest.fixture(scope="session")
+async def new_school_auth(kelvin_session, id_broker_ip) -> Tuple[str, str]:
+    s_a_name = "".join(fake.street_name().split())
+    print(f"*** Creating school authority {s_a_name!r}...")
+    password = fake.password(length=15)
+    kelvin_user = KelvinUser(
+        name=f"provisioning-{s_a_name}",
+        school="DEMOSCHOOL",
+        firstname=fake.first_name(),
+        lastname=fake.last_name(),
+        disabled=False,
+        password=password,
+        record_uid=fake.uuid4(),
+        roles=["staff"],
+        schools=["DEMOSCHOOL"],
+        session=kelvin_session(id_broker_ip),
+    )
+    await kelvin_user.save()
+    print(f"Created admin user {kelvin_user.name!r}.")
+    school_name = fake.user_name()
+    # TODO: impl. save() for kelvin.client SchoolResource (only for create, not update)
+    session = kelvin_session(id_broker_ip)
+    kelvin_school = KelvinSchool(
+        name=f"{s_a_name}-{school_name}",
+        display_name=f"{s_a_name} {school_name}",
+        educational_servers=[f"{zlib.crc32(s_a_name.encode())}-dc"],  # crc32 > 10 ints > total: 13 chars
+        session=kelvin_session(id_broker_ip),
+    )
+    data = kelvin_school._to_kelvin_request_data()
+    data = {k: v for k, v in data.items() if v is not None}
+    res_post = await session.post(session.urls["school"], json=data)
+    print(f"Created school {res_post['name']!r}.")
+
+    yield s_a_name, password
+
+    res_del = httpx.delete(
+        f"https://Administrator:univention@{session.host}/univention/udm/container/ou/{res_post['dn']}",
+        verify=False,
+    )
+    if res_del.status_code not in (200, 204):
+        print(f"*** Error deleting OU {res_post['name']!r}. ***")
+    else:
+        print(f"Deleted school {res_post['name']!r}.")
+    try:
+        await kelvin_user.delete()
+        print(f"Deleted user {kelvin_user.name!r}.")
+    except KelvinNoObject:
+        print(f"User {kelvin_user.name!r} does not exist.")
+
+
+@pytest.fixture(scope="session")
+async def school_auth_conf(
+    school_auth_config_id_broker, new_school_auth
+) -> SchoolAuthorityConfiguration:
+    s_a_name, password = new_school_auth
+    sac = school_auth_config_id_broker(s_a_name, password)
     return SchoolAuthorityConfiguration(**sac)
 
 
-@pytest.fixture
-def get_schools(id_broker_ip, kelvin_session):
+@pytest.fixture(scope="session")
+def get_schools(school_auth_conf, id_broker_kelvin_session):
     async def _func(s_a_name: str) -> List[KelvinSchool]:
         return [
             school
-            async for school in KelvinSchoolResource(session=kelvin_session(id_broker_ip)).search(
-                name=f"{s_a_name}-*"
-            )
+            async for school in KelvinSchoolResource(
+                session=id_broker_kelvin_session(school_auth_conf)
+            ).search(name=f"{s_a_name}-*")
         ]
 
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_school(get_schools):
     async def _func(s_a_name: str) -> KelvinSchool:
         res = random.choice(await get_schools(s_a_name))
@@ -86,7 +141,7 @@ def test_school(get_schools):
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_school_name(test_school):
     async def _func(s_a_name: str) -> str:
         return (await test_school(s_a_name)).name.split("-", 1)[-1]
@@ -94,7 +149,7 @@ def test_school_name(test_school):
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_id_broker_user():
     async def _func(school_name: str, classes: List[str], roles: List[str]) -> User:
         return User(
@@ -108,7 +163,7 @@ def test_id_broker_user():
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def test_kelvin_user():
     def _func(
         s_a_name: str, session: KelvinSession, school_name: str, classes: List[str], roles: List[str]
@@ -130,7 +185,7 @@ def test_kelvin_user():
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def get_kelvin_user(id_broker_ip, kelvin_session):
     async def _func(s_a_name: str, user_name: str) -> KelvinUser:
         return await KelvinUserResource(session=kelvin_session(id_broker_ip)).get(
@@ -269,7 +324,7 @@ async def test_user_delete(
 @pytest.mark.asyncio
 async def test_user_exists(
     id_broker_ip: str,
-    kelvin_session,
+    id_broker_kelvin_session,
     mock_env,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
@@ -281,7 +336,7 @@ async def test_user_exists(
     school: str = await test_school_name(s_a_name)
     kelvin_user: KelvinUser = test_kelvin_user(
         s_a_name=s_a_name,
-        session=kelvin_session(id_broker_ip),
+        session=id_broker_kelvin_session(school_auth_conf),
         school_name=school,
         classes=["1a"],
         roles=[random.choice(("student", "teacher"))],
@@ -377,14 +432,14 @@ async def test_user_update_change_username(
         classes=["1a"],
         roles=[random.choice(("student", "teacher"))],
     )
-    schedule_delete_kelvin_user(s_a_name, kelvin_user.name.split("-", 1)[-1])
+    old_user_name = kelvin_user.name.split("-", 1)[-1]
+    schedule_delete_kelvin_user(s_a_name, old_user_name)
     await kelvin_user.save()
     user_1: User = await id_broker_user.get(kelvin_user.record_uid)
     compare_kelvin_and_id_broker_user(kelvin_user, user_1, s_a_name)
-    old_user_name = user_1.user_name
     user_1.user_name = fake.user_name()
     assert old_user_name != user_1.user_name
-    schedule_delete_kelvin_user(s_a_name, old_user_name)
+    schedule_delete_kelvin_user(s_a_name, user_1.user_name)
     user_2: User = await id_broker_user.update(user_1)
     user_3: User = await id_broker_user.get(user_1.id)
     assert user_2 == user_3

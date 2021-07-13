@@ -303,7 +303,7 @@ class ProvisioningAPIClient(abc.ABC):
         except ApiException as exc:
             if exc.status != 404:
                 raise ValueError(
-                    f"Error HTTP {exc.status} ({exc.reason}) checking existence of"
+                    f"Error HTTP {exc.status} ({exc.reason}) checking existence of "
                     f"{self._object_type.__name__} using {kwargs!r}."
                 )
             logger.debug("%s %r does not exist.", self._object_type.__name__, obj_id)

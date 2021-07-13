@@ -222,7 +222,7 @@ def school_auth_config_id_broker(id_broker_ip):
     Fixture to create configurations for replicating to the ID Broker.
     """
 
-    def _school_auth_config_id_broker(s_a_name: str) -> Dict[str, Any]:
+    def _school_auth_config_id_broker(s_a_name: str, password: str) -> Dict[str, Any]:
         """
         Generates a configuration for a school authority.
 
@@ -236,7 +236,7 @@ def school_auth_config_id_broker(id_broker_ip):
             "plugin_configs": {
                 "id_broker": {
                     "tenant": s_a_name,
-                    "password": "univention",
+                    "password": password,
                     "username": f"provisioning-{s_a_name}",
                     "version": 1,
                 },
@@ -713,7 +713,7 @@ def kelvin_session_kwargs(ca_cert):
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def kelvin_session(kelvin_session_kwargs):
     """
     An open Kelvin API client session to `host`, that will close automatically
@@ -721,9 +721,11 @@ async def kelvin_session(kelvin_session_kwargs):
     """
     sessions: Dict[str, Session] = {}
 
-    def _func(host: str) -> Session:
+    def _func(host: str, **kwargs) -> Session:
         if host not in sessions:
-            sessions[host] = Session(**kelvin_session_kwargs(host))
+            session_kwargs = kelvin_session_kwargs(host)
+            session_kwargs.update(kwargs)
+            sessions[host] = Session(**session_kwargs)
             sessions[host].open()
         return sessions[host]
 
@@ -731,6 +733,19 @@ async def kelvin_session(kelvin_session_kwargs):
 
     for session in sessions.values():
         await session.close()
+
+
+@pytest.fixture(scope="session")
+def id_broker_kelvin_session(kelvin_session):
+    def _func(sac: SchoolAuthorityConfiguration) -> Session:
+        m = re.match(r"^https://(?P<host>.+?)/", sac.url)
+        assert m
+        host = m.groupdict()["host"]
+        username = sac.plugin_configs["id_broker"]["username"]
+        password = sac.plugin_configs["id_broker"]["password"].get_secret_value()
+        return kelvin_session(host=host, username=username, password=password)
+
+    return _func
 
 
 @pytest.fixture(scope="session")
