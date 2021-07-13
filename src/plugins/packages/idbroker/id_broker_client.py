@@ -165,7 +165,9 @@ class Token:
         """Get the time at which `access_token` expires."""
         try:
             payload = jwt.decode(
-                access_token, algorithm="HS256", options={"verify_exp": False, "verify_signature": False}
+                access_token,
+                algorithms=["HS256"],
+                options={"verify_exp": False, "verify_signature": False},
             )
         except jwt.PyJWTError as exc:
             raise ValueError(f"Error decoding token ({access_token!r}): {exc!s}")
