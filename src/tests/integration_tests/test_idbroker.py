@@ -70,7 +70,7 @@ def mock_env(monkeypatch):
 
 
 @pytest.fixture(scope="session")
-async def new_school_auth(kelvin_session, id_broker_ip) -> Tuple[str, str]:
+async def new_school_auth(delete_kelvin_school, kelvin_session, id_broker_ip) -> Tuple[str, str]:
     s_a_name = "".join(fake.street_name().split())
     print(f"*** Creating school authority {s_a_name!r}...")
     password = fake.password(length=15)
@@ -104,15 +104,7 @@ async def new_school_auth(kelvin_session, id_broker_ip) -> Tuple[str, str]:
 
     yield s_a_name, password
 
-    # does often not work, but we'll try anyway...
-    res_del = httpx.delete(
-        f"https://Administrator:univention@{session.host}/univention/udm/container/ou/{res_post['dn']}",
-        verify=False,
-    )
-    if res_del.status_code not in (200, 204):
-        print(f"*** Error deleting OU {res_post['name']!r}. ***")
-    else:
-        print(f"Deleted school {res_post['name']!r}.")
+    await delete_kelvin_school(s_a_name, school_name)
     try:
         await kelvin_user.delete()
         print(f"Deleted user {kelvin_user.name!r}.")
@@ -143,19 +135,10 @@ def get_schools(school_auth_conf, id_broker_kelvin_session):
 
 
 @pytest.fixture(scope="session")
-def test_school(get_schools):
-    async def _func(s_a_name: str) -> KelvinSchool:
-        res = random.choice(await get_schools(s_a_name))
-        assert res, "TODO: create school if none exists"
-        return res
-
-    return _func
-
-
-@pytest.fixture(scope="session")
-def test_school_name(test_school):
+def test_school_name(get_schools):
     async def _func(s_a_name: str) -> str:
-        return (await test_school(s_a_name)).name.split("-", 1)[-1]
+        test_school = random.choice(await get_schools(s_a_name))
+        return test_school.name.split("-", 1)[-1]
 
     return _func
 
@@ -272,6 +255,45 @@ async def schedule_delete_kelvin_user(get_kelvin_user):
             print(f"Kelvin user '{s_a_and_user_name[0]}-{s_a_and_user_name[1]}' does not exist.")
 
 
+@pytest.fixture(scope="session")
+def delete_kelvin_school(kelvin_session, id_broker_ip):
+    async def _func(s_a_name: str, name: str) -> None:
+        session = kelvin_session(id_broker_ip)
+        schools = [
+            school
+            async for school in KelvinSchoolResource(session=session).search(name=f"{s_a_name}-{name}")
+        ]
+        if not schools:
+            print(f"*** delete_kelvin_school(): no such school: '{s_a_name}-{name}'.")
+        school_dn = schools[0].dn
+        res_del = httpx.delete(
+            f"https://Administrator:univention@{session.host}/univention/udm/container/ou/{school_dn}",
+            verify=False,
+        )
+        if res_del.status_code not in (200, 204):
+            print(f"*** Error deleting OU {schools[0].name!r}. ***")
+        else:
+            print(f"Deleted school {schools[0].name!r}.")
+
+    return _func
+
+
+@pytest.fixture
+async def schedule_delete_kelvin_school(
+    delete_kelvin_school, school_auth_conf, id_broker_kelvin_session
+):
+    s_a_and_school_names: List[Tuple[str, str]] = []
+
+    def _func(s_a_name: str, name: str):
+        s_a_and_school_names.append((s_a_name, name))
+
+    yield _func
+
+    for s_a_name, name in s_a_and_school_names:
+        print(f"Deleting Kelvin school {name!r} (auth: {s_a_name!r})...")
+        await delete_kelvin_school(s_a_name, name)
+
+
 @pytest.fixture
 async def schedule_delete_kelvin_school_class(get_kelvin_school_class):
     s_a_and_sc_names: List[Tuple[str, str, str]] = []
@@ -282,13 +304,13 @@ async def schedule_delete_kelvin_school_class(get_kelvin_school_class):
     yield _func
 
     for s_a_name, name, school in s_a_and_sc_names:
-        print(f"Deleting Kelvin school class {name!r} at school {s_a_name!r} (auth: {s_a_name!r})...")
+        print(f"Deleting Kelvin school class {name!r} at school {school!r} (auth: {s_a_name!r})...")
         try:
             kelvin_class: KelvinSchoolClass = await get_kelvin_school_class(s_a_name, name, school)
             await kelvin_class.delete()
         except KelvinNoObject:
             print(
-                f"Kelvin school class {name!r} at school {s_a_name!r} (auth: {s_a_name!r}) does not "
+                f"Kelvin school class {name!r} at school {school!r} (auth: {s_a_name!r}) does not "
                 f"exist."
             )
 
@@ -297,12 +319,14 @@ async def schedule_delete_kelvin_school_class(get_kelvin_school_class):
 async def test_school_create(
     get_schools,
     mock_env,
+    schedule_delete_kelvin_school,
     school_auth_conf: SchoolAuthorityConfiguration,
 ):
     id_broker_school = IDBrokerSchool(school_auth_conf, "id_broker")
     s_a_name = id_broker_school.school_authority_name
     school_name = fake.user_name()
     school_1 = School(name=school_name, display_name=f"{s_a_name} {school_name}")
+    schedule_delete_kelvin_school(s_a_name, school_name)
     school_2 = await id_broker_school.create(school_1)
     assert school_1 == school_2
     s_a_schools: List[KelvinSchool] = await get_schools(s_a_name)
