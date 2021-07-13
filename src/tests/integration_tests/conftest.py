@@ -209,7 +209,7 @@ def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_ho
 
 
 @pytest.fixture(scope="session")
-def id_broker_ip(docker_hostname: str, http_request):
+def id_broker_ip(docker_hostname: str, http_request) -> str:
     url = urljoin(f"https://{docker_hostname}", "IP_idbroker.txt")
     resp = http_request("get", url, verify=False)
     assert resp.status_code == 200, (resp.status_code, resp.reason, url)
