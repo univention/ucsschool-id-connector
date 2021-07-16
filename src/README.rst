@@ -243,16 +243,15 @@ Installation and configuration of ID Broker plugin
 
 TODO
 
-Configuration::
+POST the following JSON to ``https://SCHOOL_AUTH_FQDN/ucsschool-id-connector/api/v1/school_authorities``::
 
     {
         "name": "id broker",
-        "active": True,
-        "url": "https://FQDN/",
+        "active": true,
+        "url": "https://ID_BROKER_FQDN/",
         "plugins": ["id_broker"],
         "plugin_configs": {
             "id_broker": {
-                "tenant": "Schultraegername",
                 "password": "g3h31m",
                 "username": "provisioning-Schultraegername",
                 "version": 1
@@ -260,6 +259,16 @@ Configuration::
         }
     }
 
+PUT the following JSON to ``https://SCHOOL_AUTH_FQDN/ucsschool-id-connector/api/v1/school_to_authority_mapping``::
+
+    # TODO: this should be {"mapping": {"*": "id broker"}}
+    {
+      "mapping": {
+        "DEMOSCHOOL": "id broker",
+        "Schule01": "Traeger1",
+        "Schule02": "Traeger1"
+      }
+    }
 
 Plugins
 -------

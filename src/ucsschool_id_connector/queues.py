@@ -479,13 +479,17 @@ class OutQueue(FileQueue):
     async def scan(self) -> None:  # noqa: C901
         self.logger.info("Handling out queue %r (%s)...", self.name, self.path)
         while True:
-            # in case of a communication error with the target API, sleep and retry
-            school_authority_ping_caller = filter_plugins(
-                "school_authority_ping", self.school_authority.plugins
-            )
-            school_authority_ping_coros: List[Coroutine] = school_authority_ping_caller(
-                school_authority=self.school_authority
-            )
+            try:
+                # in case of a communication error with the target API, sleep and retry
+                school_authority_ping_caller = filter_plugins(
+                    "school_authority_ping", self.school_authority.plugins
+                )
+                school_authority_ping_coros: List[Coroutine] = school_authority_ping_caller(
+                    school_authority=self.school_authority
+                )
+            except Exception as exc:
+                self.logger.exception("An exception was thrown during hook collection", exc_info=exc)
+                connection_ok = False
             try:
                 connection_ok = all(await asyncio.gather(*school_authority_ping_coros))
             except Exception as exc:

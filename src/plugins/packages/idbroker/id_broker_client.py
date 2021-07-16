@@ -78,6 +78,16 @@ def _set_shared_token(token: "Token") -> None:
     _shared_token = token
 
 
+class IDBrokerError(Exception):
+    def __init__(self, status: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.status = status
+
+
+class IDBrokerNotFoundError(IDBrokerError):
+    status = 404
+
+
 class IDBrokerObjectBase(BaseModel):
     _gen_class: Type[GenApiObject]
 
@@ -253,9 +263,11 @@ class ProvisioningAPIClient(abc.ABC):
         try:
             new_obj = await self._request("post", **kwargs)
         except ApiException as exc:
-            raise ValueError(
+            exc_cls = IDBrokerNotFoundError if exc.status == 404 else IDBrokerError
+            raise exc_cls(
+                exc.status,
                 f"Error HTTP {exc.status} ({exc.reason}) creating {self._object_type.__name__} "
-                f"{gen_obj!r}."
+                f"{gen_obj!r}.",
             )
         if not new_obj:
             raise RuntimeError(
@@ -282,9 +294,10 @@ class ProvisioningAPIClient(abc.ABC):
             logger.debug("%s %r deleted.", self._object_type.__name__, obj_id)
         except ApiException as exc:
             if exc.status != 404:
-                raise ValueError(
+                raise IDBrokerError(
+                    exc.status,
                     f"Error HTTP {exc.status} ({exc.reason}) deleting {self._object_type.__name__} "
-                    f"{obj_id!r}."
+                    f"{obj_id!r}.",
                 )
             logger.info("%s %r not deleted, as it did not exist.", self._object_type.__name__, obj_id)
 
@@ -302,9 +315,10 @@ class ProvisioningAPIClient(abc.ABC):
             logger.debug("%s %r exists.", self._object_type.__name__, obj_id)
         except ApiException as exc:
             if exc.status != 404:
-                raise ValueError(
+                raise IDBrokerError(
+                    exc.status,
                     f"Error HTTP {exc.status} ({exc.reason}) checking existence of "
-                    f"{self._object_type.__name__} using {kwargs!r}."
+                    f"{self._object_type.__name__} using {kwargs!r}.",
                 )
             logger.debug("%s %r does not exist.", self._object_type.__name__, obj_id)
             return False
@@ -316,9 +330,11 @@ class ProvisioningAPIClient(abc.ABC):
         try:
             obj = await self._request("get", **kwargs)
         except ApiException as exc:
-            raise ValueError(
+            exc_cls = IDBrokerNotFoundError if exc.status == 404 else IDBrokerError
+            raise exc_cls(
+                exc.status,
                 f"Error HTTP {exc.status} ({exc.reason}) retrieving {self._object_type.__name__} "
-                f"using {kwargs!r}."
+                f"using {kwargs!r}.",
             )
         if not obj:
             raise RuntimeError(
@@ -341,9 +357,11 @@ class ProvisioningAPIClient(abc.ABC):
         try:
             new_obj = await self._request("put", **kwargs)
         except ApiException as exc:
-            raise ValueError(
+            exc_cls = IDBrokerNotFoundError if exc.status == 404 else IDBrokerError
+            raise exc_cls(
+                exc.status,
                 f"Error HTTP {exc.status} ({exc.reason}) updating {self._object_type.__name__} "
-                f"{gen_obj!r}."
+                f"{gen_obj!r}.",
             )
         if not new_obj:
             raise RuntimeError(f"Empty response updating {self._object_type.__name__} {gen_obj!r}.")
@@ -384,7 +402,7 @@ class IDBrokerUser(ProvisioningAPIClient):
     _gen_api_handler = GenUsersApi
 
     async def create(self, user: User) -> User:
-        """Create school. Returned value is the school data from the server."""
+        """Create user. Returned value is the data from the server."""
         res = await super()._create(
             obj_arg_name="user", school_authority=self.school_authority_name, user=user
         )
@@ -427,7 +445,7 @@ class IDBrokerSchool(ProvisioningAPIClient):
     _gen_api_handler = GenSchoolsApi
 
     async def create(self, school: School) -> School:
-        """Create school. Returned value is the school data from the server."""
+        """Create school. Returned value is the data from the server."""
         res = await super()._create(
             obj_arg_name="school", school_authority=self.school_authority_name, school=school
         )
@@ -455,7 +473,7 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
     _gen_api_handler = GenSchoolClassesApi
 
     async def create(self, school_class: SchoolClass) -> SchoolClass:
-        """Create school. Returned value is the school data from the server."""
+        """Create schoolclass. Returned value is the data from the server."""
         res = await super()._create(
             obj_arg_name="school_class",
             school_authority=self.school_authority_name,
@@ -464,7 +482,7 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
         return cast(SchoolClass, res)
 
     async def exists(self, name: str, school: str) -> bool:
-        """Check if the user with the ID `user_id` exists on the server."""
+        """Check if the schoolclass with the name `name` and the school `school` exists on the server."""
         return await self._exists(
             id_arg_name="name", school_authority=self.school_authority_name, name=name, school=school
         )
@@ -474,7 +492,7 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
         return cast(SchoolClass, res)
 
     async def update(self, school_class: SchoolClass) -> SchoolClass:
-        """Modify the user with the ID `user.id` on the server."""
+        """Modify the schoolclass with the name `school_class.name` and the school `school_class.school` on the server."""
         res = await super()._update(
             obj_arg_name="school_class",
             school_authority=self.school_authority_name,
