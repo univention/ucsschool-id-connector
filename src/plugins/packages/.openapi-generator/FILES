@@ -30,5 +30,4 @@ idbroker/provisioning_api/models/token.py
 idbroker/provisioning_api/models/user.py
 idbroker/provisioning_api/models/validation_error.py
 idbroker/provisioning_api/rest.py
-idbroker/provisioning_api/test/__init__.py
 idbroker/provisioning_api_README.md

@@ -12,4 +12,6 @@ docker run \
   -i /local/src/plugins/packages/idbroker/provisioning_openapi.json \
   -o /local/src/plugins/packages \
   --additional-properties=generateSourceCodeOnly=true \
-  --additional-properties=packageVersion=$(cat src/plugins/packages/idbroker/VERSION.txt)
+  --additional-properties=packageVersion=$(cat src/plugins/packages/idbroker/VERSION.txt) \
+  --global-property=apiTests=false \
+  --global-property=modelTests=false
