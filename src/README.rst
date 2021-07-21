@@ -259,16 +259,8 @@ POST the following JSON to ``https://SCHOOL_AUTH_FQDN/ucsschool-id-connector/api
         }
     }
 
-PUT the following JSON to ``https://SCHOOL_AUTH_FQDN/ucsschool-id-connector/api/v1/school_to_authority_mapping``::
+We do not have to modify the mapping, because we only sync objects for schools of school authorities which have an ID Broker configuration.
 
-    # TODO: this should be {"mapping": {"*": "id broker"}}
-    {
-      "mapping": {
-        "DEMOSCHOOL": "id broker",
-        "Schule01": "Traeger1",
-        "Schule02": "Traeger1"
-      }
-    }
 
 Plugins
 -------

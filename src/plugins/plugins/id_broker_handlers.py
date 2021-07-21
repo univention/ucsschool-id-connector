@@ -29,6 +29,8 @@
 
 from typing import Any, Dict, Union
 
+import aiohttp as aiohttp
+from urllib.parse import urljoin
 from ucsschool.kelvin.client import NoObject
 
 from idbroker.id_broker_client import (
@@ -49,8 +51,6 @@ from ucsschool_id_connector.models import (
     SchoolAuthorityConfiguration,
 )
 from ucsschool_id_connector.plugins import plugin_manager, hook_impl
-from ucsschool_id_connector.requests import APICommunicationError
-from ucsschool_id_connector.utils import lehrer_ou_dn_regex, school_class_dn_regex, schueler_ou_dn_regex
 from ucsschool_id_connector_defaults.group_handler_base import (
     GroupDispatcherPluginBase,
     GroupNotFoundError,
@@ -80,10 +80,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         self.id_broker_school = IDBrokerSchool(self.school_authority, "id_broker")
         self.id_broker_user = IDBrokerUser(self.school_authority, "id_broker")
         # todo do we still need this?
-        self.s_a_name = school_authority.plugin_configs[plugin_name]["tenant"]
-
-    async def fetch_schools(self) -> Dict[str, str]:
-        pass
+        # self.s_a_name = school_authority.plugin_configs[plugin_name]["tenant"]
 
     async def school_exists(self, name: str) -> bool:
         # todo can we refactor this?
@@ -111,7 +108,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> User:
         """Retrieve a user from ID Broker API."""
-        self.logger.debug("Retrieving school class with search parameters: %r", search_params)
+        self.logger.debug("Retrieving user with search parameters: %r", search_params)
         try:
             return await self.id_broker_user.get(id=search_params["id"])
         except IDBrokerNotFoundError:
@@ -121,7 +118,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         """Create a user object at the target."""
         name, school = request_body["name"], request_body["ou"]
         self.logger.info(
-            "Going to create school class %r in school %r: %r...",
+            "Going to create user %r in school %r: %r...",
             request_body["id"],
             request_body["ou"],
             request_body,
@@ -132,17 +129,17 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         school_class = await self.create_user(**request_body)
         self.logger.info("School class created: %r.", school_class)
 
-    async def do_modify(self, request_body: Dict[str, Any], api_user_data: SchoolClass) -> None:
+    async def do_modify(self, request_body: Dict[str, Any], api_user_data: User) -> None:
         """Modify a user object at the target."""
         self.logger.info("Going to modify user %r: %r...", api_user_data.name, request_body)
         school_class: SchoolClass = await self.modify_user(id=request_body["id"], **request_body)
         self.logger.info("User modified: %r.", school_class)
 
-    async def do_remove(self, obj: ListenerGroupRemoveObject, api_user_data: SchoolClass) -> None:
+    async def do_remove(self, obj: ListenerGroupRemoveObject, api_user_data: User) -> None:
         """Delete a user object at the target."""
         self.logger.info("Going to delete user: %r...", obj)
         await self.delete_user(id=api_user_data.id)
-        # self.logger.info("User deleted: %r.", school_class)
+        self.logger.info("User deleted: %r.", api_user_data)
 
 
 class IDBrokerUserDispatcher(UserDispatcherPluginBase):
@@ -152,16 +149,15 @@ class IDBrokerUserDispatcher(UserDispatcherPluginBase):
     @hook_impl
     async def school_authority_ping(self, school_authority: SchoolAuthorityConfiguration) -> bool:
         """impl for ucsschool_id_connector.plugins.Postprocessing.school_authority_ping"""
-        handler = self.handler(school_authority, self.plugin_name)
-        try:
-            await handler.refresh_schools()
-        except APICommunicationError as exc:
-            self.logger.error(
-                "Error calling school authority API (%s): %s",
-                school_authority.name,
-                exc,
-            )
-            return False
+        url = urljoin(school_authority.url, "ucsschool/apis/openapi.json")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    self.logger.error(
+                        "Failed to call ucsschool-api for school authority API (%s)",
+                        school_authority.name,
+                    )
+                    return False
         return True
 
 
