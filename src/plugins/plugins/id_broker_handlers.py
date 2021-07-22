@@ -29,7 +29,8 @@
 
 from typing import Any, Dict, Union
 
-import aiohttp as aiohttp
+import aiohttp
+
 from urllib.parse import urljoin
 from ucsschool.kelvin.client import NoObject
 
@@ -49,8 +50,10 @@ from ucsschool_id_connector.models import (
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
     SchoolAuthorityConfiguration,
+    ListenerObject
 )
 from ucsschool_id_connector.plugins import plugin_manager, hook_impl
+from ucsschool_id_connector.utils import school_class_dn_regex
 from ucsschool_id_connector_defaults.group_handler_base import (
     GroupDispatcherPluginBase,
     GroupNotFoundError,
@@ -68,72 +71,99 @@ from ucsschool_id_connector_defaults.user_handler_base import (
 
 
 class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
+
+    _required_search_params = ("id",)
+
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         super(IDBrokerPerSAUserDispatcher, self).__init__(school_authority, plugin_name)
+        self.class_dn_regex = school_class_dn_regex()
         self.attribute_mapping = {
-            "entryUUID": "id",  # todo
+            "id": "id",
             "username": "user_name",
-            "first_name": "first_name",
+            "firstname": "first_name",
             "lastname": "last_name",
-            "": "context",  # todo
+            "context": "context",
         }
         self.id_broker_school = IDBrokerSchool(self.school_authority, "id_broker")
         self.id_broker_user = IDBrokerUser(self.school_authority, "id_broker")
         # todo do we still need this?
         # self.s_a_name = school_authority.plugin_configs[plugin_name]["tenant"]
 
+    async def create_or_update_preconditions_met(self, obj: ListenerUserAddModifyObject) -> bool:
+        return True
+
+    async def print_ids(self, obj: ListenerUserAddModifyObject) -> None:
+        self.logger.error(f"Object that is being created or updated: {obj}")
+
     async def school_exists(self, name: str) -> bool:
         # todo can we refactor this?
         return await self.id_broker_school.exists(name)
 
     async def user_exists(self, name: str, school: str) -> bool:
-        return await self.id_broker_sc.exists(name, school)
+        return await self.id_broker_user.exists(name, school)
 
     async def create_school(self, name: str) -> School:
         return await self.id_broker_school.create(name)
 
     async def create_user(self, attrs: Dict[str, Any]) -> User:
-        return await self.id_broker_user.create(attrs)
+        return await self.id_broker_user.create(User(**attrs))
 
-    async def modify_user(self, id: str, attrs: Dict[str, Any]) -> User:
-        return await self.id_broker_user.modify(id, attrs)
+    async def modify_user(self, attrs: Dict[str, Any]) -> User:
+        return await self.id_broker_user.update(User(**attrs))
 
     async def delete_user(self, id: str) -> None:
         await self.id_broker_user.delete(id)
 
+    async def _handle_attr_context(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
+        context = {school_name: {"roles": set(obj.school_user_roles), "classes": set()} for school_name in obj.schools}
+        for group_dn in obj.object.get("groups", []):
+            if m := self.class_dn_regex.match(group_dn):
+                name = m.groupdict()["name"]
+                school = m.groupdict()["ou"]
+                context[school]["classes"].add(name)
+        return context
+
+    async def _handle_attr_id(self, obj: ListenerUserAddModifyObject) -> str:
+        return obj.id
+
     async def search_params(
         self, obj: Union[ListenerUserAddModifyObject, ListenerUserRemoveObject]
     ) -> Dict[str, Any]:
-        return {"school_authority": self.school_authority.name, "id": obj.id}
+        return {"id": obj.id}
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> User:
         """Retrieve a user from ID Broker API."""
         self.logger.debug("Retrieving user with search parameters: %r", search_params)
         try:
-            return await self.id_broker_user.get(id=search_params["id"])
+            return await self.id_broker_user.get(user_id=search_params["id"])
         except IDBrokerNotFoundError:
             raise UserNotFoundError(f"No user found with search params: {search_params!r}.")
 
+    def _create_schools(self):
+        """Create schools if they do not exist yet."""
+        pass
+
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
-        name, school = request_body["name"], request_body["ou"]
-        self.logger.info(
-            "Going to create user %r in school %r: %r...",
-            request_body["id"],
-            request_body["ou"],
-            request_body,
-        )
-        if not self.id_broker_school.exists(school):
-            await self.id_broker_school.create(school)
+        for school in request_body["context"]:
+            if not self.id_broker_school.exists(school):
+                await self.id_broker_school.create(school)
+            self.logger.info(
+                "Going to create user %r in school %r: %r...",
+                request_body["id"],
+                request_body["school"],
+                request_body,
+            )
+
         # todo check this feels wrong - do we really need the create* delete* methods?
         school_class = await self.create_user(**request_body)
         self.logger.info("School class created: %r.", school_class)
 
     async def do_modify(self, request_body: Dict[str, Any], api_user_data: User) -> None:
         """Modify a user object at the target."""
-        self.logger.info("Going to modify user %r: %r...", api_user_data.name, request_body)
-        school_class: SchoolClass = await self.modify_user(id=request_body["id"], **request_body)
-        self.logger.info("User modified: %r.", school_class)
+        self.logger.info("Going to modify user %r: %r...", api_user_data.user_name, request_body)
+        user: User = await self.modify_user(request_body)
+        self.logger.info("User modified: %r.", user)
 
     async def do_remove(self, obj: ListenerGroupRemoveObject, api_user_data: User) -> None:
         """Delete a user object at the target."""
@@ -159,6 +189,12 @@ class IDBrokerUserDispatcher(UserDispatcherPluginBase):
                     )
                     return False
         return True
+
+    @hook_impl
+    async def handle_listener_object(
+        self, school_authority: SchoolAuthorityConfiguration, obj: ListenerObject
+    ) -> bool:
+        return await super().handle_listener_object(school_authority, obj)
 
 
 #
