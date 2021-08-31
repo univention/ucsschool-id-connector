@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import os
 import asyncio
 import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -35,7 +36,11 @@ import aiofiles
 import aiohttp
 import lazy_object_proxy
 
-from ucsschool_id_connector.constants import CHECK_SSL_CERTS, HTTP_CLIENT_TIMEOUT, LOG_FILE_PATH_QUEUES
+from ucsschool_id_connector.constants import (
+    CHECK_SSL_CERTS,
+    HTTP_CLIENT_TIMEOUT,
+    LOG_FILE_PATH_QUEUES
+)
 from ucsschool_id_connector.plugins import filter_plugins
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
@@ -86,13 +91,24 @@ async def _do_request(  # noqa: C901
     else:
         timeout = aiohttp.ClientTimeout(total=HTTP_CLIENT_TIMEOUT)
         session_to_use = aiohttp.ClientSession(timeout=timeout)
+    # Get the right proxy from system environment variables.
+    proxy_to_use: Union[str, None] = None
+    proxy_http = os.environ['http_proxy']
+    proxy_https = os.environ['https_proxy']
+    if proxy_https:
+        proxy_to_use = proxy_https
+    else:
+        proxy_to_use = proxy_http if proxy_http else None
     meth = getattr(session_to_use, http_method)
     request_kwargs = {"url": url, "ssl": CHECK_SSL_CERTS}
+    if proxy_to_use:
+        request_kwargs["proxy"] = proxy_to_use
     if http_method in {"patch", "post"} and data is not None:
         request_kwargs["json"] = data
     if params:
         request_kwargs["params"] = params
-    create_request_kwargs_caller = filter_plugins("create_request_kwargs", school_authority.plugins)
+    create_request_kwargs_caller = filter_plugins(
+        "create_request_kwargs", school_authority.plugins)
     for update_kwargs in await asyncio.gather(
         *create_request_kwargs_caller(
             http_method=http_method, url=url, school_authority=school_authority

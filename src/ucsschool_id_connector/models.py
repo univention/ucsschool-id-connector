@@ -43,7 +43,8 @@ if TYPE_CHECKING:  # pragma: no cover
 from .utils import ConsoleAndFileLogging
 
 # for debugging during coding
-logger: logging.Logger = lazy_object_proxy.Proxy(lambda: ConsoleAndFileLogging.get_logger(__name__))
+logger: logging.Logger = lazy_object_proxy.Proxy(
+    lambda: ConsoleAndFileLogging.get_logger(__name__))
 
 
 class ListenerFileAttributeError(PydanticValueError):
@@ -150,7 +151,8 @@ class UserPasswords(BaseModel):
             by_alias=by_alias,
             skip_defaults=skip_defaults,
         )
-        res["krb5Key"] = [base64.b64encode(k).decode("ascii") for k in res["krb5Key"]]
+        res["krb5Key"] = [base64.b64encode(k).decode(
+            "ascii") for k in res["krb5Key"]]
         return res
 
 
@@ -180,7 +182,8 @@ class ListenerAddModifyObject(ListenerObject, abc.ABC):
 
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
-        raise NotImplementedError("Implement this in a subclass specific for each UDM object type.")
+        raise NotImplementedError(
+            "Implement this in a subclass specific for each UDM object type.")
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.udm_object_type!r}, {self.dn!r}, {self.old_data!r})"
@@ -287,7 +290,8 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         if "ucsschoolStudent" in options:
             return [SchoolUserRole.student]
         # administrator and exam_user are not supported
-        raise UnknownSchoolUserRole(f"Unknown or missing school user type in options: {self.options!r}")
+        raise UnknownSchoolUserRole(
+            f"Unknown or missing school user type in options: {self.options!r}")
 
     @property
     def username(self) -> str:
@@ -372,9 +376,23 @@ class SecretsMixin:
                 if key in ("key", "password", "token") and isinstance(value, str):
                     plugin_configs[plugin_name][key] = SecretStr(value)
 
+    @staticmethod
+    def get_plugin_attr_in_plain(plugin_configs: Dict[str, Dict[str, Any]], attr_key: str) -> str:
+        """
+        Return a specific attribute value from the `plugin_configs` in plaintext.
+        """
+        for plugin_name, plugin_config in plugin_configs.items():
+            for key, value in plugin_config.items():
+                if attr_key == key and key in ("key", "password", "token"):
+                    if isinstance(value, SecretStr):
+                        return value.get_secret_value()
+                    else:
+                        return value
+
     @classmethod
     def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
-        res: SchoolAuthorityConfiguration = super(SecretsMixin, cls).parse_obj(obj)
+        res: SchoolAuthorityConfiguration = super(
+            SecretsMixin, cls).parse_obj(obj)
         cls.plugin_configs_plain_to_secret(res.plugin_configs)
         return res
 
