@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+v2.1.0 (2021-10-06)
+...................
+* Update the integrated kelvin rest client to version ``1.5.0`` to work with Kelvin ``1.5.0``
+
 v2.0.1 (2021-03-04)
 ...................
 * The transfer of Kerberos key hashes has been fixed.
