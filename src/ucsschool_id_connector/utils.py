@@ -264,6 +264,11 @@ def kelvin_url_regex() -> Pattern:
 
 
 @lru_cache(maxsize=1)
+def ucsschool_role_regex() -> Pattern:
+    return re.compile(r"^(?P<role>[^:]+):(?P<context_type>[^:]+):(?P<context>[^:]+)$")
+
+
+@lru_cache(maxsize=1)
 def get_app_version() -> str:
     try:
         return pkg_resources.get_distribution(APP_ID).version

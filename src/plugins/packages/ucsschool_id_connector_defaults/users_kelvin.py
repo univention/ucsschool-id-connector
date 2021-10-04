@@ -27,14 +27,17 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from ucsschool.kelvin.client import PasswordsHashes, RoleResource, SchoolResource, User, UserResource
+from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.models import (
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
+    School2SchoolAuthorityMapping,
     SchoolAuthorityConfiguration,
 )
+from ucsschool_id_connector.utils import ucsschool_role_regex
 from ucsschool_id_connector_defaults.kelvin_connection import kelvin_client_session
 from ucsschool_id_connector_defaults.output_plugin_handler_base import SkipAttribute, UniquenessError
 from ucsschool_id_connector_defaults.user_handler_base import (
@@ -71,15 +74,32 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
     Kelvin plugin handling user objects, per school authority code.
     """
 
+    _school2authority_mapping: Optional[School2SchoolAuthorityMapping] = None
+
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         super(KelvinPerSAUserDispatcher, self).__init__(school_authority, plugin_name)
-        self.attribute_mapping = self.school_authority.plugin_configs[plugin_name]["mapping"]["users"]
+        self.attribute_mapping = self.school_authority.plugin_configs[plugin_name]["mapping"]
         self._session = kelvin_client_session(school_authority, plugin_name)
+
+    @classmethod
+    async def school_2_school_authority_mapping(cls) -> School2SchoolAuthorityMapping:
+        if cls._school2authority_mapping is None:
+            cls._school2authority_mapping = await ConfigurationStorage.load_school2target_mapping()
+        return cls._school2authority_mapping
 
     @property
     def session(self):
         self._session.open()
         return self._session
+
+    async def handled_schools(self) -> List[str]:
+        """
+        This method returns a list of all schools this dispatcher is
+        handling for its school authority
+        """
+        school_authority_name = self.school_authority.name
+        mapping = (await self.school_2_school_authority_mapping()).mapping
+        return [school for school in mapping if mapping[school] == school_authority_name]
 
     async def fetch_roles(self) -> Dict[str, str]:
         """Fetch all roles from API of school authority."""
@@ -147,6 +167,47 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         user: User = await UserResource(session=self.session).get(name=api_user_data.name)
         await user.delete()
         self.logger.info("User deleted: %r.", user)
+
+    async def map_attributes(
+        self, obj: ListenerUserAddModifyObject, mapping: Dict[str, Dict]
+    ) -> Dict[str, Any]:
+        """
+        Create dict representing the object.
+
+        The mapping in the kelvin plugin has to select the appropriate mapping
+        depending on the users roles
+        """
+        roles = obj.object.get("ucsschoolRole", [])
+        used_mapping = await self._get_role_specific_mapping(roles, mapping)
+        return await super().map_attributes(obj, used_mapping)
+
+    async def _get_role_specific_mapping(
+        self, roles: List[str], mapping: Dict[str, Dict]
+    ) -> Dict[str, str]:
+        """
+        Returns the correct mapping to use for map_attributes
+        based on the given roles and configured mappings in the school authority
+        """
+        pattern = ucsschool_role_regex()
+        handled_schools = await self.handled_schools()
+        role_dicts = [match.groupdict() for match in (pattern.search(role) for role in roles) if match]
+        user_roles = [
+            obj["role"]
+            for obj in role_dicts
+            if obj["context_type"] == "school" and obj["context"] in handled_schools
+        ]
+        if "school_admin" in user_roles and "users_school_admin" in mapping:
+            key = "users_school_admin"
+        elif "staff" in user_roles and "users_staff" in mapping:
+            key = "users_staff"
+        elif "teacher" in user_roles and "users_teacher" in mapping:
+            key = "users_teacher"
+        elif "student" in user_roles and "users_student" in mapping:
+            key = "users_student"
+        else:
+            key = "users"
+        self.logger.info(f"Using {key} for the user mapping")
+        return mapping[key]
 
     async def _handle_attr_password(self, obj: ListenerUserAddModifyObject) -> str:
         """Generate a random password, unless password hashes are to be sent."""
