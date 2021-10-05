@@ -75,7 +75,7 @@ async def test_map_attributes(
         (role.name, fake.uri()) for role in user_obj.school_user_roles
     )
 
-    res = await user_handler.map_attributes(user_obj, s_a_config.plugin_configs[api]["mapping"]["users"])
+    res = await user_handler.map_attributes(user_obj, s_a_config.plugin_configs[api]["mapping"])
     school = [ou for ou in user_obj.schools if ou in user_obj.dn][0]
     schools_ids_on_target = await user_handler.schools_ids_on_target
     roles_on_target = await user_handler.roles_on_target
