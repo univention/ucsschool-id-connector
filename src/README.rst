@@ -97,6 +97,8 @@ The school authorities configuration must be done through the *UCS\@school ID Co
 
 See ``examples/school_authority_kelvin.json`` for an example.
 
+Further information on the configuration of some select plugins can be found further down.
+
 
 UCS\@school ID Connector HTTP API
 ---------------------------------
@@ -333,6 +335,33 @@ When the app starts, all plugins will be discovered and logged::
 
     ... INFO  [ucsschool_id_connector.plugins.load_plugins:83] Loaded plugins: {.., <dummy.DummyPlugin object at 0x7fa5284a9240>}
     ... INFO  [ucsschool_id_connector.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
+
+
+Kelvin Plugin Konfiguration
+---------------------------
+
+Until a full documentation is developed, only some specifics of the default Kelvin plugin are mentioned here
+
+Role specific attribute mapping
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With version ``2.1.0`` role specific attribute mapping was added to the default kelvin plugin. This allows to define
+additional user mappings for each role (student, teacher, staff, school_admin) by adding a new mapping next to the
+``users`` mapping suffixed by ``_$ROLE``, e.g. ``users_student: {}``.
+
+If a user object is handled by the kelvin plugin the mapping is determined as follows:
+
+- Determine all roles the user has in the schools the current school authority is configured to handle
+- From that order the roles for priority with the school_admin being the highest followed by staff, teacher and
+  then student.
+- Choose a ``users_$ROLE`` mapping in that order from the ones configured in the plugin settings.
+- If none was found, fall back to the ``users`` mapping as the default.
+
+The mappings for the different roles are not additive because an additive approach would complicate the option
+to remove mappings from a specific role. Only one mapping is chosen by the rules just described.
+
+The priority order for the roles was chosen in order of common specificity in UCS@school. A student is usually ever only
+a student. But teachers, staff and school admins can have mutliple roles of those three.
 
 
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
