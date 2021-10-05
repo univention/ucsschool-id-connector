@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="2067.6px" preserveAspectRatio="none" style="width:1341px;height:2067px;background:#FFFFFF;" version="1.1" viewBox="0 0 1341 2067" width="1341.6px" zoomAndPan="magnify"><defs/><g><text fill="#000000" font-family="sans-serif" font-size="21.6" lengthAdjust="spacing" textLength="303.6" x="511.2" y="20.0496">transformer plugin overview</text><!--MD5=[3bce4743bc9b5320e352a2c28149f890]
+cluster id_connector--><rect fill="#FFFFFF" height="656.4" style="stroke:#444444;stroke-width:1.2;stroke-dasharray:7.0,7.0;" width="732" x="13.2" y="1129.1438"/><text fill="#444444" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="136.8" x="310.8" y="1149.3656">ID connector</text><!--MD5=[aa495e3eb3961d298bd459a654c16499]
+entity out_queue_a--><rect fill="#85BBF0" height="102.225" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="158.4" x="316.8" y="1426.7437"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="134.4" x="328.8" y="1456.5656">Out queue A</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="56.4" x="367.8" y="1474.4602">[Folder]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="398.4" y="1493.4504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="74.4" x="361.2" y="1513.0066">json files</text><!--MD5=[8021323f67cea1c74145feef327135cf]
+entity out_queue_b--><rect fill="#85BBF0" height="102.225" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="158.4" x="82.8" y="1426.7437"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="134.4" x="94.8" y="1456.5656">Out queue B</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="56.4" x="133.8" y="1474.4602">[Folder]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="164.4" y="1493.4504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="74.4" x="127.2" y="1513.0066">json files</text><!--MD5=[ac4fe08bae3723ed09f62ef68d7bf1c9]
+entity out_queue_t--><rect fill="#85BBF0" height="102.225" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="157.2" x="517.8" y="1426.7437"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="133.2" x="529.8" y="1456.5656">Out queue T</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="56.4" x="568.2" y="1474.4602">[Folder]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="598.8" y="1493.4504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="74.4" x="561.6" y="1513.0066">json files</text><!--MD5=[aea8f9055968ba30f44b3ca663a50ea5]
+entity transformer--><rect fill="#85BBF0" height="121.7813" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="231.6" x="493.8" y="1645.1438"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="135.6" x="541.8" y="1674.9656">Transformer</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="207.6" x="505.8" y="1692.8602">[transformer plugin process]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="612" y="1711.8504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="164.4" x="527.4" y="1731.4066">transforms users to</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="100.8" x="559.2" y="1750.9629">schoolusers</text><!--MD5=[011962a24686330be75ab58dbceac43c]
+entity kelvin_plugin_a--><rect fill="#85BBF0" height="102.225" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="188.4" x="263.4" y="1654.7437"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="61.2" x="327" y="1684.5656">Out A</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="164.4" x="275.4" y="1702.4602">[kelvin plugin process]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="360" y="1721.4504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="159.6" x="280.2" y="1741.0066">Sends to kelvin api</text><!--MD5=[80c6222ed3d76d0556d682f79c4a25db]
+entity kelvin_plugin_b--><rect fill="#85BBF0" height="102.225" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="188.4" x="33" y="1654.7437"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="61.2" x="96.6" y="1684.5656">Out B</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="164.4" x="45" y="1702.4602">[kelvin plugin process]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="129.6" y="1721.4504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="159.6" x="49.8" y="1741.0066">Sends to kelvin api</text><!--MD5=[b2a0eeef433f628869ec8b6805c48dbf]
+entity async_job--><rect fill="#438DD5" height="121.7813" style="stroke:#3C7FC0;stroke-width:1.7999999999999998;" width="262.8" x="353.4" y="1173.5438"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="103.2" x="433.2" y="1203.3656">Async Job</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="453" y="1221.2602">[python]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="487.2" y="1240.2504"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="229.2" x="370.2" y="1259.8066">puts json files into right out</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="54" x="457.8" y="1279.3629">queue</text><!--MD5=[1be1e8e9c1fa15d6e082466842209191]
+entity ldap--><path d="M1036.8,44.3438 C1036.8,32.3438 1132.8,32.3438 1132.8,32.3438 C1132.8,32.3438 1228.8,32.3438 1228.8,44.3438 L1228.8,133.3688 C1228.8,145.3688 1132.8,145.3688 1132.8,145.3688 C1132.8,145.3688 1036.8,145.3688 1036.8,133.3688 L1036.8,44.3438 " fill="#438DD5" style="stroke:#3C7FC0;stroke-width:1.7999999999999998;"/><path d="M1036.8,44.3438 C1036.8,56.3438 1132.8,56.3438 1132.8,56.3438 C1132.8,56.3438 1228.8,56.3438 1228.8,44.3438 " fill="none" style="stroke:#3C7FC0;stroke-width:1.7999999999999998;"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="56.4" x="1104.6" y="78.9656">LDAP</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="79.2" x="1093.2" y="96.8602">[openldap]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1135.2" y="115.8504"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="163.2" x="1053.6" y="135.4066">holds the user data</text><!--MD5=[024b7764bd672be600620189583adf80]
+entity udm--><rect fill="#438DD5" height="121.7813" style="stroke:#3C7FC0;stroke-width:1.7999999999999998;" width="250.8" x="951" y="1417.1438"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="156" x="998.4" y="1446.9656">UDM REST API</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="68.4" x="1042.2" y="1464.8602">[tornado]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1078.8" y="1483.8504"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="217.2" x="967.8" y="1503.4066">enriches ldap access with</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="144" x="1004.4" y="1522.9629">ucs specific logic</text><!--MD5=[f8ff9d7f2aa69e8586ad27865f5533e6]
+entity kelvin_rest_api--><rect fill="#438DD5" height="121.7813" style="stroke:#3C7FC0;stroke-width:1.7999999999999998;" width="260.4" x="941.4" y="1645.1438"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="170.4" x="986.4" y="1674.9656">Kelvin REST API</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="60" x="1041.6" y="1692.8602">[fastapi]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1074" y="1711.8504"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="231.6" x="958.2" y="1731.4066">stops events from reaching</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="37.2" x="1053" y="1750.9629">ldap</text><!--MD5=[c4def0b39757ced8a2cbaa90cdcbeb42]
+entity listener--><rect fill="#85BBF0" height="121.7813" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="249.6" x="909.6" y="251.9438"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="225.6" x="921.6" y="281.7656">Id-connector listener</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="166.8" x="951" y="299.6602">[python listener script]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1036.8" y="318.6504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="199.2" x="934.8" y="338.2066">Handles write events to</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="178.8" x="942.6" y="357.7629">ldap for id-connector</text><!--MD5=[751701bbc6877bdbbaa682a37c49d882]
+entity small_in_queue--><rect fill="#85BBF0" height="102.225" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="242.4" x="830.4" y="479.9437"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="160.8" x="871.2" y="509.7656">Small in-queue</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="56.4" x="923.4" y="527.6602">[Folder]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="954" y="546.6504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="213.6" x="847.2" y="566.2066">json files with entryUUIDs</text><!--MD5=[995a46705506099b563611b182911a66]
+entity daemon--><rect fill="#438DD5" height="141.3375" style="stroke:#3C7FC0;stroke-width:1.7999999999999998;" width="260.4" x="821.4" y="688.7438"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="88.8" x="907.2" y="718.5656">Daemon</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="919.8" y="736.4602">[python]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="954" y="755.4504"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="226.8" x="838.2" y="775.0066">Reads uuid and writes json</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="190.8" x="853.8" y="794.5629">representation of udm</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="52.8" x="925.2" y="814.1191">object</text><!--MD5=[821805f5c38fda95533ab32586264233]
+entity large_in_queue--><rect fill="#85BBF0" height="102.225" style="stroke:#78A8D8;stroke-width:1.7999999999999998;" width="217.2" x="748.2" y="937.1438"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="162" x="775.8" y="966.9656">Large in-queue</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="56.4" x="828.6" y="984.8602">[Folder]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="859.2" y="1003.8504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="188.4" x="765" y="1023.4066">json files with full data</text><!--MD5=[7a603111606425ec6ae263a7f93634a1]
+entity sqlite--><path d="M765,1169.9438 C765,1157.9438 889.2,1157.9438 889.2,1157.9438 C889.2,1157.9438 1013.4,1157.9438 1013.4,1169.9438 L1013.4,1298.0813 C1013.4,1310.0813 889.2,1310.0813 889.2,1310.0813 C889.2,1310.0813 765,1310.0813 765,1298.0813 L765,1169.9438 " fill="#85BBF0" style="stroke:#78A8D8;stroke-width:1.7999999999999998;"/><path d="M765,1169.9438 C765,1181.9438 889.2,1181.9438 889.2,1181.9438 C889.2,1181.9438 1013.4,1181.9438 1013.4,1169.9438 " fill="none" style="stroke:#78A8D8;stroke-width:1.7999999999999998;"/><text fill="#000000" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="199.2" x="789.6" y="1204.5656">UUID:record cache</text><text fill="#000000" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="50.4" x="864" y="1222.4602">[sqlite]</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="891.6" y="1241.4504"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="51.6" x="863.4" y="1261.0066">stores</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="219.6" x="777" y="1280.5629">uuid-&gt;(record_uid,school,</text><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="117.6" x="830.4" y="1300.1191">etc.) mapping</text><!--MD5=[99b62bfbb382e5518d8183612fd94eeb]
+entity cronjob--><rect fill="#438DD5" height="121.7813" style="stroke:#3C7FC0;stroke-width:1.7999999999999998;" width="256.8" x="610.8" y="251.9438"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="82.8" x="697.8" y="281.7656">Cronjob</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="707.4" y="299.6602">[python]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="741.6" y="318.6504"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="181.2" x="648.6" y="338.2066">Trigger user changes</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="232.8" x="622.8" y="357.7629">according to validity period</text><!--MD5=[ff50d34f10fc5f1990110e2c250d3f7d]
+entity school_provider_A--><rect fill="#B3B3B3" height="63.1125" style="stroke:#A6A6A6;stroke-width:1.7999999999999998;" width="213.6" x="264" y="1875.5437"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="189.6" x="276" y="1905.3656">School provider A</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="37.2" x="352.2" y="1923.2602">[ucs]</text><!--MD5=[4b2156d0212d4d9548bcf8706495c282]
+entity school_provider_B--><rect fill="#B3B3B3" height="63.1125" style="stroke:#A6A6A6;stroke-width:1.7999999999999998;" width="213.6" x="8.4" y="1875.5437"/><text fill="#FFFFFF" font-family="sans-serif" font-size="19.2" font-weight="bold" lengthAdjust="spacing" textLength="189.6" x="20.4" y="1905.3656">School provider B</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="37.2" x="96.6" y="1923.2602">[ucs]</text><!--MD5=[4b8be7a4a89e79c54e2545fe32b4a413]
+link out_queue_t to out_queue_a--><!--MD5=[0778b217ed62fbcddf9240b82e53e7fd]
+link ldap to listener--><path d="M1055.22,145.5877 C1045.32,156.2078 1036.62,168.1358 1030.8,181.1437 C1022.424,199.8637 1020.444,221.6437 1021.356,241.9838 " fill="none" id="ldap-to-listener" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="1022.028,251.8358,1024.9686,242.0137,1017.7852,242.502,1022.028,251.8358" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="166.8" x="1032" y="195.7102">call listener on write</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="1083.6" y="212.4727">[python]</text><!--MD5=[0ba76e9b1959d7f71891007e38a5faf4]
+link listener to small_in_queue--><path d="M1011.552,373.3358 C999.924,403.6718 985.848,440.4157 974.244,470.6677 " fill="none" id="listener-to-small_in_queue" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="970.728,479.8358,977.5195,472.1549,970.7944,469.5832,970.728,479.8358" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="142.8" x="996" y="423.7102">Write entryUUIDs</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="1035.6" y="440.4727">[python]</text><!--MD5=[1487429b1484b1232620574917a33dce]
+link cronjob to small_in_queue--><path d="M774.756,373.4437 C790.224,396.8318 809.568,423.0157 830.4,443.9437 C840.84,454.4318 852.696,464.5358 864.804,473.8958 " fill="none" id="cronjob-to-small_in_queue" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="872.784,479.9437,867.3073,471.2762,862.9585,477.0146,872.784,479.9437" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="142.8" x="831.6" y="423.7102">Write entryUUIDs</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="40.8" x="882.6" y="440.4727">[json]</text><!--MD5=[01c7d6a3703200fe77faeac5c4aff21d]
+reverse link small_in_queue to daemon--><path d="M951.6,592.1318 C951.6,621.7718 951.6,657.6998 951.6,688.5517 " fill="none" id="small_in_queue-backto-daemon" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="951.6,582.3397,948,591.9397,955.2,591.9397,951.6,582.3397" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="147.6" x="952.8" y="632.5102">Reads entryUUIDs</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="994.8" y="649.2727">[python]</text><!--MD5=[9d53a068bed07cce6556d95e8bf23cf1]
+link daemon to udm--><path d="M1021.368,830.4758 C1029.444,841.7318 1036.584,853.8278 1041.6,866.3438 C1061.268,915.3878 1071.396,1257.4838 1074.924,1406.9438 " fill="none" id="daemon-to-udm" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="1075.152,1416.9277,1078.5282,1407.2468,1071.3302,1407.4139,1075.152,1416.9277" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="123.6" x="1065.6" y="1089.7102">Read user data</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="43.2" x="1105.8" y="1106.4727">[http]</text><!--MD5=[a9f707de9769965671967798d24e053b]
+link daemon to large_in_queue--><path d="M922.38,830.4518 C909.324,861.6278 894.084,897.9878 881.58,927.8077 " fill="none" id="daemon-to-large_in_queue" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="877.8,936.8438,884.8277,929.3784,878.1861,926.5982,877.8,936.8438" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="123.6" x="907.2" y="880.9102">Write user json</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="937.2" y="897.6727">[python]</text><!--MD5=[eb919825ab3e68983d0ed8edba667c77]
+link large_in_queue to sqlite--><path d="M854.352,1039.2398 C853.872,1051.0118 853.44,1063.5157 853.2,1075.1438 C852.876,1090.6118 851.004,1094.6318 853.2,1109.9438 C855,1122.4958 857.784,1135.5518 861.012,1148.2598 " fill="none" id="large_in_queue-to-sqlite" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="863.568,1157.9078,864.5952,1147.7065,857.6343,1149.5465,863.568,1157.9078" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="170.4" x="854.4" y="1089.7102">Read/write user data</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="907.8" y="1106.4727">[python]</text><!--MD5=[a5534412a2bd102b7215437d1aa51fc1]
+reverse link large_in_queue to async_job--><path d="M772.476,1044.5558 C713.82,1082.9678 635.688,1134.1358 575.652,1173.4477 " fill="none" id="large_in_queue-backto-async_job" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="780.624,1039.2278,770.6202,1041.4734,774.5635,1047.4976,780.624,1039.2278" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="79.2" x="715.2" y="1089.7102">Read json</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="723" y="1106.4727">[python]</text><!--MD5=[8ff8b56e05b4f36cc02439e3db48c8fe]
+link async_job to out_queue_t--><path d="M512.388,1294.9718 C529.716,1332.4238 551.976,1380.5198 569.22,1417.8037 " fill="none" id="async_job-to-out_queue_t" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="573.276,1426.5517,572.5039,1416.3281,565.9718,1419.3567,573.276,1426.5517" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="79.2" x="550.8" y="1360.9102">write into</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="558.6" y="1377.6727">[python]</text><!--MD5=[9027d155f7ac5bd005d9eaddd3877f8b]
+link async_job to out_queue_a--><path d="M462.852,1294.9718 C449.124,1332.2678 431.496,1380.1117 417.804,1417.3358 " fill="none" id="async_job-to-out_queue_a" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="414.408,1426.5517,421.0945,1418.7793,414.3352,1416.2992,414.408,1426.5517" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="79.2" x="444" y="1360.9102">write into</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="451.8" y="1377.6727">[python]</text><!--MD5=[0760febd1bba0fc81a79c02d7c817e6e]
+link async_job to out_queue_b--><path d="M405.012,1294.9718 C353.616,1333.3718 287.244,1382.9678 236.844,1420.6117 " fill="none" id="async_job-to-out_queue_b" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="228.9,1426.5517,238.7431,1423.6823,234.4292,1417.9177,228.9,1426.5517" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="79.2" x="333.6" y="1360.9102">write into</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="341.4" y="1377.6727">[python]</text><!--MD5=[7f10fea74ec1e12a2c99ec4c9b63b4f8]
+reverse link out_queue_t to transformer--><path d="M599.904,1538.9318 C601.836,1571.7518 604.2,1612.2637 606.12,1645.0118 " fill="none" id="out_queue_t-backto-transformer" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="599.328,1529.0078,596.2825,1538.7978,603.4708,1538.3863,599.328,1529.0078" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="84" x="604.8" y="1588.9102">reads json</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="615" y="1605.6727">[python]</text><!--MD5=[05aa76ecb8269021b957296cab57789f]
+reverse link out_queue_a to kelvin_plugin_a--><path d="M385.788,1538.9318 C379.644,1575.0398 371.904,1620.4718 366.096,1654.6117 " fill="none" id="out_queue_a-backto-kelvin_plugin_a" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="387.48,1529.0078,382.3195,1537.8672,389.4173,1539.0759,387.48,1529.0078" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="84" x="379.2" y="1588.9102">reads json</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="389.4" y="1605.6727">[python]</text><!--MD5=[94d3fa6ef314388e568894afcd1263c3]
+reverse link out_queue_b to kelvin_plugin_b--><path d="M152.748,1538.9318 C147.18,1575.0398 140.172,1620.4718 134.904,1654.6117 " fill="none" id="out_queue_b-backto-kelvin_plugin_b" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="154.272,1529.0078,149.2395,1537.9405,156.354,1539.0469,154.272,1529.0078" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="84" x="148.8" y="1588.9102">reads json</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="63.6" x="159" y="1605.6727">[python]</text><!--MD5=[bd8d7ad8e599a48a02c25b11d7848e60]
+reverse link kelvin_rest_api to transformer--><path d="M931.656,1705.7437 C865.776,1705.7437 788.124,1705.7437 725.58,1705.7437 " fill="none" id="kelvin_rest_api-backto-transformer" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="941.292,1705.7437,931.692,1702.1438,931.692,1709.3438,941.292,1705.7437" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="165.6" x="750.6" y="1681.9102">create schoolclasses</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="43.2" x="811.8" y="1698.6727">[http]</text><!--MD5=[082d3d92d5dd17b27b88e7e12e15d3ae]
+link kelvin_plugin_a to school_provider_A--><path d="M360.936,1757.2117 C363.156,1790.7038 366.024,1834.1438 368.1,1865.4517 " fill="none" id="kelvin_plugin_a-to-school_provider_A" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="368.748,1875.1718,371.7049,1865.3546,364.5207,1865.831,368.748,1875.1718" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="82.8" x="367.2" y="1819.3102">write user</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="43.2" x="387" y="1836.0727">[http]</text><!--MD5=[4f591869ccf2ada665009ec0156d9904]
+link kelvin_plugin_b to school_provider_B--><path d="M124.176,1757.2117 C122.16,1790.7038 119.532,1834.1438 117.648,1865.4517 " fill="none" id="kelvin_plugin_b-to-school_provider_B" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="117.06,1875.1718,121.2362,1865.808,114.0495,1865.3709,117.06,1875.1718" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="82.8" x="122.4" y="1819.3102">write user</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="43.2" x="142.2" y="1836.0727">[http]</text><!--MD5=[2e77ae5a5a715a23d11d53c710329e80]
+reverse link udm to kelvin_rest_api--><path d="M1074.912,1548.6158 C1074.264,1579.4078 1073.496,1615.2398 1072.872,1644.7958 " fill="none" id="udm-backto-kelvin_rest_api" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="1075.128,1538.8117,1071.3402,1548.3392,1078.5388,1548.4806,1075.128,1538.8117" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="105.6" x="1075.2" y="1588.9102">modify users</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="43.2" x="1106.4" y="1605.6727">[http]</text><!--MD5=[95e69f58b284b34305e28c36d879d3d1]
+reverse link ldap to udm--><path d="M1188.936,153.6157 C1194.948,162.4718 1200.444,171.7598 1204.8,181.1437 C1229.64,234.7118 1231.2,252.3037 1231.2,311.3438 C1231.2,311.3438 1231.2,311.3438 1231.2,1235.3438 C1231.2,1305.4958 1184.244,1371.5438 1142.052,1416.7238 " fill="none" id="ldap-backto-udm" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="1183.284,145.6238,1185.8748,155.5438,1191.7588,151.3942,1183.284,145.6238" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="87.6" x="1238.4" y="756.7102">writes into</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="99.6" x="1232.4" y="773.4727">[python-ldap]</text><!--MD5=[459ad4d61dbd523685cc0cbdbd9181fa]
+reverse link udm to transformer--><path d="M944.688,1542.6038 C875.76,1575.9158 792.132,1616.3318 725.652,1648.4557 " fill="none" id="udm-backto-transformer" style="stroke:#666666;stroke-width:1.2;"/><polygon fill="#666666" points="953.448,1538.3678,943.2386,1539.3107,946.376,1545.7912,953.448,1538.3678" style="stroke:#666666;stroke-width:1.2;"/><text fill="#666666" font-family="sans-serif" font-size="14.4" font-weight="bold" lengthAdjust="spacing" textLength="151.2" x="871.2" y="1588.9102">writes schoolusers</text><text fill="#666666" font-family="sans-serif" font-size="14.4" font-style="italic" lengthAdjust="spacing" textLength="43.2" x="925.2" y="1605.6727">[http]</text><rect fill="#FFFFFF" height="95.025" rx="6" ry="6" style="stroke:#FFFFFF;stroke-width:1.2;" width="208.8" x="1106.4" y="1954.2563"/><rect height="19.5563" style="stroke:none;stroke-width:1.2;fill:none;" width="194.4" x="1113.6" y="1962.6563"/><text fill="#000000" font-family="sans-serif" font-size="16.8" font-weight="bold" lengthAdjust="spacing" textLength="70.8" x="1113.6" y="1978.2504">Legend</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1189.2" y="1978.2504"/><rect fill="#438DD5" height="19.5563" style="stroke:none;stroke-width:1.2;" width="194.4" x="1113.6" y="1982.2125"/><text fill="#3C7FC0" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="9.6" x="1118.4" y="1997.8066">▯</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1132.8" y="1997.8066"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="81.6" x="1137.6" y="1997.8066">container</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1228.8" y="1997.8066"/><rect fill="#85BBF0" height="19.5563" style="stroke:none;stroke-width:1.2;" width="194.4" x="1113.6" y="2001.7688"/><text fill="#78A8D8" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="9.6" x="1118.4" y="2017.3629">▯</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1132.8" y="2017.3629"/><text fill="#000000" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="97.2" x="1137.6" y="2017.3629">component</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1244.4" y="2017.3629"/><rect fill="#B3B3B3" height="19.5563" style="stroke:none;stroke-width:1.2;" width="194.4" x="1113.6" y="2021.325"/><text fill="#A6A6A6" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="9.6" x="1118.4" y="2036.9191">▯</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1132.8" y="2036.9191"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="160.8" x="1137.6" y="2036.9191">external_container</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16.8" lengthAdjust="spacing" textLength="0" x="1308" y="2036.9191"/><line style="stroke:#00000000;stroke-width:1.2;" x1="1113.6" x2="1308" y1="1962.6563" y2="1962.6563"/><line style="stroke:#00000000;stroke-width:1.2;" x1="1113.6" x2="1308" y1="1982.2125" y2="1982.2125"/><line style="stroke:#00000000;stroke-width:1.2;" x1="1113.6" x2="1308" y1="2001.7688" y2="2001.7688"/><line style="stroke:#00000000;stroke-width:1.2;" x1="1113.6" x2="1308" y1="2021.325" y2="2021.325"/><line style="stroke:#00000000;stroke-width:1.2;" x1="1113.6" x2="1308" y1="2040.8813" y2="2040.8813"/><line style="stroke:#00000000;stroke-width:1.2;" x1="1113.6" x2="1113.6" y1="1962.6563" y2="2040.8813"/><line style="stroke:#00000000;stroke-width:1.2;" x1="1308" x2="1308" y1="1962.6563" y2="2040.8813"/><!--MD5=[83ae60fa159671bac13562276aece59d]
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Component.puml
+
+
+
+title transformer plugin overview
+
+ContainerDb(ldap,"LDAP","openldap","holds the user data")
+Container(udm,"UDM REST API","tornado","enriches ldap access with ucs specific logic")
+Container(kelvin_rest_api,"Kelvin REST API","fastapi","stops events from reaching ldap")
+Component(listener,"Id-connector listener","python listener script","Handles write events to ldap for id-connector ")
+Component(small_in_queue,"Small in-queue","Folder","json files with entryUUIDs")
+Container(daemon,"Daemon","python","Reads uuid and writes json representation of udm object")
+Component(large_in_queue,"Large in-queue","Folder","json files with full data")
+ComponentDb(sqlite,"UUID:record cache","sqlite","stores uuid->(record_uid,school, etc.) mapping")
+Container(cronjob,"Cronjob","python","Trigger user changes according to validity period")
+Boundary(id_connector,"ID connector") {
+    Component(out_queue_a,"Out queue A","Folder","json files")
+    Component(out_queue_b,"Out queue B","Folder","json files")
+    Component(out_queue_t,"Out queue T","Folder","json files")
+
+    Component(transformer,"Transformer","transformer plugin process","transforms users to schoolusers")
+    Component(kelvin_plugin_a,"Out A","kelvin plugin process","Sends to kelvin api")
+    Component(kelvin_plugin_b,"Out B","kelvin plugin process","Sends to kelvin api")
+    Container(async_job,"Async Job","python","puts json files into right out queue")
+
+}
+Container_Ext(school_provider_A,"School provider A","ucs")
+Container_Ext(school_provider_B,"School provider B","ucs")
+
+Lay_R(out_queue_t,out_queue_a)
+
+Rel(ldap,listener,"call listener on write","python")
+Rel(listener,small_in_queue,"Write entryUUIDs","python")
+Rel(cronjob,small_in_queue,"Write entryUUIDs","json")
+Rel_U(daemon,small_in_queue,"Reads entryUUIDs","python")
+Rel(daemon,udm,"Read user data","http")
+Rel(daemon,large_in_queue,"Write user json","python")
+Rel(large_in_queue,sqlite,"Read/write user data","python")
+
+Rel_U(async_job,large_in_queue,"Read json","python")
+
+Rel(async_job,out_queue_t,"write into","python")
+Rel(async_job,out_queue_a,"write into","python")
+Rel(async_job,out_queue_b,"write into","python")
+
+Rel_U(transformer,out_queue_t,"reads json","python")
+Rel_U(kelvin_plugin_a,out_queue_a,"reads json","python")
+Rel_U(kelvin_plugin_b,out_queue_b,"reads json","python")
+
+Rel_L(transformer,kelvin_rest_api,"create schoolclasses","http")
+
+Rel_D(kelvin_plugin_a,school_provider_A,"write user","http")
+Rel_D(kelvin_plugin_b,school_provider_B,"write user","http")
+
+Rel_U(kelvin_rest_api,udm,"modify users","http")
+Rel_U(udm,ldap,"writes into","python-ldap")
+Rel_U(transformer,udm,"writes schoolusers","http")
+
+
+SHOW_LEGEND()
+
+@enduml
+
+@startuml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam defaultTextAlignment center
+
+skinparam wrapWidth 200
+skinparam maxMessageSize 150
+
+skinparam LegendBorderColor transparent
+skinparam LegendBackgroundColor transparent
+skinparam LegendFontColor #FFFFFF
+
+skinparam shadowing<<legendArea>> false
+skinparam rectangle<<legendArea>> {
+    backgroundcolor #00000000
+    bordercolor #00000000
+}
+
+skinparam rectangle {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam database {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam queue {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam arrow {
+    Color #666666
+    FontColor #666666
+    FontSize 12
+}
+
+skinparam actor {
+    StereotypeFontSize 12
+    shadowing false
+    style awesome
+}
+
+skinparam person {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam package {
+    StereotypeFontSize 6
+    StereotypeFontColor transparent
+    FontStyle plain
+    BackgroundColor transparent
+}
+
+skinparam rectangle<<boundary>> {
+    Shadowing false
+    StereotypeFontSize 6
+    StereotypeFontColor transparent
+    FontColor #444444
+    BorderColor #444444
+    BackgroundColor transparent
+    BorderStyle dashed
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam database<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam queue<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam actor<<person>> {
+    StereotypeFontColor #08427B
+    FontColor #08427B
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+skinparam person<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+
+
+skinparam rectangle<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam database<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam queue<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam actor<<external_person>> {
+    StereotypeFontColor #686868
+    FontColor #686868
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+skinparam person<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+
+
+skinparam rectangle<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam database<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam queue<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam actor<<system>> {
+    StereotypeFontColor #1168BD
+    FontColor #1168BD
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+skinparam person<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+
+
+skinparam rectangle<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam database<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam queue<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam actor<<external_system>> {
+    StereotypeFontColor #999999
+    FontColor #999999
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+skinparam person<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+
+
+
+
+
+sprite $person [48x48/16] {
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+0000000000000000000049BCCA7200000000000000000000
+0000000000000000006EFFFFFFFFB3000000000000000000
+00000000000000001CFFFFFFFFFFFF700000000000000000
+0000000000000001EFFFFFFFFFFFFFF80000000000000000
+000000000000000CFFFFFFFFFFFFFFFF6000000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+00000000000001FFFFFFFFFFFFFFFFFFF900000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFF00000000000000
+0000000000000BFFFFFFFFFFFFFFFFFFFF40000000000000
+0000000000000EFFFFFFFFFFFFFFFFFFFF70000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000DFFFFFFFFFFFFFFFFFFFF60000000000000
+0000000000000AFFFFFFFFFFFFFFFFFFFF40000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFE00000000000000
+00000000000000EFFFFFFFFFFFFFFFFFF800000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+000000000000000BFFFFFFFFFFFFFFFF5000000000000000
+0000000000000001DFFFFFFFFFFFFFF70000000000000000
+00000000000000000BFFFFFFFFFFFF500000000000000000
+0000000000000000005DFFFFFFFFA1000000000000000000
+0000000000000000000037ABB96100000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+000000000000025788300000000005886410000000000000
+000000000007DFFFFFFD9643347BFFFFFFFB400000000000
+0000000004EFFFFFFFFFFFFFFFFFFFFFFFFFFB1000000000
+000000007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFD200000000
+00000006FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE10000000
+0000003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB0000000
+000000BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5000000
+000003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD000000
+000009FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF200000
+00000DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF600000
+00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF800000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+00001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA00000
+00000EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF700000
+000006FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE100000
+0000008FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD3000000
+000000014555555555555555555555555555555300000000
+000000000000000000000000000000000000000000000000
+000000000000000000000000000000000000000000000000
+}
+
+sprite $person2 [48x48/16] {
+0000000000000000000049BCCA7200000000000000000000
+0000000000000000006EFFFFFFFFB3000000000000000000
+00000000000000001CFFFFFFFFFFFF700000000000000000
+0000000000000001EFFFFFFFFFFFFFF80000000000000000
+000000000000000CFFFFFFFFFFFFFFFF6000000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+00000000000001FFFFFFFFFFFFFFFFFFF900000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFF00000000000000
+0000000000000BFFFFFFFFFFFFFFFFFFFF40000000000000
+0000000000000EFFFFFFFFFFFFFFFFFFFF70000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000FFFFFFFFFFFFFFFFFFFFF80000000000000
+0000000000000DFFFFFFFFFFFFFFFFFFFF60000000000000
+0000000000000AFFFFFFFFFFFFFFFFFFFF40000000000000
+00000000000006FFFFFFFFFFFFFFFFFFFE00000000000000
+00000000000000EFFFFFFFFFFFFFFFFFF800000000000000
+000000000000007FFFFFFFFFFFFFFFFFF100000000000000
+000000000000000BFFFFFFFFFFFFFFFF5000000000000000
+0000000000000001DFFFFFFFFFFFFFF70000000000000000
+00000000000000000BFFFFFFFFFFFF500000000000000000
+0000000000000000005DFFFFFFFFA1000000000000000000
+0000000000000000000037ABB96100000000000000000000
+000000000002578888300000000005888864100000000000
+0000000007DFFFFFFFFD9643347BFFFFFFFFFB4000000000
+00000004EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB10000000
+0000007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD2000000
+000006FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE100000
+00003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB00000
+0000BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF50000
+0003FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFD0000
+0009FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF2000
+000DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6000
+000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFB000
+001FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA000
+000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF8000
+000DFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6000
+0009FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFF2000
+0003FFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFFD0000
+0000BFFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFF50000
+00003FFFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFFB00000
+000006FFFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFFE100000
+0000007FFFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFFD2000000
+00000004EFFF8FFFFFFFFFFFFFFFFFFFFFF8FFFB10000000
+0000000007DF8FFFFFFFFFFFFFFFFFFFFFF8FB4000000000
+000000000002578888888888888888888864100000000000
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam database<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam queue<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam actor<<container>> {
+    StereotypeFontColor #438DD5
+    FontColor #438DD5
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+skinparam person<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+
+
+skinparam rectangle<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam database<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam queue<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam actor<<external_container>> {
+    StereotypeFontColor #B3B3B3
+    FontColor #B3B3B3
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+skinparam person<<external_container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #B3B3B3
+    BorderColor #A6A6A6
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam database<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam queue<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam actor<<component>> {
+    StereotypeFontColor #85BBF0
+    FontColor #85BBF0
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+skinparam person<<component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #85BBF0
+    BorderColor #78A8D8
+}
+
+
+skinparam rectangle<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam database<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam queue<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam actor<<external_component>> {
+    StereotypeFontColor #CCCCCC
+    FontColor #CCCCCC
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+skinparam person<<external_component>> {
+    StereotypeFontColor #000000
+    FontColor #000000
+    BackgroundColor #CCCCCC
+    BorderColor #BFBFBF
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+title transformer plugin overview
+
+database "==LDAP\n//<size:12>[openldap]</size>//\n\n holds the user data" <<container>> as ldap 
+rectangle "==UDM REST API\n//<size:12>[tornado]</size>//\n\n enriches ldap access with ucs specific logic" <<container>> as udm 
+rectangle "==Kelvin REST API\n//<size:12>[fastapi]</size>//\n\n stops events from reaching ldap" <<container>> as kelvin_rest_api 
+rectangle "==Id-connector listener\n//<size:12>[python listener script]</size>//\n\n Handles write events to ldap for id-connector " <<component>> as listener 
+rectangle "==Small in-queue\n//<size:12>[Folder]</size>//\n\n json files with entryUUIDs" <<component>> as small_in_queue 
+rectangle "==Daemon\n//<size:12>[python]</size>//\n\n Reads uuid and writes json representation of udm object" <<container>> as daemon 
+rectangle "==Large in-queue\n//<size:12>[Folder]</size>//\n\n json files with full data" <<component>> as large_in_queue 
+database "==UUID:record cache\n//<size:12>[sqlite]</size>//\n\n stores uuid->(record_uid,school, etc.) mapping" <<component>> as sqlite 
+rectangle "==Cronjob\n//<size:12>[python]</size>//\n\n Trigger user changes according to validity period" <<container>> as cronjob 
+rectangle "==ID connector" <<boundary>> as id_connector  {
+    rectangle "==Out queue A\n//<size:12>[Folder]</size>//\n\n json files" <<component>> as out_queue_a 
+    rectangle "==Out queue B\n//<size:12>[Folder]</size>//\n\n json files" <<component>> as out_queue_b 
+    rectangle "==Out queue T\n//<size:12>[Folder]</size>//\n\n json files" <<component>> as out_queue_t 
+
+    rectangle "==Transformer\n//<size:12>[transformer plugin process]</size>//\n\n transforms users to schoolusers" <<component>> as transformer 
+    rectangle "==Out A\n//<size:12>[kelvin plugin process]</size>//\n\n Sends to kelvin api" <<component>> as kelvin_plugin_a 
+    rectangle "==Out B\n//<size:12>[kelvin plugin process]</size>//\n\n Sends to kelvin api" <<component>> as kelvin_plugin_b 
+    rectangle "==Async Job\n//<size:12>[python]</size>//\n\n puts json files into right out queue" <<container>> as async_job 
+
+}
+rectangle "==School provider A\n//<size:12>[ucs]</size>//" <<external_container>> as school_provider_A 
+rectangle "==School provider B\n//<size:12>[ucs]</size>//" <<external_container>> as school_provider_B 
+
+out_queue_t -[hidden]R- out_queue_a
+
+ldap - ->> listener : **call listener on write**\n//<size:12>[python]</size>//
+listener - ->> small_in_queue : **Write entryUUIDs**\n//<size:12>[python]</size>//
+cronjob - ->> small_in_queue : **Write entryUUIDs**\n//<size:12>[json]</size>//
+daemon -UP->> small_in_queue : **Reads entryUUIDs**\n//<size:12>[python]</size>//
+daemon - ->> udm : **Read user data**\n//<size:12>[http]</size>//
+daemon - ->> large_in_queue : **Write user json**\n//<size:12>[python]</size>//
+large_in_queue - ->> sqlite : **Read/write user data**\n//<size:12>[python]</size>//
+
+async_job -UP->> large_in_queue : **Read json**\n//<size:12>[python]</size>//
+
+async_job - ->> out_queue_t : **write into**\n//<size:12>[python]</size>//
+async_job - ->> out_queue_a : **write into**\n//<size:12>[python]</size>//
+async_job - ->> out_queue_b : **write into**\n//<size:12>[python]</size>//
+
+transformer -UP->> out_queue_t : **reads json**\n//<size:12>[python]</size>//
+kelvin_plugin_a -UP->> out_queue_a : **reads json**\n//<size:12>[python]</size>//
+kelvin_plugin_b -UP->> out_queue_b : **reads json**\n//<size:12>[python]</size>//
+
+transformer -LEFT->> kelvin_rest_api : **create schoolclasses**\n//<size:12>[http]</size>//
+
+kelvin_plugin_a -DOWN->> school_provider_A : **write user**\n//<size:12>[http]</size>//
+kelvin_plugin_b -DOWN->> school_provider_B : **write user**\n//<size:12>[http]</size>//
+
+kelvin_rest_api -UP->> udm : **modify users**\n//<size:12>[http]</size>//
+udm -UP->> ldap : **writes into**\n//<size:12>[python-ldap]</size>//
+transformer -UP->> udm : **writes schoolusers**\n//<size:12>[http]</size>//
+
+
+hide stereotype
+legend right
+<#00000000,#00000000>|<color:#000000>**Legend**</color> |
+|<#438DD5><color:#3C7FC0> <U+25AF></color> <color:#FFFFFF> container </color> |
+|<#85BBF0><color:#78A8D8> <U+25AF></color> <color:#000000> component </color> |
+|<#B3B3B3><color:#A6A6A6> <U+25AF></color> <color:#FFFFFF> external_container </color> |
+endlegend
+
+@enduml
+
+PlantUML version 1.2021.11(Sat Oct 02 15:26:11 CEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
