@@ -5,9 +5,10 @@
 Changelog
 ---------
 
-v2.1.0 (2021-10-06)
+v2.1.0 (2021-10-11)
 ...................
 * Update the integrated kelvin rest client to version ``1.5.0`` to work with Kelvin ``1.5.0``
+* Include kelvin plugin derivate for partial group sync
 
 v2.0.1 (2021-03-04)
 ...................

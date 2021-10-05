@@ -1,0 +1,62 @@
+{
+  "name": "Traeger2",
+  "url": "https://10.200.3.242/ucsschool/kelvin/v1/",
+  "active": true,
+  "plugins": ["kelvin-partial-group-sync"],
+  "plugin_configs": {
+    "kelvin-partial-group-sync": {
+      "school_classes_ignore_roles": ["teacher"],
+      "mapping": {
+        "school_classes": {
+          "name": "name",
+          "description": "description",
+          "school": "school",
+          "users": "users"
+        },
+        "users": {
+          "firstname": "firstname",
+          "lastname": "lastname",
+          "username": "name",
+          "disabled": "disabled",
+          "mailPrimaryAddress": "email",
+          "e-mail": "email",
+          "birthday": "birthday",
+          "school": "school",
+          "schools": "schools",
+          "school_classes": "school_classes",
+          "ucsschoolSourceUID": "source_uid",
+          "roles": "roles",
+          "title": "title",
+          "displayName": "displayName",
+          "userexpiry": "userexpiry",
+          "phone": "phone",
+          "ucsschoolRecordUID": "record_uid"
+        },
+        "users_teacher": {
+          "firstname": "firstname",
+          "lastname": "lastname",
+          "username": "name",
+          "disabled": "disabled",
+          "mailPrimaryAddress": "email",
+          "e-mail": "email",
+          "birthday": "birthday",
+          "school": "school",
+          "schools": "schools",
+          "ucsschoolSourceUID": "source_uid",
+          "roles": "roles",
+          "title": "title",
+          "displayName": "displayName",
+          "userexpiry": "userexpiry",
+          "phone": "phone",
+          "ucsschoolRecordUID": "record_uid"
+        }
+      },
+      "password": "univention",
+      "sync_password_hashes": true,
+      "ssl_context": {
+        "check_hostname": false
+      },
+      "username": "Administrator"
+    }
+  }
+}

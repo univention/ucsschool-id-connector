@@ -205,7 +205,15 @@ class LDAPAccess:
         attributes: List[str] = None,
         school_only=True,
     ) -> Optional[User]:
-        if not attributes:
+        if attributes:
+            attributes = attributes + [
+                "displayName",
+                "krb5KDCFlags",
+                "sambaAcctFlags",
+                "shadowExpire",
+                "uid",
+            ]
+        else:
             attributes = [
                 "displayName",
                 "krb5KDCFlags",
