@@ -40,15 +40,17 @@ The "per school authority code" goes into `PerSchoolAuthorityDispatcherBase`.
 
 import abc
 import datetime
-from typing import Any, Callable, Dict, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 from async_property import async_property
 
+from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.constants import API_SCHOOL_CACHE_TTL
 from ucsschool_id_connector.models import (
     ListenerAddModifyObject,
     ListenerObject,
     ListenerRemoveObject,
+    School2SchoolAuthorityMapping,
     SchoolAuthorityConfiguration,
 )
 from ucsschool_id_connector.plugins import hook_impl
@@ -96,6 +98,7 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
     # list of attributes required to find a unique object:
     _required_search_params = ()
     object_type_name = ""  # 'User' or 'Group'
+    _school2authority_mapping: Optional[School2SchoolAuthorityMapping] = None
 
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         self.school_authority = school_authority
@@ -108,6 +111,21 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
         self._roles_on_target_cache: Dict[str, str] = {}
         self._school_ids_on_target_cache: Dict[str, str] = {}
         self._school_ids_on_target_cache_creation = datetime.datetime(1970, 1, 1)
+
+    @classmethod
+    async def school_2_school_authority_mapping(cls) -> School2SchoolAuthorityMapping:
+        if cls._school2authority_mapping is None:
+            cls._school2authority_mapping = await ConfigurationStorage.load_school2target_mapping()
+        return cls._school2authority_mapping
+
+    async def handled_schools(self) -> List[str]:
+        """
+        This method returns a list of all schools this dispatcher is
+        handling for its school authority
+        """
+        school_authority_name = self.school_authority.name
+        mapping = (await self.school_2_school_authority_mapping()).mapping
+        return [school for school in mapping if mapping[school] == school_authority_name]
 
     async def handle_create_or_update(self, obj: AddModifyObject) -> None:
         """Create or modify object."""

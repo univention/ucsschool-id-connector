@@ -27,14 +27,12 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 from ucsschool.kelvin.client import PasswordsHashes, RoleResource, SchoolResource, User, UserResource
-from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.models import (
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
-    School2SchoolAuthorityMapping,
     SchoolAuthorityConfiguration,
 )
 from ucsschool_id_connector.utils import ucsschool_role_regex
@@ -74,32 +72,15 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
     Kelvin plugin handling user objects, per school authority code.
     """
 
-    _school2authority_mapping: Optional[School2SchoolAuthorityMapping] = None
-
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         super(KelvinPerSAUserDispatcher, self).__init__(school_authority, plugin_name)
         self.attribute_mapping = self.school_authority.plugin_configs[plugin_name]["mapping"]
         self._session = kelvin_client_session(school_authority, plugin_name)
 
-    @classmethod
-    async def school_2_school_authority_mapping(cls) -> School2SchoolAuthorityMapping:
-        if cls._school2authority_mapping is None:
-            cls._school2authority_mapping = await ConfigurationStorage.load_school2target_mapping()
-        return cls._school2authority_mapping
-
     @property
     def session(self):
         self._session.open()
         return self._session
-
-    async def handled_schools(self) -> List[str]:
-        """
-        This method returns a list of all schools this dispatcher is
-        handling for its school authority
-        """
-        school_authority_name = self.school_authority.name
-        mapping = (await self.school_2_school_authority_mapping()).mapping
-        return [school for school in mapping if mapping[school] == school_authority_name]
 
     async def fetch_roles(self) -> Dict[str, str]:
         """Fetch all roles from API of school authority."""
