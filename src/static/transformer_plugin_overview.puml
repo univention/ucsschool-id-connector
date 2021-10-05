@@ -30,8 +30,6 @@ Boundary(id_connector,"ID connector") {
 Container_Ext(school_provider_A,"School provider A","ucs")
 Container_Ext(school_provider_B,"School provider B","ucs")
 
-Lay_R(out_queue_t,out_queue_a)
-
 Rel(ldap,listener,"call listener on write","python")
 Rel(listener,small_in_queue,"Write entryUUIDs","python")
 Rel(cronjob,small_in_queue,"Write entryUUIDs","json")
