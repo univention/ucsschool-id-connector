@@ -31,7 +31,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from ucsschool_id_connector.models import School2SchoolAuthorityMapping
-from ucsschool_id_connector.plugin_loader import load_plugins
 
 all_roles_mapping = {
     "users": 1,
@@ -40,17 +39,6 @@ all_roles_mapping = {
     "users_staff": 4,
     "users_school_admin": 5,
 }
-
-
-@pytest.fixture()
-def idc_defaults(mock_plugins):
-    load_plugins()
-    import ucsschool_id_connector_defaults as idc_defaults
-
-    with patch.object(idc_defaults.kelvin_connection, "httpx"), patch.object(
-        idc_defaults.kelvin_connection, "fetch_ucs_certificate"
-    ):
-        yield idc_defaults
 
 
 @pytest.mark.parametrize(
