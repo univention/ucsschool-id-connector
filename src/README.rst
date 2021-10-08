@@ -363,6 +363,12 @@ to remove mappings from a specific role. Only one mapping is chosen by the rules
 The priority order for the roles was chosen in order of common specificity in UCS@school. A student is usually ever only
 a student. But teachers, staff and school admins can have mutliple roles of those three.
 
+Please be aware that removing the ``school_classes`` field in particular is not sufficient to prevent certain user roles
+from being added or removed from school classes. This is due to the technical situation that changing the school classes
+of a user does not only result in a user change event but also a school class change event, which is handled separately
+and would add or remove the user in that way. To avoid this problem a derivate of the kelvin plugin can be used, which
+is described in the following chapter.
+
 Partial group sync
 ^^^^^^^^^^^^^^^^^^
 
@@ -385,6 +391,11 @@ the target system are necessary.
 To activate this alternative behavior replace the ``kelvin`` plugin in a school authority configuration with
 ``kelvin-partial-group-sync``. The configuration options are exactly the same as for the ``kelvin`` plugin, except for
 the addition of ``school_classes_ignore_roles``, which holds the list of user roles to ignore for school class changes.
+
+Please be aware that this plugin can only alter the handling of dedicated school class change events. Due to the
+technical situation, changing the members of a school class often results in two events. A school class change and a
+user change. To actually prevent users of certain roles being added to school classes at all, it is necessary to remove
+the mapping of the users ``school_class`` field in the config as well.
 
 
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
