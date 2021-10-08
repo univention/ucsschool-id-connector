@@ -31,6 +31,24 @@
           "userexpiry": "userexpiry",
           "phone": "phone",
           "ucsschoolRecordUID": "record_uid"
+        },
+        "users_teacher": {
+          "firstname": "firstname",
+          "lastname": "lastname",
+          "username": "name",
+          "disabled": "disabled",
+          "mailPrimaryAddress": "email",
+          "e-mail": "email",
+          "birthday": "birthday",
+          "school": "school",
+          "schools": "schools",
+          "ucsschoolSourceUID": "source_uid",
+          "roles": "roles",
+          "title": "title",
+          "displayName": "displayName",
+          "userexpiry": "userexpiry",
+          "phone": "phone",
+          "ucsschoolRecordUID": "record_uid"
         }
       },
       "password": "univention",
