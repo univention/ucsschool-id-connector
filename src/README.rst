@@ -361,7 +361,7 @@ The mappings for the different roles are not additive because an additive approa
 to remove mappings from a specific role. Only one mapping is chosen by the rules just described.
 
 The priority order for the roles was chosen in order of common specificity in UCS@school. A student is usually ever only
-a student. But teachers, staff and school admins can have mutliple roles of those three.
+a student. But teachers, staff and school admins can have multiple roles of those three.
 
 Please be aware that removing the ``school_classes`` field in particular is not sufficient to prevent certain user roles
 from being added or removed from school classes. This is due to the technical situation that changing the school classes
@@ -383,7 +383,7 @@ school class is added:
 - Get all members of the school class on the target system that are unknown to the ID-Connector and add them.
 
 This results in school classes having only members with roles not configured to ignore, plus members with roles to ignore
-that were added on the target system, plus any users added on the target system which are unkown to the ID Connector.
+that were added on the target system, plus any users added on the target system which are unknown to the ID Connector.
 
 To achieve this behavior several additional LDAP queries on the ID Connector and one additional request to
 the target system are necessary.
@@ -395,7 +395,7 @@ the addition of ``school_classes_ignore_roles``, which holds the list of user ro
 Please be aware that this plugin can only alter the handling of dedicated school class change events. Due to the
 technical situation, changing the members of a school class often results in two events. A school class change and a
 user change. To actually prevent users of certain roles being added to school classes at all, it is necessary to remove
-the mapping of the users ``school_class`` field in the config as well.
+the mapping of the users ``school_class`` field in the configuration as well.
 
 
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
