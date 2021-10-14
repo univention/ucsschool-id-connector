@@ -199,17 +199,21 @@ def temp_clear_dir():
 
 # Monkey patch get_logger() for the whole test session
 @pytest.fixture(scope="session")
-def setup_logging(temp_dir_session):
+def setup_logging(temp_dir_session, tmp_path_factory):
     ori_get_logger = ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger
     tmp_log_path = temp_dir_session()
+    etc_ucr = tmp_path_factory.mktemp("ucr")
+    ucr_file = etc_ucr / "base.conf"
+    ucr_file.touch()  # just create the file, empty UCR DB file -> use defaults
 
     def utils_get_logger(
         name: str = None,
         path: Path = ucsschool_id_connector.constants.LOG_FILE_PATH_QUEUES,
     ):
         path = tmp_log_path / path.name
-        print(f"\n **** log directory is: {path} ****")
-        return ori_get_logger(name, path)
+        print(f"\n **** log file is: {path} ****")
+        with patch("ucsschool_id_connector.utils.UCR_DB_FILE", str(ucr_file)):
+            return ori_get_logger(name, path)
 
     with patch(
         "ucsschool_id_connector.utils.ConsoleAndFileLogging.get_logger",

@@ -41,6 +41,14 @@ from ucsschool_id_connector.plugins import plugin_manager
 fake = Faker()
 
 
+@pytest.fixture
+def async_mock_load_school2target_mapping(school2school_authority_mapping):
+    async def _func():
+        return school2school_authority_mapping()
+
+    return _func
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("api", ("kelvin",))
 async def test_map_attributes(
@@ -48,6 +56,7 @@ async def test_map_attributes(
     mock_plugins,
     listener_user_add_modify_object,
     kelvin_school_authority_configuration,
+    async_mock_load_school2target_mapping,
 ):
     load_plugins()
     user_handler_class = {
@@ -62,12 +71,14 @@ async def test_map_attributes(
         "kelvin": kelvin_school_authority_configuration(),
     }[api]
     # can only be imported after load_plugins():
+    import ucsschool_id_connector.config_storage
     import ucsschool_id_connector_defaults.kelvin_connection
+    from ucsschool_id_connector_defaults.users_kelvin import KelvinPerSAUserDispatcher
 
     with patch.object(ucsschool_id_connector_defaults.kelvin_connection, "httpx"), patch.object(
         ucsschool_id_connector_defaults.kelvin_connection, "fetch_ucs_certificate"
     ):
-        user_handler = plugin.per_s_a_handler_class(s_a_config, api)
+        user_handler: KelvinPerSAUserDispatcher = plugin.per_s_a_handler_class(s_a_config, api)
     user_obj: models.ListenerUserAddModifyObject = listener_user_add_modify_object()
     user_handler._school_ids_on_target_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
     user_handler._school_ids_on_target_cache_creation = datetime.datetime.now()
@@ -75,7 +86,12 @@ async def test_map_attributes(
         (role.name, fake.uri()) for role in user_obj.school_user_roles
     )
 
-    res = await user_handler.map_attributes(user_obj, s_a_config.plugin_configs[api]["mapping"])
+    with patch.object(
+        ucsschool_id_connector.config_storage.ConfigurationStorage,
+        "load_school2target_mapping",
+        async_mock_load_school2target_mapping,
+    ):
+        res = await user_handler.map_attributes(user_obj, s_a_config.plugin_configs[api]["mapping"])
     school = [ou for ou in user_obj.schools if ou in user_obj.dn][0]
     schools_ids_on_target = await user_handler.schools_ids_on_target
     roles_on_target = await user_handler.roles_on_target

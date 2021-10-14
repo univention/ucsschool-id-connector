@@ -111,16 +111,20 @@ def test_get_ucrv_stale_cache(temp_file_func):
         ("ERROR", logging.ERROR),
     ),
 )
-def test_get_log_level(temp_file_func, val, exp_val):
+def test_get_log_level(tmp_path_factory, val, exp_val):
     default = logging.INFO
-    ucr_file = temp_file_func()
+    etc_ucr = tmp_path_factory.mktemp("ucr")
+    ucr_file = etc_ucr / "base.conf"
+    ucr_file.touch()
     ucr_key = "ucsschool-id-connector/log_level"
+    ucsschool_id_connector.utils._get_ucrv_cached.cache_clear()
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
         value = ucsschool_id_connector.utils.get_log_level()
         assert value == default
         time.sleep(0.01)
         with open(ucr_file, "w") as fp:
             fp.write(f"{ucr_key}: {val}")
+        ucsschool_id_connector.utils._get_ucrv_cached.cache_clear()
         value = ucsschool_id_connector.utils.get_log_level()
         assert value == exp_val
 
