@@ -28,6 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 import copy
+import logging
 import os
 import time
 from pathlib import Path
@@ -97,6 +98,31 @@ def test_get_ucrv_stale_cache(temp_file_func):
             fp.write(f"{key}: {exp_val2}")
         value = ucsschool_id_connector.utils.get_ucrv(key)
         assert value == exp_val2
+
+
+@pytest.mark.parametrize(
+    "val,exp_val",
+    (
+        (fake.pystr(), logging.INFO),
+        ("", logging.INFO),
+        ("DEBUG", logging.DEBUG),
+        ("INFO", logging.INFO),
+        ("WARNING", logging.WARNING),
+        ("ERROR", logging.ERROR),
+    ),
+)
+def test_get_log_level(temp_file_func, val, exp_val):
+    default = logging.INFO
+    ucr_file = temp_file_func()
+    ucr_key = "ucsschool-id-connector/log_level"
+    with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
+        value = ucsschool_id_connector.utils.get_log_level()
+        assert value == default
+        time.sleep(0.01)
+        with open(ucr_file, "w") as fp:
+            fp.write(f"{ucr_key}: {val}")
+        value = ucsschool_id_connector.utils.get_log_level()
+        assert value == exp_val
 
 
 def test_get_token_ttl(temp_file_func):

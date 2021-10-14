@@ -56,6 +56,7 @@ from .constants import (
     UCR_GROUP_PREFIX_STUDENTS,
     UCR_GROUP_PREFIX_TEACHERS,
     UCR_REGEX,
+    UCRV_LOG_LEVEL,
     UCRV_SOURCE_UID,
     UCRV_TOKEN_TTL,
 )
@@ -92,6 +93,13 @@ def get_ucrv(ucr: str, default: UCRValue = None) -> UCRValue:
         _ucr_db_mtime = mtime
         _get_ucrv_cached.cache_clear()
     return _get_ucrv_cached(ucr, default)
+
+
+def get_log_level() -> int:
+    ucr_level = get_ucrv(*UCRV_LOG_LEVEL)
+    if ucr_level not in ("DEBUG", "INFO", "WARNING", "ERROR"):
+        ucr_level = "INFO"
+    return getattr(logging, ucr_level)
 
 
 def get_token_ttl() -> int:
@@ -133,7 +141,7 @@ class ConsoleAndFileLogging:
             logger.addHandler(cls.get_stream_handler())
         if not any(isinstance(handler, TimedRotatingFileHandler) for handler in logger.handlers):
             logger.addHandler(cls.get_file_handler(path))
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(get_log_level())
         return logger
 
     @classmethod

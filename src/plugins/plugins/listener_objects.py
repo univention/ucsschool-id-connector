@@ -103,7 +103,7 @@ class ListenerObjectHandlerImpl:
             else:
                 return self.listener_add_modify_object_type(**obj_dict)
         except ValidationError as exc:
-            self.logger.exception("Loading obj_dict=%r : %s", obj_dict, exc)
+            self.logger.debug("Loading obj_dict=%r : %s", obj_dict, exc)
             return None
 
     async def obj_as_dict(self, obj: ListenerObject) -> Dict[str, Any]:
