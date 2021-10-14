@@ -208,7 +208,7 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
                 params["source_uid"] = obj.old_data.source_uid
         # if unset, source_uid can be taken from import configuration (although record_uid will most
         # likely be missing)
-        params["source_uid"] = params["source_uid"] or await get_source_uid()
+        params["source_uid"] = params["source_uid"] or get_source_uid()
         return params
 
     async def map_attributes(
@@ -310,7 +310,7 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
     @staticmethod
     async def _handle_attr_source_uid(obj: ListenerUserAddModifyObject) -> str:
         """Get a source_uid."""
-        return obj.source_uid or await get_source_uid()
+        return obj.source_uid or get_source_uid()
 
     def _handle_password_hashes(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
         """
