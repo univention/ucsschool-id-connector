@@ -5,6 +5,11 @@
 Changelog
 ---------
 
+v2.1.1 (2021-10-14)
+...................
+
+* The log level for messages written to ``/var/log/univention/ucsschool-id-connector/*.log`` is now configurable. Valid values are ``DEBUG``, ``INFO``, ``WARNING`` and ``ERROR``. Defaults to ``INFO``.
+
 v2.1.0 (2021-10-11)
 ...................
 * Update the integrated kelvin rest client to version ``1.5.0`` to work with Kelvin ``1.5.0``

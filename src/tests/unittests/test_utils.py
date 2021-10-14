@@ -28,6 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 import copy
+import logging
 import os
 import time
 from pathlib import Path
@@ -59,105 +60,98 @@ def ldap_base(setup_environ) -> str:
     return os.environ["ldap_base"]
 
 
-@pytest.fixture
-async def reopen_cache():
-    """reopen the ucrv cache that was closed by test_get_token_ttl()"""
-    yield
-    try:
-        ucsschool_id_connector.utils._get_ucrv_cached.open()
-    except RuntimeError:
-        pass
-
-
-@pytest.mark.asyncio
-async def test_get_ucrv_unknown_key_no_default(temp_file_func):
+def test_get_ucrv_unknown_key_no_default(temp_file_func):
     ucr_file = temp_file_func()
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
-        value = await ucsschool_id_connector.utils.get_ucrv(fake.pystr())
+        value = ucsschool_id_connector.utils.get_ucrv(fake.pystr())
     assert value is None
 
 
-@pytest.mark.asyncio
-async def test_get_ucrv_unknown_key_with_default(temp_file_func):
+def test_get_ucrv_unknown_key_with_default(temp_file_func):
     ucr_file = temp_file_func()
     exp_val = fake.pystr()
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
-        value = await ucsschool_id_connector.utils.get_ucrv(fake.pystr(), exp_val)
+        value = ucsschool_id_connector.utils.get_ucrv(fake.pystr(), exp_val)
     assert value is exp_val
 
 
-@pytest.mark.asyncio
-async def test_get_ucrv_known_key(temp_file_func):
+def test_get_ucrv_known_key(temp_file_func):
     ucr_file = temp_file_func()
     key, exp_val = fake.pystr(), fake.pystr()
     with open(ucr_file, "w") as fp:
         fp.write(f"{key}: {exp_val}")
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
-        value = await ucsschool_id_connector.utils.get_ucrv(key)
+        value = ucsschool_id_connector.utils.get_ucrv(key)
     assert value == exp_val
 
 
-@pytest.mark.asyncio
-async def test_get_ucrv_stale_cache(temp_file_func):
+def test_get_ucrv_stale_cache(temp_file_func):
     ucr_file = temp_file_func()
     key, exp_val1, exp_val2 = fake.pystr(), fake.pystr(), fake.pystr()
     with open(ucr_file, "w") as fp:
         fp.write(f"{key}: {exp_val1}")
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
-        value = await ucsschool_id_connector.utils.get_ucrv(key)
+        value = ucsschool_id_connector.utils.get_ucrv(key)
         assert value == exp_val1
         time.sleep(0.01)
         with open(ucr_file, "w") as fp:
             fp.write(f"{key}: {exp_val2}")
-        value = await ucsschool_id_connector.utils.get_ucrv(key)
+        value = ucsschool_id_connector.utils.get_ucrv(key)
         assert value == exp_val2
 
 
-@pytest.mark.asyncio
-async def test_get_ucrv_cache_close(temp_file_func, reopen_cache):
+@pytest.mark.parametrize(
+    "val,exp_val",
+    (
+        (fake.pystr(), logging.INFO),
+        ("", logging.INFO),
+        ("DEBUG", logging.DEBUG),
+        ("INFO", logging.INFO),
+        ("WARNING", logging.WARNING),
+        ("ERROR", logging.ERROR),
+    ),
+)
+def test_get_log_level(temp_file_func, val, exp_val):
+    default = logging.INFO
     ucr_file = temp_file_func()
-    key, exp_val = fake.pystr(), fake.pystr()
-    with open(ucr_file, "w") as fp:
-        fp.write(f"{key}: {exp_val}")
+    ucr_key = "ucsschool-id-connector/log_level"
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
-        value = await ucsschool_id_connector.utils.get_ucrv(key)
+        value = ucsschool_id_connector.utils.get_log_level()
+        assert value == default
+        time.sleep(0.01)
+        with open(ucr_file, "w") as fp:
+            fp.write(f"{ucr_key}: {val}")
+        value = ucsschool_id_connector.utils.get_log_level()
         assert value == exp_val
-        await ucsschool_id_connector.utils.close_ucr_cache()
-        with pytest.raises(RuntimeError):
-            await ucsschool_id_connector.utils.get_ucrv(key)
-        with pytest.raises(RuntimeError):
-            await ucsschool_id_connector.utils.close_ucr_cache()
 
 
-@pytest.mark.asyncio
-async def test_get_token_ttl(temp_file_func):
+def test_get_token_ttl(temp_file_func):
     ucr_file = temp_file_func()
     key, default, exp_val = fake.pystr(), str(fake.pyint()), str(fake.pyint())
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file), patch(
         "ucsschool_id_connector.utils.UCRV_TOKEN_TTL", (key, default)
     ):
-        value = await ucsschool_id_connector.utils.get_token_ttl()
+        value = ucsschool_id_connector.utils.get_token_ttl()
         assert value == int(default)
         time.sleep(0.01)
         with open(ucr_file, "w") as fp:
             fp.write(f"{key}: {exp_val}")
-        value = await ucsschool_id_connector.utils.get_token_ttl()
+        value = ucsschool_id_connector.utils.get_token_ttl()
         assert value == int(exp_val)
 
 
-@pytest.mark.asyncio
-async def test_get_source_uid(temp_file_func):
+def test_get_source_uid(temp_file_func):
     ucr_file = temp_file_func()
     key, default, exp_val = fake.pystr(), fake.pystr(), fake.pystr()
     with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file), patch(
         "ucsschool_id_connector.utils.UCRV_SOURCE_UID", (key, default)
     ):
-        value = await ucsschool_id_connector.utils.get_source_uid()
+        value = ucsschool_id_connector.utils.get_source_uid()
         assert value == default
         time.sleep(0.01)
         with open(ucr_file, "w") as fp:
             fp.write(f"{key}: {exp_val}")
-        value = await ucsschool_id_connector.utils.get_source_uid()
+        value = ucsschool_id_connector.utils.get_source_uid()
         assert value == exp_val
 
 

@@ -36,11 +36,9 @@ from pathlib import Path
 from typing import Any, Dict, NamedTuple, Pattern, TextIO, Union
 from uuid import UUID
 
-import aiofiles
 import base58
 import colorlog
 import pkg_resources
-from async_lru import alru_cache
 
 from .constants import (
     APP_ID,
@@ -58,6 +56,7 @@ from .constants import (
     UCR_GROUP_PREFIX_STUDENTS,
     UCR_GROUP_PREFIX_TEACHERS,
     UCR_REGEX,
+    UCRV_LOG_LEVEL,
     UCRV_SOURCE_UID,
     UCRV_TOKEN_TTL,
 )
@@ -67,12 +66,12 @@ _ucr_db_mtime = 0
 UCRValue = Union[bool, int, str, None]
 
 
-@alru_cache(maxsize=4)
-async def _get_ucrv_cached(ucr: str, default: UCRValue = None) -> UCRValue:
+@lru_cache(maxsize=16)
+def _get_ucrv_cached(ucr: str, default: UCRValue = None) -> UCRValue:
     """Cached reading of UCR values from disk."""
     try:
-        async with aiofiles.open(UCR_DB_FILE, "r") as fp:
-            async for line in fp:
+        with open(UCR_DB_FILE, "r") as fp:
+            for line in fp:
                 m = UCR_REGEX.match(line)
                 if m and ucr == m.groupdict()["ucr"]:
                     return m.groupdict()["value"]
@@ -81,15 +80,11 @@ async def _get_ucrv_cached(ucr: str, default: UCRValue = None) -> UCRValue:
         return default
 
 
-async def close_ucr_cache():
-    await _get_ucrv_cached.close()
-
-
-async def get_ucrv(ucr: str, default: UCRValue = None) -> UCRValue:
+def get_ucrv(ucr: str, default: UCRValue = None) -> UCRValue:
     """
     Get UCR value.
 
-    Resets cache if UCR database has changed.
+    Resets cache if UCR database file has changed.
     """
     global _ucr_db_mtime
 
@@ -97,18 +92,25 @@ async def get_ucrv(ucr: str, default: UCRValue = None) -> UCRValue:
     if _ucr_db_mtime < mtime:
         _ucr_db_mtime = mtime
         _get_ucrv_cached.cache_clear()
-    return await _get_ucrv_cached(ucr, default)
+    return _get_ucrv_cached(ucr, default)
 
 
-async def get_token_ttl() -> int:
+def get_log_level() -> int:
+    ucr_level = get_ucrv(*UCRV_LOG_LEVEL)
+    if ucr_level not in ("DEBUG", "INFO", "WARNING", "ERROR"):
+        ucr_level = "INFO"
+    return getattr(logging, ucr_level)
+
+
+def get_token_ttl() -> int:
     try:
-        return int(await get_ucrv(*UCRV_TOKEN_TTL))
+        return int(get_ucrv(*UCRV_TOKEN_TTL))
     except ValueError:
         return UCRV_TOKEN_TTL[1]
 
 
-async def get_source_uid() -> str:
-    return await get_ucrv(*UCRV_SOURCE_UID)
+def get_source_uid() -> str:
+    return get_ucrv(*UCRV_SOURCE_UID)
 
 
 class ConsoleAndFileLogging:
@@ -139,7 +141,7 @@ class ConsoleAndFileLogging:
             logger.addHandler(cls.get_stream_handler())
         if not any(isinstance(handler, TimedRotatingFileHandler) for handler in logger.handlers):
             logger.addHandler(cls.get_file_handler(path))
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(get_log_level())
         return logger
 
     @classmethod

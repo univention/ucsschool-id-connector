@@ -4,6 +4,12 @@ Description = Number of minutes a token retrieved from and for the HTTP-API is v
 Description[de] = Anzahl der Minuten die ein Token, der von und für die HTTP-API bezogen wurde, gültig ist.
 InitialValue = 60
 
+[ucsschool-id-connector/log_level]
+Type = String
+Description = Log level for messages written to /var/log/univention/ucsschool-id-connector/*.log. Valid values are "DEBUG", "INFO", "WARNING" and "ERROR". Defaults to "INFO".
+Description[de] = Loglevel der Nachrichten die nach /var/log/univention/ucsschool-id-connector/*.log geschrieben werden. Gültige Werte sind "DEBUG", "INFO", "WARNING" and "ERROR". Standard ist "INFO".
+InitialValue = INFO
+
 [ucsschool-id-connector/source_uid]
 Type = String
 Description = Value that will be transmit as the "source_uid" for all users (see https://docs.software-univention.de/ucsschool-import-handbuch-4.4.html#procedure:assignment). If unset: "TESTID".

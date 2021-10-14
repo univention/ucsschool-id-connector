@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.1.1 (2021-10-14)</h2>
+<ul>
+    <li>
+        The log level for messages written to /var/log/univention/ucsschool-id-connector/*.log is now configurable. Valid values are "DEBUG", "INFO", "WARNING" and "ERROR". Defaults to "INFO".
+    </li>
+</ul>
+
 <h2>v2.1.0 (2021-10-11)</h2>
 <ul>
     <li>

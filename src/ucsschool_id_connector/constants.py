@@ -68,6 +68,7 @@ UCR_REGEX = re.compile(r"^(?P<ucr>.+?): (?P<value>.*)$")
 TOKEN_SIGN_SECRET_FILE = Path(APP_CONFIG_BASE_PATH, "tokens.secret")  # nosec
 TOKEN_HASH_ALGORITHM = "HS256"  # nosec
 TOKEN_URL = f"/{APP_ID}/api/token"
+UCRV_LOG_LEVEL = (f"{APP_ID}/log_level", "INFO")
 UCRV_SOURCE_UID = (f"{APP_ID}/source_uid", "TESTID")
 UCRV_TOKEN_TTL = (f"{APP_ID}/access_tokel_ttl", 60)
 ADMIN_GROUP_NAME = f"{APP_ID}-admins"

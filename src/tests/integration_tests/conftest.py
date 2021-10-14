@@ -269,11 +269,11 @@ def docker_hostname():
 
 
 @pytest.fixture()
-async def source_uid() -> str:
+def source_uid() -> str:
     """
     The source UID as specified in the ucsschool-id-connector App settings.
     """
-    return await get_ucrv(f"{APP_ID}/source_uid")
+    return get_ucrv(f"{APP_ID}/source_uid")
 
 
 @pytest.fixture(scope="session")

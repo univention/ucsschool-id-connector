@@ -50,7 +50,7 @@ from ucsschool_id_connector.plugin_loader import load_plugins
 from ucsschool_id_connector.plugins import plugin_manager
 from ucsschool_id_connector.queues import InQueue, OutQueue, get_out_queue_dirs
 from ucsschool_id_connector.rpc import SimpleRPCServer
-from ucsschool_id_connector.utils import ConsoleAndFileLogging, close_ucr_cache, get_app_version
+from ucsschool_id_connector.utils import ConsoleAndFileLogging, get_app_version
 
 
 class IDConnectorService(Service):
@@ -134,7 +134,7 @@ class IDConnectorService(Service):
             self.logger.info("Shutting down all running tasks...")
             await scheduler.close()
         self.logger.info("Closing cache and DB connections...")
-        await close_ucr_cache()
+        # nothing to do at the moment
         self.logger.info("Shutting down all outgoing connections...")
         await asyncio.gather(*plugin_manager.hook.shutdown())
         await asyncio.sleep(0.25)  # allow aiohttp SSL connections to close gracefully

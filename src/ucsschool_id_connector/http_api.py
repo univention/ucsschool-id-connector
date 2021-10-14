@@ -270,7 +270,7 @@ async def login_for_access_token(
     user = await ldap_auth_instance.check_auth_and_get_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
-    access_token_expires = timedelta(minutes=await get_token_ttl())
+    access_token_expires = timedelta(minutes=get_token_ttl())
     access_token = await create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
