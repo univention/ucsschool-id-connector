@@ -61,7 +61,7 @@ from .constants import (
     UCRV_TOKEN_TTL,
 )
 
-_ucr_db_mtime = 0
+_ucr_db_mtime = 0.0
 
 UCRValue = Union[bool, int, str, None]
 
@@ -88,7 +88,10 @@ def get_ucrv(ucr: str, default: UCRValue = None) -> UCRValue:
     """
     global _ucr_db_mtime
 
-    mtime = os.stat(UCR_DB_FILE).st_mtime
+    try:
+        mtime = os.stat(UCR_DB_FILE).st_mtime
+    except OSError:
+        return default
     if _ucr_db_mtime < mtime:
         _ucr_db_mtime = mtime
         _get_ucrv_cached.cache_clear()

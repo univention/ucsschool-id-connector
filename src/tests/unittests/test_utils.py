@@ -100,6 +100,14 @@ def test_get_ucrv_stale_cache(temp_file_func):
         assert value == exp_val2
 
 
+def test_get_ucrv_no_base_conf_file():
+    ucr_file = f"/tmp/non-exist-{fake.pystr()}"
+    default_value = fake.pystr()
+    with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file):
+        value = ucsschool_id_connector.utils.get_ucrv(fake.pystr(), default_value)
+        assert value is default_value
+
+
 @pytest.mark.parametrize(
     "val,exp_val",
     (
