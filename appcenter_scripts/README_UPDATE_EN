@@ -1,6 +1,6 @@
 <h1>Changelog</h1>
 
-<h2>v2.1.1 (2021-10-14)</h2>
+<h2>v2.1.1 (2021-10-25)</h2>
 <ul>
     <li>
         The log level for messages written to <code>/var/log/univention/ucsschool-id-connector/*.log</code> is now configurable.<br/>

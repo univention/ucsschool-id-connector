@@ -5,7 +5,7 @@
 Changelog
 ---------
 
-v2.1.1 (2021-10-14)
+v2.1.1 (2021-10-25)
 ...................
 
 * The log level for messages written to ``/var/log/univention/ucsschool-id-connector/*.log`` is now configurable. Valid values are ``DEBUG``, ``INFO``, ``WARNING`` and ``ERROR``. Defaults to ``INFO``.
