@@ -1,0 +1,51 @@
+@startuml
+!include styling.puml
+' skinparam linetype ortho
+
+title ID Connector: ID Connector Components\n
+
+!include object_primary.puml
+
+
+
+!include object_large_queue.puml
+
+frame "ID Connector\nDocker" as id_connector {
+
+    !include object_management_api.puml
+    !include object_daemon.puml
+    !include object_sqlite.puml
+    !include object_out_queue_a.puml
+    !include object_out_queue_b.puml
+    !include object_out_a.puml
+    !include object_out_b.puml
+
+}
+
+
+!include object_school_provider_a.puml
+!include object_school_provider_b.puml
+
+
+
+primary-->large_queue : <b>write user/group data\n<i>JSON
+large_queue --> daemon: <b>read user/group data\n<i>JSON
+
+daemon-right->sqlite: <b>read/write\n<b> user/group data\n<i>python
+daemon --> out_queue_a:<b>write\n<b>user/group data\n<i>JSON
+daemon --> out_queue_b:<b>write\n<b>user/group data\n<i>JSON
+out_queue_a --> out_a:<b>read\n<i>JSON
+out_queue_b --> out_b:<b>read\n<i>JSON
+out_a --> school_provider_a:<b>write user/group\n<i>HTTP
+out_b --> school_provider_b:<b>write user/group\n<i>HTTP
+
+
+daemon <--> management_api:<b>config\n<b>read status\n<i>JSON
+out_a <-left-> management_api:<b>config\n<b>read status\n<i>JSON
+out_b <-left-> management_api:<b>config\n<b>read status\n<i>JSON
+
+primary --> daemon: <b>get extra data\n<i>python-ldap
+
+'user/group/group <-- management_api: <b>Read/write user/group data\n<i>UDM-REST-API
+
+@enduml

@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    database "<b>LDAP\n<i>openldap\n\nUser/group data" as ldap
+@enduml

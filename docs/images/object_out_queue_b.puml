@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    folder "<b>Out queue B\n<i>JSON\n\nuser/group data" as out_queue_b
+@enduml

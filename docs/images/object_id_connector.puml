@@ -1,0 +1,5 @@
+@startuml
+    !include styling.puml
+
+    frame "<b>ID Connector\n<i>Docker\n\nsyncs user data" as id_connector
+@enduml

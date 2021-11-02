@@ -1,0 +1,8 @@
+@startuml
+    !include styling.puml
+    note left
+        You can inject
+        data here using
+        <i>schedule_user
+    endnote
+@enduml

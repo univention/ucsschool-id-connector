@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="139px" preserveAspectRatio="none" style="width:1339px;height:139px;background:#FFFFFF;" version="1.1" viewBox="0 0 1339 139" width="1339px" zoomAndPan="magnify"><defs><filter height="300%" id="fbwrgmozbbde3" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[c93bad9a8f4dd804961dce08c43612ef]
+entity legend_agent--><rect fill="#F6AA42" filter="url(#fbwrgmozbbde3)" height="85.1875" style="stroke:#6A8198;stroke-width:1.5;" width="138" x="7" y="24"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="118" x="17" y="46.9951">Active element</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="78" x="37" y="63.292">technology</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="78" y="79.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="103" x="24.5" y="95.8857">Initiates activity</text><!--MD5=[37c70a04faa5bad7ba1fe3c7b96c6d7f]
+entity legend_passive--><rect fill="#7AB51D" filter="url(#fbwrgmozbbde3)" height="85.1875" rx="35" ry="35" style="stroke:#000000;stroke-width:1.5;" width="193" x="205" y="24"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="129" x="237" y="46.9951">Passive element</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="69" x="267" y="63.292">technoloy</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="303.5" y="79.5889"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="173" x="215" y="95.8857">Is called to do something</text><!--MD5=[471341d29cbbb58580081d46dde4f1ca]
+entity legend_component--><rect fill="#D8D8D6" filter="url(#fbwrgmozbbde3)" height="111.4844" style="stroke:#000000;stroke-width:1.5;" width="206" x="458" y="11"/><path d="M526.6667,11 L526.6667,16 L519.6667,23 L458,23 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="91" x="510.5" y="43.9951">Component</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="78" x="517" y="60.292">technology</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="558" y="76.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="166" x="473" y="92.8857">Explained in component</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63" x="524.5" y="109.1826">diagrams</text><!--MD5=[36f930cb951e6797d8dc41874fb20904]
+entity legend_folder--><polygon fill="#00ACB6" filter="url(#fbwrgmozbbde3)" points="724,7,770,7,777,28,873,28,873,126.4844,724,126.4844,724,7" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="724" x2="777" y1="28" y2="28"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="50" x="768.5" y="47.9951">Folder</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="98" x="744.5" y="64.292">Content types</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="795.5" y="80.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="119" x="734" y="96.8857">Folder containing</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="27" x="780" y="113.1826">files</text><!--MD5=[a4866c07a8db7a005bc6f7bfc6dd2750]
+entity legend_database--><path d="M933,29.5 C933,19.5 997,19.5 997,19.5 C997,19.5 1061,19.5 1061,29.5 L1061,103.6875 C1061,113.6875 997,113.6875 997,113.6875 C997,113.6875 933,113.6875 933,103.6875 L933,29.5 " fill="#00ACB6" filter="url(#fbwrgmozbbde3)" style="stroke:#000000;stroke-width:1.5;"/><path d="M933,29.5 C933,39.5 997,39.5 997,39.5 C997,39.5 1061,39.5 1061,29.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="73" x="960.5" y="56.4951">Database</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="78" x="958" y="72.792">technology</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="999" y="89.0889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="108" x="943" y="105.3857">Some database</text><ellipse cx="1224.4092" cy="66.6182" fill="#FFFFFF" filter="url(#fbwrgmozbbde3)" rx="103.4092" ry="60.6182" style="stroke:#808080;stroke-width:1.5;"/><text fill="#777777" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="126" x="1161.4092" y="36.8711">External system</text><text fill="#777777" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="78" x="1185.4092" y="53.168">technology</text><text fill="#777777" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="1226.4092" y="69.4648"/><text fill="#777777" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130" x="1159.4092" y="85.7617">something outside</text><text fill="#777777" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="1189.4092" y="102.0586">our scope</text><!--MD5=[e1a48caffd5b2d4e7f3ac8f13e7043ff]
+link legend_agent to legend_passive--><!--MD5=[bce8a440d597fe7935174888f797cf27]
+link legend_passive to legend_component--><!--MD5=[518ffad12b51f0d04e302696f8ff7dc5]
+link legend_component to legend_folder--><!--MD5=[aec1c692747045b362fbf97fb88c45c4]
+link legend_folder to legend_database--><!--MD5=[8c0c59893c7ceca4908fdac0a825a76b]
+link legend_database to legend_outside--><!--MD5=[073b4c278204dac7713c64c3af821ec3]
+@startuml
+left to right direction
+!include styling.puml
+
+agent "<b>Active element\n<i>technology\n\nInitiates activity" as legend_agent
+storage "<b>Passive element\n<i>technoloy\n\nIs called to do something" as legend_passive
+frame "<b>Component\n<i>technology\n\nExplained in component\ndiagrams" as legend_component
+folder "<b>Folder\n<i>Content types\n\nFolder containing\nfiles" as legend_folder
+database "<b>Database\n<i>technology\n\nSome database" as legend_database
+usecase "<b>External system\n<i>technology\n\nsomething outside\nour scope" as legend_outside
+
+legend_agent -[hidden]-> legend_passive
+legend_passive-[hidden]->legend_component
+legend_component -[hidden]->legend_folder
+legend_folder -[hidden]->legend_database
+legend_database -[hidden]->legend_outside
+@enduml
+
+@startuml
+left to right direction
+skinparam backgroundColor white
+skinparam defaultTextAlignment center
+
+skinparam AgentBackgroundColor  #F6AA42
+skinparam AgentFontColor black
+skinparam AgentBorderColor #6a8198
+
+skinparam StorageBackgroundColor #7AB51D
+skinparam StorageFontColor white
+
+skinparam FrameBackgroundColor  #d8d8d6
+
+skinparam FolderBackgroundColor #00ACB6
+skinparam DatabaseBackgroundColor #00ACB6
+
+skinparam UsecaseBackgroundColor white
+skinparam UsecaseFontColor #777777
+skinparam UsecaseBorderColor grey
+
+skinparam NoteBackgroundColor white
+skinparam NoteFontColor grey
+skinparam NoteBorderColor darkgrey
+
+skinparam ArrowColor #666666
+skinparam ArrowFontColor #666666
+
+agent "<b>Active element\n<i>technology\n\nInitiates activity" as legend_agent
+storage "<b>Passive element\n<i>technoloy\n\nIs called to do something" as legend_passive
+frame "<b>Component\n<i>technology\n\nExplained in component\ndiagrams" as legend_component
+folder "<b>Folder\n<i>Content types\n\nFolder containing\nfiles" as legend_folder
+database "<b>Database\n<i>technology\n\nSome database" as legend_database
+usecase "<b>External system\n<i>technology\n\nsomething outside\nour scope" as legend_outside
+
+legend_agent -[hidden]-> legend_passive
+legend_passive-[hidden]->legend_component
+legend_component -[hidden]->legend_folder
+legend_folder -[hidden]->legend_database
+legend_database -[hidden]->legend_outside
+@enduml
+
+PlantUML version 1.2021.14(Fri Nov 12 17:46:50 CET 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

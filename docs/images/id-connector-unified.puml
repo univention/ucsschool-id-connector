@@ -1,0 +1,60 @@
+@startuml
+!include styling.puml
+' skinparam linetype round
+
+
+!include object_sms.puml
+!include object_importer.puml
+!include object_note_importer.puml
+
+frame "UCS DC" as primary {
+    !include object_ldap.puml
+    !include object_listener.puml
+    !include object_converter.puml
+    !include object_small_queue.puml
+    !include object_note_schedule_user.puml
+
+}
+
+!include object_large_queue.puml
+
+
+frame "ID Connector\nDocker" as id_connector {
+    !include object_daemon.puml
+    !include object_sqlite.puml
+    !include object_out_queue_a.puml
+    !include object_out_queue_b.puml
+    !include object_out_a.puml
+    !include object_out_b.puml
+    !include object_management_api.puml
+}
+
+!include object_school_provider_a.puml
+!include object_school_provider_b.puml
+
+sms --> importer : <b>export of user data\n<i>python
+
+importer --> ldap: <b>write user/group data\n<i>python
+ldap --> listener: <b>call listener\n<b> on write\n<i>python
+listener --> small_queue: <b>write entryUUIDs\n<b>and changes\n<i>JSON
+small_queue -right-> converter:  <b>read entryUUIDS\n<b>and changes\n<i>JSON
+converter --> large_queue: <b>write\n<b> user/group data\n<i>JSON
+large_queue --> daemon: <b>read user/group data\n<i>JSON
+ldap --> converter: <b>read user/group data\n<i>python-ldap
+ldap --> daemon : <b>get extra data\n<i>python-ldap
+
+daemon-right->sqlite: <b>read/write\n<b> user/group data\n<i>python
+daemon --> out_queue_a:<b>write\n<i>JSON
+daemon --> out_queue_b:<b>write\n<i>JSON
+out_queue_a --> out_a:<b>read\n<i>JSON
+out_queue_b --> out_b:<b>read\n<i>JSON
+out_a --> school_provider_a:<b>write user/group\n<i>HTTP
+out_b --> school_provider_b:<b>write user/group\n<i>HTTP
+
+
+
+daemon <--> management_api:<b>config\n<b>read status\n<i>JSON
+out_a <-left-> management_api:<b>config\n<b>read status\n<i>JSON
+out_b <-left-> management_api:<b>config\n<b>read status\n<i>JSON
+
+@enduml

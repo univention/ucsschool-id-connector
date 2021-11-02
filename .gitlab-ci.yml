@@ -1,0 +1,63 @@
+stages:
+  - test
+  - deploy
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+.prep:
+  image: python:3.9
+  before_script:
+    - python -m pip install --upgrade pip wheel
+    - apt-get -qq update
+    - apt-get -q --assume-yes install libenchant-2-2 ca-certificates
+    - install -m644 -D ./ucs-root-ca.crt "/usr/local/share/ca-certificates/knut-ca.crt"
+    - update-ca-certificates
+    - pip install -r requirements.txt --cert /etc/ssl/certs/ca-certificates.crt
+
+.checks:
+  extends: .prep
+  stage: test
+
+linkcheck:
+  extends: .checks
+  script:
+    - cd docs
+    - make linkcheck
+  artifacts:
+    paths:
+      - public
+
+spelling:
+  extends: .checks
+  script:
+    - cd docs
+    - make spelling
+  artifacts:
+    paths:
+      - public
+
+html:
+  extends: .checks
+  script:
+    - sphinx-build -b html docs public
+  except:
+    - master
+  artifacts:
+    paths:
+      - public
+
+pages:
+  extends: .prep
+  stage: deploy
+  script:
+    - sphinx-build -b html docs public
+  only:
+    - master
+  artifacts:
+    paths:
+      - public

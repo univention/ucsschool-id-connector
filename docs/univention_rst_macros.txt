@@ -1,0 +1,72 @@
+.. |UMS| replace:: UCS-Managementsystem
+.. |iUMS| replace:: *UCS-Managementsystem*
+.. |UDM| replace:: Univention Directory Manager
+.. |iUDM| replace:: *Univention Directory Manager*
+.. |UDL| replace:: Univention Directory Listener
+.. |iUDL| replace:: *Univention Directory Listener*
+.. |UDN| replace:: Univention Directory Notifier
+.. |iUDN| replace:: *Univention Directory Notifier*
+.. |UMC| replace:: Univention Management Console
+.. |iUMC| replace:: *Univention Management Console*
+.. |Web| replace:: UCS Web-Oberfläche
+.. |iWeb| replace:: *UCS Web-Oberfläche*
+.. |UCR| replace:: Univention Configuration Registry
+.. |iUCR| replace:: *Univention Configuration Registry*
+.. |USS| replace:: Univention System Setup
+.. |iUSS| replace:: *Univention System Setup*
+.. |S4C| replace:: Univention S4 Connector
+.. |iS4C| replace:: *Univention S4 Connector*
+.. |ADC| replace:: Univention AD Connector
+.. |iADC| replace:: *Univention AD Connector*
+.. |AppC| replace:: Univention App Center
+.. |iAppC| replace:: *Univention App Center*
+.. |UAS| replace:: UCS\@school
+.. |iUAS| replace:: *UCS\@school*
+.. |PrimaryDN| replace:: Primary Directory Node
+.. |iPrimaryDN| replace:: *Primary Directory Node*
+.. |BackupDN| replace:: Backup Directory Node
+.. |iBackupDN| replace:: *Backup Directory Node*
+.. |ReplicaDN| replace:: Replica Directory Node
+.. |iReplicaDN| replace:: *Replica Directory Node*
+.. |ManagedNode| replace:: Managed Node
+.. |iManagedNode| replace:: *Managed Node*
+.. |UCRV| replace:: Univention Configuration Registry-Variable
+.. |iUCRV| replace:: *Univention Configuration Registry-Variable*
+.. |OX| replace:: Open-Xchange Advanced Server Edition
+.. |iOX| replace:: *Open-Xchange Advanced Server Edition*
+.. |OXS| replace:: OXASE
+.. |iOXS| replace:: *OXASE*
+.. |UCS| replace:: Univention Corporate Server
+.. |iUCS| replace:: *Univention Corporate Server*
+.. |UVMM| replace:: UCS Virtual Machine Manager
+.. |iUVMM| replace:: *UCS Virtual Machine Manager*
+.. |Master| replace:: Domänencontroller Master
+.. |iMaster| replace:: *Domänencontroller Master*
+.. |Backup| replace:: Domänencontroller Backup
+.. |iBackup| replace:: *Domänencontroller Backup*
+.. |Slave| replace:: Domänencontroller Slave
+.. |iSlave| replace:: *Domänencontroller Slave*
+.. |Member| replace:: Memberserver
+.. |iMember| replace:: *Memberserver*
+.. |UCC| replace:: Univention Corporate Client
+.. |iUCC| replace:: *Univention Corporate Client*
+.. |UCD| replace:: Univention Corporate Desktop
+.. |iUCD| replace:: *Univention Corporate Desktop*
+.. |DVS| replace:: UCS Desktop Virtualization Services
+.. |iDVS| replace:: *UCS Desktop Virtualization Services*
+.. |TCS| replace:: Univention Thin Client Services
+.. |iTCS| replace:: *Univention Thin Client Services*
+
+.. |IDC|     replace:: ID Connector
+.. |iIDC|    replace:: *ID Connector*
+.. |UASIDC|  replace:: |UAS| |IDC|
+.. |iUASIDC| replace:: |iUAS| |iIDC|
+.. |IDCS|    replace:: |IDC| Service
+.. |iIDCS|   replace:: |iIDC| *Service*
+.. |IDCH|    replace:: |IDC| HTTP API
+.. |iIDCH|   replace:: |IDC| *HTTP API*
+.. |KLV|     replace:: Kelvin
+.. |iKLV|    replace:: *Kelvin*
+.. |br|      raw:: html
+
+    <br>

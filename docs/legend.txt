@@ -1,0 +1,7 @@
+
+.. collapse:: Legend
+
+    .. figure:: images/legend.svg
+      :width: 700
+
+      Diagram elements

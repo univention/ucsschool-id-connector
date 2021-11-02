@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    agent "<b>Converter\n<i>app daemon in python\n\nReads uuid and writes\njson representation of UDM\nobjects" as converter
+@enduml

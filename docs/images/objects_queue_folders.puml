@@ -1,0 +1,6 @@
+@startuml
+    !include styling.puml
+    folder "<b>Small in-queue\n<i>Folder\n\njson files with\nentryUUIDs" as small_queue
+    folder "<b>Large in-queue\n<i>Folder\n\njson files with full data" as large_queue
+
+@enduml

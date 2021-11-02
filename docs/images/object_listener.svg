@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="120px" preserveAspectRatio="none" style="width:223px;height:120px;background:#FFFFFF;" version="1.1" viewBox="0 0 223 120" width="223px" zoomAndPan="magnify"><defs><filter height="300%" id="f15ewje0f6omf6" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[c4def0b39757ced8a2cbaa90cdcbeb42]
+entity listener--><rect fill="#7AB51D" filter="url(#f15ewje0f6omf6)" height="101.4844" rx="35" ry="35" style="stroke:#000000;stroke-width:1.5;" width="204" x="7" y="7"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="168" x="25" y="29.9951">ID Connector listener</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="144" x="37" y="46.292">python listener script</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="111" y="62.5889"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184" x="17" y="78.8857">Handles LDAP write events</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113" x="52.5" y="95.1826">for ID Connector</text><!--MD5=[5da95960af06ff022942417ec06d3b43]
+@startuml
+    !include styling.puml
+    storage "<b>ID Connector listener\n<i>python listener script\n\nHandles LDAP write events\nfor ID Connector" as listener
+@enduml
+
+@startuml
+skinparam backgroundColor white
+skinparam defaultTextAlignment center
+
+skinparam AgentBackgroundColor  #F6AA42
+skinparam AgentFontColor black
+skinparam AgentBorderColor #6a8198
+
+skinparam StorageBackgroundColor #7AB51D
+skinparam StorageFontColor white
+
+skinparam FrameBackgroundColor  #d8d8d6
+
+skinparam FolderBackgroundColor #00ACB6
+skinparam DatabaseBackgroundColor #00ACB6
+
+skinparam UsecaseBackgroundColor white
+skinparam UsecaseFontColor #777777
+skinparam UsecaseBorderColor grey
+
+skinparam NoteBackgroundColor white
+skinparam NoteFontColor grey
+skinparam NoteBorderColor darkgrey
+
+skinparam ArrowColor #666666
+skinparam ArrowFontColor #666666
+    storage "<b>ID Connector listener\n<i>python listener script\n\nHandles LDAP write events\nfor ID Connector" as listener
+@enduml
+
+PlantUML version 1.2021.14(Fri Nov 12 17:46:50 CET 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

@@ -1,0 +1,57 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Component.puml
+
+
+
+title transformer plugin overview
+
+ContainerDb(ldap,"LDAP","openldap","holds the user data")
+Container(udm,"UDM REST API","tornado","enriches ldap access with ucs specific logic")
+Container(kelvin_rest_api,"Kelvin REST API","fastapi","stops events from reaching ldap")
+Component(listener,"Id-connector listener","python listener script","Handles write events to ldap for id-connector ")
+Component(small_in_queue,"Small in-queue","Folder","json files with entryUUIDs")
+Container(daemon,"Daemon","python","Reads uuid and writes json representation of udm object")
+Component(large_in_queue,"Large in-queue","Folder","json files with full data")
+ComponentDb(sqlite,"UUID:record cache","sqlite","stores uuid->(record_uid,school, etc.) mapping")
+Container(cronjob,"Cronjob","python","Trigger user changes according to validity period")
+Boundary(id_connector,"ID connector") {
+    Component(out_queue_a,"Out queue A","Folder","json files")
+    Component(out_queue_b,"Out queue B","Folder","json files")
+
+    Container(kelvin_plugin_a,"Out A","kelvin plugin process","Sends to kelvin api")
+    Container(kelvin_plugin_b,"Out B","kelvin plugin process","Sends to kelvin api")
+    Container(async_job,"Async Job","python","puts json files into right out queue")
+
+}
+Container_Ext(school_provider_A,"School provider A","Kelvin")
+Container_Ext(school_provider_B,"School provider B","Kelvin")
+
+Rel(ldap,listener,"call listener on write","python")
+Rel(listener,small_in_queue,"Write entryUUIDs","json")
+Rel(cronjob,small_in_queue,"Write entryUUIDs","json")
+Rel_U(daemon,small_in_queue,"Reads entryUUIDs","python")
+Rel(daemon,udm,"Read user data","http")
+Rel(daemon,large_in_queue,"Write user json","python")
+Rel(large_in_queue,sqlite,"Read/write user data","python")
+
+Rel_U( async_job,large_in_queue,"Read json","python")
+
+Rel(async_job,out_queue_a,"write into","python")
+Rel(async_job,out_queue_b,"write into","python")
+
+Rel_U(kelvin_plugin_a,out_queue_a,"reads json","python")
+Rel_U(kelvin_plugin_b,out_queue_b,"reads json","python")
+
+Rel_D(kelvin_plugin_a,school_provider_A,"write user","http")
+Rel_D(kelvin_plugin_b,school_provider_B,"write user","http")
+
+Rel_U(kelvin_rest_api,udm,"modify users","http")
+Rel_U(udm,ldap,"Read/write user data","python-ldap")
+
+
+
+SHOW_LEGEND()
+
+@enduml

@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    folder "<b>Small in-queue\n<i>JSON files\n\njust entryUUIDs" as small_queue
+@enduml

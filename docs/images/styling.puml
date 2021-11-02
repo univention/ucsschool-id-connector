@@ -1,0 +1,32 @@
+skinparam backgroundColor white
+skinparam defaultTextAlignment center
+
+' Active Element
+skinparam AgentBackgroundColor  #F6AA42
+skinparam AgentFontColor black
+skinparam AgentBorderColor #6a8198
+
+' Passive Element
+skinparam StorageBackgroundColor #7AB51D
+skinparam StorageFontColor white
+
+' Component
+skinparam FrameBackgroundColor  #d8d8d6
+
+' Folder and Database
+skinparam FolderBackgroundColor #00ACB6
+skinparam DatabaseBackgroundColor #00ACB6
+
+' External
+skinparam UsecaseBackgroundColor white
+skinparam UsecaseFontColor #777777
+skinparam UsecaseBorderColor grey
+
+' Notes
+skinparam NoteBackgroundColor white
+skinparam NoteFontColor grey
+skinparam NoteBorderColor darkgrey
+
+' Arrows
+skinparam ArrowColor #666666
+skinparam ArrowFontColor #666666

@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+        agent "<b>Management REST API\n<i>fastapi\n\nCRUD sync target configs\nand queues" as management_api
+@enduml

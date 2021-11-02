@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    Usecase "<b>School management software\n<i>custom system\n\nmanages users on state level" as sms
+@enduml

@@ -1,0 +1,20 @@
+@startuml
+
+!include styling.puml
+
+frame "<b>Dev Laptop\n<i>Linux" as dev_laptop {
+    agent "<b>devsync\n<i>python\n\nhas\n ucsschool-id-connector\ncheckout" as devsync
+    folder "<b>Checkout\n<i>git\n\nucsschool-id-connector" as checkout
+}
+
+frame "<b>Dev VM\n<i>UCS" as ucs {
+    frame "<b>ID-Connector\n<i>docker app" as docker {
+        folder "<b>Installation\n<i>git\n\nucsschool-id-connector" as checkout_docker
+
+    }
+}
+
+checkout -right-> devsync: <b>read\n<b>watch changes
+devsync -right-> checkout_docker: <b>write changes\nssh
+
+@enduml

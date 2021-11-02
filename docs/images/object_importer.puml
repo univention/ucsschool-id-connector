@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    agent "<b>UCS@School import\n<i>python\n\nImport user/group data" as importer
+@enduml

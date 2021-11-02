@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    folder "<b>Large in-queue\n<i>JSON files\n\nfull data" as large_queue
+@enduml

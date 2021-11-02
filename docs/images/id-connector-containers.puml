@@ -1,0 +1,29 @@
+@startuml
+
+title ID Connector: Containers\n
+
+!include styling.puml
+' skinparam linetype ortho
+
+!include object_sms.puml
+!include object_importer.puml
+!include object_primary.puml
+
+!include object_large_queue.puml
+
+!include object_id_connector.puml
+
+!include object_school_provider_a.puml
+!include object_school_provider_b.puml
+
+sms --> importer : <b>export of user/group data\n<i>csv, etc.
+importer --> primary: <b>write user/group data\n<i>python
+primary --> large_queue: <b>write user/group data\n<i>JSON
+large_queue --> id_connector:<b>read user/group data\n<i>JSON
+id_connector --> school_provider_a:<b>write user/group\n<i>HTTP
+id_connector --> school_provider_b:<b>write user/group\n<i>HTTP
+' primary <-- id_connector: <b>Read/write user/group data\n<i>UDM-REST-API
+primary --> id_connector: <b>get extra data\npython-ldap
+
+
+@enduml

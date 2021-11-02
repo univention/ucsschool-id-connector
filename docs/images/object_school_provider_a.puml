@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+     usecase "<b>School authority A\n<i>UCS / Kelvin\n\nManages schools" as school_provider_a
+@enduml

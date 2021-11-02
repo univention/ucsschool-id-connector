@@ -1,0 +1,34 @@
+@startuml
+
+title ID-Connector DC Primary Components\n
+
+!include styling.puml
+' skinparam linetype ortho
+
+!include object_importer.puml
+!include object_note_importer.puml
+
+frame "UCS DC" as primary {
+    !include object_ldap.puml
+    !include object_listener.puml
+    !include object_converter.puml
+    !include object_small_queue.puml
+    !include object_note_schedule_user.puml
+}
+
+
+
+!include object_large_queue.puml
+
+!include object_id_connector.puml
+
+importer --> ldap: <b>write user/group data\n<i>python
+ldap --> listener: <b>call listener\n<b> on write\n<i>python
+listener --> small_queue: <b>write entryUUIDs\n<b>and changes\n<i>JSON
+small_queue -right-> converter:  <b>read entryUUIDS\n<b>and changes\n<i>JSON
+converter --> large_queue: <b>write\n<b> user/group data\n<i>JSON
+large_queue -->id_connector:<b>read user/group data\n<i>JSON
+ldap --> converter: <b>read user/group\n data\n<i>python-ldap
+ldap -left-> id_connector : <b>get extra data\n<i>python-ldap
+' id_connector --> ldap
+@enduml

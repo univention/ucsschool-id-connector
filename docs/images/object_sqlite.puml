@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    database "<b>UUID record cache\n<i>sqlite\n\nstores uuid->\n(record_uid,school, ...) \nmapping" as sqlite
+@enduml

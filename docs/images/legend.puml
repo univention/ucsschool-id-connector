@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+!include styling.puml
+
+agent "<b>Active element\n<i>technology\n\nInitiates activity" as legend_agent
+storage "<b>Passive element\n<i>technoloy\n\nIs called to do something" as legend_passive
+frame "<b>Component\n<i>technology\n\nExplained in component\ndiagrams" as legend_component
+folder "<b>Folder\n<i>Content types\n\nFolder containing\nfiles" as legend_folder
+database "<b>Database\n<i>technology\n\nSome database" as legend_database
+usecase "<b>External system\n<i>technology\n\nsomething outside\nour scope" as legend_outside
+
+legend_agent -[hidden]-> legend_passive
+legend_passive-[hidden]->legend_component
+legend_component -[hidden]->legend_folder
+legend_folder -[hidden]->legend_database
+legend_database -[hidden]->legend_outside
+@enduml

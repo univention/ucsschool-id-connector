@@ -1,0 +1,97 @@
+@startuml
+
+
+skinparam defaultTextAlignment center
+
+skinparam AgentBackgroundColor #438dd5
+skinparam AgentFontColor white
+skinparam AgentBorderColor #6a8198
+
+skinparam StorageBackgroundColor #85bbf0
+skinparam DatabaseBackgroundColor #85bbf0
+skinparam FolderBackgroundColor #b0cae4
+skinparam FileBackgroundColor lightgrey
+
+skinparam ArrowColor #666666
+skinparam ArrowFontColor #666666
+
+skinparam FrameBackgroundColor #ebedf1
+
+
+' <b>\n<i>\n\n
+
+agent "<b>School management software\n<i>custom system\n\nmanages users on state level" as sms
+
+storage "<b>UCS@School import\n<i>python\n\nImport user data" as import
+
+database "<b>LDAP\n<i>openldap\n\nholds the user\n data" as ldap
+
+storage "<b>ID-Connector listener\n<i>python listener script\n\nHandles write events\nto ldap for id-connector" as id_connector_listener
+
+agent "<b>Cronjob\n<i>python\n\nTrigger user changes\naccording to validity period" as cronjob
+
+folder "<b>Small in-queue\n<i>Folder\n\njson files with\nentryUUIDs" as small_in_queue
+
+storage "<b>UDM REST API\n<i>tornado\n\nenriches ldap access\nwith ucs specific logic" as udm_rest_api
+
+
+
+agent "<b>Daemon\n<i>python\n\nReads uuid and writes\njson representation of udm\nobjects" as daemon
+
+frame ID-Connector {
+
+
+
+    agent "<b>Management REST API\n<i>fastapi\n\nstops events from\nreaching ldap" as management_api
+
+    folder "<b>Large in-queue\n<i>Folder\n\njson files with full data" as large_in_queue
+
+    database "<b>UUID record cache\n<i>sqlite\n\nstores uuid->\n(record_uid,school, ...) \nmapping" as uuid_record_cache
+
+    agent "<b>Async job\n<i>python\n\nputs json files into right\n out queue" as async_job
+
+    folder "out_queue_a" as out_queue_a
+
+    folder "out_queue_b" as out_queue_b
+
+    agent "out_a" as out_a
+
+    agent "out_b" as out_b
+
+}
+
+storage "school_provider_a" as school_provider_a
+
+storage "school_provider_b" as school_provider_b
+
+sms --> import : <b>export of user data\n<i>python
+import --> ldap
+ldap --> id_connector_listener : <b>calls listener on write\n<i>python
+id_connector_listener --> small_in_queue: <b>Write entryUUIDs\n<i>json
+cronjob --> small_in_queue: <b>Write entryUUIDs\n<i>json
+small_in_queue <-- daemon: <b>Read entryUUIDS\n<i>python
+'daemon-up->small_in_queue
+daemon --> large_in_queue
+'large_in_queue <-->uuid_record_cache
+ uuid_record_cache <--> large_in_queue
+large_in_queue <-- async_job
+async_job --> out_queue_a
+out_queue_a --> out_a
+out_a --> school_provider_a
+async_job --> out_queue_b
+out_queue_b --> out_b
+out_b --> school_provider_b
+daemon --> udm_rest_api
+udm_rest_api --> ldap: <b>Read/write user data\n<i>python-ldap
+management_api --> udm_rest_api
+large_in_queue <-- management_api
+management_api --> out_queue_a
+management_api --> out_queue_b
+
+
+
+folder Test {
+    File entryUUIDs
+}
+
+@enduml

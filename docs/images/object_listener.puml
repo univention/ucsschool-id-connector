@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    storage "<b>ID Connector listener\n<i>python listener script\n\nHandles LDAP write events\nfor ID Connector" as listener
+@enduml
