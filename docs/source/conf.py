@@ -73,3 +73,5 @@ myst_enable_extensions = [
     "colon_fence",
 ]
 
+title = 'ID Connector - UCS@school'
+

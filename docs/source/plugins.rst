@@ -1,27 +1,96 @@
 ***********
 Development
 ***********
-
-Audience
+Overview
 ========
+
+.. figure:: static/ucsschool-id-connector_details.png
+
+   The id-connector, *not* simplified.
+
+TODO: english, master->primary
+
 
 Prerequisites
 ============
 
-- more docker
-- more fastapi
-- dependency injection
-- udm rest api
-- kelvin rest api
-- opa
-- ucs ap auth plugin
+If you want to develop for/with the id-connector, this chapter is right for you. We assume that
+you are already familiar with the chapter :doc:`admin`. On top of that you also need:
+
+http
+   The foundation of data communication for the www. Our APIs use this
+
+   You need to be able to:
+   - understand http messages
+   - understand auth concepts
+   - understand error codes
+
+   read more: https://developer.mozilla.org/en-US/docs/Web/HTTP
+
+
+python & pytest
+   The great programming language and its testing module.
+
+   You need to be able to:
+   - code and debug python modules
+   - test your code using pytest
+
+   read more:
+      - https://python.org
+      - https://pytest.org
+
+fastapi
+   The framework in which http APIs are developed.
+
+   You need to be able to:
+   - understand fastapi
+   - understand dependency injection
+   - understand pydantic models
+
+   read more: https://fastapi.tiangolo.com/
+
+docker
+   Software to isolate software and run them in containers
+
+   You need to be able to:
+   - understand dockerfile basics
+   - run containers
+   - understand mounts
+
+   read more: https://www.docker.com/
+
+udm rest api
+   Description
+
+   You need to be able to: TODO
+
+   read more: TODO
+
+opa
+   Description
+
+   You need to be able to: TODO
+
+   read more: TODO
+
+ucs ap auth plugin
+   Description
+
+   You need to be able to: TODO
+
+   read more: TODO
+
+kelvin rest api
+
+
+
 
 Interactions and components
 ===========================
 
 .. image:: static/ucsschool-id-connector_overview2.png
 
-.. image:: static/ucsschool-id-connector_details.png
+
 
 
 Dev setup
