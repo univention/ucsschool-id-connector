@@ -30,6 +30,8 @@ The *UCS\@school ID Connector* replication system is composed of four components
 
 The changelog is in the :doc:`HISTORY` file. (TODO: correctly linked?)
 
+TODO: macros for names, to have the consistent writing all the time
+
 
 Prerequisites
 ============
@@ -38,70 +40,85 @@ or you need to integrate id-connector.
 To actually follow this manual you should be familiar with the following aspects
 of the UCS environment:
 
-Ldap and ldap listener
-   User data is stored in an LDAP Service, provided by openldap.
-   Ldap is used (instead of e.g. sql databases)
-   because it is optimized for reading in a hierarchical structure.
-   LDAP ACLs are used to restrict access.
-   It shouldn't be accessed directly, instead the udm library should be used.
-   Openldap can have plugins, notifier being one of them that is heavily used in ucs.
-   Upon changes in the ldap directory the notifier triggers
-   listeners locally and on remote systems.
+LDAP and LDAP listener
+   LDAP is used because it is optimized for reading in a hierarchical structure.
+   It shouldn't be accessed directly, instead `UDM`_ should be used. TODO correct link
+   OpenLDAP can have plugins, notifier being one of them that is heavily used in UCS.
+   Upon changes in the LDAP directory the notifier triggers listeners locally
+   and on remote systems.
 
    The listener service connects to all local or remote notifiers in the domain.
    The listener, when notified, calls listener modules,
    which are scripts (in shell and python)
 
-   You need to be able to: TODO
+   You need to be able to:
+      - understand the basic concepts of LDAP
 
-   read more: TODO
+   read more: https://docs.software-univention.de/manual-5.0.html#introduction:LDAP_directory_service
 
+.. _UDM:
 UDM
-   Univention Directory Management is used for handling user data
-   that is stored in the ldap server,
-   one of two core storage places (the other one is ucr).
+   Univention Directory Management (UDM) is used for handling user data
+   (and other data) that is stored in the LDAP server,
+   one of two core storage places (the other one is `UCR`_). TODO proper link
    Examples for data are users, roles or machine info.
-   UDM adds a layer of functionality and logic on top of ldap,
-   hence ldap shouldn't be used directly, but only through UDM.
+   UDM adds a layer of functionality and logic on top of LDAP,
+   hence LDAP shouldn't be used directly, but only through UDM.
 
-   You need to be able to: TODO
+   You need to be able to:
+     - the concept of UDM
+     - know the basic structure of udm objects and their attributes
+     - adding and manage extended attributes
 
-   read more: TODO
+   read more:
+     - TODO Nico simple UDM documentation. Where are the basic concepts defined?
+     - https://docs.software-univention.de/developer-reference-5.0.html#chap:udm
 
-
-ucr
+.. _UCR:
+UCR
    The Univention Config Registry.
-   This stores variables and settings to run the system.
-   It also creates and changes actual linux configuration files
-   as configured by these variables.
+   It stores configuration variables and settings to run the system,
+   and creates and changes actual linux configuration files
+   as configured by these variables upon setting said variables.
 
-   You need to be able to: TODO
+   You need to be able to:
+      - understand basic UCR concepts
+      - set and read UCR variables.
 
-   read more: TODO
+   read more:
+      - https://docs.software-univention.de/handbuch-5.0.html#computers:Verwaltung_der_lokalen_Systemkonfiguration_mit_Univention_Configuration_Registry
 
 appcenter settings
-   TODO Description
+   Univention App Center is an ecosystem similar to the app stores known from mobile platforms
+   like Apple or Google.
+   It provides an infrastructure to build, deploy and run enterprise applications
+   on Univention Corporate Server (UCS).
+   The App Center uses well-known technologies like Docker.
 
-   You need to be able to: TODO
+   Within the app center you can configure settings for the individual apps.
 
-   read more: TODO
+   read more: TODO nico - documentation on how to set app settings.
 
 
-ucs\@school basics
+UCS\@school basics
    Schools have special requirements for managing what is going on inside them
    (teachers, students, staff, computer rooms, exams, etc.),
    and for managing the relation between multiple schools,
    their operator organizations ("Schulbetreiber"), and possibly
    ministerial departments above them.
 
-   There are several components within ucs\@school,
-   kelvin (see below) being one of them.
+   There are several components used within UCS\@school,
+   Kelvin (see below) being one of them.
 
    You need to be able to:
-   - know about ucs\@school objects
-   - know the difference between ucs\@school-objects and udm objects
+   - know about UCS\@school objects
+   - know the difference between UCS\@school-objects and UDM objects
 
-   read more: TODO
+   read more:
+   - https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630
+   - https://help.univention.com/t/ucs-school-work-groups-and-school-classes/16925
+   - https://docs.software-univention.de/ucsschool-handbuch-4.4.html TODO nico english needed,
+     basic concepts would be needed
 
 Kelvin administration
    The UCS\@school Kelvin REST API provides HTTP endpoints
@@ -109,12 +126,14 @@ Kelvin administration
    like school users, school classes, schools (OUs) and computer rooms.
    This is written in fastapi, hence in python3.
 
-   You need to be able to install and configure kelvin. TODO
+   You need to be able to install and configure kelvin.
 
-   read more: https://docs.software-univention.de/ucsschool-kelvin-rest-api/overview.html
+   read more:
+     - https://docs.software-univention.de/ucsschool-kelvin-rest-api/overview.html
+     - TODO nico concepts of properties and mappings (not sample files, but answering the why, and
+       describing the problem that Kelvin solves)
 
-If you want to also develop for id-connector,
-please also see the next chapter :doc:`plugins`.
+If you want to also develop for id-connector, please also see the next chapter :doc:`plugins`.
 
 Installation
 ============
