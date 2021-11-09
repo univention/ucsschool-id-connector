@@ -97,7 +97,11 @@ appcenter settings
 
    Within the app center you can configure settings for the individual apps.
 
-   read more: TODO nico - documentation on how to set app settings.
+   read more:
+      - TODO Nico - documentation on how to set app settings. What we have so far is only:
+         - https://docs.software-univention.de/app-provider.html#app-settings
+         - https://docs.software-univention.de/manual-5.0.html#appcenter-configure
+
 
 
 UCS\@school basics
@@ -117,8 +121,8 @@ UCS\@school basics
    read more:
    - https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630
    - https://help.univention.com/t/ucs-school-work-groups-and-school-classes/16925
-   - https://docs.software-univention.de/ucsschool-handbuch-4.4.html TODO nico english needed,
-     basic concepts would be needed
+   - https://docs.software-univention.de/ucsschool-handbuch-4.4.html
+   - TODO Nico english needed, basic concepts would be needed
 
 Kelvin administration
    The UCS\@school Kelvin REST API provides HTTP endpoints
@@ -130,17 +134,19 @@ Kelvin administration
 
    read more:
      - https://docs.software-univention.de/ucsschool-kelvin-rest-api/overview.html
-     - TODO nico concepts of properties and mappings (not sample files, but answering the why, and
+     - TODO Nico concepts of properties and mappings (not sample files, but answering the why, and
        describing the problem that Kelvin solves)
+      - best so far: https://docs.software-univention.de/ucsschool-handbuch-4.4.html#structure:ldap
 
 If you want to also develop for id-connector, please also see the next chapter :doc:`plugins`.
 
 Installation
 ============
 
-On the server system
---------------------
-The app is  available in the appcenter. You can install it like this::
+Sending side
+------------
+
+The app is  available in the appcenter. You can install it with::
 
     $ univention-app install ucsschool-id-connector
 
@@ -166,15 +172,18 @@ If the files didn't get created, run::
 
 This forces the (re-)running of the join script.
 
-
-On the target systems
+Target system
 ---------------------
 
-TODO:   - do the systems have to be in the same domain?
+TODO: name the kelvin plugin
 
-An HTTP-API is required for the *UCS\@school ID Connector* app
-to be able to create/modify/delete users on the target systems.
+In order for the for the *UCS\@school ID Connector* app to be able to create/modify/delete users
+on the target systems an HTTP-API is required on the target system.
 Currently only the Kelvin API is supported.
+
+.. note::
+  This of course only makes sense if the target system is in a different domain,
+  because otherwise users and groups are synced with other UCS mechanisms.
 
 Install the kelvin api on each target system::
 
@@ -186,10 +195,16 @@ By default the Administrator account is the only authorized user.
 To add a dedicated Kelvin API user for the UCS\@school ID-Connector
 consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
 on how to do that.
+
 TODO: link to proper section in documentation
+      - write the proper section first
 
 Configuration
 =============
+
+
+Sending side
+------------
 
 The school authorities configuration must be done
 through the *UCS\@school ID Connector HTTP API*.
@@ -197,8 +212,7 @@ Do not edit configuration files directly.
 
 
 UCS\@school ID Connector HTTP API
----------------------------------
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The HTTP-API of the *UCS\@school ID Connector* app offers two resources:
 
 * *queues*: monitoring of queues
@@ -217,44 +231,9 @@ An `OpenAPI v3 (formerly "Swagger") schema <https://swagger.io/docs/specificatio
 
 can be downloaded from https://FQDN/ucsschool-id-connector/api/v1/openapi.json
 
-Mapping
--------
-
-TODO: introduce the mapping. Import error - udm_properties are nowhere explained.
-
-* The UDM ``ucsschoolRecordUID`` property should be synced to a UCS\@school system as ``record_uid``.
-* The UDM ``ucsschoolSourceUID`` property should be synced to a UCS\@school system as ``source_uid``.
-* The *virtual* UDM ``roles`` property (special handling by the *UCS\@school ID Connector* app TODO what does this mean?)
-should be synced as ``roles``::
-
-    {
-        "plugin_configs": {
-            "kelvin": {
-                "mapping": {
-                    "users": {
-                        "ucsschoolRecordUID": "record_uid",
-                        "ucsschoolSourceUID": "source_uid",
-                        "roles": "roles"
-                    }
-                }
-            }
-        }
-    }
-
-
-.. _example_kelvin_config:
-See ``examples/school_authority_kelvin.json`` for an example. TODO: check that this links work
-
-Further information on the configuration of some select plugins can be found further down.
-TODO: where?
-
-
-TODO: what are plugins in this context?
-
-
 
 Authentication
---------------
+~~~~~~~~~~~~~~
 
 To use the API, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_ must be
 retrieved from ``https://FQDN/ucsschool-id-connector/api/token``.
@@ -272,41 +251,60 @@ Only members of the group ``ucsschool-id-connector-admins`` are allowed to acces
 The user ``Administrator`` is automatically added to this group for testing purposes.
 In production only the regular admin user accounts should be used.
 
-Target HTTP-API (Kelvin)
-------------------------
-The Kelvin API must have version ``1.2.0`` or higher to work with the UCS\@school ID Connector.
-The password hashes for LDAP and Kerberos authentication are collectively transmitted
-in one JSON object to one target attribute. (TODO what does this tell me?)
-
-The ``mapped_udm_properties`` setting lists the names of UDM properties that should be available in the API.
-The example configuration above (TODO: where?) can be created with the following command::
-
-   $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json \
-      /var/lib/ucs-school-import/configs/kelvin.json
-   $ python -c 'import json; fp = open("/var/lib/ucs-school-import/configs/kelvin.json", "r+w"); \
-      config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; \
-      config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"]; fp.seek(0); \
-      json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
 
 
 
-Kelvin Plugin Konfiguration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-TODO where to place this?
+Mapping
+~~~~~~~
+In order to send user data to the target system, it must be decided
+which properties of which objects to send, and more important,
+which properties not to send.
+E.g. there might be insurance numbers numbers for student in the system on the sending side,
+but those should not be made available on the receiving school system.
+Instead of forbidding properties we "map" properties on the sending side
+to properties on the receiving side.
 
 
-Until a full documentation is developed, only some specifics of the default Kelvin plugin are mentioned here
+TODO: introduce the mapping. Import error - udm_properties are nowhere explained.
+
+* The UDM ``ucsschoolRecordUID`` property should be synced to an UCS\@school system as ``record_uid``.
+* The UDM ``ucsschoolSourceUID`` property should be synced to an UCS\@school system as ``source_uid``.
+* The *virtual* UDM ``roles`` property should be synced to an UCS\@school system as ``roles``
+
+.. note::
+   ``roles`` is *virtual* because there is special handling by the *UCS\@school ID Connector* app
+   mapping ``ucsschoolRole`` to ``roles``  TODO Ask Daniel ::
+
+    {
+        "plugin_configs": {
+            "kelvin": {
+                "mapping": {
+                    "users": {
+                        "ucsschoolRecordUID": "record_uid",
+                        "ucsschoolSourceUID": "source_uid",
+                        "roles": "roles"
+                    }
+                }
+            }
+        }
+    }
+
+This would send the three defined properties to the receiving school.
+
+
+.. _example_kelvin_config:
+See ``examples/school_authority_kelvin.json`` for an example. TODO: check that this link works
 
 Role specific attribute mapping
-...............................
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO describe the problem
+Back to our example about insurance numbers. Imagine that while insurance numbers should not be
+transferred for students, they are actually needed for teachers.
+This means, that now we need to define per role, which properties should be transferred.
 
 With version ``2.1.0`` role specific attribute mapping was added to the default kelvin plugin.
 This allows to define additional user mappings for each role (student, teacher, staff, school_admin)
 by adding a new mapping next to the ``users`` mapping suffixed by ``_$ROLE``, e.g. ``users_student: {}``.
-
-TODO: example
 
 If a user object is handled by the kelvin plugin the mapping is determined as follows:
 
@@ -333,10 +331,25 @@ which is handled separately and would add or remove the user in that way.
 To avoid this problem a derivative of the kelvin plugin can be used,
 which is described in the next section.
 
-Partial group sync
-..................
+An example can be found in `school_authority_kelvin_complex_mapping.json`_ TODO: make sure link works
 
-With version ``2.1.0`` a new derivate of the ``kelvin`` plugin was added: ``kelvin-partial-group-sync``.
+Partial group sync mapping
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is an advanced scenario. Remember that in the last examples we had a property
+that we would send for some users, but not others, depending on their role?
+Turns out that we can have the same problem for groups.
+
+.. note::
+  This is a really advanced scenario. Jump to the next section if you don't have a need for this.
+
+Imagine that a school manages locally which teachers belong to which class.
+In the role specific mapping we would *not* sync the classes attribute (TODO: name of prop), in
+order not to overwrite the local managed settings. This is not enough though:
+we would also need to make sure that we don't sync the property of groups (classes)
+that contains teachers.
+
+With version ``2.1.0`` a new derivative of the ``kelvin`` plugin was added: ``kelvin-partial-group-sync``.
 This plugin alters the handling of school class changes
 by allowing you to specify a list of roles that should be ignored when syncing groups.
 The following steps determine which members are sent to a school authority
@@ -368,6 +381,34 @@ To actually prevent users of certain roles being added to school classes at all,
 it is necessary to remove the mapping of the users ``school_class`` field in the configuration as well.
 
 
+Target system - HTTP-API (Kelvin)
+---------------------------------
+
+The Kelvin API must have version ``1.2.0`` or higher to work with the UCS\@school ID Connector.
+
+.. note::
+   The password hashes for LDAP and Kerberos authentication are collectively transmitted
+   in one JSON object to one target attribute. This means it's all or nothing:
+   all hashes are synced, even if empty. You can't select individual hashes.
+
+TODO: is this the right place, or should be put somewhere else? Or maybe give some context.
+
+TODO: since 1.5.0, before in kelvin json -> kelvin docs
+
+The ``mapped_udm_properties`` setting lists the names of UDM properties
+that should be available in the API.
+
+- all ucsschool properties are available in API
+- udm properties can be made available as follows
+
+TODO
+/etc/ucsschool/kelvin/mapped_udm_properties.json::
+
+   {
+       "user": ["title","phone", "e-mail", "organisation"],
+       "school": ["description"]
+   }
+
 Starting / Stopping services
 ============================
 
@@ -395,8 +436,8 @@ Updates are installed in one of the two usual UCS ways. Either via UMC or on the
 
 
 
-Example of setting up a second school authority
-===============================================
+Example: setting up a second school authority
+=============================================
 
 If we already have a school authority set up and want to set up a second one
 (by copying its configuration) we can do the following:
