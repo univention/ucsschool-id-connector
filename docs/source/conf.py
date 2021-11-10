@@ -75,3 +75,9 @@ myst_enable_extensions = [
 
 title = 'ID Connector - UCS@school'
 
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.txt': 'restructuredtext',
+    '.md': 'markdown',
+}
+
