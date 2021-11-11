@@ -1,13 +1,17 @@
 .. This file is formatted in the spirit of
    https://rhodesmill.org/brandon/2012/one-sentence-per-line/
 .. include:: <isonum.txt>
+.. include:: univention_rst_macros.txt
 .. |br| raw:: html
 
   <br>
 
+
+
 **************
 Administration
 **************
+
 
 * TODO: macros for names, to have the consistent writing all the time
 * TODO: name the kelvin plugin
@@ -19,23 +23,20 @@ Overview
 
    Simplified overview of the id-connector
 
-The *UCS\@school ID Connector* replication system is composed of four components:
+The |iIDC| replication system is composed of four components:
 
 1. An *LDAP server* containing user data.
 2. A process on the data source UCS server,
    receiving user creation/modification/deletion events from
    the LDAP server and relaying them to multiple recipients via HTTP.
-   Henceforth called the *UCS\@school ID Connector service*.
+   Henceforth called the  |iIDCS|.
 3. A process on the data source UCS server to monitor and configure
-   the UCS\@school ID Connector service,
-   henceforth called the *UCS\@school ID Connector HTTP API*.
+   the |UAS| ID Connector service,
+   henceforth called the  |iIDCH|.
 4. Multiple recipients of the directory data relayed by the
-   *UCS\@school ID Connector service*.
+   |iIDCS|.
    They run a HTTP-API service, that the
-   *UCS\@school ID Connector service* pushes updates to.
-
-
-The changelog is in the :doc:`HISTORY` file. (TODO ole: correctly linked?)
+   |iIDCS| pushes updates to.
 
 
 
@@ -49,7 +50,7 @@ of the UCS environment:
 
 LDAP and LDAP listener
    LDAP is used because it is optimized for reading in a hierarchical structure.
-   It shouldn't be accessed directly, instead UDM_ should be used. TODO ole: correct link
+   It shouldn't be accessed directly, instead UDM_ should be used.
    OpenLDAP can have plugins, notifier being one of them that is heavily used in UCS.
    Upon changes in the LDAP directory the notifier triggers listeners locally
    and on remote systems.
@@ -59,7 +60,8 @@ LDAP and LDAP listener
    which are scripts (in shell and python)
 
    You need to be able to:
-      - understand the basic concepts of LDAP
+
+   - understand the basic concepts of LDAP
 
    |rarr| https://docs.software-univention.de/manual-5.0.html#introduction:LDAP_directory_service
 
@@ -74,9 +76,10 @@ UDM
    hence LDAP shouldn't be used directly, but only through UDM.
 
    You need to be able to:
-     - the concept of UDM
-     - know the basic structure of udm objects and their attributes
-     - adding and manage extended attributes
+
+   - understand the concept of UDM
+   - know the basic structure of udm objects and their attributes
+   - add and manage extended attributes
 
    |rarr| TODO Nico simple UDM documentation. Where are the basic concepts defined? |br|
    |rarr| https://docs.software-univention.de/developer-reference-5.0.html#chap:udm
@@ -90,10 +93,11 @@ UCR
    as configured by these variables upon setting said variables.
 
    You need to be able to:
-      - understand basic UCR concepts
-      - set and read UCR variables.
 
-   |rarr| `UCR section in the handbook <https://docs.software-univention.de/manual-5.0.html#computers:Administration_of_local_system_configuration_with_Univention_Configuration_Registry>`_
+   - understand basic UCR concepts
+   - set and read UCR variables.
+
+   |rarr| `<https://docs.software-univention.de/manual-5.0.html#computers:Administration_of_local_system_configuration_with_Univention_Configuration_Registry>`_
 
 
 appcenter settings
@@ -106,8 +110,9 @@ appcenter settings
    Within the app center you can configure settings for the individual apps.
 
    |rarr| TODO Nico - documentation on how to set app settings. What we have so far is only:
-         - https://docs.software-univention.de/app-provider.html#app-settings
-         - https://docs.software-univention.de/manual-5.0.html#appcenter-configure
+
+   - https://docs.software-univention.de/app-provider.html#app-settings
+   - https://docs.software-univention.de/manual-5.0.html#appcenter-configure
 
 
 
@@ -118,12 +123,12 @@ UCS\@school basics
    their operator organizations ("Schulbetreiber"), and possibly
    ministerial departments above them.
 
-   There are several components used within UCS\@school,
+   There are several components used within |UAS|,
    Kelvin (see below) being one of them.
 
    You need to be able to:
-   - know about UCS\@school objects
-   - know the difference between UCS\@school-objects and UDM objects
+   - know about |UAS| objects
+   - know the difference between |UAS|-objects and UDM objects
 
    |rarr| https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630 |br|
    |rarr|  https://help.univention.com/t/ucs-school-work-groups-and-school-classes/16925 |br|
@@ -131,8 +136,8 @@ UCS\@school basics
    |rarr|  TODO Nico english needed, basic concepts would be needed
 
 Kelvin administration
-   The UCS\@school Kelvin REST API provides HTTP endpoints
-   to create and manage individual UCS\@school domain objects
+   The |UAS| Kelvin REST API provides HTTP endpoints
+   to create and manage individual |UAS| domain objects
    like school users, school classes, schools (OUs) and computer rooms.
    This is written in fastapi, hence in python3.
 
@@ -142,7 +147,7 @@ Kelvin administration
    |rarr| TODO Nico concepts of properties and mappings (not sample files, but answering the why, and
    describing the problem that Kelvin solves)
 
-      - best so far: https://docs.software-univention.de/ucsschool-handbuch-4.4.html#structure:ldap
+   - best so far: https://docs.software-univention.de/ucsschool-handbuch-4.4.html#structure:ldap
 
 If you want to also develop for id-connector, please also see the next chapter :doc:`plugins`.
 
@@ -182,7 +187,7 @@ This forces the (re-)running of the join script.
 Target system
 ---------------------
 
-In order for the for the *UCS\@school ID Connector* app to be able to create/modify/delete users
+In order for the for the |iIDC| app to be able to create/modify/delete users
 on the target systems an HTTP-API is required on the target system.
 Currently only the Kelvin API is supported.
 
@@ -194,10 +199,10 @@ Install the kelvin api on each target system::
 
     $ univention-app install ucsschool-kelvin-rest-api
 
-To allow the *UCS\@school ID Connector* app to access the APIs
+To allow the |iIDC| app to access the APIs
 it needs an authorized user account.
 By default the Administrator account is the only authorized user.
-To add a dedicated Kelvin API user for the UCS\@school ID-Connector
+To add a dedicated Kelvin API user for the |UAS| ID-Connector
 consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
 on how to do that.
 
@@ -211,12 +216,12 @@ Configuration
 Configure sending side
 ----------------------
 
-The school authorities configuration must be done through the *UCS\@school ID Connector HTTP API*.
+The school authorities configuration must be done through the  |iIDCH|.
 Do not edit configuration files directly.
 
 UCS\@school ID Connector HTTP API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The HTTP-API of the *UCS\@school ID Connector* app offers two resources:
+The HTTP-API of the |iIDC| app offers two resources:
 
 * *queues*: monitoring of queues
 * *school_authorities*: configuration of school authorities
@@ -242,7 +247,7 @@ Only members of the group ``ucsschool-id-connector-admins`` are allowed to acces
 The user ``Administrator`` is automatically added to this group for testing purposes.
 In production only the regular admin user accounts should be used.
 
-To use the *UCS\@school ID Connector HTTP API* , a
+To use the  |iIDCH| , a
 `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_ must be retrieved from
 ``https://FQDN/ucsschool-id-connector/api/token``.
 The token will be valid for a configurable amount of time (default 60 minutes),
@@ -283,12 +288,12 @@ Here is what an example config looks like::
 
 This configures a mapping for the kelvin plugin that sends the three defined properties to the receiving school:
 
-* The UDM ``ucsschoolRecordUID`` property should be synced to an UCS\@school system as ``record_uid``.
-* The UDM ``ucsschoolSourceUID`` property should be synced to an UCS\@school system as ``source_uid``.
-* The *virtual* UDM ``roles`` property should be synced to an UCS\@school system as ``roles``
+* The UDM ``ucsschoolRecordUID`` property should be synced to an |UAS| system as ``record_uid``.
+* The UDM ``ucsschoolSourceUID`` property should be synced to an |UAS| system as ``source_uid``.
+* The *virtual* UDM ``roles`` property should be synced to an |UAS| system as ``roles``
 
 .. note::
-   ``roles`` is *virtual* because there is special handling by the *UCS\@school ID Connector* app
+   ``roles`` is *virtual* because there is special handling by the |iIDC| app
    mapping ``ucsschoolRole`` to ``roles``  TODO Ask Daniel
 
 You can find a more complex example in ``examples/school_authority_kelvin.json``. TODO: check that this link works
@@ -316,12 +321,10 @@ If a user object is handled by the kelvin plugin the mapping is determined as fo
 
 .. _school_classes_problem_0:
 
-An example for such a config can be found in
-`<static/school_authority_kelvin_complex_mapping.json>`_ TODO ole: make sure link works
-
+An example for such a config can be found in :ref:`complex-kelvin-mapping`
 
 .. note::
-   The priority order for the roles was chosen in order of common specificity in UCS\@school.
+   The priority order for the roles was chosen in order of common specificity in |UAS|.
    A student is usually ever only a student.
    But teachers, staff and school admins can have multiple roles.
 
@@ -384,7 +387,7 @@ The configuration options are exactly the same as for the ``kelvin`` plugin,
 except for the addition of ``school_classes_ignore_roles``,
 which holds the list of user roles to ignore for school class changes.
 
-See `school_authority_kelvin_partial_group_sync.json`_ for an example config. TODO ole: make sure link works
+See :ref:`partial-groupsync` for an example config.
 
 .. note::
    Please be aware that this plugin can only alter the handling of dedicated school class change events.
@@ -429,7 +432,7 @@ This would make the listed properties available for ``user`` and ``school`` reso
 Starting / Stopping services
 ============================
 
-Both services (*UCS\@school ID Connector service* and *UCS\@school ID Connector HTTP API*)
+Both services ( |iIDCS| and  |iIDCH|)
 run in a Docker container.
 The container can be started/stopped by using the regular service facility of the host system::
 
@@ -440,10 +443,10 @@ The container can be started/stopped by using the regular service facility of th
 To restart individual services, init scripts *inside* the Docker container can be used.
 The ``univention-app`` program has a command that makes it easy to execute commands *inside* the Docker container::
 
-    # UCS\@school ID Connector service
+    # |UAS| ID Connector service
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart
 
-    # UCS\@school ID Connector HTTP API
+    # |UAS| ID Connector HTTP API
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector-rest-api start
 
 
@@ -490,10 +493,3 @@ to change an already existing configuration.
 To retrieve a list of the extended attributes on the old school authority server one can use::
 
     $ udm settings/extended_attribute list
-
-.. mermaid::
-
-   flowchart LR
-
-   mapping --> http-api-->id-connector-->kelvin
-   mapping-->kelvin

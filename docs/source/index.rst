@@ -38,9 +38,9 @@ Contents
    admin
    plugins
    appendix
+   example_json
    HISTORY
-   example
-   example2
+
 
 Indices and tables
 ==================
