@@ -2,9 +2,7 @@
    https://rhodesmill.org/brandon/2012/one-sentence-per-line/
 .. include:: <isonum.txt>
 .. include:: univention_rst_macros.txt
-.. |br| raw:: html
 
-  <br>
 
 
 

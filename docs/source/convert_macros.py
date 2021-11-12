@@ -30,6 +30,9 @@ print("""
 .. |iIDCH|   replace:: |IDC| *HTTP API*
 .. |KLV|     replace:: Kelvin
 .. |iKLV|    replace:: *Kelvin*
+.. |br|      raw:: html
+
+    <br>
 """)
 
 

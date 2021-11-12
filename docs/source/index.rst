@@ -33,11 +33,11 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
    :numbered: 3
 
    admin
-   plugins
+   development
    appendix
    example_json
    HISTORY

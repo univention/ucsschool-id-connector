@@ -1,14 +1,20 @@
+.. include:: <isonum.txt>
+.. include:: univention_rst_macros.txt
+
 ***********
 Development
 ***********
 Overview
 ========
 
-.. figure:: static/ucsschool-id-connector_details.png
+.. figure:: static/ucsschool-id-connector_overview2.png
+   :target: _static/ucsschool-id-connector_overview2.png
+   :width: 500
 
-   The id-connector, *not* simplified.
+   The |IDC|, *less* simplified
 
-TODO: english, master->primary
+   TODO: maybe use C4 Image? |br|
+   TODO: english, master->primary
 
 
 Prerequisites
@@ -88,10 +94,16 @@ kelvin rest api
 Interactions and components
 ===========================
 
-.. image:: static/ucsschool-id-connector_overview2.png
+TODO Describe the inner workings
 
+.. figure:: static/ucsschool-id-connector_details.png
+   :target: _static/ucsschool-id-connector_details.png
+   :width: 500
 
+   The |IDC|, *not* simplified.
 
+   TODO: maybe use C4 Image? |br|
+   TODO: english, master->primary
 
 Dev setup
 ==========
@@ -132,22 +144,37 @@ Build Docker image::
     $ cd ~/git/ucsschool-id-connector
     $ make build-docker-img
 
-The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::i
+The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::
 
     $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector docker-test-upload.software-univention.de/ucsschool-id-connector:1.0.0
 
-Use ``docker run -d ...`` to let it run in the background. Use ``docker logs ucsschool_id_connector`` to see the stdout ; ``docker stop ucsschool_id_connector`` and ``docker rm ucsschool_id_connector`` to stop and remove the running container.
-
-Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in output at the start of the build process.
-
+Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in the output
+at the start of the build process.
 
 When the container is started that way (not through the appcenter) it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs after stopping the firewall (``service univention-firewall stop``).
+
+
+You can also::
+
+    # let it run in the background.
+    $ docker run -d ...
+
+    # see the stdout
+    $ docker logs ucsschool_id_connector
+
+    # stop the running container
+    $ docker stop ucsschool_id_connector
+
+    # remove the container
+    $ docker rm ucsschool_id_connector
 
 To enter the running container run::
 
     $ docker exec -it ucsschool_id_connector /bin/ash
 
-(When started through the appcenter use ``univention-app shell ucsschool-id-connector``.)
+When started through the appcenter use::
+
+    $ univention-app shell ucsschool-id-connector
 
 Inside the container you can use the systems Python::
 
