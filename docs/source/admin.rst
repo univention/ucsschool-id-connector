@@ -199,7 +199,7 @@ To allow the |iIDC| app to access the APIs
 it needs an authorized user account.
 By default the Administrator account is the only authorized user.
 To add a dedicated |KLV| API user for the |UAS| ID-Connector
-consult the `|KLV| documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
+consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
 on how to do that.
 
 TODO Nico: link to proper section in documentation
@@ -356,9 +356,9 @@ Imagine that a school manages locally which teachers belong to which class.
 In the role specific mapping we would *not* sync the classes attribute ``school_classes``,
 preventing overwriting the local managed settings (:ref:`see above <school_classes_problem_1>`).
 This is not enough though: we would also need to make sure that we don't sync
-the property of groups (classes TODO tobias: right property?) that contains teachers.
+the property of groups ``classes`` that contains teachers TODO Tobias: right property?.
 
-With version ``2.1.0`` a new derivative of the ``|KLV|`` plugin was added:
+With version ``2.1.0`` a new derivative of the ``Kelvin`` plugin was added:
 ``kelvin-partial-group-sync``. This plugin alters the handling of school class changes
 by allowing you to specify a list of roles that should be ignored when syncing groups.
 The following steps determine which members are sent to a school authority
@@ -403,7 +403,7 @@ Configure target system - HTTP-API (|KLV|)
 -------------------------------------------
 
 You need to install and configure the |KLV| api. This is documented in the
-`|KLV| documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
+`Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
 
 We assume that you have a current version of |KLV| installed after this.
 
@@ -426,7 +426,7 @@ This would make the listed properties available for ``user`` and ``school`` reso
    When configuring |KLV| in detail, remember that the password hashes for LDAP and Kerberos
    authentication are collectively transmitted in one JSON object to one target attribute.
    This means it's all or nothing: all hashes are synced, even if empty.
-   You can't select individual hashes. TODO ole: better place for this?
+   You can't select individual hashes. TODO Ole: better place for this?
 
 Starting / Stopping services
 ============================
@@ -441,10 +441,10 @@ The container can be started/stopped by using the regular service facility of th
 To restart individual services, init scripts *inside* the Docker container can be used.
 The ``univention-app`` program has a command that makes it easy to execute commands *inside* the Docker container::
 
-    # |UAS| ID Connector service
+    # UCS@School ID Connector service
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart
 
-    # |UAS| ID Connector HTTP API
+    # UCS@School ID Connector HTTP API
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector-rest-api start
 
 
