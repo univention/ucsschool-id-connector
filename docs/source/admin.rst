@@ -12,10 +12,6 @@
 Administration
 **************
 
-
-* TODO: macros for names, to have the consistent writing all the time
-* TODO: name the kelvin plugin
-
 Overview
 ========
 
@@ -23,7 +19,7 @@ Overview
 
    Simplified overview of the id-connector
 
-The |iIDC| replication system is composed of four components:
+The |IDC| replication system is composed of four components:
 
 1. An *LDAP server* containing user data.
 2. A process on the data source UCS server,
@@ -68,9 +64,9 @@ LDAP and LDAP listener
 .. _UDM:
 
 UDM
-   Univention Directory Management (UDM) is used for handling user data
+   |UDM| (UDM) is used for handling user data
    (and other data) that is stored in the LDAP server,
-   one of two core storage places (the other one is `UCR`_). TODO proper link
+   one of two core storage places (the other one is `UCR`_).
    Examples for data are users, roles or machine info.
    UDM adds a layer of functionality and logic on top of LDAP,
    hence LDAP shouldn't be used directly, but only through UDM.
@@ -87,7 +83,7 @@ UDM
 .. _UCR:
 
 UCR
-   The Univention Config Registry.
+   The |UCR|.
    It stores configuration variables and settings to run the system,
    and creates and changes actual linux configuration files
    as configured by these variables upon setting said variables.
@@ -100,12 +96,12 @@ UCR
    |rarr| `<https://docs.software-univention.de/manual-5.0.html#computers:Administration_of_local_system_configuration_with_Univention_Configuration_Registry>`_
 
 
-appcenter settings
-   Univention App Center is an ecosystem similar to the app stores known from mobile platforms
+Appcenter settings
+   |AppC| is an ecosystem similar to the app stores known from mobile platforms
    like Apple or Google.
    It provides an infrastructure to build, deploy and run enterprise applications
-   on Univention Corporate Server (UCS).
-   The App Center uses well-known technologies like Docker.
+   on |UCS| (UCS).
+   The |AppC| uses well-known technologies like Docker.
 
    Within the app center you can configure settings for the individual apps.
 
@@ -116,7 +112,7 @@ appcenter settings
 
 
 
-UCS\@school basics
+|UAS| basics
    Schools have special requirements for managing what is going on inside them
    (teachers, students, staff, computer rooms, exams, etc.),
    and for managing the relation between multiple schools,
@@ -124,7 +120,7 @@ UCS\@school basics
    ministerial departments above them.
 
    There are several components used within |UAS|,
-   Kelvin (see below) being one of them.
+   |KLV| (see below) being one of them.
 
    You need to be able to:
    - know about |UAS| objects
@@ -135,8 +131,8 @@ UCS\@school basics
    |rarr|  https://docs.software-univention.de/ucsschool-handbuch-4.4.html |br|
    |rarr|  TODO Nico english needed, basic concepts would be needed
 
-Kelvin administration
-   The |UAS| Kelvin REST API provides HTTP endpoints
+|KLV| administration
+   The |UAS| |KLV| REST API provides HTTP endpoints
    to create and manage individual |UAS| domain objects
    like school users, school classes, schools (OUs) and computer rooms.
    This is written in fastapi, hence in python3.
@@ -145,7 +141,7 @@ Kelvin administration
 
    |rarr| https://docs.software-univention.de/ucsschool-kelvin-rest-api/overview.html |br|
    |rarr| TODO Nico concepts of properties and mappings (not sample files, but answering the why, and
-   describing the problem that Kelvin solves)
+   describing the problem that |KLV| solves)
 
    - best so far: https://docs.software-univention.de/ucsschool-handbuch-4.4.html#structure:ldap
 
@@ -195,15 +191,15 @@ Currently only the Kelvin API is supported.
   This of course only makes sense if the target system is in a different domain,
   because otherwise users and groups are synced with other UCS mechanisms.
 
-Install the kelvin api on each target system::
+Install the |KLV| api on each target system::
 
     $ univention-app install ucsschool-kelvin-rest-api
 
 To allow the |iIDC| app to access the APIs
 it needs an authorized user account.
 By default the Administrator account is the only authorized user.
-To add a dedicated Kelvin API user for the |UAS| ID-Connector
-consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
+To add a dedicated |KLV| API user for the |UAS| ID-Connector
+consult the `|KLV| documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
 on how to do that.
 
 TODO Nico: link to proper section in documentation
@@ -227,7 +223,7 @@ The HTTP-API of the |iIDC| app offers two resources:
 * *school_authorities*: configuration of school authorities
 
 You can discover the API interactively using one of two web interfaces.
-They can be visited with a browser at the URLS:
+They can be visited with a browser at their respective URLS:
 
 * `Swagger UI <https://github.com/swagger-api/swagger-ui>`_: https://FQDN/ucsschool-id-connector/api/v1/docs
 * `ReDoc <https://github.com/Rebilly/ReDoc>`_: https://FQDN/ucsschool-id-connector/api/v1/redoc
@@ -247,9 +243,8 @@ Only members of the group ``ucsschool-id-connector-admins`` are allowed to acces
 The user ``Administrator`` is automatically added to this group for testing purposes.
 In production only the regular admin user accounts should be used.
 
-To use the  |iIDCH| , a
-`JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_ must be retrieved from
-``https://FQDN/ucsschool-id-connector/api/token``.
+To use the  |iIDCH| , a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
+must be retrieved from``https://FQDN/ucsschool-id-connector/api/token``.
 The token will be valid for a configurable amount of time (default 60 minutes),
 after which it must be renewed.
 To change the TTL of the token, open the corresponding *app settings* in the UCS app center.
@@ -262,7 +257,7 @@ Mapping
 ~~~~~~~
 In order to send user data to the target system, it must be decided
 which properties of which objects to send, and more important,
-which properties not to send.
+which properties *not* to send.
 E.g. there might be insurance numbers numbers for student in the system on the sending side,
 but those should not be made available on the receiving school system.
 Instead of forbidding properties we "map" properties on the sending side
@@ -286,7 +281,7 @@ Here is what an example config looks like::
         }
     }
 
-This configures a mapping for the kelvin plugin that sends the three defined properties to the receiving school:
+This configures a mapping for the |KLV| plugin that sends the three defined properties to the receiving school:
 
 * The UDM ``ucsschoolRecordUID`` property should be synced to an |UAS| system as ``record_uid``.
 * The UDM ``ucsschoolSourceUID`` property should be synced to an |UAS| system as ``source_uid``.
@@ -296,7 +291,7 @@ This configures a mapping for the kelvin plugin that sends the three defined pro
    ``roles`` is *virtual* because there is special handling by the |iIDC| app
    mapping ``ucsschoolRole`` to ``roles``  TODO Ask Daniel
 
-You can find a more complex example in ``examples/school_authority_kelvin.json``. TODO: check that this link works
+You can find a more complex example in :ref:`simple-kelvin-mapping`.
 
 Role specific attribute mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -305,11 +300,12 @@ Back to our example about insurance numbers. Imagine that while insurance number
 transferred for students, they are actually needed for teachers.
 This means, that we have a need to define per role which properties should be transferred.
 
-With version ``2.1.0`` role specific attribute mapping was added to the default kelvin plugin.
+With version ``2.1.0`` role specific attribute mapping was added to the default |KLV| plugin.
 This allows to define additional user mappings for each role (student, teacher, staff, school_admin)
-by adding a new mapping next to the ``users`` mapping suffixed by ``_$ROLE``, e.g. ``users_student: {}``.
+by adding a new mapping next to the ``users`` mapping suffixed by ``_$ROLE``,
+e.g. ``users_student: {}``.
 
-If a user object is handled by the kelvin plugin the mapping is determined as follows:
+If a user object is handled by the |KLV| plugin the mapping is determined as follows:
 
 1. Determine the schools the current school authority is configured to handle.
 2. Determine all roles the user has in these schools.
@@ -341,7 +337,7 @@ An example for such a config can be found in :ref:`complex-kelvin-mapping`
    This is because changing the school classes of a user does not only result in a user change event
    but also a school class change event, which is handled separately
    and would add or remove the user in that way.
-   To avoid this problem a derivative of the kelvin plugin can be used,
+   To avoid this problem a derivative of the |KLV| plugin can be used,
    which is described in the next section.
 
 
@@ -350,7 +346,7 @@ Partial group sync mapping
 
 .. note::
   This is an advanced scenario. If you don't need this,
-  jump to the :ref:`next section<Configure target system - HTTP-API (Kelvin)>`.
+  jump to the :ref:`next section<Configure target system - HTTP-API (|KLV|)>`.
 
 Remember that in the last examples we had a property
 that we would send for some users, but not others, depending on their role?
@@ -362,24 +358,28 @@ preventing overwriting the local managed settings (:ref:`see above <school_class
 This is not enough though: we would also need to make sure that we don't sync
 the property of groups (classes TODO tobias: right property?) that contains teachers.
 
-With version ``2.1.0`` a new derivative of the ``kelvin`` plugin was added: ``kelvin-partial-group-sync``.
-This plugin alters the handling of school class changes
+With version ``2.1.0`` a new derivative of the ``|KLV|`` plugin was added:
+``kelvin-partial-group-sync``. This plugin alters the handling of school class changes
 by allowing you to specify a list of roles that should be ignored when syncing groups.
 The following steps determine which members are sent to a school authority
 when a school class is added:
 
-1. Add all users that are members of the school class locally (Normal Kelvin plugin behavior).
-2. Remove all users that have a configured role to ignore in any school handled by the school authority configuration.
-3. Get all members of the school class on the target system that have one of the configured roles and add them.
-4. Get all members of the school class on the target system that are unknown to the ID-Connector and add them.
+1. Add all users that are members of the school class locally (Normal |KLV| plugin behavior).
+2. Remove all users that have a configured role to ignore in any school
+   handled by the school authority configuration.
+3. Get all members of the school class on the target system that have one of the configured roles
+   and add them.
+4. Get all members of the school class on the target system that are unknown to the ID-Connector
+   and add them.
 
 This results in school classes having only members with roles not configured to ignore, |br|
 plus members with roles to ignore that were added on the target system, |br|
 plus any users added on the target system which are unknown to the ID Connector.
 
 .. warning::
-   To achieve this behavior several additional LDAP queries on the ID Connector and one additional request to
-   the target system are necessary. This affects performance (TODO: is this the real reason?)
+   To achieve this behavior several additional LDAP queries on the ID Connector
+   and one additional request to the target system are necessary.
+   This affects performance.
 
 To activate this alternative behavior replace the ``kelvin`` plugin in a school authority configuration
 with ``kelvin-partial-group-sync``.
@@ -399,20 +399,19 @@ See :ref:`partial-groupsync` for an example config.
 
 
 
-Configure target system - HTTP-API (Kelvin)
+Configure target system - HTTP-API (|KLV|)
 -------------------------------------------
 
-You need to install and configure the Kelvin api. This is documented in the
-`Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
+You need to install and configure the |KLV| api. This is documented in the
+`|KLV| documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
 
-We assume that you have a current version of Kelvin installed after this.
+We assume that you have a current version of |KLV| installed after this.
 
 After installation and basic configuration you might want to configure mapped UDM properties.
-What does this mean?
 
-They are `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_.
+UDM properties are `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_.
 On top of those properties you can define additional properties that should be available in
-the Kelvin API on the target system.
+the |KLV| API on the target system.
 
 For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``::
 
@@ -424,7 +423,7 @@ For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_
 This would make the listed properties available for ``user`` and ``school`` resource.
 
 .. note::
-   When configuring Kelvin in detail, remember that the password hashes for LDAP and Kerberos
+   When configuring |KLV| in detail, remember that the password hashes for LDAP and Kerberos
    authentication are collectively transmitted in one JSON object to one target attribute.
    This means it's all or nothing: all hashes are synced, even if empty.
    You can't select individual hashes. TODO ole: better place for this?
@@ -432,8 +431,7 @@ This would make the listed properties available for ``user`` and ``school`` reso
 Starting / Stopping services
 ============================
 
-Both services ( |iIDCS| and  |iIDCH|)
-run in a Docker container.
+Both services ( |iIDCS| and  |iIDCH|) run in a Docker container.
 The container can be started/stopped by using the regular service facility of the host system::
 
     $ service docker-app-ucsschool-id-connector start
@@ -463,7 +461,7 @@ Extra: setting up a second school authority
 If we already have a school authority set up and want to set up a second one
 (by copying its configuration) we can do the following:
 
-1. First make sure the new school authority server has the Kelvin app installed and running.
+1. First make sure the new school authority server has the |KLV| app installed and running.
 
 2. Retrieve the configuration for our old school authority.
 

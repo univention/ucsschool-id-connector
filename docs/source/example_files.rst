@@ -12,9 +12,17 @@ Example files
 School authority
 ================
 
+.. _simple-kelvin-mapping:
+
+Simple Kelvin mapping
+---------------------
+
+.. literalinclude:: ../../examples/school_authority_kelvin.json
+
+
 .. _complex-kelvin-mapping:
 
-Complex kelvin mapping
+Complex Kelvin mapping
 ----------------------
 
 .. literalinclude:: school_authority_kelvin_complex_mapping.json

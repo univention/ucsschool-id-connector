@@ -1,11 +1,12 @@
-.. UCS\@school ID Connector documentation master file, created by
+.. |UAS| ID Connector documentation master file, created by
    sphinx-quickstart on Tue Nov  2 14:56:07 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 .. include:: <isonum.txt>
+.. include:: univention_rst_macros.txt
 
 ****************************************************
-Welcome to UCS\@school ID Connector's documentation!
+Welcome to |UAS| ID Connector's documentation!
 ****************************************************
 foo
 
@@ -20,7 +21,7 @@ foo
 Overview
 ========
 
-The UCS\@school ID Connector connects a UCS\@school directory to any number of other UCS\@school directories (1:n). It is designed to connect state directories with school districts, but can also be used in other contexts. The connection takes place unidirectional: user data (user, school affiliation, class affiliations) are transferred from a central directory (e.g. country directory) to district or school directories. Prerequisite is the use of the UCS\@school Kelvin API on the school authorities. For this a configuration is necessary in advance to create an assignment "Which school users should be transferred to which remote instance?" Then these users are created, updated and deleted.
+The |IDC| connects an |UAS| directory to any number of other |UAS| directories (1:n). It is designed to connect state directories with school districts, but can also be used in other contexts. The connection takes place unidirectional: user data (user, school affiliation, class affiliations) are transferred from a central directory (e.g. country directory) to district or school directories. Prerequisite is the use of the |UAS| |KLV| API on the school authorities. For this a configuration is necessary in advance to create an assignment "Which school users should be transferred to which remote instance?" Then these users are created, updated and deleted.
 
 .. figure:: static/ucsschool-id-connector_overview_extended.svg
    :align: center

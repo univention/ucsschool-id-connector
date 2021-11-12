@@ -22,12 +22,14 @@ for line in lines:
         print(f".. |i{shortcut}| replace:: *{longform}*")
 
 print("""
-.. |IDC| replace:: |UAS| ID Connector
-.. |iIDC| replace:: |iUAS| *ID Connector*
-.. |IDCS| replace:: |IDC| Service
-.. |iIDCS| replace:: |iIDC| *Service*
-.. |IDCH| replace:: |IDC| HTTP API
-.. |iIDCH| replace:: *|IDC| HTTP API*
+.. |IDC|     replace:: |UAS| ID Connector
+.. |iIDC|    replace:: |iUAS| *ID Connector*
+.. |IDCS|    replace:: |IDC| Service
+.. |iIDCS|   replace:: |iIDC| *Service*
+.. |IDCH|    replace:: |IDC| HTTP API
+.. |iIDCH|   replace:: |IDC| *HTTP API*
+.. |KLV|     replace:: Kelvin
+.. |iKLV|    replace:: *Kelvin*
 """)
 
 
