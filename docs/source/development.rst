@@ -20,50 +20,53 @@ Overview
 Prerequisites
 ============
 
-If you want to develop for/with the id-connector, this chapter is right for you. We assume that
+If you want to develop for/with the ID-Connector, this chapter is right for you. We assume that
 you are already familiar with the chapter :doc:`admin`. On top of that you also need:
 
 http
    The foundation of data communication for the www. Our APIs use this
 
    You need to be able to:
+
    - understand http messages
    - understand auth concepts
    - understand error codes
 
-   read more: https://developer.mozilla.org/en-US/docs/Web/HTTP
+   |rarr| https://developer.mozilla.org/en-US/docs/Web/HTTP
 
 
 python & pytest
    The great programming language and its testing module.
 
    You need to be able to:
-   - code and debug python modules
-   - test your code using pytest
 
-   read more:
-      - https://python.org
-      - https://pytest.org
+   - code and debug python modules
+   - test your code, ideally using pytest
+
+   |rarr| https://python.org |br|
+   |rarr| https://pytest.org
 
 fastapi
    The framework in which http APIs are developed.
 
    You need to be able to:
+
    - understand fastapi
    - understand dependency injection
    - understand pydantic models
 
-   read more: https://fastapi.tiangolo.com/
+   |rarr| https://fastapi.tiangolo.com/
 
 docker
-   Software to isolate software and run them in containers
+   Software to isolate software and run them in containers.
 
    You need to be able to:
+
    - understand dockerfile basics
    - run containers
    - understand mounts
 
-   read more: https://www.docker.com/
+   |rarr| https://www.docker.com/
 
 udm rest api
    Description
@@ -79,7 +82,7 @@ opa
 
    read more: TODO
 
-ucs ap auth plugin
+ucs api auth plugin
    Description
 
    You need to be able to: TODO
@@ -364,4 +367,3 @@ To run integration tests (*not safe, will modify source and target systems!*), r
     /ucsschool-id-connector # cd src/
     /ucsschool-id-connector/src # python3 -m pytest -l -v tests/integration_tests
     /ucsschool-id-connector/src # exit
-

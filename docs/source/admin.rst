@@ -4,6 +4,9 @@
 .. include:: univention_rst_macros.txt
 
 
+TODO:
+ - id-connector -> ID-Connector
+ - LDAP and Openldap
 
 
 **************
@@ -39,7 +42,7 @@ Prerequisites
 =============
 This chapter is useful when you need to administer an id-connector setup,
 or you need to integrate id-connector.
-To actually follow this manual you should be familiar with the following aspects
+To follow this manual you should be familiar with the following aspects
 of the UCS environment:
 
 LDAP and LDAP listener
@@ -72,7 +75,7 @@ UDM
    You need to be able to:
 
    - understand the concept of UDM
-   - know the basic structure of udm objects and their attributes
+   - know the basic structure of UDM objects and their attributes
    - add and manage extended attributes
 
    |rarr| TODO Nico simple UDM documentation. Where are the basic concepts defined? |br|
@@ -81,8 +84,7 @@ UDM
 .. _UCR:
 
 UCR
-   The |UCR|.
-   It stores configuration variables and settings to run the system,
+   The |UCR| (UCR) stores configuration variables and settings to run the system,
    and creates and changes actual linux configuration files
    as configured by these variables upon setting said variables.
 
@@ -95,7 +97,7 @@ UCR
 
 
 Appcenter settings
-   |AppC| is an ecosystem similar to the app stores known from mobile platforms
+   The |AppC| is an ecosystem similar to the app stores known from mobile platforms
    like Apple or Google.
    It provides an infrastructure to build, deploy and run enterprise applications
    on |UCS| (UCS).
@@ -121,6 +123,7 @@ Appcenter settings
    |KLV| (see below) being one of them.
 
    You need to be able to:
+
    - know about |UAS| objects
    - know the difference between |UAS|-objects and UDM objects
 
@@ -129,11 +132,11 @@ Appcenter settings
    |rarr|  https://docs.software-univention.de/ucsschool-handbuch-4.4.html |br|
    |rarr|  TODO Nico english needed, basic concepts would be needed
 
-|KLV| administration
-   The |UAS| |KLV| REST API provides HTTP endpoints
+|UAS| |KLV| REST API
+   The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
    to create and manage individual |UAS| domain objects
    like school users, school classes, schools (OUs) and computer rooms.
-   This is written in fastapi, hence in python3.
+   It is written in fastapi, hence in python3.
 
    You need to be able to install and configure kelvin.
 
@@ -143,7 +146,7 @@ Appcenter settings
 
    - best so far: https://docs.software-univention.de/ucsschool-handbuch-4.4.html#structure:ldap
 
-If you want to also develop for id-connector, please also see the next chapter :doc:`plugins`.
+If you want to also develop for the id-connector, please also see the next chapter :doc:`development`.
 
 Installation
 ============
@@ -161,13 +164,13 @@ This should run the  join script ``50ucsschool-id-connector.inst``, which create
   containing the key with which JWT tokens are signed.
 * the group ``ucsschool-id-connector-admins``
   (with DN ``cn=ucsschool-id-connector-admins,cn=groups,$ldap_base``)
-  who's members are allowed to access the HTTP-API.
+  who's members are allowed to access the ID-Connector HTTP-API.
 
 Use of both files is explained later on in `Authentication`_
 
 .. note::
 
-   join scripts are registered in LDAP and then executed on any UCS system
+   Join scripts are registered in LDAP and then executed on any UCS system
    either before/during/after the join process.
 
    |rarr| https://help.univention.com/t/a-script-shall-be-executed-on-each-or-a-certain-ucs-systems-before-during-after-the-join-process/13034
@@ -256,7 +259,7 @@ Mapping
 In order to send user data to the target system, it must be decided
 which properties of which objects to send, and more important,
 which properties *not* to send.
-E.g. there might be insurance numbers numbers for student in the system on the sending side,
+E.g. there might be telephone numbers for students in the system on the sending side,
 but those should not be made available on the receiving school system.
 Instead of forbidding properties we "map" properties on the sending side
 to properties on the receiving side.
@@ -279,7 +282,7 @@ Here is what an example config looks like::
         }
     }
 
-This configures a mapping for the |KLV| plugin that sends the three defined properties to the receiving school:
+This configures a mapping foroles by priority: school_ the |KLV| plugin that sends the three defined properties to the receiving school:
 
 * The UDM ``ucsschoolRecordUID`` property should be synced to an |UAS| system as ``record_uid``.
 * The UDM ``ucsschoolSourceUID`` property should be synced to an |UAS| system as ``source_uid``.
@@ -294,7 +297,7 @@ You can find a more complex example in :ref:`simple-kelvin-mapping`.
 Role specific attribute mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Back to our example about insurance numbers. Imagine that while insurance numbers should not be
+Back to our example about telephone numbers. Imagine that while telephone numbers should not be
 transferred for students, they are actually needed for teachers.
 This means, that we have a need to define per role which properties should be transferred.
 
@@ -307,15 +310,15 @@ If a user object is handled by the |KLV| plugin the mapping is determined as fol
 
 1. Determine the schools the current school authority is configured to handle.
 2. Determine all roles the user has in these schools.
-3. Order the roles by priority: school_admin being the highest followed by staff, teacher
-   and then student.
+3. Order the roles by priority: ``school_admin`` being the highest followed by ``staff``, ``teacher``
+   and then ``student``.
 4. Find a ``users_$ROLE`` mapping from the ones configured in the plugin settings, pick the one
    with the highest priority (from step 3).
 5. If none was found, fall back to the ``users`` mapping as the default.
 
 .. _school_classes_problem_0:
 
-An example for such a config can be found in :ref:`complex-kelvin-mapping`
+An example for such a configuration can be found in :ref:`complex-kelvin-mapping`
 
 .. note::
    The priority order for the roles was chosen in order of common specificity in |UAS|.
@@ -330,13 +333,15 @@ An example for such a config can be found in :ref:`complex-kelvin-mapping`
 .. _school_classes_problem_1:
 
 .. note::
-   Please be aware that leaving out the ``school_classes`` field
-   is not sufficient to prevent certain user roles from being added or removed from school classes.
-   This is because changing the school classes of a user does not only result in a user change event
-   but also a school class change event, which is handled separately
-   and would add or remove the user in that way.
-   To avoid this problem a derivative of the |KLV| plugin can be used,
-   which is described in the next section.
+
+
+
+   Users have the field ``school_classes``, which describes which school classes they belong to.
+   You might want to prevent certain user roles from being added or removed to school classes.
+   Please be aware that leaving out the ``school_classes`` from the mapping is not sufficient to achieve this:
+   changing the school classes of a user does not only result in a user change event
+   but also a school class change event, which needs to be handled separately. You therefore need to use a
+   a derivative of the |KLV| plugin, which is described in the next section.
 
 
 Partial group sync mapping
@@ -354,7 +359,7 @@ Imagine that a school manages locally which teachers belong to which class.
 In the role specific mapping we would *not* sync the classes attribute ``school_classes``,
 preventing overwriting the local managed settings (:ref:`see above <school_classes_problem_1>`).
 This is not enough though: we would also need to make sure that we don't sync
-the property of groups ``classes`` that contains teachers TODO Tobias: right property?.
+the property ``users`` of groups which contains those teachers.
 
 With version ``2.1.0`` a new derivative of the ``Kelvin`` plugin was added:
 ``kelvin-partial-group-sync``. This plugin alters the handling of school class changes
@@ -407,18 +412,17 @@ We assume that you have a current version of |KLV| installed after this.
 
 After installation and basic configuration you might want to configure mapped UDM properties.
 
-UDM properties are `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_.
-On top of those properties you can define additional properties that should be available in
-the |KLV| API on the target system.
+Beyond the `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_
+you can define additional UDM properties that should be available in the |KLV| API on the target system.
 
 For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``::
 
    {
-       "user": ["title","phone", "e-mail", "organisation"],
+       "user": ["title", "phone", "e-mail"],
        "school": ["description"]
    }
 
-This would make the listed properties available for ``user`` and ``school`` resource.
+This would make the listed properties available for the ``user`` and ``school`` resources.
 
 .. note::
    When configuring |KLV| in detail, remember that the password hashes for LDAP and Kerberos
@@ -432,9 +436,9 @@ Starting / Stopping services
 Both services ( |iIDCS| and  |iIDCH|) run in a Docker container.
 The container can be started/stopped by using the regular service facility of the host system::
 
-    $ service docker-app-ucsschool-id-connector start
-    $ service docker-app-ucsschool-id-connector status
-    $ service docker-app-ucsschool-id-connector stop
+    $ univention-app start ucsschool-id-connector
+    $ univention-app status ucsschool-id-connector
+    $ univention-app stop ucsschool-id-connector
 
 To restart individual services, init scripts *inside* the Docker container can be used.
 The ``univention-app`` program has a command that makes it easy to execute commands *inside* the Docker container::
@@ -451,6 +455,9 @@ Updates
 Updates are installed in one of the two usual UCS ways. Either via UMC or on the command line::
 
     $ univention-upgrade
+
+    # or just:
+
     $ univention-app upgrade ucsschool-id-connector
 
 Extra: setting up a second school authority
@@ -459,27 +466,27 @@ Extra: setting up a second school authority
 If we already have a school authority set up and want to set up a second one
 (by copying its configuration) we can do the following:
 
-1. First make sure the new school authority server has the |KLV| app installed and running.
+1. Make sure the new school authority server has the |KLV| app installed and running.
 
 2. Retrieve the configuration for our old school authority.
 
    For this we open the HTTP-API Swagger UI ( https://FQDN/ucsschool-id-connector/api/v1/doc )
-   and authenticate ourselves. The button can be found at the top right corner of the page.
+   and authenticate ourselves. The button can be found in the top right corner of the page.
 
    Then we retrieve a list of the available school authorities
    by using the ``GET /ucsschool-id-connector/api/v1/school_authorities`` tab,
    by clicking on ``Try it out`` and ``Execute``.
 
-   In the response body we get a JSON list of the school authorities that are currently configured.
+   In the response body, we get a JSON list of the school authorities that are currently configured.
    We need to copy the one we want to replicate and save it for later.
 
 3. Under ``POST /ucsschool-id-connector/api/v1/school_authorities`` we can create the new school authority.
 
-   Click *try it out* and insert the coped JSON object from before into the request body.
+   Click *try it out* and insert the copied JSON object from before into the request body.
 
    Now we just have to alter the name, url, and login credentials before executing the request.
 
-   - The url has to point to the new school authorities HTTP-API.
+   - The URL has to point to the new school authorities HTTP-API.
    - The name can be chosen at your leisure
    - The password is the authentication token of the school authorities HTTP-API (retrieved earlier).
 
