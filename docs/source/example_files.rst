@@ -9,8 +9,20 @@
 Example files
 *************
 
+
+
 School authority
 ================
+
+
+.. _school-to-authority-mapping:
+
+School to authority mapping
+---------------------------
+
+.. literalinclude:: ../../examples/mapping.json
+
+
 
 .. _simple-kelvin-mapping:
 
@@ -35,4 +47,3 @@ Partial group sync
 TODO this is the wrong content
 
 .. literalinclude:: ../../examples/school_authority_kelvin_partial_group_sync.json
-

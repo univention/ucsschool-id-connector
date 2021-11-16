@@ -1,5 +1,5 @@
 {
-  "name": "Traeger2",
+  "name": "Traeger1",
   "url": "https://10.200.3.242/ucsschool/kelvin/v1/",
   "active": true,
   "plugins": ["kelvin"],

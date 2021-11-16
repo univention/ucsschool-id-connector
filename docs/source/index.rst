@@ -9,7 +9,7 @@
 ****************************************************
 Welcome to |UAS| ID Connector's documentation!
 ****************************************************
-foo
+
 
 .. image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
     :alt: GNU AGPL V3 license
@@ -18,6 +18,7 @@ foo
     :alt: Python 3.8
     :target: https://www.python.org/downloads/release/python-382/
 
+TODO: Change links from 4.4 to 5.0.
 
 Overview
 ========
@@ -38,6 +39,22 @@ Then these users are created, updated and deleted.
 
 In this documentation you will learn how to administer an id-connector setup,
 and we hope to teach you how to develop plugins for id-connector as well.
+
+.. _l10n:
+
+.. note::
+
+   At the moment the ID-Connector setup is only used in German speaking countries. Hence you will
+   encounter, also in this documentation, a few german terms.
+
+   Sender
+      An easy one to guess - it actually refers to the sending side of the sync process,
+      which in Germany most likely is a state department.
+
+   Traeger
+      This is the organization managing schools. In the ID-Connector context it can be thought
+      of as the *recipient* of sync data.
+
 
 Contents
 ========

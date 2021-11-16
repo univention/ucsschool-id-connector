@@ -166,7 +166,13 @@ This should run the  join script ``50ucsschool-id-connector.inst``, which create
   (with DN ``cn=ucsschool-id-connector-admins,cn=groups,$ldap_base``)
   who's members are allowed to access the ID-Connector HTTP-API.
 
-Use of both files is explained later on in `Authentication`_
+Use of both is explained later on in `Authentication`_
+
+.. note::
+   You can check the existence of the group with::
+
+      udm groups/group list --filter cn=ucsschool-id-connector-admins
+
 
 .. note::
 
@@ -184,7 +190,7 @@ This forces the (re-)running of the join script.
 Receiving system
 ----------------
 
-In order for the for the |iIDC| app to be able to create/modify/delete users
+In order for the |iIDC| app to be able to create/modify/delete users
 on the target systems an HTTP-API is required on the target system.
 Currently only the Kelvin API is supported.
 
@@ -196,9 +202,9 @@ Install the |KLV| api on each target system::
 
     $ univention-app install ucsschool-kelvin-rest-api
 
-To allow the |iIDC| app to access the APIs
+To allow the |iIDC| app on the sender system to access the Kelvin-API on the receiving system,
 it needs an authorized user account.
-By default the Administrator account is the only authorized user.
+By default the Administrator account on the receiving system is the only authorized user.
 To add a dedicated |KLV| API user for the |UAS| ID-Connector
 consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
 on how to do that.
@@ -244,7 +250,9 @@ Only members of the group ``ucsschool-id-connector-admins`` are allowed to acces
 The user ``Administrator`` is automatically added to this group for testing purposes.
 In production only the regular admin user accounts should be used.
 
-To use the  |iIDCH| , a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
+You can authorize yourself in e.g. the Swagger UI using the ``Authorize`` button.
+
+To use the  |iIDCH| from a script, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
 must be retrieved from``https://FQDN/ucsschool-id-connector/api/token``.
 The token will be valid for a configurable amount of time (default 60 minutes),
 after which it must be renewed.
@@ -254,8 +262,9 @@ Example ``curl`` command to retrieve a token::
 
     $ curl -i -k -X POST --data 'username=Administrator&password=s3cr3t' https://FQDN/ucsschool-id-connector/api/token
 
-Mapping
-~~~~~~~
+School authorities mapping
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 In order to send user data to the target system, it must be decided
 which properties of which objects to send, and more important,
 which properties *not* to send.
@@ -266,8 +275,9 @@ to properties on the receiving side.
 
 .. _example_kelvin_config:
 
-Here is what an example config looks like::
+Here is what the mapping related part of an example config looks like::
 
+   ...
     {
         "plugin_configs": {
             "kelvin": {
@@ -281,6 +291,7 @@ Here is what an example config looks like::
             }
         }
     }
+   ...
 
 This configures a mapping for the |KLV| plugin that sends the three defined properties to the
 receiving school:
@@ -293,10 +304,56 @@ receiving school:
    ``roles`` is *virtual* because there is special handling by the |iIDC| app
    mapping ``ucsschoolRole`` to ``roles``  TODO Ask Daniel
 
-You can find a more complex example in :ref:`simple-kelvin-mapping`.
+
+Here is a complete example that you can also find in   :ref:`simple-kelvin-mapping`.
+
+.. literalinclude:: ../../examples/school_authority_kelvin.json
+
+
+Please adapt the example to your needs, especially
+
+- url
+- username
+- password
+
+The complete and adapted example needs to be posted to the ``school_authorities`` resource in the Swagger UI.
+
+School to authority mapping
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO::
+
+   {
+     "mapping": {
+       "NAME_OF_SCHOOL": "NAME_OF_RECIPIENT",
+       ...
+      }
+   }
+
+COPY and paste example::
+
+   {
+     "mapping": {
+       "DEMOSCHOOL": "Traeger1",
+       ...
+      }
+   }
+
+:ref:`Remember?<l10n>` ``Traeger`` refers to the receiving side of the sync process
+
+You can also find the example in :ref:`school-to-authority-mapping`.
+
+
+
+
+
 
 Role specific attribute mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+  This is an advanced scenario. If you don't need this,
+  jump to the section: :ref:`Configure target system - HTTP-API (|KLV|)`.
 
 Back to our example about telephone numbers. Imagine that while telephone numbers should not be
 transferred for students, they are actually needed for teachers.
