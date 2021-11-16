@@ -151,8 +151,8 @@ If you want to also develop for the id-connector, please also see the next chapt
 Installation
 ============
 
-Sending side
-------------
+Sending system
+--------------
 
 The app is  available in the appcenter. You can install it with::
 
@@ -175,14 +175,14 @@ Use of both files is explained later on in `Authentication`_
 
    |rarr| https://help.univention.com/t/a-script-shall-be-executed-on-each-or-a-certain-ucs-systems-before-during-after-the-join-process/13034
 
-If the files didn't get created, run::
+If the above didn't get created, run::
 
     $ univention-run-join-scripts --run-scripts --force 50ucsschool-id-connector.inst
 
 This forces the (re-)running of the join script.
 
-Target system
----------------------
+Receiving system
+----------------
 
 In order for the for the |iIDC| app to be able to create/modify/delete users
 on the target systems an HTTP-API is required on the target system.
@@ -282,7 +282,8 @@ Here is what an example config looks like::
         }
     }
 
-This configures a mapping foroles by priority: school_ the |KLV| plugin that sends the three defined properties to the receiving school:
+This configures a mapping for the |KLV| plugin that sends the three defined properties to the
+receiving school:
 
 * The UDM ``ucsschoolRecordUID`` property should be synced to an |UAS| system as ``record_uid``.
 * The UDM ``ucsschoolSourceUID`` property should be synced to an |UAS| system as ``source_uid``.
@@ -441,7 +442,8 @@ The container can be started/stopped by using the regular service facility of th
     $ univention-app stop ucsschool-id-connector
 
 To restart individual services, init scripts *inside* the Docker container can be used.
-The ``univention-app`` program has a command that makes it easy to execute commands *inside* the Docker container::
+The ``univention-app`` program has a command that makes it easy to execute commands *inside*
+the Docker container::
 
     # UCS@School ID Connector service
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart
