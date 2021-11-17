@@ -154,7 +154,9 @@ Installation
 Sending system
 --------------
 
-The app is  available in the appcenter. You can install it with::
+The app is  available in the appcenter. You can install it with:
+
+.. code-block:: bash
 
     $ univention-app install ucsschool-id-connector
 
@@ -169,9 +171,11 @@ This should run the  join script ``50ucsschool-id-connector.inst``, which create
 Use of both is explained later on in `Authentication`_
 
 .. note::
-   You can check the existence of the group with::
+   You can check the existence of the group with:
 
-      udm groups/group list --filter cn=ucsschool-id-connector-admins
+   .. code-block:: bash
+
+         udm groups/group list --filter cn=ucsschool-id-connector-admins
 
 
 .. note::
@@ -181,7 +185,9 @@ Use of both is explained later on in `Authentication`_
 
    |rarr| https://help.univention.com/t/a-script-shall-be-executed-on-each-or-a-certain-ucs-systems-before-during-after-the-join-process/13034
 
-If the above didn't get created, run::
+If the above didn't get created, run:
+
+.. code-block:: bash
 
     $ univention-run-join-scripts --run-scripts --force 50ucsschool-id-connector.inst
 
@@ -198,7 +204,9 @@ Currently only the Kelvin API is supported.
   This of course only makes sense if the target system is in a different domain,
   because otherwise users and groups are synced with other UCS mechanisms.
 
-Install the |KLV| api on each target system::
+Install the |KLV| api on each target system:
+
+.. code-block:: bash
 
     $ univention-app install ucsschool-kelvin-rest-api
 
@@ -258,9 +266,12 @@ The token will be valid for a configurable amount of time (default 60 minutes),
 after which it must be renewed.
 To change the TTL of the token, open the corresponding *app settings* in the UCS app center.
 
-Example ``curl`` command to retrieve a token::
+Example ``curl`` command to retrieve a token:
 
-    $ curl -i -k -X POST --data 'username=Administrator&password=s3cr3t' https://FQDN/ucsschool-id-connector/api/token
+.. code-block:: bash
+
+    $ curl -i -k -X POST --data 'username=Administrator&password=s3cr3t' \
+      https://FQDN/ucsschool-id-connector/api/token
 
 School authorities mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -275,7 +286,9 @@ to properties on the receiving side.
 
 .. _example_kelvin_config:
 
-Here is what the mapping related part of an example config looks like::
+Here is what the mapping related part of an example config looks like:
+
+.. code-block:: json
 
    ...
     {
@@ -321,7 +334,9 @@ The complete and adapted example needs to be posted to the ``school_authorities`
 School to authority mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO::
+TODO:
+
+.. code-block:: json
 
    {
      "mapping": {
@@ -330,7 +345,9 @@ TODO::
       }
    }
 
-COPY and paste example::
+COPY and paste example:
+
+.. code-block:: json
 
    {
      "mapping": {
@@ -473,7 +490,9 @@ After installation and basic configuration you might want to configure mapped UD
 Beyond the `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_
 you can define additional UDM properties that should be available in the |KLV| API on the target system.
 
-For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``::
+For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``:
+
+.. code-block:: json
 
    {
        "user": ["title", "phone", "e-mail"],
@@ -492,7 +511,9 @@ Starting / Stopping services
 ============================
 
 Both services ( |iIDCS| and  |iIDCH|) run in a Docker container.
-The container can be started/stopped by using the regular service facility of the host system::
+The container can be started/stopped by using the regular service facility of the host system:
+
+.. code-block:: bash
 
     $ univention-app start ucsschool-id-connector
     $ univention-app status ucsschool-id-connector
@@ -500,7 +521,9 @@ The container can be started/stopped by using the regular service facility of th
 
 To restart individual services, init scripts *inside* the Docker container can be used.
 The ``univention-app`` program has a command that makes it easy to execute commands *inside*
-the Docker container::
+the Docker container:
+
+.. code-block:: bash
 
     # UCS@School ID Connector service
     $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart
@@ -511,7 +534,9 @@ the Docker container::
 
 Updates
 =======
-Updates are installed in one of the two usual UCS ways. Either via UMC or on the command line::
+Updates are installed in one of the two usual UCS ways. Either via UMC or on the command line:
+
+.. code-block:: bash
 
     $ univention-upgrade
 
@@ -552,6 +577,8 @@ If we already have a school authority set up and want to set up a second one
 The tab ``PATCH /ucsschool-id-connector/api/v1/school_authorities/{name}`` can be used
 to change an already existing configuration.
 
-To retrieve a list of the extended attributes on the old school authority server one can use::
+To retrieve a list of the extended attributes on the old school authority server one can use:
+
+.. code-block:: bash
 
     $ udm settings/extended_attribute list

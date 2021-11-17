@@ -18,10 +18,12 @@ Overview
 
 
 Prerequisites
-============
+=============
 
 If you want to develop for/with the ID-Connector, this chapter is right for you. We assume that
-you are already familiar with the chapter :doc:`admin`. On top of that you also need:
+you are already familiar with the chapter :doc:`admin`.
+
+To follow this manual and to develop for ID-Connector, you also need the following knowledge:
 
 http
    The foundation of data communication for the www. Our APIs use this
@@ -73,23 +75,36 @@ udm rest api
 
    You need to be able to: TODO
 
-   read more: TODO
+   |rarr| TODO
 
 opa
    Description
 
    You need to be able to: TODO
 
-   read more: TODO
+   |rarr| TODO
 
 ucs api auth plugin
    Description
 
    You need to be able to: TODO
 
-   read more: TODO
+   |rarr| TODO
 
 kelvin rest api
+   Description
+
+   You need to be able to: TODO
+
+   |rarr| TODO
+
+pre-commit
+
+   Description
+
+   You need to be able to: TODO
+
+   |rarr| https://pre-commit.com/
 
 
 
@@ -111,18 +126,25 @@ TODO Describe the inner workings
 Dev setup
 ==========
 
-Setup development environment::
+Setup development environment:
+
+.. code-block:: bash
 
     $ cd ~/git/ucsschool-id-connector
     $ make setup_devel_env
     $ make install
     $ pre-commit run -a
 
-This will create a directory ``venv`` with a Python virtualenv with the app and all its dependencies in it. To use it, run::
+This will create a directory ``venv`` with a Python virtualenv with the app and all its dependencies in it.
+To activate it, run:
+
+.. code-block:: bash
 
     $ . venv/bin/activate
 
-Run ``make`` without argument to see more useful commands::
+Run ``make`` without argument to see more useful commands:
+
+.. code-block:: bash
 
     $ make
 
@@ -140,24 +162,34 @@ Run ``make`` without argument to see more useful commands::
     build-docker-img     build docker image locally quickly
     build-docker-img-on-knut copy source to docker.knut, build and push docker image
 
-*All commands in the Makefile assume that the virtualenv is active.*
+*All other commands in the Makefile assume that the virtualenv is active.*
 
-Build Docker image::
+Build Docker image:
+
+.. code-block:: bash
 
     $ cd ~/git/ucsschool-id-connector
     $ make build-docker-img
 
-The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::
+The Docker image can be started on its own (but won't receive JSON files
+in the in queue from the listener in the host) by running:
 
-    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector docker-test-upload.software-univention.de/ucsschool-id-connector:1.0.0
+.. code-block:: bash
+
+    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
+      docker-test-upload.software-univention.de/ucsschool-id-connector:1.0.0
 
 Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in the output
 at the start of the build process.
 
-When the container is started that way (not through the appcenter) it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs after stopping the firewall (``service univention-firewall stop``).
+When the container is started that way (not through the appcenter)
+it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
+after stopping the firewall (``service univention-firewall stop``).
 
 
-You can also::
+You can also:
+
+.. code-block:: bash
 
     # let it run in the background.
     $ docker run -d ...
@@ -171,15 +203,22 @@ You can also::
     # remove the container
     $ docker rm ucsschool_id_connector
 
-To enter the running container run::
+To enter the running container run:
+
+.. code-block:: bash
 
     $ docker exec -it ucsschool_id_connector /bin/ash
 
-When started through the appcenter use::
+When started through the appcenter use:
+
+.. code-block:: bash
 
     $ univention-app shell ucsschool-id-connector
 
-Inside the container you can use the systems Python::
+
+Inside the container you can use the system Python:
+
+.. code-block:: bash
 
     /ucsschool-id-connector # python3
     Python 3.8.2 (default, Feb 29 2020, 17:03:31)
@@ -198,13 +237,29 @@ Inside the container you can use the systems Python::
 Install Kelvin API on sender for integration tests
 --------------------------------------------------
 
-A HTTP-API is required for the integration tests (running in the container) to be able to create/modify/delete users in the host and the target systems::
+A HTTP-API is required for the integration tests (running in the container) to be able to
+create/modify/delete users in the host and the target systems:
+
+.. code-block:: bash
 
     $ univention-app install ucsschool-kelvin-rest-api
-    $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json /var/lib/ucs-school-import/configs/user_import.json
-    $ python -c 'import json; fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w"); config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"]; fp.seek(0); json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
+    $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json \
+         /var/lib/ucs-school-import/configs/user_import.json
+    $ python -c 'import json;
+                 fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w");\
+                 config = json.load(fp);\
+                 config["configuration_checks"] = ["defaults", "mapped_udm_properties"];\
+                 config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"];\
+                 fp.seek(0);\
+                 json.dump(config, fp, indent=4, sort_keys=True);\
+                 fp.close()'
 
-To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses. Username "Administrator" and password "univention" is assumed. To be executed on the sender system::
+To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses.
+Username "Administrator" and password "univention" is assumed.
+
+Please execute on the sender system:
+
+.. code-block:: bash
 
     $ echo IP_TRAEGER1 > /var/www/IP_traeger1.txt
     $ echo IP_TRAEGER2 > /var/www/IP_traeger2.txt
@@ -212,50 +267,85 @@ To allow the integration tests to access the APIs it needs a way to retrieve the
 Using devsync with running app container
 ----------------------------------------
 
-Sync your working copy into the running container, enter it and restart the services::
+Sync your working copy into the running container, enter it and restart the services:
 
-    [test VM] $ docker exec "$(ucr get appcenter/apps/ucsschool-id-connector/container)" /etc/init.d/ucsschool-id-connector stop
-    [test VM] $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' "$(ucr get appcenter/apps/ucsschool-id-connector/container)"
-    → /var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged
-    [developer machine] ~/git/ucsschool-id-connector $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/ucsschool-id-connector/
-    [test VM] $ univention-app shell ucsschool-id-connector
-    [in container] $ python3 -m pip install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
-    [in container] $ python3 -m pip install -e src/
-    [in container] $ /etc/init.d/ucsschool-id-connector restart
-    [in container] $ /etc/init.d/ucsschool-id-connector-rest-api stop
-    [in container] $ /etc/init.d/ucsschool-id-connector-rest-api-dev start
+.. code-block:: bash
+
+    # [test VM]
+    $ docker exec "$(ucr get appcenter/apps/ucsschool-id-connector/container)" \
+      /etc/init.d/ucsschool-id-connector stop
+
+    #[test VM]
+    $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' \
+    "$(ucr get appcenter/apps/ucsschool-id-connector/container)"
+
+    →  /var/lib/docker/overlay2/8dc...387/merged
+
+    # [developer machine]
+    ~/git/ucsschool-id-connector$ devsync -v src/ \
+    10.200.3.66:/var/lib/docker/overlay2/8dc...387/merged/ucsschool-id-connector/
+
+    # [test VM]
+    $ univention-app shell ucsschool-id-connector
+
+    # [in container]
+    $ python3 -m pip install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
+
+    # [in container]
+    $ python3 -m pip install -e src/
+
+    # [in container]
+    $ /etc/init.d/ucsschool-id-connector restart
+
+    # [in container]
+    $ /etc/init.d/ucsschool-id-connector-rest-api stop
+
+    # [in container]
+    $ /etc/init.d/ucsschool-id-connector-rest-api-dev start
     #                       auto-reload HTTP-API ^^^^
 
-    [in container] $ src/schedule_user demo_teacher
+    # [in container]
+    $ src/schedule_user demo_teacher
+
     # DEBUG: Searching LDAP for user with username 'demo_teacher'...
     # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.
     # DEBUG: Done.
 
     # Log is in /var/log/univention/ucsschool-id-connector/queues.log
 
-    [in container] $ cd src
-    [in container] $ python3 -m pytest -l -v
+    # [in container]
+    $ cd src
+
+    # [in container]
+    $ python3 -m pytest -l -v
 
 Plugin development
 ==================
 
 
 The code of the *UCS\@school ID Connector* app can be adapted through plugins.
-The `pluggy`_ plugin system is used to define, implement and call plugins.
+The ``pluggy`` plugin system is used to define, implement and call plugins. TODO: link to pluggy
 To share code between plugins additional Python packages can be installed.
-The following demonstrates a simple example of a custom Python packages and a plugin for *UCS\@school ID Connector*.
+The following demonstrates a simple example of a custom Python packages
+and a plugin for *UCS\@school ID Connector*.
 
 All plugin *specifications* (function signatures) are defined in ``src/ucsschool_id_connector/plugins.py``.
 
-The directory structure for custom plugins and packages can be found in the host system below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``::
+The directory structure for custom plugins and packages can be found
+in the host system below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``:
+
+.. code-block:: bash
 
     /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/
     /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/packages/
     /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/plugins/
 
-The app is released with default plugins, that implement a default version for all specifications found in ``src/ucsschool_id_connector/plugins.py``.
+The app is released with default plugins, that implement a default version
+for all specifications found in ``src/ucsschool_id_connector/plugins.py``.
 
-An example plugin specification::
+An example plugin specification:
+
+.. code-block:: python
 
     class DummyPluginSpec:
         @hook_spec(firstresult=True)
@@ -263,7 +353,10 @@ An example plugin specification::
             """An example hook."""
 
 
-A directory structure for a custom plugin ``dummy`` and custom package ``example_package`` below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``::
+A directory structure for a custom plugin ``dummy`` and custom package ``example_package``
+below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``:
+
+.. code-block:: bash
 
     .../plugins/
     .../plugins/packages
@@ -274,7 +367,9 @@ A directory structure for a custom plugin ``dummy`` and custom package ``example
     .../plugins/plugins/dummy.py
 
 
-Content of ``plugins/plugins/dummy.py``::
+Content of ``plugins/plugins/dummy.py``:
+
+.. code-block:: python
 
     #
     # An example plugin that will be usable as "plugin_manager.hook.dummy_func()".
@@ -310,7 +405,9 @@ Content of ``plugins/plugins/dummy.py``::
     # register plugins
     plugin_manager.register(DummyPlugin())
 
-Content of ``plugins/packages/example_package/example_module.py``::
+Content of ``plugins/packages/example_package/example_module.py``:
+
+.. code-block:: python
 
     #
     # An example Python module that will be loadable as "example_package.example_module"
@@ -328,15 +425,14 @@ Content of ``plugins/packages/example_package/example_module.py``::
             logger.info("Running ExampleClass.add() with arg1=%r arg2=%r.", arg1, arg2)
             return arg1 + arg2
 
-When the app starts, all plugins will be discovered and logged::
+When the app starts, all plugins will be discovered and logged:
 
-    ... INFO  [ucsschool_id_connector.plugins.load_plugins:83] Loaded plugins: {.., <dummy.DummyPlugin object at 0x7fa5284a9240>}
-    ... INFO  [ucsschool_id_connector.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
+.. code-block:: bash
 
-
-
-
-
+   ...
+   INFO  [ucsschool_id_connector.plugins.load_plugins:83] Loaded plugins: {.., <dummy.DummyPlugin object at 0x7fa5284a9240>}
+   INFO  [ucsschool_id_connector.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
+   ...
 
 Build release
 =============
@@ -345,7 +441,10 @@ Build release
 * Add an entry to ``src/HISTORY.rst``.
 * Build and push Docker image to Docker registry
 
-To upload ("push") a new Docker image to Univentions Docker registry (``docker-test.software-univention.de``), run::
+To upload ("push") a new Docker image to Univentions Docker registry
+(``docker-test.software-univention.de``), run:
+
+.. code-block:: bash
 
     $ cd ~/git/ucsschool-id-connector
     $ make build-docker-img-on-knut
@@ -354,14 +453,19 @@ To upload ("push") a new Docker image to Univentions Docker registry (``docker-t
 Tests
 =====
 
-Unit tests are executed as part of the build process. To start them manually in the installed apps running Docker container, run::
+Unit tests are executed as part of the build process.
+To start them manually in the installed apps running Docker container, runÖ
+
+.. code-block:: bash
 
     root@ucs-host:# univention-app shell ucsschool-id-connector
     /ucsschool-id-connector # cd src/
     /ucsschool-id-connector/src # python3 -m pytest -l -v tests/unittests
     /ucsschool-id-connector/src # exit
 
-To run integration tests (*not safe, will modify source and target systems!*), run::
+To run integration tests (*not safe, will modify source and target systems!*), run:
+
+.. code-block:: bash
 
     root@ucs-host:# univention-app shell ucsschool-id-connector
     /ucsschool-id-connector # cd src/

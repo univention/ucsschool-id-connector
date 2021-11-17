@@ -29,7 +29,7 @@ repos:
     rev: '0.10.1'
     hooks:
         - id: doc8
-          args: ['--max-line-length=110']
+          args: ['--max-line-length=115']
 
 #-   repo: https://github.com/twolfson/restructuredtext-lint
 #    rev: '1.3.2'
