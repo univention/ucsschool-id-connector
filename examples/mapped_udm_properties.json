@@ -1,0 +1,4 @@
+{
+    "user": ["title", "phone", "e-mail"],
+    "school": ["description"]
+}

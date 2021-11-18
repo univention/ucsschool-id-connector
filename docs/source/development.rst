@@ -454,7 +454,7 @@ Tests
 =====
 
 Unit tests are executed as part of the build process.
-To start them manually in the installed apps running Docker container, runÖ
+To start them manually in the installed apps running Docker container, run:
 
 .. code-block:: bash
 

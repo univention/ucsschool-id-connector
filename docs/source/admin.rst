@@ -224,8 +224,8 @@ Configuration
 =============
 
 
-Configure sending side
-----------------------
+Configure sending system
+------------------------
 
 The school authorities configuration must be done through the  |iIDCH|.
 Do not edit configuration files directly.
@@ -239,6 +239,8 @@ The HTTP-API of the |iIDC| app offers two resources:
 
 You can discover the API interactively using one of two web interfaces.
 They can be visited with a browser at their respective URLS:
+
+.. _swagger_ui:
 
 * `Swagger UI <https://github.com/swagger-api/swagger-ui>`_: https://FQDN/ucsschool-id-connector/api/v1/docs
 * `ReDoc <https://github.com/Rebilly/ReDoc>`_: https://FQDN/ucsschool-id-connector/api/v1/redoc
@@ -273,12 +275,25 @@ Example ``curl`` command to retrieve a token:
     $ curl -i -k -X POST --data 'username=Administrator&password=s3cr3t' \
       https://FQDN/ucsschool-id-connector/api/token
 
+
+
 School authorities mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _Mappings:
+
+We now need to configure two things:
+
+1. What school authorities do we send data to, and what data can they receive? This is described in this section.
+2. What actual schools are handled by which receiving system (school authority)? This is described in the
+   following section: :ref:`School to authority mapping`.
+
+So, let us start with the first mapping, the one for school authorities.
 
 In order to send user data to the target system, it must be decided
 which properties of which objects to send, and more important,
 which properties *not* to send.
+.. _phone_numbers_example:
 E.g. there might be telephone numbers for students in the system on the sending side,
 but those should not be made available on the receiving school system.
 Instead of forbidding properties we "map" properties on the sending side
@@ -318,48 +333,71 @@ receiving school:
    mapping ``ucsschoolRole`` to ``roles``  TODO Ask Daniel
 
 
-Here is a complete example that you can also find in   :ref:`simple-kelvin-mapping`.
+Here is a complete example that you can also find in   :ref:`simple-kelvin-plugin-mapping`.
 
 .. literalinclude:: ../../examples/school_authority_kelvin.json
 
+These are the keys in the configuration:
 
-Please adapt the example to your needs, especially
+- *name* identifies a specific receiving system. It is a freeform string. Adapt
+  to your needs - and remember it, we need it in the next step.
+- *username* and *password* are the credentials that are needed on the receiving system.
+- The systems address is specified using *url*.
+- The users *mapping* inside *plugin_configs["kevlin"]* is as described above, only a bit longer.
+- We also have a mapping for *school_classes*, which sets up the sync for those groups.
+- *sync_password_hashes* - if password hashed should be synced.
+- *ssl_context* - contains values that are passed to the
+  `ssl context object <https://docs.python.org/3.8/library/ssl.html#ssl.SSLContext>`_
+  which is used to communicate with the receiving system.
+- *active* - configures if this school authority... TODO Daniel
+- *plugins* - which plugins are going to be used for this school authority. Usually just "kelvin".
 
-- url
-- username
-- password
-
-The complete and adapted example needs to be posted to the ``school_authorities`` resource in the Swagger UI.
+Please adapt this to your needs, of course. The complete and adapted configuration needs to be posted
+to the ``school_authorities`` resource in the :ref:`Swagger UI<swagger_ui>`.
 
 School to authority mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO:
+This is the second of the two :ref:`mappings <Mappings>` we need.
 
-.. code-block:: json
+While the above mapping defines which school authorities we have, we now need to map which school we
+sync to which authority - an authority could handle more then one school, so it's an 1:n mapping.
+
+The format is:
+
+.. code-block::
 
    {
      "mapping": {
        "NAME_OF_SCHOOL": "NAME_OF_RECIPIENT",
+       "ANOTHER_SCHOOL": "OTHER_OR_SAME_RECIPIENT",
        ...
       }
    }
 
-COPY and paste example:
+You can have one or more schools in the mapping.
 
-.. code-block:: json
+So assuming you have a ``DEMOSCHOOL`` on your sending system, and you used the above configuration
+to define ``Traeger1`` as a recipient system, you could do:
+
+.. code-block::
 
    {
      "mapping": {
-       "DEMOSCHOOL": "Traeger1",
-       ...
+       "DEMOSCHOOL": "Traeger1"
       }
    }
 
-:ref:`Remember?<l10n>` ``Traeger`` refers to the receiving side of the sync process
+.. note::
 
-You can also find the example in :ref:`school-to-authority-mapping`.
+   :ref:`Remember?<l10n>` ``Traeger`` refers to the receiving side of the sync process
 
+You can also find this example in :ref:`school-to-authority-mapping`.
+
+
+
+Please "PUT" this configuration JSON to the ``school_to_authority_mapping`` resource
+in the :ref:`Swagger UI<swagger_ui>`.
 
 
 
@@ -393,7 +431,7 @@ If a user object is handled by the |KLV| plugin the mapping is determined as fol
 
 .. _school_classes_problem_0:
 
-An example for such a configuration can be found in :ref:`complex-kelvin-mapping`
+An example for such a configuration can be found in :ref:`role-specific-kelvin-plugin-mapping`
 
 .. note::
    The priority order for the roles was chosen in order of common specificity in |UAS|.
@@ -407,7 +445,7 @@ An example for such a configuration can be found in :ref:`complex-kelvin-mapping
 
 .. _school_classes_problem_1:
 
-.. note::
+.. warning::
 
 
 
@@ -467,7 +505,7 @@ which holds the list of user roles to ignore for school class changes.
 
 See :ref:`partial-groupsync` for an example config.
 
-.. note::
+.. warning::
    Please be aware that this plugin can only alter the handling of dedicated school class change events.
    Due to the technical situation, changing the members of a school class often results in two events,
    a school class change and a user change.
@@ -482,8 +520,7 @@ Configure target system - HTTP-API (|KLV|)
 
 You need to install and configure the |KLV| api. This is documented in the
 `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
-
-We assume that you have a current version of |KLV| installed after this.
+We assume that you have a current version of |KLV| installed after reading this.
 
 After installation and basic configuration you might want to configure mapped UDM properties.
 
@@ -492,7 +529,7 @@ you can define additional UDM properties that should be available in the |KLV| A
 
 For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``:
 
-.. code-block:: json
+.. code-block::
 
    {
        "user": ["title", "phone", "e-mail"],
@@ -518,6 +555,7 @@ The container can be started/stopped by using the regular service facility of th
     $ univention-app start ucsschool-id-connector
     $ univention-app status ucsschool-id-connector
     $ univention-app stop ucsschool-id-connector
+    $ univention-app restart ucsschool-id-connector
 
 To restart individual services, init scripts *inside* the Docker container can be used.
 The ``univention-app`` program has a command that makes it easy to execute commands *inside*
