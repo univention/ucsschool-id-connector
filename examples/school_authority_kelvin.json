@@ -1,14 +1,14 @@
 {
   "name": "Traeger1",
   "url": "https://10.200.3.242/ucsschool/kelvin/v1/",
-  "username": "Administrator",
-  "password": "univention",
   "active": true,
   "plugins": [
     "kelvin"
   ],
   "plugin_configs": {
     "kelvin": {
+      "username": "Administrator",
+      "password": "univention",
       "mapping": {
         "users": {
           "firstname": "firstname",
@@ -21,20 +21,20 @@
           "school": "school",
           "schools": "schools",
           "school_classes": "school_classes",
-          "ucsschoolSourceUID": "source_uid",
-          "roles": "roles",
           "title": "title",
           "displayName": "displayName",
           "userexpiry": "userexpiry",
           "phone": "phone",
-          "ucsschoolRecordUID": "record_uid"
+          "roles": "roles",
+          "ucsschoolRecordUID": "record_uid",
+          "ucsschoolSourceUID": "source_uid"
+        },
+        "school_classes": {
+          "name": "name",
+          "description": "description",
+          "school": "school",
+          "users": "users"
         }
-      },
-      "school_classes": {
-        "name": "name",
-        "description": "description",
-        "school": "school",
-        "users": "users"
       },
       "sync_password_hashes": true,
       "ssl_context": {

@@ -13,10 +13,10 @@ Example json
 Sending system
 ==============
 
-.. _simple-kelvin-plugin-mapping:
+.. _school-authority-mapping:
 
-Simple Kelvin plugin mapping
-----------------------------
+School authority config
+-----------------------
 
 .. literalinclude:: ../../examples/school_authority_kelvin.json
 

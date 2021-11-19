@@ -5,7 +5,7 @@
 
 
 TODO:
- - id-connector -> ID-Connector
+
  - LDAP and Openldap
 
 
@@ -223,6 +223,67 @@ TODO Nico: link to proper section in documentation
 Configuration
 =============
 
+Now that everything is installed, let us configure the setups. We do the receiving system first,
+because we need auth credentials used there later on on the sending system.
+
+Configure receiving system - HTTP-API (|KLV|)
+---------------------------------------------
+
+You need to install and configure the |KLV| api. This is documented in the
+`Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
+
+We assume that you have a current version of |KLV| installed after reading the documentation.
+
+.. _kelvin_credentials:
+
+.. note::
+   For the authorization of the UCS@school-ID-Connector at the target system, it needs
+   credentials with special privileges.
+   Create a user with the name and password of your choice and add him to the group
+   ucsschool-kelvin-rest-api-admins.
+
+   .. code-block:: bash
+
+      $ udm users/user create --position "cn=users,$(ucr get ldap/base)" \
+        --set username=USERNAME-OF-YOUR-CHOICE --set lastname=Kelvin --set firstname=UCS \
+        --set password="PASSWORD-OF-YOUR-CHOICE"
+
+      $ udm groups/group modify --dn "cn=ucsschool-kelvin-rest-api-admins,cn=groups,$(ucr get ldap/base)" \
+        --append users="uid=USERNAME-OF-YOUR-CHOICE,cn=users,$(ucr get ldap/base)" && history -c
+
+
+   Note down the credentials, they are needed for the
+   :ref:`school authority configuration on the sending system <auth_config>` further down.
+
+After installation and basic configuration you might want to configure mapped UDM properties.
+
+Beyond the `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_
+you can define additional UDM properties that should be available in the |KLV| API on the target system.
+
+For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``:
+
+.. code-block::
+
+   {
+       "user": ["title", "phone", "e-mail"],
+       "school": ["description"]
+   }
+
+This would make the listed properties available for the ``user`` and ``school`` resources.
+
+.. note::
+   When configuring |KLV| in detail, remember that the password hashes for LDAP and Kerberos
+   authentication are collectively transmitted in one JSON object to one target attribute.
+   This means it's all or nothing: all hashes are synced, even if empty.
+   You can't select individual hashes. TODO Ole: better place for this?
+
+.. note::
+   Please make sure that you configure all the mapped properties that the sending system sends, e.g.
+   ``displayName`` or so. If the sender sends more than the receiver is configured to process,
+   you will end up with weird errors, e.g. ``404`` in the log.
+
+
+
 
 Configure sending system
 ------------------------
@@ -332,16 +393,35 @@ receiving school:
    ``roles`` is *virtual* because there is special handling by the |iIDC| app
    mapping ``ucsschoolRole`` to ``roles``  TODO Ask Daniel
 
+.. warning::
 
-Here is a complete example that you can also find in   :ref:`simple-kelvin-plugin-mapping`.
+   When creating users via Kelvin, some attributes are required and therefore have to be present within the mapping::
+
+      {
+        "firstname": "firstname",
+        "lastname": "lastname",
+        "username": "name",
+        "school": "school",
+        "schools": "schools",
+        "roles": "roles",
+        "ucsschoolRecordUID": "record_uid",
+        "ucsschoolSourceUID": "source_uid"
+      }
+
+
+
+Here is a complete example that you can also find in   :ref:`school-authority-mapping`.
 
 .. literalinclude:: ../../examples/school_authority_kelvin.json
+
+.. _auth_config:
 
 These are the keys in the configuration:
 
 - *name* identifies a specific receiving system. It is a freeform string. Adapt
   to your needs - and remember it, we need it in the next step.
-- *username* and *password* are the credentials that are needed on the receiving system.
+- *username* and *password* are the credentials that are needed on the receiving system. Use the
+  :ref:`credentials you created when configuring the receiving system <kelvin_credentials>`.
 - The systems address is specified using *url*.
 - The users *mapping* inside *plugin_configs["kevlin"]* is as described above, only a bit longer.
 - We also have a mapping for *school_classes*, which sets up the sync for those groups.
@@ -352,8 +432,12 @@ These are the keys in the configuration:
 - *active* - configures if this school authority... TODO Daniel
 - *plugins* - which plugins are going to be used for this school authority. Usually just "kelvin".
 
+
+
+
+
 Please adapt this to your needs, of course. The complete and adapted configuration needs to be posted
-to the ``school_authorities`` resource in the :ref:`Swagger UI<swagger_ui>`.
+to the ``school_authorities`` resource in the :ref:`Swagger UI <swagger_ui>`.
 
 School to authority mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -513,36 +597,67 @@ See :ref:`partial-groupsync` for an example config.
    it is necessary to leave out the mapping of the users ``school_class`` field
    in the configuration as well - :ref:`see above <school_classes_problem_0>`.
 
+Trying it out
+=============
+
+Now time has come to try it out. What we want to do:
+
+1. Create a testuser
+2. Import the testuser on the sending side
+3. and watch the user being synced to the receiving side.
+
+.. note:
+
+  Only users with the properties  "ucsschoolRecordUID" and "ucsschoolSourceUID"
+  are synced. We need to make sure that the user(s) we use for testing have
+  these properties.
 
 
-Configure target system - HTTP-API (|KLV|)
--------------------------------------------
 
-You need to install and configure the |KLV| api. This is documented in the
-`Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
-We assume that you have a current version of |KLV| installed after reading this.
+The slow way would be to  `create a user`_   individually (and make sure to ammend the
+required properties),
+and then import the user in a second step.
+You can read all about importing users in the `Import CLI manual (german only)`_.
 
-After installation and basic configuration you might want to configure mapped UDM properties.
+We however do it the fast way, creating and importing the user in one step:
 
-Beyond the `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_
-you can define additional UDM properties that should be available in the |KLV| API on the target system.
+.. code-block:: bash
 
-For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``:
+   $ /usr/share/ucs-school-import/scripts/ucs-school-testuser-import \
+     --students 1  --classes 1 DEMOSCHOOL
 
-.. code-block::
+This will create 1 user within 1 class in the school ``DEMOSCHOOL``.
 
-   {
-       "user": ["title", "phone", "e-mail"],
-       "school": ["description"]
-   }
+Now watch the logfiles to see the sync action on the *sender system*:
 
-This would make the listed properties available for the ``user`` and ``school`` resources.
+.. code-block:: bash
 
-.. note::
-   When configuring |KLV| in detail, remember that the password hashes for LDAP and Kerberos
-   authentication are collectively transmitted in one JSON object to one target attribute.
-   This means it's all or nothing: all hashes are synced, even if empty.
-   You can't select individual hashes. TODO Ole: better place for this?
+   $ tail -f /var/log/univention/ucsschool-id-connector/queues.log
+
+In another terminal on the *receiving system* you can see the user being received by the
+|KLV| API:
+
+.. code-block:: bash
+
+   $ tail -f /var/log/univention/ucsschool-kelvin-rest-api/http.log # kelvin log
+
+You might need to wait a short moment before the queue picks up the new user. If everything went fine,
+you should see some messages in the kelvin log, and you can confirm that the user was created in
+either the kelvin web interface at ``https://FQDN/ucsschool/kelvin/v1/docs`` or in the UMC.
+
+These log files are also a good starting point for debugging in case something went wrong.
+
+.. hint::
+
+   When debugging always make sure that the following is correct and matches:
+
+   1. school authority config on the sender system (including auth credentials)
+   2. school to  authority mapping on the sender system
+   3. ``mapped_udm_properties.json`` on the receiving system has all extra attributes that are
+      defined in the school authority mapping.
+
+Good luck! :-)
+
 
 Starting / Stopping services
 ============================
@@ -592,7 +707,7 @@ If we already have a school authority set up and want to set up a second one
 
 2. Retrieve the configuration for our old school authority.
 
-   For this we open the HTTP-API Swagger UI ( https://FQDN/ucsschool-id-connector/api/v1/doc )
+   For this we open the HTTP-API Swagger UI ( https://FQDN/ucsschool-id-connector/api/v1/docs )
    and authenticate ourselves. The button can be found in the top right corner of the page.
 
    Then we retrieve a list of the available school authorities
@@ -620,3 +735,8 @@ To retrieve a list of the extended attributes on the old school authority server
 .. code-block:: bash
 
     $ udm settings/extended_attribute list
+
+
+.. _create a user: https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630#a-sample-command-9
+
+.. _Import CLI manual (german only): https://docs.software-univention.de/ucsschool-import-handbuch-4.4.html
