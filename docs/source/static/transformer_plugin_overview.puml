@@ -19,43 +19,37 @@ Container(cronjob,"Cronjob","python","Trigger user changes according to validity
 Boundary(id_connector,"ID connector") {
     Component(out_queue_a,"Out queue A","Folder","json files")
     Component(out_queue_b,"Out queue B","Folder","json files")
-    Component(out_queue_t,"Out queue T","Folder","json files")
 
-    Component(transformer,"Transformer","transformer plugin process","transforms users to schoolusers")
-    Component(kelvin_plugin_a,"Out A","kelvin plugin process","Sends to kelvin api")
-    Component(kelvin_plugin_b,"Out B","kelvin plugin process","Sends to kelvin api")
+    Container(kelvin_plugin_a,"Out A","kelvin plugin process","Sends to kelvin api")
+    Container(kelvin_plugin_b,"Out B","kelvin plugin process","Sends to kelvin api")
     Container(async_job,"Async Job","python","puts json files into right out queue")
 
 }
-Container_Ext(school_provider_A,"School provider A","ucs")
-Container_Ext(school_provider_B,"School provider B","ucs")
+Container_Ext(school_provider_A,"School provider A","Kelvin")
+Container_Ext(school_provider_B,"School provider B","Kelvin")
 
 Rel(ldap,listener,"call listener on write","python")
-Rel(listener,small_in_queue,"Write entryUUIDs","python")
+Rel(listener,small_in_queue,"Write entryUUIDs","json")
 Rel(cronjob,small_in_queue,"Write entryUUIDs","json")
 Rel_U(daemon,small_in_queue,"Reads entryUUIDs","python")
 Rel(daemon,udm,"Read user data","http")
 Rel(daemon,large_in_queue,"Write user json","python")
 Rel(large_in_queue,sqlite,"Read/write user data","python")
 
-Rel_U(async_job,large_in_queue,"Read json","python")
+Rel_U( async_job,large_in_queue,"Read json","python")
 
-Rel(async_job,out_queue_t,"write into","python")
 Rel(async_job,out_queue_a,"write into","python")
 Rel(async_job,out_queue_b,"write into","python")
 
-Rel_U(transformer,out_queue_t,"reads json","python")
 Rel_U(kelvin_plugin_a,out_queue_a,"reads json","python")
 Rel_U(kelvin_plugin_b,out_queue_b,"reads json","python")
-
-Rel_L(transformer,kelvin_rest_api,"create schoolclasses","http")
 
 Rel_D(kelvin_plugin_a,school_provider_A,"write user","http")
 Rel_D(kelvin_plugin_b,school_provider_B,"write user","http")
 
 Rel_U(kelvin_rest_api,udm,"modify users","http")
-Rel_U(udm,ldap,"writes into","python-ldap")
-Rel_U(transformer,udm,"writes schoolusers","http")
+Rel_U(udm,ldap,"Read/write user data","python-ldap")
+
 
 
 SHOW_LEGEND()
