@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+     agent "<b>Out B\n<i>kelvin plugin process\n\nsends to Kelvin API" as out_b
+@enduml

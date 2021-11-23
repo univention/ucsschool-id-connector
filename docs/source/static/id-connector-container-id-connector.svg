@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="1222px" preserveAspectRatio="none" style="width:886px;height:1222px;background:#FFFFFF;" version="1.1" viewBox="0 0 886 1222" width="886px" zoomAndPan="magnify"><defs><filter height="300%" id="ff1ib25z204vl" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="365" x="254.2302" y="16.708">ID Connector: ID Connector Components</text><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="0" x="439.7302" y="37.6611"/><!--MD5=[3bce4743bc9b5320e352a2c28149f890]
+cluster id_connector--><rect fill="#EBEDF1" filter="url(#ff1ib25z204vl)" height="617" style="stroke:#000000;stroke-width:1.5;" width="691" x="142" y="416.9063"/><path d="M255,416.9063 L255,442.5 L245,452.5 L142,452.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="103" x="145" y="430.9014">ID Connector</text><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="56" x="168.5" y="447.1982">Docker</text><!--MD5=[bd39a4c76d4729f7d3a505ada56cb8c7]
+entity primary--><rect fill="#EBEDF1" filter="url(#ff1ib25z204vl)" height="95.1875" style="stroke:#000000;stroke-width:1.5;" width="190" x="7" y="48.9063"/><path d="M70.3333,48.9063 L70.3333,53.9063 L63.3333,60.9063 L7,60.9063 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="87" x="53.5" y="81.9014">DC Primary</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="24" x="85" y="98.1982">ucs</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="99" y="114.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="150" x="22" y="130.792">Basic user operations</text><!--MD5=[194aa454895f181ee76f84c49e4a9079]
+entity management_api--><rect fill="#438DD5" filter="url(#ff1ib25z204vl)" height="101.4844" style="stroke:#6A8198;stroke-width:1.5;" width="196" x="158" y="916.9063"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="175" x="168.5" y="939.9014">Management REST API</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="44" x="234" y="956.1982">fastapi</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="258" y="972.4951"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="176" x="168" y="988.792">CRUD sync target configs</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="214.5" y="1005.0889">and queues</text><!--MD5=[995a46705506099b563611b182911a66]
+entity daemon--><rect fill="#438DD5" filter="url(#ff1ib25z204vl)" height="101.4844" style="stroke:#6A8198;stroke-width:1.5;" width="182" x="266" y="515.9063"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="71" x="321.5" y="538.9014">In Queue</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="110" x="302" y="555.1982">python daemon</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="359" y="571.4951"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="78" x="318" y="587.792">Reads uuid</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="162" x="276" y="604.0889">Writes udm object JSON</text><!--MD5=[7a603111606425ec6ae263a7f93634a1]
+entity sqlite--><path d="M640.5,512.9063 C640.5,502.9063 729,502.9063 729,502.9063 C729,502.9063 817.5,502.9063 817.5,512.9063 L817.5,619.6875 C817.5,629.6875 729,629.6875 729,629.6875 C729,629.6875 640.5,629.6875 640.5,619.6875 L640.5,512.9063 " fill="#85BBF0" filter="url(#ff1ib25z204vl)" style="stroke:#000000;stroke-width:1.5;"/><path d="M640.5,512.9063 C640.5,522.9063 729,522.9063 729,522.9063 C729,522.9063 817.5,522.9063 817.5,512.9063 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="147" x="655.5" y="539.9014">UUID record cache</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="36" x="711" y="556.1982">sqlite</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="731" y="572.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="95" x="681.5" y="588.792">stores uuid-&gt;</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="153" x="650.5" y="605.0889">(record_uid,school, ...)</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="60" x="699" y="621.3857">mapping</text><!--MD5=[aa495e3eb3961d298bd459a654c16499]
+entity out_queue_a--><polygon fill="#B0CAE4" filter="url(#ff1ib25z204vl)" points="390.5,721.9063,436.5,721.9063,443.5,742.9063,519.5,742.9063,519.5,825.0938,390.5,825.0938,390.5,721.9063" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="390.5" x2="443.5" y1="742.9063" y2="742.9063"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="99" x="400.5" y="762.9014">Out queue A</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="35" x="432.5" y="779.1982">JSON</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="452" y="795.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="65" x="417.5" y="811.792">user data</text><!--MD5=[8021323f67cea1c74145feef327135cf]
+entity out_queue_b--><polygon fill="#B0CAE4" filter="url(#ff1ib25z204vl)" points="562,721.9063,608,721.9063,615,742.9063,690,742.9063,690,825.0938,562,825.0938,562,721.9063" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="562" x2="615" y1="742.9063" y2="742.9063"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="98" x="572" y="762.9014">Out queue B</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="35" x="603.5" y="779.1982">JSON</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="623" y="795.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="65" x="588.5" y="811.792">user data</text><!--MD5=[6092215e3515c37d02fcdd5d840fc6cc]
+entity out_b--><rect fill="#438DD5" filter="url(#ff1ib25z204vl)" height="85.1875" style="stroke:#6A8198;stroke-width:1.5;" width="164" x="653" y="924.9063"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="43" x="713.5" y="947.9014">Out B</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="144" x="663" y="964.1982">kelvin plugin process</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="737" y="980.4951"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130" x="670" y="996.792">sends to Kelvin API</text><!--MD5=[02d40d299676c8ea51b3d02e8ed2258d]
+entity out_a--><rect fill="#438DD5" filter="url(#ff1ib25z204vl)" height="85.1875" style="stroke:#6A8198;stroke-width:1.5;" width="164" x="454" y="924.9063"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="44" x="514" y="947.9014">Out A</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="144" x="464" y="964.1982">kelvin plugin process</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="538" y="980.4951"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130" x="471" y="996.792">sends to Kelvin API</text><!--MD5=[7ae70b43012fc5e1ca54de92c75677c7]
+entity large_queue--><polygon fill="#B0CAE4" filter="url(#ff1ib25z204vl)" points="204,235.9063,250,235.9063,257,256.9063,354,256.9063,354,339.0938,204,339.0938,204,235.9063" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="204" x2="257" y1="256.9063" y2="256.9063"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="120" x="214" y="276.9014">Large in-queue</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="65" x="241.5" y="293.1982">JSON files</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="276" y="309.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53" x="247.5" y="325.792">full data</text><ellipse cx="507.1873" cy="1161.0008" fill="#FFFFFF" filter="url(#ff1ib25z204vl)" rx="111.1873" ry="49.0945" style="stroke:#808080;stroke-width:1.5;"/><text fill="#777777" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="141" x="436.6873" y="1139.4021">School provider A</text><text fill="#777777" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="83" x="465.6873" y="1155.699">UCS / Kelvin</text><text fill="#777777" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="509.1873" y="1171.9959"/><text fill="#777777" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121" x="446.6873" y="1188.2928">Manages schools</text><ellipse cx="763.9802" cy="1161.0008" fill="#FFFFFF" filter="url(#ff1ib25z204vl)" rx="110.4802" ry="49.0945" style="stroke:#808080;stroke-width:1.5;"/><text fill="#777777" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="140" x="693.9802" y="1139.4021">School provider B</text><text fill="#777777" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="83" x="722.4802" y="1155.699">UCS / Kelvin</text><text fill="#777777" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="765.9802" y="1171.9959"/><text fill="#777777" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121" x="703.4802" y="1188.2928">Manages schools</text><!--MD5=[107da7c830ef5eccfecdf9373450ecc5]
+link primary to large_queue--><path d="M145.75,144.1263 C170.64,170.6962 201.93,204.1063 227.93,231.8763 " fill="none" id="primary-to-large_queue" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="231.4,235.5862,228.1639,226.2842,227.9808,231.9381,222.3269,231.755,231.4,235.5862" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="115" x="202" y="186.9731">Write user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="243.5" y="202.106">JSON</text><!--MD5=[d983799e7288e6b488ea9ad2c859bd6e]
+link large_queue to daemon--><path d="M293.31,339.2162 C307,387.8362 327.59,460.9562 341.62,510.8063 " fill="none" id="large_queue-to-daemon" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="343.05,515.8563,344.458,506.1086,341.6934,511.0438,336.7581,508.2792,343.05,515.8563" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="114" x="309" y="381.9731">Read user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="350" y="397.106">JSON</text><!--MD5=[127cfc3688091e93c96221c44d0f6976]
+link daemon to sqlite--><path d="M448,566.4063 C504.79,566.4063 577.74,566.4063 635.07,566.4063 " fill="none" id="daemon-to-sqlite" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="640.22,566.4063,631.22,562.4063,635.22,566.4063,631.22,570.4063,640.22,566.4063" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="156" x="466.25" y="544.4731">Read/write user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="45" x="521.75" y="559.606">python</text><!--MD5=[f6eeb8577055c2c3744e77e11d12c8db]
+link daemon to out_queue_a--><path d="M380.72,617.0263 C395.19,647.2963 413.71,686.0363 428.64,717.2663 " fill="none" id="daemon-to-out_queue_a" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="430.81,721.8163,430.5387,711.9711,428.6542,717.3049,423.3205,715.4203,430.81,721.8163" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="37" x="415" y="672.9731">write</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="417.5" y="688.106">JSON</text><!--MD5=[d5a63a035d29fa3ef42f8adb36131b44]
+link daemon to out_queue_b--><path d="M422.12,617.0263 C463.24,648.3663 516.28,688.7863 557.95,720.5463 " fill="none" id="daemon-to-out_queue_b" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="561.95,723.5963,557.2041,714.9663,557.9689,720.5712,552.364,721.336,561.95,723.5963" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="37" x="516" y="672.9731">write</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="518.5" y="688.106">JSON</text><!--MD5=[e17d3b570877514a29ee42294b9ce519]
+link out_queue_a to out_a--><path d="M476.39,825.1063 C488.79,854.5063 504.3,891.2763 516.39,919.9363 " fill="none" id="out_queue_a-to-out_a" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="518.46,924.8263,518.654,914.9793,516.5197,920.2181,511.2809,918.0838,518.46,924.8263" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="34" x="501" y="867.9731">read</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="502" y="883.106">JSON</text><!--MD5=[6049a3ef58aa70c8891f7f818e65d62f]
+link out_queue_b to out_b--><path d="M654.78,825.1063 C671.54,854.6363 692.52,891.5763 708.82,920.2863 " fill="none" id="out_queue_b-to-out_b" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="711.39,924.8263,710.4289,915.0244,708.9231,920.4772,703.4704,918.9714,711.39,924.8263" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="34" x="688" y="867.9731">read</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="689" y="883.106">JSON</text><!--MD5=[f572066c290b686b345433416987adfc]
+link out_a to school_provider_a--><path d="M529.71,1009.9563 C525.42,1038.2463 519.72,1075.9363 515.09,1106.4563 " fill="none" id="out_a-to-school_provider_a" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="514.3,1111.6763,519.6166,1103.3857,515.0571,1106.7339,511.7088,1102.1744,514.3,1111.6763" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="76" x="524" y="1062.9731">Write user</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="34" x="545" y="1078.106">HTTP</text><!--MD5=[7038b640b3daffc987451c364fc69fab]
+link out_b to school_provider_b--><path d="M741.29,1009.9563 C745.58,1038.2463 751.28,1075.9363 755.91,1106.4563 " fill="none" id="out_b-to-school_provider_b" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="756.7,1111.6763,759.2912,1102.1744,755.9429,1106.7339,751.3834,1103.3857,756.7,1111.6763" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="76" x="753" y="1062.9731">Write user</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="34" x="774" y="1078.106">HTTP</text><!--MD5=[2b2783420b66aced358731e376452431]
+reverse link daemon to management_api--><path d="M338.2,622.1663 C328.48,651.5363 316.83,688.4763 308,721.9063 C290.32,788.8263 274.48,867.2663 265.06,916.8963 " fill="none" id="daemon-backto-management_api" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="339.87,617.1463,333.2424,624.4315,338.2974,621.8925,340.8364,626.9476,339.87,617.1463" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="41" x="320" y="770.4731">CRUD</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="63" x="309" y="785.606">??? TODO</text><!--MD5=[4cd7ff0d337bd97a1c186fcbb4094890]
+link management_api to out_a--><path d="M354.32,967.4063 C385.01,967.4063 418.63,967.4063 448.52,967.4063 " fill="none" id="management_api-to-out_a" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="453.67,967.4063,444.67,963.4063,448.67,967.4063,444.67,971.4063,453.67,967.4063" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="38" x="385" y="945.4731">Read</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="63" x="372.5" y="960.606">??? TODO</text><!--MD5=[651d6ef32ed431089ecb85f26324492d]
+link management_api to out_b--><path d="M298.41,916.8963 C318.08,897.3363 343.15,877.2063 370.5,866.9063 C444.02,839.2163 597.6,902.5363 636,916.9063 C640.81,918.7063 645.69,920.6763 650.58,922.7663 " fill="none" id="management_api-to-out_b" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="655.46,924.8963,648.8095,917.6319,650.8769,922.8974,645.6114,924.9648,655.46,924.8963" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="38" x="384" y="867.9731">Read</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="63" x="371.5" y="883.106">??? TODO</text><!--MD5=[58a0f639778166522bb3b019bd56fd6e]
+reverse link primary to management_api--><path d="M89.73,149.0963 C81.82,186.8963 73,239.5463 73,286.4063 C73,286.4063 73,286.4063 73,774.4063 C73,834.6163 120.74,883.4063 167.45,916.7362 " fill="none" id="primary-backto-management_api" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="90.79,144.0963,84.9994,152.063,89.7463,148.9861,92.8231,153.733,90.79,144.0963" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="156" x="74" y="563.4731">Read/write user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="95" x="104.5" y="578.606">UDM-REST-API</text><!--MD5=[bfb1a3a14512e708fbf15f0eedc6d961]
+@startuml
+!include styling.puml
+' skinparam linetype ortho
+
+title ID Connector: ID Connector Components\n
+
+!include object_primary.puml
+
+
+
+!include object_large_queue.puml
+
+frame "ID Connector\nDocker" as id_connector {
+
+    !include object_management_api.puml
+    !include object_daemon.puml
+    !include object_sqlite.puml
+    !include object_out_queue_a.puml
+    !include object_out_queue_b.puml
+    !include object_out_a.puml
+    !include object_out_b.puml
+
+}
+
+
+!include object_school_provider_a.puml
+!include object_school_provider_b.puml
+
+
+
+primary- ->large_queue : <b>Write user data\n<i>JSON
+large_queue - -> daemon: <b>Read user data\n<i>JSON
+daemon-right->sqlite: <b>Read/write user data\n<i>python
+
+
+daemon - -> out_queue_a:<b>write\n<i>JSON
+daemon - -> out_queue_b:<b>write\n<i>JSON
+out_queue_a - -> out_a:<b>read\n<i>JSON
+out_queue_b - -> out_b:<b>read\n<i>JSON
+out_a - -> school_provider_a:<b>Write user\n<i>HTTP
+out_b - -> school_provider_b:<b>Write user\n<i>HTTP
+
+
+daemon <- - management_api:<b>CRUD\n<i>??? TODO
+out_a <-left- management_api:<b>Read\n<i>??? TODO
+out_b <-left- management_api:<b>Read\n<i>??? TODO
+
+primary <- - management_api: <b>Read/write user data\n<i>UDM-REST-API
+
+@enduml
+
+@startuml
+skinparam backgroundColor white
+skinparam defaultTextAlignment center
+
+skinparam AgentBackgroundColor #438dd5
+skinparam AgentFontColor white
+skinparam AgentBorderColor #6a8198
+
+skinparam StorageBackgroundColor #85bbf0
+skinparam DatabaseBackgroundColor #85bbf0
+skinparam FolderBackgroundColor #b0cae4
+skinparam FileBackgroundColor lightgrey
+skinparam UsecaseBackgroundColor white
+skinparam UsecaseFontColor #777777
+skinparam UsecaseBorderColor grey
+
+skinparam ArrowColor #666666
+skinparam ArrowFontColor #666666
+
+skinparam FrameBackgroundColor #ebedf1
+
+
+title ID Connector: ID Connector Components\n
+
+    frame "<b>DC Primary\n<i>ucs\n\nBasic user operations" as primary {
+}
+
+
+
+    folder "<b>Large in-queue\n<i>JSON files\n\nfull data" as large_queue
+
+frame "ID Connector\nDocker" as id_connector {
+
+        agent "<b>Management REST API\n<i>fastapi\n\nCRUD sync target configs\nand queues" as management_api
+    agent "<b>In Queue\n<i>python daemon\n\nReads uuid\nWrites udm object JSON" as daemon
+    database "<b>UUID record cache\n<i>sqlite\n\nstores uuid->\n(record_uid,school, ...) \nmapping" as sqlite
+    folder "<b>Out queue A\n<i>JSON\n\nuser data" as out_queue_a
+    folder "<b>Out queue B\n<i>JSON\n\nuser data" as out_queue_b
+     agent "<b>Out B\n<i>kelvin plugin process\n\nsends to Kelvin API" as out_b
+     agent "<b>Out A\n<i>kelvin plugin process\n\nsends to Kelvin API" as out_a
+
+}
+
+
+     usecase "<b>School provider A\n<i>UCS / Kelvin\n\nManages schools" as school_provider_a
+     usecase "<b>School provider B\n<i>UCS / Kelvin\n\nManages schools" as school_provider_b
+
+
+
+primary- ->large_queue : <b>Write user data\n<i>JSON
+large_queue - -> daemon: <b>Read user data\n<i>JSON
+daemon-right->sqlite: <b>Read/write user data\n<i>python
+
+
+daemon - -> out_queue_a:<b>write\n<i>JSON
+daemon - -> out_queue_b:<b>write\n<i>JSON
+out_queue_a - -> out_a:<b>read\n<i>JSON
+out_queue_b - -> out_b:<b>read\n<i>JSON
+out_a - -> school_provider_a:<b>Write user\n<i>HTTP
+out_b - -> school_provider_b:<b>Write user\n<i>HTTP
+
+
+daemon <- - management_api:<b>CRUD\n<i>??? TODO
+out_a <-left- management_api:<b>Read\n<i>??? TODO
+out_b <-left- management_api:<b>Read\n<i>??? TODO
+
+primary <- - management_api: <b>Read/write user data\n<i>UDM-REST-API
+
+@enduml
+
+PlantUML version 1.2021.14(Fri Nov 12 17:46:50 CET 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="795px" preserveAspectRatio="none" style="width:882px;height:795px;background:#FFFFFF;" version="1.1" viewBox="0 0 882 795" width="882px" zoomAndPan="magnify"><defs><filter height="300%" id="f5kayvme85jjr" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="312" x="278.75" y="16.708">ID-Connector Primary Components</text><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacing" textLength="0" x="437.75" y="37.6611"/><!--MD5=[8e9ea18b1f07097689a5765e87d47f37]
+cluster primary--><rect fill="#EBEDF1" filter="url(#f5kayvme85jjr)" height="379" style="stroke:#000000;stroke-width:1.5;" width="361" x="35.5" y="211.9063"/><path d="M132.5,211.9063 L132.5,237.5 L122.5,247.5 L35.5,247.5 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="87" x="38.5" y="225.9014">DC Primary</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" font-weight="bold" lengthAdjust="spacing" textLength="26" x="69" y="242.1982">ucs</text><!--MD5=[1be1e8e9c1fa15d6e082466842209191]
+entity ldap--><path d="M51.5,284.9063 C51.5,274.9063 94.5,274.9063 94.5,274.9063 C94.5,274.9063 137.5,274.9063 137.5,284.9063 L137.5,359.0938 C137.5,369.0938 94.5,369.0938 94.5,369.0938 C94.5,369.0938 51.5,369.0938 51.5,359.0938 L51.5,284.9063 " fill="#85BBF0" filter="url(#f5kayvme85jjr)" style="stroke:#000000;stroke-width:1.5;"/><path d="M51.5,284.9063 C51.5,294.9063 94.5,294.9063 94.5,294.9063 C94.5,294.9063 137.5,294.9063 137.5,284.9063 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="41" x="74" y="311.9014">LDAP</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="65" x="62" y="328.1982">openldap</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="96.5" y="344.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="66" x="61.5" y="360.792">User data</text><!--MD5=[c4def0b39757ced8a2cbaa90cdcbeb42]
+entity listener--><rect fill="#85BBF0" filter="url(#f5kayvme85jjr)" height="101.4844" rx="35" ry="35" style="stroke:#000000;stroke-width:1.5;" width="204" x="51.5" y="473.9063"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="169" x="69" y="496.9014">ID-Connector listener</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="144" x="81.5" y="513.1982">python listener script</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="155.5" y="529.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184" x="61.5" y="545.792">Handles LDAP write events</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="110" x="98.5" y="562.0889">for id-connector</text><!--MD5=[5ee9985dad366ed98710f937d17dcbd6]
+entity converter--><rect fill="#438DD5" filter="url(#f5kayvme85jjr)" height="117.7813" style="stroke:#6A8198;stroke-width:1.5;" width="207" x="173" y="262.9063"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="80" x="236.5" y="285.9014">Converter</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="49" x="252" y="302.1982">python</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="278.5" y="318.4951"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="153" x="200" y="334.792">Reads uuid and writes</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="187" x="183" y="351.0889">json representation of udm</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="51" x="251" y="367.3857">objects</text><!--MD5=[47722de4571988dbdff5f58bebd85cab]
+entity importer--><rect fill="#438DD5" filter="url(#f5kayvme85jjr)" height="85.1875" style="stroke:#6A8198;stroke-width:1.5;" width="175" x="7" y="48.9063"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="155" x="17" y="71.9014">UCS@School import</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="49" x="70" y="88.1982">python</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="96.5" y="104.4951"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="113" x="38" y="120.792">Import user data</text><!--MD5=[f3a3e5a00b11f193b7dfc5c6e4fee227]
+entity small_queue--><polygon fill="#B0CAE4" filter="url(#f5kayvme85jjr)" points="217.5,683.9063,263.5,683.9063,270.5,704.9063,363.5,704.9063,363.5,787.0938,217.5,787.0938,217.5,683.9063" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="217.5" x2="270.5" y1="704.9063" y2="704.9063"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="116" x="227.5" y="724.9014">Small in-queue</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="65" x="253" y="741.1982">JSON files</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="287.5" y="757.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="106" x="232.5" y="773.792">just entryUUIDs</text><!--MD5=[7ae70b43012fc5e1ca54de92c75677c7]
+entity large_queue--><polygon fill="#B0CAE4" filter="url(#f5kayvme85jjr)" points="715.5,472.9063,761.5,472.9063,768.5,493.9063,865.5,493.9063,865.5,576.0938,715.5,576.0938,715.5,472.9063" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="715.5" x2="768.5" y1="493.9063" y2="493.9063"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="120" x="725.5" y="513.9014">Large in-queue</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="65" x="753" y="530.1982">JSON files</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="787.5" y="546.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="53" x="759" y="562.792">full data</text><!--MD5=[95ae849d304a5fc23ac94743b97c1c67]
+entity id_connector--><rect fill="#EBEDF1" filter="url(#f5kayvme85jjr)" height="95.1875" style="stroke:#000000;stroke-width:1.5;" width="149" x="512" y="687.9063"/><path d="M561.6667,687.9063 L561.6667,692.9063 L554.6667,699.9063 L512,699.9063 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="104" x="529.5" y="720.9014">ID-Connector</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="50" x="556.5" y="737.1982">Docker</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="583.5" y="753.4951"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109" x="527" y="769.792">syncs user data</text><!--MD5=[c9d20122752c08dd96b959ce5906c64c]
+link importer to ldap--><path d="M94.5,134.0463 C94.5,172.1163 94.5,228.5463 94.5,269.4263 " fill="none" id="importer-to-ldap" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="94.5,274.8362,98.5,265.8362,94.5,269.8362,90.5,265.8362,94.5,274.8362" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="113" x="95.5" y="176.9731">write user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="45" x="129.5" y="192.106">python</text><!--MD5=[0778b217ed62fbcddf9240b82e53e7fd]
+link ldap to listener--><path d="M108.11,369.1563 C116.86,398.9063 128.28,437.6963 137.47,468.9363 " fill="none" id="ldap-to-listener" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="138.93,473.8863,140.2153,464.1216,137.513,469.0912,132.5433,466.3889,138.93,473.8863" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="150" x="130.5" y="423.9731">call listener on write</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="45" x="183" y="439.106">python</text><!--MD5=[e1cf6d1f8cc7a3865de975f755036974]
+link listener to small_queue--><path d="M151.67,575.0063 C152.9,600.3063 157.9,630.5863 172.5,653.9063 C182.61,670.0463 197.26,683.7463 212.84,695.0163 " fill="none" id="listener-to-small_queue" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="217.25,698.1263,212.2063,689.6668,213.166,695.2417,207.5911,696.2013,217.25,698.1263" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="125" x="173.5" y="619.9731">Write entryUUIDs</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="87" x="192.5" y="635.106">and change</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="220" y="650.2388">JSON</text><!--MD5=[3009a6f81879c83195bf7057e3c4e0f0]
+link small_queue to converter--><path d="M363.62,706.4263 C409.37,684.6463 464.57,649.5263 491.5,598.9063 C517.8,549.4663 517.4,522.5563 491.5,472.9063 C468.5,428.8163 425.96,395.0363 384.76,370.7963 " fill="none" id="small_queue-to-converter" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="380.26,368.1863,386.053,376.1513,384.5897,370.6869,390.0541,369.2237,380.26,368.1863" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="125" x="511.5" y="513.9731">Read entryUUIDS</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="87" x="530.5" y="529.106">and change</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="558" y="544.2388">JSON</text><!--MD5=[e8e5414d468394fb89da731946ef0d96]
+link converter to large_queue--><path d="M380.34,347.3663 C439.69,362.7463 514.93,384.6463 579.5,410.9063 C624.21,429.0863 671.84,453.9663 710.5,475.6963 " fill="none" id="converter-to-large_queue" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="715.17,478.3363,709.3066,470.4229,710.8183,475.8741,705.3671,477.3857,715.17,478.3363" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="115" x="645.5" y="423.9731">Write user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="687" y="439.106">JSON</text><!--MD5=[49a1fd460c504e41ef9380d9304d4e49]
+link large_queue to id_connector--><path d="M741.12,575.9963 C709.16,608.7363 667.72,651.1963 635.79,683.9163 " fill="none" id="large_queue-to-id_connector" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="631.94,687.8563,641.0815,684.1911,635.4252,684.2711,635.3452,678.6148,631.94,687.8563" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="114" x="707.5" y="627.4731">Read user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="32" x="748.5" y="642.606">JSON</text><!--MD5=[c64706fbf269576ba0e30d887a5aa269]
+reverse link ldap to id_connector--><path d="M141.66,372.0963 C146.13,375.3763 150.76,378.3763 155.5,380.9063 C209.34,409.6363 247.02,367.0863 289.5,410.9063 C348.72,471.9863 274.66,530.6963 325.5,598.9063 C371.04,659.9963 452.19,695.9163 511.96,715.2463 " fill="none" id="ldap-backto-id_connector" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="137.61,369.0163,142.341,377.6544,141.5858,372.0482,147.1921,371.2931,137.61,369.0163" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="156" x="326.5" y="521.4731">Read/write user data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-style="italic" lengthAdjust="spacing" textLength="95" x="357" y="536.606">UDM-REST-API</text><!--MD5=[214d913610d75edbc857ca4c5c7d172b]
+@startuml
+
+title ID-Connector Primary Components\n
+
+!include styling.puml
+' skinparam linetype ortho
+
+!include object_importer.puml
+
+frame "DC Primary\n<i>ucs" as primary {
+    !include object_ldap.puml
+    !include object_listener.puml
+    !include object_converter.puml
+}
+
+
+!include object_small_queue.puml
+!include object_large_queue.puml
+
+!include object_id_connector.puml
+
+importer - -> ldap: <b>write user data\n<i>python
+ldap - -> listener: <b>call listener on write\n<i>python
+listener - -> small_queue: <b>Write entryUUIDs\n<b>and change\n<i>JSON
+small_queue - -> converter:  <b>Read entryUUIDS\n<b>and change\n<i>JSON
+converter - -> large_queue: <b>Write user data\n<i>JSON
+large_queue - ->id_connector:<b>Read user data\n<i>JSON
+
+ldap <- - id_connector : <b>Read/write user data\n<i>UDM-REST-API
+' id_connector - -> ldap
+@enduml
+
+@startuml
+
+title ID-Connector Primary Components\n
+
+skinparam backgroundColor white
+skinparam defaultTextAlignment center
+
+skinparam AgentBackgroundColor #438dd5
+skinparam AgentFontColor white
+skinparam AgentBorderColor #6a8198
+
+skinparam StorageBackgroundColor #85bbf0
+skinparam DatabaseBackgroundColor #85bbf0
+skinparam FolderBackgroundColor #b0cae4
+skinparam FileBackgroundColor lightgrey
+skinparam UsecaseBackgroundColor white
+skinparam UsecaseFontColor #777777
+skinparam UsecaseBorderColor grey
+
+skinparam ArrowColor #666666
+skinparam ArrowFontColor #666666
+
+skinparam FrameBackgroundColor #ebedf1
+
+
+    agent "<b>UCS@School import\n<i>python\n\nImport user data" as importer
+
+frame "DC Primary\n<i>ucs" as primary {
+    database "<b>LDAP\n<i>openldap\n\nUser data" as ldap
+    storage "<b>ID-Connector listener\n<i>python listener script\n\nHandles LDAP write events\nfor id-connector" as listener
+    agent "<b>Converter\n<i>python\n\nReads uuid and writes\njson representation of udm\nobjects" as converter
+}
+
+
+    folder "<b>Small in-queue\n<i>JSON files\n\njust entryUUIDs" as small_queue
+    folder "<b>Large in-queue\n<i>JSON files\n\nfull data" as large_queue
+
+
+    frame "<b>ID-Connector\n<i>Docker\n\nsyncs user data" as id_connector
+
+importer - -> ldap: <b>write user data\n<i>python
+ldap - -> listener: <b>call listener on write\n<i>python
+listener - -> small_queue: <b>Write entryUUIDs\n<b>and change\n<i>JSON
+small_queue - -> converter:  <b>Read entryUUIDS\n<b>and change\n<i>JSON
+converter - -> large_queue: <b>Write user data\n<i>JSON
+large_queue - ->id_connector:<b>Read user data\n<i>JSON
+
+ldap <- - id_connector : <b>Read/write user data\n<i>UDM-REST-API
+@enduml
+
+PlantUML version 1.2021.14(Fri Nov 12 17:46:50 CET 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

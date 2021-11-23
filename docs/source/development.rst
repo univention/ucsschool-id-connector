@@ -17,6 +17,7 @@ Overview
    TODO: english, master->primary
 
 
+
 Prerequisites
 =============
 
@@ -120,8 +121,32 @@ TODO Describe the inner workings
 
    The |IDC|, *not* simplified.
 
+
    TODO: maybe use C4 Image? |br|
    TODO: english, master->primary
+
+C4 Diagrams
+
+.. figure:: static/id-connector-containers.svg
+   :target: _static/id-connector-containers.svg
+   :width: 600
+
+   foo
+
+.. figure:: static/id-connector-container-primary.svg
+   :target: _static/id-connector-container-primary.svg
+   :width: 600
+
+.. figure:: static/id-connector-container-id-connector.svg
+   :target: _static/id-connector-container-id-connector.svg
+   :width: 600
+
+Complete C4 - This is way too much
+
+.. figure:: static/id-connector-unified.svg
+   :target: _static/id-connector-unified.svg
+   :width: 600
+
 
 Dev setup
 ==========

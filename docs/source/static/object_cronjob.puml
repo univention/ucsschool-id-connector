@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    agent "<b>Cronjob\n<i>python\n\nTrigger user changes\naccording to validity period" as cronjob
+@enduml

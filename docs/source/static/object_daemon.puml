@@ -1,0 +1,4 @@
+@startuml
+    !include styling.puml
+    agent "<b>In Queue\n<i>python daemon\n\nReads uuid\nWrites udm object JSON" as daemon
+@enduml

@@ -1,0 +1,5 @@
+@startuml
+    !include styling.puml
+    frame "<b>DC Primary\n<i>ucs\n\nBasic user operations" as primary {
+}
+@enduml
