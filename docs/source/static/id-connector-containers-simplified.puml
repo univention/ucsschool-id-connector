@@ -2,8 +2,13 @@
 
 title ID Connector: Containers\n
 
+
+
+
 !include styling.puml
 ' skinparam linetype ortho
+
+
 
 !include object_sms.puml
 !include object_importer.puml
@@ -24,6 +29,5 @@ id_connector --> school_provider_a:<b>Write user/group\n<i>HTTP
 id_connector --> school_provider_b:<b>Write user/group\n<i>HTTP
 ' primary <-- id_connector: <b>Read/write user/group data\n<i>UDM-REST-API
 'primary --> id_connector: <b>get extra data\npython-ldap
-
 
 @enduml

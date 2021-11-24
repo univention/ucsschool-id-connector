@@ -126,22 +126,43 @@ TODO Describe the inner workings
    TODO: english, master->primary
 
 C4 Diagrams
+-----------
+
+.. figure:: static/legend.svg
+   :target: _static/legend.svg
+   :width: 800
+
+   Legend of diagram elements
+
+.. figure:: static/id-connector-containers-simplified.svg
+   :target: _static/id-connector-containers-simplified.svg
+   :width: 400
+
+   C4 Containers
+
 
 .. figure:: static/id-connector-containers.svg
    :target: _static/id-connector-containers.svg
    :width: 600
 
-   foo
+   C4 Containers *with more detail*
 
 .. figure:: static/id-connector-container-primary.svg
    :target: _static/id-connector-container-primary.svg
    :width: 600
 
+   C4 DC Primary components
+
 .. figure:: static/id-connector-container-id-connector.svg
    :target: _static/id-connector-container-id-connector.svg
    :width: 600
 
-Complete C4 - This is way too much
+   C4 ID Connector Docker components
+
+Way too much
+------------
+
+This is why single images don't work
 
 .. figure:: static/id-connector-unified.svg
    :target: _static/id-connector-unified.svg
