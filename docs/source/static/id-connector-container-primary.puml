@@ -7,7 +7,7 @@ title ID-Connector Primary Components\n
 
 !include object_importer.puml
 
-frame "DC Primary\n<i>ucs" as primary {
+frame "DC Primary\n<i>UCS" as primary {
     !include object_ldap.puml
     !include object_listener.puml
     !include object_converter.puml
@@ -19,13 +19,13 @@ frame "DC Primary\n<i>ucs" as primary {
 
 !include object_id_connector.puml
 
-importer --> ldap: <b>write user data\n<i>python
-ldap --> listener: <b>call listener on write\n<i>python
-listener --> small_queue: <b>Write entryUUIDs\n<b>and change\n<i>JSON
-small_queue --> converter:  <b>Read entryUUIDS\n<b>and change\n<i>JSON
-converter --> large_queue: <b>Write user data\n<i>JSON
-large_queue -->id_connector:<b>Read user data\n<i>JSON
+importer --> ldap: <b>write user/group data\n<i>python
+ldap --> listener: <b>call listener\n<b> on write\n<i>python
+listener --> small_queue: <b>Write entryUUIDs\n<b>and changes\n<i>JSON
+small_queue --> converter:  <b>Read entryUUIDS\n<b>and changes\n<i>JSON
+converter --> large_queue: <b>Write\n<b> user/group data\n<i>JSON
+large_queue -->id_connector:<b>Read user/group data\n<i>JSON
 
-ldap <-- id_connector : <b>Read/write user data\n<i>UDM-REST-API
+ldap -left-> id_connector : <b>get extra data\n<i>python-ldap
 ' id_connector --> ldap
 @enduml
