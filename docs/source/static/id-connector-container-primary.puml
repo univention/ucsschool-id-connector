@@ -21,10 +21,10 @@ frame "DC Primary\n<i>UCS" as primary {
 
 importer --> ldap: <b>write user/group data\n<i>python
 ldap --> listener: <b>call listener\n<b> on write\n<i>python
-listener --> small_queue: <b>Write entryUUIDs\n<b>and changes\n<i>JSON
-small_queue --> converter:  <b>Read entryUUIDS\n<b>and changes\n<i>JSON
-converter --> large_queue: <b>Write\n<b> user/group data\n<i>JSON
-large_queue -->id_connector:<b>Read user/group data\n<i>JSON
+listener --> small_queue: <b>write entryUUIDs\n<b>and changes\n<i>JSON
+small_queue --> converter:  <b>read entryUUIDS\n<b>and changes\n<i>JSON
+converter --> large_queue: <b>write\n<b> user/group data\n<i>JSON
+large_queue -->id_connector:<b>read user/group data\n<i>JSON
 
 ldap -left-> id_connector : <b>get extra data\n<i>python-ldap
 ' id_connector --> ldap

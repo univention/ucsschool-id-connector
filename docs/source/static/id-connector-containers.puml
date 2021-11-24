@@ -23,13 +23,13 @@ title ID Connector: Containers\n
 
 sms --> importer : <b>export of user/group data\n<i>csv, etc.
 importer --> primary: <b>write user/group data\n<i>python
-cronjob --> small_queue: <b>Write entryUUIDs\n<b>and changes\n<i>JSON
-primary --> small_queue: <b>Write entryUUIDs\n<b>and changes\n<i>JSON
-small_queue --> primary: <b>Read entryUUIDS\n<b>and changes\n<i>JSON
-primary --> large_queue: <b>Write user/group data\n<i>JSON
-large_queue --> id_connector:<b>Read user/group data\n<i>JSON
-id_connector --> school_provider_a:<b>Write user/group\n<i>HTTP
-id_connector --> school_provider_b:<b>Write user/group\n<i>HTTP
+cronjob --> small_queue: <b>write entryUUIDs\n<b>and changes\n<i>JSON
+primary --> small_queue: <b>write entryUUIDs\n<b>and changes\n<i>JSON
+small_queue --> primary: <b>read entryUUIDS\n<b>and changes\n<i>JSON
+primary --> large_queue: <b>write user/group data\n<i>JSON
+large_queue --> id_connector:<b>read user/group data\n<i>JSON
+id_connector --> school_provider_a:<b>write user/group\n<i>HTTP
+id_connector --> school_provider_b:<b>write user/group\n<i>HTTP
 ' primary <-- id_connector: <b>Read/write user/group data\n<i>UDM-REST-API
 primary --> id_connector: <b>get extra data\npython-ldap
 
