@@ -6,7 +6,7 @@ skinparam AgentFontColor white
 skinparam AgentBorderColor #6a8198
 
 skinparam FolderBackgroundColor #bdbdbb
-skinparam StorageBackgroundColor #50C80A
+skinparam StorageBackgroundColor #7AB51D
 skinparam DatabaseBackgroundColor #bdbdbb
 
 skinparam NoteBackgroundColor white
