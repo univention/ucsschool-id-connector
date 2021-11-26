@@ -143,19 +143,19 @@ C4 Diagrams
 
 .. figure:: static/id-connector-containers.svg
    :target: _static/id-connector-containers.svg
-   :width: 600
+   :width: 400
 
    C4 Containers *with more detail*
 
-.. figure:: static/id-connector-container-primary.svg
-   :target: _static/id-connector-container-primary.svg
-   :width: 600
+.. figure:: static/id-connector-container-ucs.svg
+   :target: _static/id-connector-container-ucs.svg
+   :width: 500
 
    C4 DC Primary components
 
-.. figure:: static/id-connector-container-id-connector.svg
-   :target: _static/id-connector-container-id-connector.svg
-   :width: 600
+.. figure:: static/id-connector-container-docker.svg
+   :target: _static/id-connector-container-docker.svg
+   :width: 500
 
    C4 ID Connector Docker components
 
@@ -517,3 +517,5 @@ To run integration tests (*not safe, will modify source and target systems!*), r
     /ucsschool-id-connector # cd src/
     /ucsschool-id-connector/src # python3 -m pytest -l -v tests/integration_tests
     /ucsschool-id-connector/src # exit
+
+# schedule_user for testing

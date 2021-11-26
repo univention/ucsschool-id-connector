@@ -9,6 +9,10 @@ skinparam FolderBackgroundColor #b0cae4
 skinparam StorageBackgroundColor #85bbf0
 skinparam DatabaseBackgroundColor #b0cae4
 
+skinparam NoteBackgroundColor white
+skinparam NoteFontColor grey
+skinparam NoteBorderColor darkgrey
+
 skinparam FileBackgroundColor lightgrey
 skinparam UsecaseBackgroundColor white
 skinparam UsecaseFontColor #777777
