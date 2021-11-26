@@ -1,19 +1,19 @@
 skinparam backgroundColor white
 skinparam defaultTextAlignment center
 
-skinparam AgentBackgroundColor #438dd5
+skinparam AgentBackgroundColor  #7AB51D
 skinparam AgentFontColor white
 skinparam AgentBorderColor #6a8198
 
-skinparam FolderBackgroundColor #b0cae4
-skinparam StorageBackgroundColor #85bbf0
-skinparam DatabaseBackgroundColor #b0cae4
+skinparam FolderBackgroundColor #F6AA42
+skinparam StorageBackgroundColor #00ACB6
+skinparam DatabaseBackgroundColor #F6AA42
 
 skinparam NoteBackgroundColor white
 skinparam NoteFontColor grey
 skinparam NoteBorderColor darkgrey
 
-skinparam FileBackgroundColor lightgrey
+skinparam FileBackgroundColor d8d8d6
 skinparam UsecaseBackgroundColor white
 skinparam UsecaseFontColor #777777
 skinparam UsecaseBorderColor grey
@@ -21,4 +21,4 @@ skinparam UsecaseBorderColor grey
 skinparam ArrowColor #666666
 skinparam ArrowFontColor #666666
 
-skinparam FrameBackgroundColor #ebedf1
+skinparam FrameBackgroundColor  #d8d8d6
