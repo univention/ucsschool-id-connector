@@ -34,6 +34,7 @@ extensions = [
     "sphinxcontrib.mermaid",
     "sphinx.ext.autosectionlabel",
     "sphinx_toolbox.collapse",
+    "sphinx_copybutton",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -83,3 +84,6 @@ source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
 }
+
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: | +"
+copybutton_prompt_is_regexp = True

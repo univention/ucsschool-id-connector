@@ -55,6 +55,16 @@ and we hope to teach you how to develop plugins for id-connector as well.
       This is the organization managing schools. In the ID-Connector context it can be thought
       of as the *recipient* of sync data.
 
+.. note::
+
+   You can use the clipboard icon on the top right of code examples
+   to easily copy the code without python and bash prompts:
+
+   .. code-block:: bash
+
+       $ echo "hello world"
+
+   (Hover with your mouse over the code to see the icon)
 
 Contents
 ========

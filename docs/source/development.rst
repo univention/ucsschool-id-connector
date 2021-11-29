@@ -88,18 +88,11 @@ Docker
    |rarr| https://www.docker.com/
 
 UDM REST-API
-   Description
+   A REST API which can be used to inspect, modify, create and delete UDM objects via HTTP requests.
 
    You need to be able to: TODO
 
-   |rarr| TODO
-
-OPA
-   Description
-
-   You need to be able to: TODO
-
-   |rarr| TODO
+   |rarr| https://docs.software-univention.de/developer-reference-4.4.html#udm:rest_api
 
 UCS-APIs auth plugin
    Description
@@ -115,7 +108,16 @@ Kelvin REST API
 
    |rarr| https://docs.software-univention.de/ucsschool-kelvin-rest-api/
 
-Pre-commit
+OPA (optional)
+   Description
+
+   You need to be able to: TODO
+
+   |rarr| https://www.openpolicyagent.org/
+
+
+
+Pre-commit (optional)
 
    Description
 
@@ -248,6 +250,7 @@ Setup development environment:
 
 .. code-block:: bash
 
+    $ # clone ucsschool-id-connector
     $ cd ~/git/ucsschool-id-connector
     $ make setup_devel_env
     $ make install
