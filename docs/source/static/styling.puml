@@ -1,13 +1,16 @@
 skinparam backgroundColor white
 skinparam defaultTextAlignment center
 
-skinparam AgentBackgroundColor  #009646
-skinparam AgentFontColor white
+skinparam AgentBackgroundColor  #81c95b
+skinparam AgentFontColor black
 skinparam AgentBorderColor #6a8198
 
-skinparam FolderBackgroundColor #bdbdbb
-skinparam StorageBackgroundColor #7AB51D
-skinparam DatabaseBackgroundColor #bdbdbb
+skinparam FolderBackgroundColor #bbbbbb
+skinparam FolderFontColor black
+skinparam StorageBackgroundColor #349400
+skinparam StorageFontcolor white
+skinparam DatabaseBackgroundColor #bbbbbb
+skinparam DatabaseFontColor black
 
 skinparam NoteBackgroundColor white
 skinparam NoteFontColor grey
@@ -22,3 +25,8 @@ skinparam ArrowColor #666666
 skinparam ArrowFontColor #666666
 
 skinparam FrameBackgroundColor   #ededed
+
+
+
+' https://colorschemedesigner.com/csd-3.5/#2F11T--llw0w0
+' 349400 396f1c 226000 67c932 81c95b
