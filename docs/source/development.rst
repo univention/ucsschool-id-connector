@@ -4,29 +4,45 @@
 ***********
 Development
 ***********
+
 Overview
 ========
 
-.. figure:: static/ucsschool-id-connector_overview2.png
-   :target: _static/ucsschool-id-connector_overview2.png
-   :width: 500
+.. figure:: static/id-connector-containers-simplified.svg
+   :target: _static/id-connector-containers-simplified.svg
+   :width: 400
 
-   The |IDC|, *less* simplified
+   |IDC| - Containers (`C4 Style <https://c4model.com/>`_)
 
-   TODO: maybe use C4 Image? |br|
-   TODO: english, master->primary
+.. include:: legend.txt
 
+Here we have a different style of diagram compared to the last chapter ":doc:`admin`". It shows more
+or less the same as in last chapter:
 
+* The *school management software* that runs on the state level, and exports user data in a file
+  format, e.g. csv.
+* |iUAS| *import* which is a python script to import users into a *DC Primary UCS* System
+* The *DC Primary UCS*  system passes on the user/group data to the actual *ID-Connector* running
+  in a docker container
+* The *ID-Connector* finally writes user/group data to the school providers.
+
+This, of course, is a simplification. It is on a container level (in the sense used by
+`C4 <https://c4model.com/>`_).
+
+.. note::
+
+   Arrows in these diagrams are in the direction of data flow. It should be apparent from the
+   source and target nodes what the label on the arrow refers to.
+
+Let's have a look at what you need to know before we dive any deeper.
 
 Prerequisites
 =============
+First, we assume that you are already familiar with the chapter :doc:`admin`.
 
-If you want to develop for/with the ID-Connector, this chapter is right for you. We assume that
-you are already familiar with the chapter :doc:`admin`.
+You also need the following knowledge to follow this manual and to develop for ID-Connector:
 
-To follow this manual and to develop for ID-Connector, you also need the following knowledge:
-
-http
+HTTP
    The foundation of data communication for the www. Our APIs use this
 
    You need to be able to:
@@ -38,7 +54,7 @@ http
    |rarr| https://developer.mozilla.org/en-US/docs/Web/HTTP
 
 
-python & pytest
+Python & pytest
    The great programming language and its testing module.
 
    You need to be able to:
@@ -49,7 +65,7 @@ python & pytest
    |rarr| https://python.org |br|
    |rarr| https://pytest.org
 
-fastapi
+Fastapi
    The framework in which http APIs are developed.
 
    You need to be able to:
@@ -60,7 +76,7 @@ fastapi
 
    |rarr| https://fastapi.tiangolo.com/
 
-docker
+Docker
    Software to isolate software and run them in containers.
 
    You need to be able to:
@@ -71,35 +87,35 @@ docker
 
    |rarr| https://www.docker.com/
 
-udm rest api
+UDM REST-API
    Description
 
    You need to be able to: TODO
 
    |rarr| TODO
 
-opa
+OPA
    Description
 
    You need to be able to: TODO
 
    |rarr| TODO
 
-ucs api auth plugin
+UCS-APIs auth plugin
    Description
 
    You need to be able to: TODO
 
    |rarr| TODO
 
-kelvin rest api
+Kelvin REST API
    Description
 
    You need to be able to: TODO
 
-   |rarr| TODO
+   |rarr| https://docs.software-univention.de/ucsschool-kelvin-rest-api/
 
-pre-commit
+Pre-commit
 
    Description
 
@@ -113,61 +129,117 @@ pre-commit
 Interactions and components
 ===========================
 
-TODO Describe the inner workings
+Ok, so are familiar with the above concepts? Great!
 
-.. figure:: static/ucsschool-id-connector_details.png
-   :target: _static/ucsschool-id-connector_details.png
-   :width: 500
+Now let's have a closer look at what's going on.
 
-   The |IDC|, *not* simplified.
-
-
-   TODO: maybe use C4 Image? |br|
-   TODO: english, master->primary
-
-C4 Diagrams
------------
-
-.. figure:: static/legend.svg
-   :target: _static/legend.svg
-   :width: 800
-
-   Legend of diagram elements
-
-.. figure:: static/id-connector-containers-simplified.svg
-   :target: _static/id-connector-containers-simplified.svg
-   :width: 400
-
-   C4 Containers
+Overview, less simplified
+-------------------------
 
 
 .. figure:: static/id-connector-containers.svg
    :target: _static/id-connector-containers.svg
    :width: 400
 
-   C4 Containers *with more detail*
+.. include:: legend.txt
+
+
+Ok, isn't this more or less the same as above in `Overview`_? Yes, right you are. The additional
+element is the *Large in-queue*. This is a folder which interacts as the interface between the
+*DC Primary* and the *ID-Connector*. JSON files are written to the folder, and then read out.
+
+You also may notice the *get extra data* arrow. This means that the ID-Connector might need
+extra data that is not contained in the JSON files. But before we come to this, we have a closer
+look at the *DC Primary*
+
+
+DC Primary
+----------
+
 
 .. figure:: static/id-connector-container-ucs.svg
    :target: _static/id-connector-container-ucs.svg
-   :width: 500
+   :width: 700
 
-   C4 DC Primary components
+.. include:: legend.txt
+
+* The |iUCS| *import*, a python script, reads in e.g. CSV data, and writes the contained user and
+  group data to the *LDAP*. As mentioned in the diagram there are also other mechanisms that
+  modify the LDAP, the UMC being one of them. The point is that "somehow" user/group data
+  arives
+
+* The *ID-Connector listener* python script is then called by the LDAP machinery. It handles
+  the write events that are of interest for the ID-Connector.
+
+* In a first step this data is written to the *small in-queue". This is a folder containing
+  minimal information (in JSON format), namely the type of change (add, update, delete) and
+  the entryUUID of the concerned object. But why? Why not write directly to the *Converter*
+  in the next step? Good question, I am glad you asked. The reason is twofold:
+
+  1. Speed by decoupling - the LDAP listeners should be able to do their job as fast as possible,
+     and shouldn't have to wait for the next processing steps. Hence the folder acting as a queue,
+     and only writing minimal data.
+  2. The folder can also act as an entry point for debugging and manual insertion of user data. E.g.
+     you want to reschedule a user without import the user again? Use the ``schedule_user`` script,
+     and this will write some JSON into this folder.
+
+* The *Converter* runs as a daemon script, picks up the JSON files from the *small in-queue*,
+  and fetches the actual data from the *LDAP* using the ``python-ldap``. It then puts a JSON
+  representation of the UDM Object into the *Large in-queue*.
+
+The *Large in-queue* in turn is read out by the *ID-Connector* running in a docker container.
+Let's have a closer look:
+
+ID-Connector
+------------
+
 
 .. figure:: static/id-connector-container-docker.svg
    :target: _static/id-connector-container-docker.svg
-   :width: 500
+   :width: 700
 
-   C4 ID Connector Docker components
 
-Way too much
-------------
+.. include:: legend.txt
 
-This is why single images don't work
+* We already know that he *DC Primary* writes data to the *Large in-queue*. This folder is
+  accessible by the host UCS system as well be the *ID Connector* docker container (where
+  it is mounted).
+* *In Queue* is a python process, that reads out the *Large in-queue*. It still might need
+  extra data from the LDAP in the *DC Primary*, which it will do using ``python-ldap``.
+  For caching purposes it uses an ``sqlite`` database as a caching mechanism, the
+  *UUDI record cache*.
+* The *In Queue* decides, what user/group data to send where (using the
+  :ref:`school_to_authority_mapping` in the process). For each potential recipient there is
+  a separate *Out queue*. User/group data is written in JSON format into these folder.
+* The JSON data is picked up the plugin processes, e.g. *Out A*. Usually there is only the
+  ``Kelvin ID-Connector plugin``, which helps ID-Connector to talk to Kelvin REST APIs.
+  The Kelvin plugin process then talks to Kelvin API on the *School provider A*, doing the final
+  transmission of the user/group data.
+* All this orchestrated by the *Management REST API*, which is mostly for managing out queues.
+  (Hint: You have learned about this *Mangement REST API* in :ref:`ucs_school_id_connector_http_api`).
 
-.. figure:: static/id-connector-unified.svg
-   :target: _static/id-connector-unified.svg
-   :width: 600
 
+Complete picture
+----------------
+
+The complete picture might be a bit too much. If you want have it anyway, here you go:
+
+.. collapse:: Complete overview, C4 style
+
+    .. figure:: static/id-connector-unified.svg
+       :target: _static/id-connector-unified.svg
+       :width: 800
+
+    .. include:: legend.txt
+
+
+.. collapse:: Overview, manually drawn, with file locations
+
+    .. figure:: static/ucsschool-id-connector_details.png
+       :target: _static/ucsschool-id-connector_details.png
+       :width: 800
+
+       The |IDC|, *not* simplified.
 
 Dev setup
 ==========
@@ -519,3 +591,12 @@ To run integration tests (*not safe, will modify source and target systems!*), r
     /ucsschool-id-connector/src # exit
 
 # schedule_user for testing
+
+Old Diagrams
+============
+
+.. figure:: static/ucsschool-id-connector_overview2.png
+   :target: _static/ucsschool-id-connector_overview2.png
+   :width: 500
+
+   The |IDC|, *less* simplified

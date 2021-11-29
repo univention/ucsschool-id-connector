@@ -291,6 +291,8 @@ Configure sending system
 The school authorities configuration must be done through the  |iIDCH|.
 Do not edit configuration files directly.
 
+.. _ucs_school_id_connector_http_api:
+
 UCS\@school ID Connector HTTP API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The HTTP-API of the |iIDC| app offers two resources:
@@ -438,6 +440,8 @@ These are the keys in the configuration:
 
 Please adapt this to your needs, of course. The complete and adapted configuration needs to be posted
 to the ``school_authorities`` resource in the :ref:`Swagger UI <swagger_ui>`.
+
+.. _school_to_authority_mapping:
 
 School to authority mapping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

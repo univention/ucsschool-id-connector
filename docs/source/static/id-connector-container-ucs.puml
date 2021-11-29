@@ -1,6 +1,6 @@
 @startuml
 
-title ID-Connector Primary Components\n
+title ID-Connector DC Primary Components\n
 
 !include styling.puml
 ' skinparam linetype ortho
