@@ -237,11 +237,13 @@ The complete picture might be a bit too much. If you want have it anyway, here y
 
 .. collapse:: Overview, manually drawn, with file locations
 
-    .. figure:: static/ucsschool-id-connector_details.png
-       :target: _static/ucsschool-id-connector_details.png
+    .. figure:: static/ucsschool-id-connector_details2.svg
+       :target: _static/ucsschool-id-connector_details2.svg
        :width: 800
 
        The |IDC|, *not* simplified.
+
+
 
 Dev setup
 ==========
