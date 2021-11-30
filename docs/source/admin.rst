@@ -496,7 +496,7 @@ Role specific attribute mapping
 
 .. note::
   This is an advanced scenario. If you don't need this,
-  jump to the section: :ref:`Configure target system - HTTP-API (|KLV|)`.
+  jump to the :ref:`next section <Trying it out>`.
 
 Back to our example about telephone numbers. Imagine that while telephone numbers should not be
 transferred for students, they are actually needed for teachers.
@@ -550,7 +550,7 @@ Partial group sync mapping
 
 .. note::
   This is an advanced scenario. If you don't need this,
-  jump to the :ref:`next section<Configure target system - HTTP-API (|KLV|)>`.
+  jump to the :ref:`next section <Trying it out>`.
 
 Remember that in the last examples we had a property
 that we would send for some users, but not others, depending on their role?
