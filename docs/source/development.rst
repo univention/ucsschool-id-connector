@@ -224,7 +224,7 @@ ID-Connector
 Complete picture
 ----------------
 
-The complete picture might be a bit too much. If you want have it anyway, here you go:
+The complete picture might be a bit too full. If you want have it anyway, here are your choices:
 
 .. collapse:: Complete overview, C4 style
 
@@ -248,22 +248,48 @@ The complete picture might be a bit too much. If you want have it anyway, here y
 Dev setup
 ==========
 
+
+.. figure:: static/dev_setup.svg
+   :target: _static/dev_setup.svg
+   :width: 700
+
+.. include:: legend.txt
+
+We are going to develop with the following setup:
+
+* You have a git *checkout* of the *ucsschool-id-connector* on your *dev laptop*
+* There you use the script *devsync* to synchronize changes,
+* which are synced to the corresponding *installation* folder of the *ID-Connector* docker app.
+
+
+Dev Laptop
+----------
+
 Setup development environment:
 
 .. code-block:: bash
 
     $ # clone ucsschool-id-connector
-    $ cd ~/git/ucsschool-id-connector
+    $ cd ucsschool-id-connector
     $ make setup_devel_env
+    $ . venv/bin/activate
     $ make install
     $ pre-commit run -a
+    $
+
 
 This will create a directory ``venv`` with a Python virtualenv with the app and all its dependencies in it.
-To activate it, run:
+
+You can later on also "activate" the ``venv`` using:
 
 .. code-block:: bash
 
     $ . venv/bin/activate
+
+
+.. warning::
+
+    All other commands in the Makefile assume that the virtualenv is active.
 
 Run ``make`` without argument to see more useful commands:
 
@@ -271,43 +297,55 @@ Run ``make`` without argument to see more useful commands:
 
     $ make
 
-    clean                remove all build, test, coverage and Python artifacts
-    clean-build          remove build artifacts
-    clean-pyc            remove Python file artifacts
-    clean-test           remove test and coverage artifacts
-    setup_devel_env      setup development environment (virtualenv)
-    lint                 check style (requires Python interpreter activated from venv)
-    format               format source code (requires Python interpreter activated from venv)
-    test                 run tests with the Python interpreter from 'venv'
-    coverage             check code coverage with the Python interpreter from 'venv'
-    coverage-html        generate HTML coverage report
-    install              install the package to the active Python's site-packages
-    build-docker-img     build docker image locally quickly
-    build-docker-img-on-knut copy source to docker.knut, build and push docker image
+    clean                     remove all build, test, coverage and Python artifacts
+    clean-build               remove build artifacts
+    clean-pyc                 remove Python file artifacts
+    clean-test                remove test and coverage artifacts
+    setup_devel_env           setup development environment (virtualenv)
+    lint                      check style (requires Python interpreter activated from venv)
+    format                    format source code (requires Python interpreter activated from venv)
+    test                      run tests with the Python interpreter from 'venv'
+    coverage                  check code coverage with the Python interpreter from 'venv'
+    coverage-html             generate HTML coverage report
+    install                   install the package to the active Python's site-packages
+    build-docker-img          build docker image locally quickly
+    build-docker-img-on-knut  copy source to docker.knut, build and push docker image
 
-*All other commands in the Makefile assume that the virtualenv is active.*
 
 Build Docker image:
 
 .. code-block:: bash
 
-    $ cd ~/git/ucsschool-id-connector
     $ make build-docker-img
 
-The Docker image can be started on its own (but won't receive JSON files
-in the in queue from the listener in the host) by running:
+You could start the docker image on its own, but this doesn't make too much sense (see below):
 
 .. code-block:: bash
 
     $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
-      docker-test-upload.software-univention.de/ucsschool-id-connector:1.0.0
+      docker-test-upload.software-univention.de/ucsschool-id-connector:$(cat VERSION.txt)
+
 
 Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in the output
 at the start of the build process.
 
+
+.. note:
+    Running the ID-Connector on your dev laptop doesn't make much sense, because it requires
+    a UCS setup, containing an LDAP, to work. So rather develop your code on your local machine,
+    and ``devsync`` to an actual installation
+
+Dev VM
+------
+TODO To be continued
+
 When the container is started that way (not through the appcenter)
 it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
 after stopping the firewall (``service univention-firewall stop``).
+
+
+
+
 
 
 You can also:
@@ -343,13 +381,13 @@ Inside the container you can use the system Python:
 
 .. code-block:: bash
 
-    /ucsschool-id-connector # python3
+    /ucsschool-id-connector$ python3
     Python 3.8.2 (default, Feb 29 2020, 17:03:31)
     [GCC 9.2.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> from ucsschool_id_connector import models
 
-    /ucsschool-id-connector # ipython
+    /ucsschool-id-connector$ ipython
     Python 3.8.2 (default, Feb 29 2020, 17:03:31)
     Type 'copyright', 'credits' or 'license' for more information
     IPython 7.13.0 -- An enhanced Interactive Python. Type '?' for help.

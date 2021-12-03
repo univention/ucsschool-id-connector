@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="272px" preserveAspectRatio="none" style="width:940px;height:272px;background:#FFFFFF;" version="1.1" viewBox="0 0 940 272" width="940px" zoomAndPan="magnify"><defs><filter height="300%" id="f11ojg8g3buv0y" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[d1313b8f1d661e9bca720199a43ede94]
+cluster dev_laptop--><rect fill="#D8D8D6" filter="url(#f11ojg8g3buv0y)" height="185" style="stroke:#000000;stroke-width:1.5;" width="562" x="7" y="58.5"/><path d="M106,58.5 L106,84.0938 L96,94.0938 L7,94.0938 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="89" x="10" y="72.4951">Dev Laptop</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" font-weight="bold" lengthAdjust="spacing" textLength="43" x="33" y="88.792">Linux</text><!--MD5=[537ddcbb3bc6ff844a995ba246a20797]
+cluster ucs--><rect fill="#D8D8D6" filter="url(#f11ojg8g3buv0y)" height="253" style="stroke:#000000;stroke-width:1.5;" width="274" x="654" y="7"/><path d="M723,7 L723,32.5938 L713,42.5938 L654,42.5938 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="59" x="657" y="20.9951">Dev VM</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" font-weight="bold" lengthAdjust="spacing" textLength="31" x="671" y="37.292">UCS</text><!--MD5=[5ec7eedd57310648f8059ffb2621ca4b]
+cluster docker--><rect fill="#D8D8D6" filter="url(#f11ojg8g3buv0y)" height="170" style="stroke:#000000;stroke-width:1.5;" width="226" x="678" y="66"/><path d="M792,66 L792,91.5938 L782,101.5938 L678,101.5938 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="104" x="681" y="79.9951">ID-Connector</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" font-weight="bold" lengthAdjust="spacing" textLength="88" x="689" y="96.292">docker app</text><!--MD5=[374864ba9a306f2e11f35429ae9a53ad]
+entity devsync--><rect fill="#F6AA42" filter="url(#f11ojg8g3buv0y)" height="117.7813" style="stroke:#6A8198;stroke-width:1.5;" width="188" x="365" y="109.5"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="66" x="426" y="132.4951">devsync</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="49" x="434.5" y="148.792">python</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="461" y="165.0889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="25" x="446.5" y="181.3857">has</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164" x="379" y="197.6826">ucsschool-id-connector</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="65" x="426.5" y="213.9795">checkout</text><!--MD5=[726268969146d721968a8ff1cfceb44d]
+entity checkout--><polygon fill="#00ACB6" filter="url(#f11ojg8g3buv0y)" points="23,117,69,117,76,138,217,138,217,220.1875,23,220.1875,23,117" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="23" x2="76" y1="138" y2="138"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="75" x="77.5" y="157.9951">Checkout</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="17" x="106.5" y="174.292">git</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="117" y="190.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164" x="33" y="206.8857">ucsschool-id-connector</text><!--MD5=[1178b7ded67c844dd0b324a6ebf2a7ec]
+entity checkout_docker--><polygon fill="#00ACB6" filter="url(#f11ojg8g3buv0y)" points="694,117,740,117,747,138,888,138,888,220.1875,694,220.1875,694,117" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="694" x2="747" y1="138" y2="138"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="85" x="743.5" y="157.9951">Installation</text><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="17" x="777.5" y="174.292">git</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="0" x="788" y="190.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164" x="704" y="206.8857">ucsschool-id-connector</text><!--MD5=[5b245e794851fe6f6c7391ba1a2b17d3]
+link checkout to devsync--><path d="M217.14,168.5 C261.79,168.5 314.69,168.5 359.61,168.5 " fill="none" id="checkout-to-devsync" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="364.76,168.5,355.76,164.5,359.76,168.5,355.76,172.5,364.76,168.5" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="34" x="274" y="146.5669">read</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="111" x="235.5" y="161.6997">watch changes</text><!--MD5=[f4da915189c25c8592ad50cead92f3f3]
+link devsync to checkout_docker--><path d="M553.25,168.5 C595.53,168.5 645.49,168.5 688.68,168.5 " fill="none" id="devsync-to-checkout_docker" style="stroke:#666666;stroke-width:1.0;"/><polygon fill="#666666" points="693.92,168.5,684.92,164.5,688.92,168.5,684.92,172.5,693.92,168.5" style="stroke:#666666;stroke-width:1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacing" textLength="104" x="571.5" y="184.5669">write changes</text><text fill="#666666" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="22" x="612.5" y="199.6997">ssh</text><!--MD5=[12af17b90b7f233f5904bec46d60ca3f]
+@startuml
+
+!include styling.puml
+
+frame "<b>Dev Laptop\n<i>Linux" as dev_laptop {
+    agent "<b>devsync\n<i>python\n\nhas\n ucsschool-id-connector\ncheckout" as devsync
+    folder "<b>Checkout\n<i>git\n\nucsschool-id-connector" as checkout
+}
+
+frame "<b>Dev VM\n<i>UCS" as ucs {
+    frame "<b>ID-Connector\n<i>docker app" as docker {
+        folder "<b>Installation\n<i>git\n\nucsschool-id-connector" as checkout_docker
+
+    }
+}
+
+checkout -right-> devsync: <b>read\n<b>watch changes
+devsync -right-> checkout_docker: <b>write changes\nssh
+
+@enduml
+
+@startuml
+
+skinparam backgroundColor white
+skinparam defaultTextAlignment center
+
+skinparam AgentBackgroundColor  #F6AA42
+skinparam AgentFontColor black
+skinparam AgentBorderColor #6a8198
+
+skinparam StorageBackgroundColor #7AB51D
+skinparam StorageFontColor white
+
+skinparam FrameBackgroundColor  #d8d8d6
+
+skinparam FolderBackgroundColor #00ACB6
+skinparam DatabaseBackgroundColor #00ACB6
+
+skinparam UsecaseBackgroundColor white
+skinparam UsecaseFontColor #777777
+skinparam UsecaseBorderColor grey
+
+skinparam NoteBackgroundColor white
+skinparam NoteFontColor grey
+skinparam NoteBorderColor darkgrey
+
+skinparam ArrowColor #666666
+skinparam ArrowFontColor #666666
+
+frame "<b>Dev Laptop\n<i>Linux" as dev_laptop {
+    agent "<b>devsync\n<i>python\n\nhas\n ucsschool-id-connector\ncheckout" as devsync
+    folder "<b>Checkout\n<i>git\n\nucsschool-id-connector" as checkout
+}
+
+frame "<b>Dev VM\n<i>UCS" as ucs {
+    frame "<b>ID-Connector\n<i>docker app" as docker {
+        folder "<b>Installation\n<i>git\n\nucsschool-id-connector" as checkout_docker
+
+    }
+}
+
+checkout -right-> devsync: <b>read\n<b>watch changes
+devsync -right-> checkout_docker: <b>write changes\nssh
+
+@enduml
+
+PlantUML version 1.2021.14(Fri Nov 12 17:46:50 CET 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
