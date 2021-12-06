@@ -29,7 +29,7 @@
 from typing import Iterable
 
 from ucsschool_id_connector.models import ListenerObject
-from ucsschool_id_connector.plugins import plugin_manager, hook_impl
+from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.queues import InQueue
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
@@ -46,7 +46,8 @@ class IDBrokerDistributionImpl:
         self, obj: ListenerObject, in_queue: InQueue
     ) -> Iterable[str]:
         """
-        We ignore the school_authority mapping and sync objects for schools which have an ID Broker configuration.
+        We ignore the school_authority mapping
+        and sync objects for schools which have an ID Broker configuration.
         """
         s_a_names = set()
         s_a_names.update(
@@ -58,7 +59,8 @@ class IDBrokerDistributionImpl:
         )
         if s_a_names:
             self.logger.info(
-                f"The changes are distributed to these school authorities, since they are configured as id broker systems: {s_a_names}"
+                f"The changes are distributed to these school authorities, "
+                f"since they are configured as id broker systems: {s_a_names}"
             )
         return s_a_names
 

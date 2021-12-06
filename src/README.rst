@@ -295,7 +295,8 @@ POST the following JSON to ``https://SCHOOL_AUTH_FQDN/ucsschool-id-connector/api
         "plugin_configs": {
             "id_broker": {
                 "password": "g3h31m",
-                "username": "provisioning-Schultraegername",
+                "tenant": "SchoolAuthorityName",
+                "username": "provisioning-SchoolAuthorityName",
                 "version": 1
             }
         }

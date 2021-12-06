@@ -211,7 +211,7 @@ class Token:
 
 class ProvisioningAPIClient(abc.ABC):
     API_METHODS: Dict[str, str]
-    PROVISIONING_URL_REGEX = r"^https://(?P<host>.+?)/"
+    PROVISIONING_URL_REGEX = r"^http://(?P<host>.+?)/"
     _object_type: IDBrokerObjectType
     _gen_api_handler: Type[GenApiHandler]
     _share_token = True  # whether all client instances should use the same Token instance
@@ -226,9 +226,11 @@ class ProvisioningAPIClient(abc.ABC):
                 f" {school_authority.url!r}. Correct form is: 'https://FQDN/'."
             )
         host = m.groupdict()["host"]
-        target_url = f"https://{host}"
+        target_url = f"http://{host}"
         try:
-            self.school_authority_name = school_authority.plugin_configs[plugin_name]["tenant"]
+            # TODO brauchen wir das in dieser Form noch?
+            # self.school_authority_name = school_authority.plugin_configs[plugin_name]["tenant"]
+            self.school_authority_name = school_authority.name
             username = school_authority.plugin_configs[plugin_name]["username"]
             password = school_authority.plugin_configs[plugin_name]["password"].get_secret_value()
             version = school_authority.plugin_configs[plugin_name]["version"]
@@ -241,6 +243,7 @@ class ProvisioningAPIClient(abc.ABC):
             raise ValueError(f"Unsupported ID Broker Provisioning API version {version!r}.")
         self.configuration = GenConfiguration(host=target_url, username=username, password=password)
         self.configuration.verify_ssl = "UNSAFE_SSL" not in os.environ
+        logger.info(self.configuration)
         shared_token = _get_shared_token()
         if self._share_token and shared_token:
             self.token = shared_token
@@ -492,7 +495,8 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
         return cast(SchoolClass, res)
 
     async def update(self, school_class: SchoolClass) -> SchoolClass:
-        """Modify the schoolclass with the name `school_class.name` and the school `school_class.school` on the server."""
+        """Modify the schoolclass with the name `school_class.name`
+        and the school `school_class.school` on the server."""
         res = await super()._update(
             obj_arg_name="school_class",
             school_authority=self.school_authority_name,
@@ -501,3 +505,11 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
             school_class=school_class,
         )
         return cast(SchoolClass, res)
+
+    async def delete(self, name: str, school: str) -> None:
+        """Delete school_class with `name` in `school`."""
+        pass
+        # TODO we don't have a delete resource for school_classes on the id-broker side.
+        await self._delete(
+            id_arg_name="name", school_authority=self.school_authority_name, name=name, school=school
+        )
