@@ -164,7 +164,7 @@ class SchoolsApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "object",
             422: "HTTPValidationError",
@@ -315,7 +315,7 @@ class SchoolsApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "School",
             422: "HTTPValidationError",
@@ -438,6 +438,9 @@ class SchoolsApi(object):
                                                         local_var_params['school'] is None):  # noqa: E501
             raise ApiValueError("Missing the required parameter `school` when calling `post_ucsschool_apis_provisioning_v1_school_authority_schools_post`")  # noqa: E501
 
+        if self.api_client.client_side_validation and ('school_authority' in local_var_params and  # noqa: E501
+                                                        len(local_var_params['school_authority']) < 1):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school_authority` when calling `post_ucsschool_apis_provisioning_v1_school_authority_schools_post`, length must be greater than or equal to `1`")  # noqa: E501
         collection_formats = {}
 
         path_params = {}
@@ -464,7 +467,7 @@ class SchoolsApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             201: "School",
             422: "HTTPValidationError",

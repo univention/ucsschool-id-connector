@@ -47,8 +47,8 @@ configuration = idbroker.provisioning_api.Configuration(
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.AuthApi(api_client)
-    username = 'username_example' # str | 
-password = 'password_example' # str | 
+    username = 'username_example' # str |
+password = 'password_example' # str |
 grant_type = 'grant_type_example' # str |  (optional)
 scope = '' # str |  (optional) (default to '')
 client_id = 'client_id_example' # str |  (optional)
@@ -60,7 +60,7 @@ client_secret = 'client_secret_example' # str |  (optional)
         pprint(api_response)
     except ApiException as e:
         print("Exception when calling AuthApi->login_for_access_token_ucsschool_apis_auth_token_post: %s\n" % e)
-    
+
 ```
 
 ## Documentation for API Endpoints
@@ -70,6 +70,7 @@ All URIs are relative to *http://localhost*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AuthApi* | [**login_for_access_token_ucsschool_apis_auth_token_post**](idbroker/provisioning_api/docs/AuthApi.md#login_for_access_token_ucsschool_apis_auth_token_post) | **POST** /ucsschool/apis/auth/token | Login For Access Token
+*ProvisioningApi* | [**delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete**](idbroker/provisioning_api/docs/ProvisioningApi.md#delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete) | **DELETE** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Delete
 *ProvisioningApi* | [**delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete**](idbroker/provisioning_api/docs/ProvisioningApi.md#delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete) | **DELETE** /ucsschool/apis/provisioning/v1/{school_authority}/users/{user_id} | Delete
 *ProvisioningApi* | [**get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head**](idbroker/provisioning_api/docs/ProvisioningApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Get Head
 *ProvisioningApi* | [**get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head**](idbroker/provisioning_api/docs/ProvisioningApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/schools/{name} | Get Head
@@ -82,6 +83,7 @@ Class | Method | HTTP request | Description
 *ProvisioningApi* | [**post_ucsschool_apis_provisioning_v1_school_authority_users_post**](idbroker/provisioning_api/docs/ProvisioningApi.md#post_ucsschool_apis_provisioning_v1_school_authority_users_post) | **POST** /ucsschool/apis/provisioning/v1/{school_authority}/users | Post
 *ProvisioningApi* | [**put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put**](idbroker/provisioning_api/docs/ProvisioningApi.md#put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put) | **PUT** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Put
 *ProvisioningApi* | [**put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put**](idbroker/provisioning_api/docs/ProvisioningApi.md#put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put) | **PUT** /ucsschool/apis/provisioning/v1/{school_authority}/users/{user_id} | Put
+*SchoolClassesApi* | [**delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete**](idbroker/provisioning_api/docs/SchoolClassesApi.md#delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete) | **DELETE** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Delete
 *SchoolClassesApi* | [**get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head**](idbroker/provisioning_api/docs/SchoolClassesApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Get Head
 *SchoolClassesApi* | [**get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get**](idbroker/provisioning_api/docs/SchoolClassesApi.md#get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get) | **GET** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Get
 *SchoolClassesApi* | [**post_ucsschool_apis_provisioning_v1_school_authority_classes_post**](idbroker/provisioning_api/docs/SchoolClassesApi.md#post_ucsschool_apis_provisioning_v1_school_authority_classes_post) | **POST** /ucsschool/apis/provisioning/v1/{school_authority}/classes | Post
@@ -114,12 +116,8 @@ Class | Method | HTTP request | Description
 
 - **Type**: OAuth
 - **Flow**: password
-- **Authorization URL**: 
+- **Authorization URL**:
 - **Scopes**: N/A
 
 
 ## Author
-
-
-
-

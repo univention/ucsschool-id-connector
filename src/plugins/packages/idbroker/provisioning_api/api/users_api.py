@@ -163,7 +163,7 @@ class UsersApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {}
 
         return self.api_client.call_api(
@@ -310,7 +310,7 @@ class UsersApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "object",
             422: "HTTPValidationError",
@@ -460,7 +460,7 @@ class UsersApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "User",
             422: "HTTPValidationError",
@@ -612,7 +612,7 @@ class UsersApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             201: "User",
             422: "HTTPValidationError",
@@ -777,7 +777,7 @@ class UsersApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "User",
             422: "HTTPValidationError",

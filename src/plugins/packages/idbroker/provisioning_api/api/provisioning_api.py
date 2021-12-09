@@ -36,6 +36,166 @@ class ProvisioningApi(object):
             api_client = ApiClient()
         self.api_client = api_client
 
+    def delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete(self, name, school_authority, school, **kwargs):  # noqa: E501
+        """Delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete(name, school_authority, school, async_req=True)
+        >>> result = thread.get()
+
+        :param name: (required)
+        :type name: str
+        :param school_authority: (required)
+        :type school_authority: str
+        :param school: (required)
+        :type school: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+        kwargs['_return_http_data_only'] = True
+        return self.delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete_with_http_info(name, school_authority, school, **kwargs)  # noqa: E501
+
+    def delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete_with_http_info(self, name, school_authority, school, **kwargs):  # noqa: E501
+        """Delete  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+
+        >>> thread = api.delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete_with_http_info(name, school_authority, school, async_req=True)
+        >>> result = thread.get()
+
+        :param name: (required)
+        :type name: str
+        :param school_authority: (required)
+        :type school_authority: str
+        :param school: (required)
+        :type school: str
+        :param async_req: Whether to execute the request asynchronously.
+        :type async_req: bool, optional
+        :param _return_http_data_only: response data without head status code
+                                       and headers
+        :type _return_http_data_only: bool, optional
+        :param _preload_content: if False, the urllib3.HTTPResponse object will
+                                 be returned without reading/decoding response
+                                 data. Default is True.
+        :type _preload_content: bool, optional
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the authentication
+                              in the spec for a single request.
+        :type _request_auth: dict, optional
+        :return: Returns the result object.
+                 If the method is called asynchronously,
+                 returns the request thread.
+        :rtype: None
+        """
+
+        local_var_params = locals()
+
+        all_params = [
+            'name',
+            'school_authority',
+            'school'
+        ]
+        all_params.extend(
+            [
+                'async_req',
+                '_return_http_data_only',
+                '_preload_content',
+                '_request_timeout',
+                '_request_auth'
+            ]
+        )
+
+        for key, val in six.iteritems(local_var_params['kwargs']):
+            if key not in all_params:
+                raise ApiTypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete" % key
+                )
+            local_var_params[key] = val
+        del local_var_params['kwargs']
+        # verify the required parameter 'name' is set
+        if self.api_client.client_side_validation and ('name' not in local_var_params or  # noqa: E501
+                                                        local_var_params['name'] is None):  # noqa: E501
+            raise ApiValueError("Missing the required parameter `name` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete`")  # noqa: E501
+        # verify the required parameter 'school_authority' is set
+        if self.api_client.client_side_validation and ('school_authority' not in local_var_params or  # noqa: E501
+                                                        local_var_params['school_authority'] is None):  # noqa: E501
+            raise ApiValueError("Missing the required parameter `school_authority` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete`")  # noqa: E501
+        # verify the required parameter 'school' is set
+        if self.api_client.client_side_validation and ('school' not in local_var_params or  # noqa: E501
+                                                        local_var_params['school'] is None):  # noqa: E501
+            raise ApiValueError("Missing the required parameter `school` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete`")  # noqa: E501
+
+        if self.api_client.client_side_validation and 'name' in local_var_params and not re.search(r'^[^*]+$', local_var_params['name']):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `name` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete`, must conform to the pattern `/^[^*]+$/`")  # noqa: E501
+        if self.api_client.client_side_validation and ('school_authority' in local_var_params and  # noqa: E501
+                                                        len(local_var_params['school_authority']) < 1):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school_authority` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete`, length must be greater than or equal to `1`")  # noqa: E501
+        if self.api_client.client_side_validation and 'school' in local_var_params and not re.search(r'^[^*]+$', local_var_params['school']):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete`, must conform to the pattern `/^[^*]+$/`")  # noqa: E501
+        collection_formats = {}
+
+        path_params = {}
+        if 'name' in local_var_params:
+            path_params['name'] = local_var_params['name']  # noqa: E501
+        if 'school_authority' in local_var_params:
+            path_params['school_authority'] = local_var_params['school_authority']  # noqa: E501
+        if 'school' in local_var_params:
+            path_params['school'] = local_var_params['school']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['application/json'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
+
+        response_types_map = {}
+
+        return self.api_client.call_api(
+            '/ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name}', 'DELETE',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_types_map=response_types_map,
+            auth_settings=auth_settings,
+            async_req=local_var_params.get('async_req'),
+            _return_http_data_only=local_var_params.get('_return_http_data_only'),  # noqa: E501
+            _preload_content=local_var_params.get('_preload_content', True),
+            _request_timeout=local_var_params.get('_request_timeout'),
+            collection_formats=collection_formats,
+            _request_auth=local_var_params.get('_request_auth'))
+
     def delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete(self, school_authority, user_id, **kwargs):  # noqa: E501
         """Delete  # noqa: E501
 
@@ -163,7 +323,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {}
 
         return self.api_client.call_api(
@@ -323,7 +483,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "object",
             422: "HTTPValidationError",
@@ -474,7 +634,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "object",
             422: "HTTPValidationError",
@@ -624,7 +784,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "object",
             422: "HTTPValidationError",
@@ -787,7 +947,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "SchoolClass",
             422: "HTTPValidationError",
@@ -938,7 +1098,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "School",
             422: "HTTPValidationError",
@@ -1088,7 +1248,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "User",
             422: "HTTPValidationError",
@@ -1240,7 +1400,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             201: "SchoolClass",
             422: "HTTPValidationError",
@@ -1363,6 +1523,9 @@ class ProvisioningApi(object):
                                                         local_var_params['school'] is None):  # noqa: E501
             raise ApiValueError("Missing the required parameter `school` when calling `post_ucsschool_apis_provisioning_v1_school_authority_schools_post`")  # noqa: E501
 
+        if self.api_client.client_side_validation and ('school_authority' in local_var_params and  # noqa: E501
+                                                        len(local_var_params['school_authority']) < 1):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school_authority` when calling `post_ucsschool_apis_provisioning_v1_school_authority_schools_post`, length must be greater than or equal to `1`")  # noqa: E501
         collection_formats = {}
 
         path_params = {}
@@ -1389,7 +1552,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             201: "School",
             422: "HTTPValidationError",
@@ -1541,7 +1704,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             201: "User",
             422: "HTTPValidationError",
@@ -1719,7 +1882,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "SchoolClass",
             422: "HTTPValidationError",
@@ -1884,7 +2047,7 @@ class ProvisioningApi(object):
 
         # Authentication setting
         auth_settings = ['OAuth2PasswordBearer']  # noqa: E501
-        
+
         response_types_map = {
             200: "User",
             422: "HTTPValidationError",

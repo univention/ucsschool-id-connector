@@ -194,7 +194,7 @@ class AuthApi(object):
 
         # Authentication setting
         auth_settings = []  # noqa: E501
-        
+
         response_types_map = {
             200: "Token",
             422: "HTTPValidationError",

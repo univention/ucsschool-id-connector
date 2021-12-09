@@ -4,11 +4,87 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete**](SchoolClassesApi.md#delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete) | **DELETE** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Delete
 [**get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head**](SchoolClassesApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Get Head
 [**get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get**](SchoolClassesApi.md#get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get) | **GET** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Get
 [**post_ucsschool_apis_provisioning_v1_school_authority_classes_post**](SchoolClassesApi.md#post_ucsschool_apis_provisioning_v1_school_authority_classes_post) | **POST** /ucsschool/apis/provisioning/v1/{school_authority}/classes | Post
 [**put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put**](SchoolClassesApi.md#put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put) | **PUT** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Put
 
+
+# **delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete**
+> delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete(name, school_authority, school)
+
+Delete
+
+### Example
+
+* OAuth Authentication (OAuth2PasswordBearer):
+```python
+from __future__ import print_function
+import time
+import idbroker.provisioning_api
+from idbroker.provisioning_api.rest import ApiException
+from pprint import pprint
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = idbroker.provisioning_api.Configuration(
+    host = "http://localhost"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure OAuth2 access token for authorization: OAuth2PasswordBearer
+configuration = idbroker.provisioning_api.Configuration(
+    host = "http://localhost"
+)
+configuration.access_token = 'YOUR_ACCESS_TOKEN'
+
+# Enter a context with an instance of the API client
+with idbroker.provisioning_api.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
+    name = 'name_example' # str |
+school_authority = 'school_authority_example' # str |
+school = 'school_example' # str |
+
+    try:
+        # Delete
+        api_instance.delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete(name, school_authority, school)
+    except ApiException as e:
+        print("Exception when calling SchoolClassesApi->delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete: %s\n" % e)
+```
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **name** | **str**|  |
+ **school_authority** | **str**|  |
+ **school** | **str**|  |
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[OAuth2PasswordBearer](../README.md#OAuth2PasswordBearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head**
 > object get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head(name, school_authority, school)
@@ -45,9 +121,9 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    name = 'name_example' # str | 
-school_authority = 'school_authority_example' # str | 
-school = 'school_example' # str | 
+    name = 'name_example' # str |
+school_authority = 'school_authority_example' # str |
+school = 'school_example' # str |
 
     try:
         # Get Head
@@ -61,9 +137,9 @@ school = 'school_example' # str |
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **str**|  | 
- **school_authority** | **str**|  | 
- **school** | **str**|  | 
+ **name** | **str**|  |
+ **school_authority** | **str**|  |
+ **school** | **str**|  |
 
 ### Return type
 
@@ -121,9 +197,9 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    name = 'name_example' # str | 
-school_authority = 'school_authority_example' # str | 
-school = 'school_example' # str | 
+    name = 'name_example' # str |
+school_authority = 'school_authority_example' # str |
+school = 'school_example' # str |
 
     try:
         # Get
@@ -137,9 +213,9 @@ school = 'school_example' # str |
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **str**|  | 
- **school_authority** | **str**|  | 
- **school** | **str**|  | 
+ **name** | **str**|  |
+ **school_authority** | **str**|  |
+ **school** | **str**|  |
 
 ### Return type
 
@@ -197,8 +273,8 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    school_authority = 'school_authority_example' # str | 
-school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass | 
+    school_authority = 'school_authority_example' # str |
+school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass |
 
     try:
         # Post
@@ -212,8 +288,8 @@ school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass |
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **school_authority** | **str**|  | 
- **school_class** | [**SchoolClass**](SchoolClass.md)|  | 
+ **school_authority** | **str**|  |
+ **school_class** | [**SchoolClass**](SchoolClass.md)|  |
 
 ### Return type
 
@@ -271,10 +347,10 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    school_authority = 'school_authority_example' # str | 
-school = 'school_example' # str | 
-name = 'name_example' # str | 
-school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass | 
+    school_authority = 'school_authority_example' # str |
+school = 'school_example' # str |
+name = 'name_example' # str |
+school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass |
 
     try:
         # Put
@@ -288,10 +364,10 @@ school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass |
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **school_authority** | **str**|  | 
- **school** | **str**|  | 
- **name** | **str**|  | 
- **school_class** | [**SchoolClass**](SchoolClass.md)|  | 
+ **school_authority** | **str**|  |
+ **school** | **str**|  |
+ **name** | **str**|  |
+ **school_class** | [**SchoolClass**](SchoolClass.md)|  |
 
 ### Return type
 
@@ -313,4 +389,3 @@ Name | Type | Description  | Notes
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
