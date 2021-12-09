@@ -8,8 +8,6 @@ TODO:
 
  - LDAP and Openldap
 
-`Trying it out`_
-
 
 **************
 Administration

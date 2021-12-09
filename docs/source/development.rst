@@ -257,13 +257,13 @@ Dev setup
 
 We are going to develop with the following setup:
 
-* You have a git *checkout* of the *ucsschool-id-connector* on your *dev laptop*
+* You have a git *checkout* of the *ucsschool-id-connector* on your *dev machine*
 * There you use the script *devsync* to synchronize changes,
 * which are synced to the corresponding *installation* folder of the *ID-Connector* docker app.
 
 
-Dev Laptop
-----------
+Dev machine
+-----------
 
 Setup development environment:
 
@@ -311,66 +311,12 @@ Run ``make`` without argument to see more useful commands:
     build-docker-img          build docker image locally quickly
     build-docker-img-on-knut  copy source to docker.knut, build and push docker image
 
-
-Build Docker image:
-
-.. code-block:: bash
-
-    $ make build-docker-img
-
-You could start the docker image on its own, but this doesn't make too much sense (see below):
-
-.. code-block:: bash
-
-    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
-      docker-test-upload.software-univention.de/ucsschool-id-connector:$(cat VERSION.txt)
-
-
-Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in the output
-at the start of the build process.
-
-
-.. note:
-    Running the ID-Connector on your dev laptop doesn't make much sense, because it requires
-    a UCS setup, containing an LDAP, to work. So rather develop your code on your local machine,
-    and ``devsync`` to an actual installation
-
 Dev VM
 ------
-TODO To be continued
 
-When the container is started that way (not through the appcenter)
-it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
-after stopping the firewall (``service univention-firewall stop``).
+You need to install the ID-Connector app through the appcenter on your development vm.
 
-
-
-
-
-
-You can also:
-
-.. code-block:: bash
-
-    # let it run in the background.
-    $ docker run -d ...
-
-    # see the stdout
-    $ docker logs ucsschool_id_connector
-
-    # stop the running container
-    $ docker stop ucsschool_id_connector
-
-    # remove the container
-    $ docker rm ucsschool_id_connector
-
-To enter the running container run:
-
-.. code-block:: bash
-
-    $ docker exec -it ucsschool_id_connector /bin/ash
-
-When started through the appcenter use:
+When started through the appcenter use the following to enter the container of the app:
 
 .. code-block:: bash
 
@@ -395,6 +341,66 @@ Inside the container you can use the system Python:
     In [1]: from ucsschool_id_connector import models
 
 
+Now, in order to sync  your working copy into the running ID-Connector container on the dev vm,
+we need to:
+
+1. Stop the ID-Connector in it's container,
+2. Find out its id,
+3. Use this id to sync the files into the container,
+4. Restart and prepare the container for development.
+
+Lets do it!
+
+.. code-block:: bash
+
+    # [dev VM] stop the actual ID-Connector in it's docker container
+    $ docker exec "$(ucr get appcenter/apps/ucsschool-id-connector/container)" \
+      /etc/init.d/ucsschool-id-connector stop
+
+    #[dev VM] find out the ID
+    $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' \
+    "$(ucr get appcenter/apps/ucsschool-id-connector/container)"
+
+    →  /var/lib/docker/overlay2/8dc...387/merged
+
+    # [developer machine] use the ID to sync our local modified files
+    ucsschool-id-connector$ devsync -v src/ \
+    <IP of dev VM>:/var/lib/docker/overlay2/8dc...387/merged/ucsschool-id-connector/
+
+    # [dev VM] enter the container
+    $ univention-app shell ucsschool-id-connector
+
+    # [in container] install the dev requirements
+    $ python3 -m pip install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
+
+    # [in container] install ID-Connector from source in development mode
+    $ python3 -m pip install -e src/
+
+    # [in container] start the ID-Connector
+    $ /etc/init.d/ucsschool-id-connector restart
+
+    # [in container] stop the Rest API
+    $ /etc/init.d/ucsschool-id-connector-rest-api stop
+
+    # [in container] start the REST API in auto-reloading dev mode
+    $ /etc/init.d/ucsschool-id-connector-rest-api-dev start
+
+    # [in container] schedule a user
+    $ src/schedule_user demo_teacher
+
+    # DEBUG: Searching LDAP for user with username 'demo_teacher'...
+    # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.
+    # DEBUG: Done.
+
+    # Log is in /var/log/univention/ucsschool-id-connector/queues.log
+
+    # [in container]
+    $ cd src
+
+    # [in container]
+    $ python3 -m pytest -l -v
+
+
 Install Kelvin API on sender for integration tests
 --------------------------------------------------
 
@@ -406,7 +412,7 @@ create/modify/delete users in the host and the target systems:
     $ univention-app install ucsschool-kelvin-rest-api
     $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json \
          /var/lib/ucs-school-import/configs/user_import.json
-    $ python -c 'import json;
+    $ python -c 'import json;\
                  fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w");\
                  config = json.load(fp);\
                  config["configuration_checks"] = ["defaults", "mapped_udm_properties"];\
@@ -425,60 +431,7 @@ Please execute on the sender system:
     $ echo IP_TRAEGER1 > /var/www/IP_traeger1.txt
     $ echo IP_TRAEGER2 > /var/www/IP_traeger2.txt
 
-Using devsync with running app container
-----------------------------------------
 
-Sync your working copy into the running container, enter it and restart the services:
-
-.. code-block:: bash
-
-    # [test VM]
-    $ docker exec "$(ucr get appcenter/apps/ucsschool-id-connector/container)" \
-      /etc/init.d/ucsschool-id-connector stop
-
-    #[test VM]
-    $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' \
-    "$(ucr get appcenter/apps/ucsschool-id-connector/container)"
-
-    →  /var/lib/docker/overlay2/8dc...387/merged
-
-    # [developer machine]
-    ~/git/ucsschool-id-connector$ devsync -v src/ \
-    10.200.3.66:/var/lib/docker/overlay2/8dc...387/merged/ucsschool-id-connector/
-
-    # [test VM]
-    $ univention-app shell ucsschool-id-connector
-
-    # [in container]
-    $ python3 -m pip install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
-
-    # [in container]
-    $ python3 -m pip install -e src/
-
-    # [in container]
-    $ /etc/init.d/ucsschool-id-connector restart
-
-    # [in container]
-    $ /etc/init.d/ucsschool-id-connector-rest-api stop
-
-    # [in container]
-    $ /etc/init.d/ucsschool-id-connector-rest-api-dev start
-    #                       auto-reload HTTP-API ^^^^
-
-    # [in container]
-    $ src/schedule_user demo_teacher
-
-    # DEBUG: Searching LDAP for user with username 'demo_teacher'...
-    # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.
-    # DEBUG: Done.
-
-    # Log is in /var/log/univention/ucsschool-id-connector/queues.log
-
-    # [in container]
-    $ cd src
-
-    # [in container]
-    $ python3 -m pytest -l -v
 
 Plugin development
 ==================
@@ -635,11 +588,75 @@ To run integration tests (*not safe, will modify source and target systems!*), r
 
 # schedule_user for testing
 
-Old Diagrams
-============
+Old Diagrams and Texts
+======================
 
 .. figure:: static/ucsschool-id-connector_overview2.png
    :target: _static/ucsschool-id-connector_overview2.png
    :width: 500
 
    The |IDC|, *less* simplified
+
+
+From Dev machine
+----------------
+
+
+
+Build Docker image:
+
+.. code-block:: bash
+
+    $ make build-docker-img
+
+You could start the docker image on its own, but this doesn't make too much sense (see below):
+
+.. code-block:: bash
+
+    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
+      docker-test-upload.software-univention.de/ucsschool-id-connector:$(cat VERSION.txt)
+
+
+Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in the output
+at the start of the build process.
+
+
+.. note:
+    Running the ID-Connector on your dev machine doesn't make much sense, because it requires
+    a UCS setup, containing an LDAP, to work. So rather develop your code on your local machine,
+    and ``devsync`` to an actual installation
+
+From Dev VM
+-----------
+TODO To be continued
+
+When the container is started that way (not through the appcenter)
+it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
+after stopping the firewall (``service univention-firewall stop``).
+
+
+
+
+
+
+You can also:
+
+.. code-block:: bash
+
+    # let it run in the background.
+    $ docker run -d ...
+
+    # see the stdout
+    $ docker logs ucsschool_id_connector
+
+    # stop the running container
+    $ docker stop ucsschool_id_connector
+
+    # remove the container
+    $ docker rm ucsschool_id_connector
+
+To enter the running container run:
+
+.. code-block:: bash
+
+    $ docker exec -it ucsschool_id_connector /bin/ash
