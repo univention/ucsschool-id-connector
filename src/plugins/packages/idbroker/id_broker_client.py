@@ -471,6 +471,7 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
         "head": "get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head",
         "post": "post_ucsschool_apis_provisioning_v1_school_authority_classes_post",
         "put": "put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put",
+        "delete": "delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete",
     }
     _object_type = SchoolClass
     _gen_api_handler = GenSchoolClassesApi
@@ -508,8 +509,6 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
 
     async def delete(self, name: str, school: str) -> None:
         """Delete school_class with `name` in `school`."""
-        pass
-        # TODO we don't have a delete resource for school_classes on the id-broker side.
         await self._delete(
             id_arg_name="name", school_authority=self.school_authority_name, name=name, school=school
         )
