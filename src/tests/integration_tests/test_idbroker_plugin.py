@@ -29,10 +29,10 @@
 
 import os
 import random
-from typing import List, Tuple
+import subprocess
+from typing import List
 
 import faker
-import httpx
 import pytest
 
 import ucsschool_id_connector.plugin_loader
@@ -45,6 +45,7 @@ from ucsschool.kelvin.client import (
     User as KelvinUser,
     UserResource as KelvinUserResource,
 )
+from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 
 # load ID Broker plugin
 ucsschool_id_connector.plugin_loader.load_plugins()
@@ -60,7 +61,6 @@ def mock_env(monkeypatch):
 
 @pytest.fixture(scope="session")
 def id_connector_ip():
-    # TODO
     return os.environ["nameserver1"]
 
 
@@ -79,7 +79,7 @@ def get_local_kelvin_user():
             roles=roles,
             schools=[f"{school_name}"],
             school_classes={f"{school_name}": classes},
-            source_uid=f"IDBROKER-{s_a_name}",  # TODO check
+            source_uid=f"IDBROKER-{s_a_name}",
             session=session,
         )
 
@@ -101,7 +101,7 @@ def get_local_kelvin_school_class():
 
 
 @pytest.fixture(scope="function")
-async def kelvin_school_sender(kelvin_session, id_connector_ip):
+async def local_kelvin_school(kelvin_session, id_connector_ip):
     school = KelvinSchool(
         name=f"{fake.user_name()}",
         display_name=fake.first_name(),
@@ -111,74 +111,68 @@ async def kelvin_school_sender(kelvin_session, id_connector_ip):
     return school
 
 
-# TODO cleanup schools, user & classes
+@pytest.fixture(scope="session")
+async def new_school_auth(kelvin_session, id_broker_ip):
+    """
+    create a provisioning-admin user on the id broker system.
+    """
+    s_a_name = "".join(fake.street_name().split())
+    print(f"*** Creating school authority {s_a_name!r}...")
+    password = fake.password(length=15)
+    kelvin_user = KelvinUser(
+        name=f"provisioning-{s_a_name}",
+        school="DEMOSCHOOL",
+        firstname=fake.first_name(),
+        lastname=fake.last_name(),
+        disabled=False,
+        password=password,
+        record_uid=fake.uuid4(),
+        roles=["teacher"],
+        schools=["DEMOSCHOOL"],
+        session=kelvin_session(id_broker_ip),
+    )
+    await kelvin_user.save()
+    print(f"Created admin user {kelvin_user.name!r}.")
+
+    yield s_a_name, password
 
 
 @pytest.fixture(scope="session")
-def delete_kelvin_school(kelvin_session, id_broker_ip, id_connector_ip):
-    async def _delete_school(session: KelvinSession, name: str):
-        schools = [school async for school in KelvinSchoolResource(session=session).search(name=name)]
-        if not schools:
-            print(f"*** delete_kelvin_school(): no such school: '{name}'.")
-        school_dn = schools[0].dn
-        res_del = httpx.delete(
-            f"https://Administrator:univention@{session.host}/univention/udm/container/ou/{school_dn}",
-            verify=False,
-        )
-        if res_del.status_code not in (200, 204):
-            print(f"*** Error deleting OU {schools[0].name!r}. ***")
-        else:
-            print(f"Deleted school {schools[0].name!r}.")
-
-    async def _func(s_a_name: str, name: str) -> None:
-        # TODO this does not work yet
-        session = kelvin_session(id_broker_ip)
-        await _delete_school(session, f"{s_a_name}-{name}")
-        session = kelvin_session(id_connector_ip)
-        await _delete_school(session, name)
-
-    return _func
+async def school_auth_conf(
+    new_school_auth, school_auth_config_id_broker
+) -> SchoolAuthorityConfiguration:
+    s_a_name, password = new_school_auth
+    return school_auth_config_id_broker(s_a_name, password)
 
 
-@pytest.fixture
-async def schedule_delete_kelvin_school(delete_kelvin_school):
-    s_a_and_school_names: List[Tuple[str, str]] = []
-
-    def _func(s_a_name: str, name: str):
-        s_a_and_school_names.append((s_a_name, name))
-
-    yield _func
-
-    for s_a_name, name in s_a_and_school_names:
-        print(f"Deleting Kelvin school {name!r} (auth: {s_a_name!r})...")
-        await delete_kelvin_school(s_a_name, name)
-
-
-# IDBrokerPerSAUserDispatcher
+# TODO cleanup schools, user & classes cf. test_id_broker_plugin.py
+# This has to be done both on the ID-Connector & the ID Broker side.
 
 
 @pytest.mark.asyncio
 async def test_school_exists_after_user_with_non_existing_school_is_synced(
-    kelvin_school_sender,
+    local_kelvin_school,
     get_local_kelvin_user,
-    schedule_delete_kelvin_school,
     wait_for_kelvin_object_exists,
     kelvin_session,
     id_connector_ip,
     id_broker_ip,
+    school_auth_conf,
+    make_school_authority,
 ):
     """
     create kelvin user with non existing school
     -> school should be created on id-broker side
     -> the display_name should be set correct
     """
-    # TODO so far only tested with existing TEST-authority
-    s_a_name = "TEST"
-    await schedule_delete_kelvin_school(s_a_name, kelvin_school_sender.name)
+
+    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
+    s_a_name = school_authority.name
     kelvin_user: KelvinUser = get_local_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_connector_ip),
-        school_name=kelvin_school_sender.name,
+        school_name=local_kelvin_school.name,
         classes=[],
         roles=[random.choice(("student", "teacher"))],
     )
@@ -188,7 +182,7 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{kelvin_user.school}",
-        display_name=kelvin_school_sender.display_name,
+        display_name=local_kelvin_school.display_name,
     )
 
 
@@ -197,24 +191,26 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
 
 @pytest.mark.asyncio
 async def test_school_exists_after_school_class_with_non_existin_school_is_synced(
-    kelvin_school_sender,
+    local_kelvin_school,
     get_local_kelvin_school_class,
-    schedule_delete_kelvin_school,
     wait_for_kelvin_object_exists,
     kelvin_session,
     id_connector_ip,
     id_broker_ip,
+    make_school_authority,
+    school_auth_conf,
 ):
     """
     create kelvin schoolclass with non existing school
     -> school should be created on id-broker side
         -> the display_name should be set correct
     """
-    s_a_name = "TEST"
-    schedule_delete_kelvin_school(s_a_name, kelvin_school_sender.name)
+    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
+    s_a_name = school_authority.name
     kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
         session=kelvin_session(id_connector_ip),
-        school_name=kelvin_school_sender.name,
+        school_name=local_kelvin_school.name,
     )
     await kelvin_school_class.save()
     await wait_for_kelvin_object_exists(
@@ -222,30 +218,32 @@ async def test_school_exists_after_school_class_with_non_existin_school_is_synce
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{kelvin_school_class.school}",
-        display_name=kelvin_school_sender.display_name,
+        display_name=local_kelvin_school.display_name,
     )
 
 
 @pytest.mark.asyncio
 async def test_handle_attr_description_empty(
-    kelvin_school_sender,
+    local_kelvin_school,
     get_local_kelvin_school_class,
     get_local_kelvin_user,
-    schedule_delete_kelvin_school,
     wait_for_kelvin_object_exists,
     kelvin_session,
     id_connector_ip,
     id_broker_ip,
+    make_school_authority,
+    school_auth_conf,
 ):
     """
     Creating a school class with an empty descritption should not
     lead to an error but set it to an empty string on the id-broker side.
     """
-    s_a_name = "TEST"
-    schedule_delete_kelvin_school(s_a_name, kelvin_school_sender.name)
+    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
+    s_a_name = school_authority.name
     kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
         session=kelvin_session(id_connector_ip),
-        school_name=kelvin_school_sender.name,
+        school_name=local_kelvin_school.name,
     )
     kelvin_school_class.description = None
     await kelvin_school_class.save()
@@ -254,21 +252,22 @@ async def test_handle_attr_description_empty(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=kelvin_school_class.name,
-        school=f"{s_a_name}-{kelvin_school_sender.name}",
+        school=f"{s_a_name}-{local_kelvin_school.name}",
         descritpion="",
     )
 
 
 @pytest.mark.asyncio
 async def test_handle_attr_users(
-    kelvin_school_sender,
+    local_kelvin_school,
     get_local_kelvin_school_class,
     get_local_kelvin_user,
-    schedule_delete_kelvin_school,
     wait_for_kelvin_object_exists,
     kelvin_session,
     id_connector_ip,
     id_broker_ip,
+    make_school_authority,
+    school_auth_conf,
 ):
     """
     Tests if the users of the kelvin class are placed inside on the
@@ -278,19 +277,20 @@ async def test_handle_attr_users(
     - IDBrokerPerSAGroupDispatcher._handle_attr_name
     - IDBrokerPerSAGroupDispatcher._handle_attr_school
     """
-    s_a_name = "TEST"
-    schedule_delete_kelvin_school(s_a_name, kelvin_school_sender.name)
+    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
+    s_a_name = school_authority.name
     local_kelvin_user: KelvinUser = get_local_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_connector_ip),
-        school_name=kelvin_school_sender.name,
+        school_name=local_kelvin_school.name,
         classes=[],
         roles=[random.choice(("student", "teacher"))],
     )
     await local_kelvin_user.save()
     local_kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
         session=kelvin_session(id_connector_ip),
-        school_name=kelvin_school_sender.name,
+        school_name=local_kelvin_school.name,
     )
     local_kelvin_school_class.users = [local_kelvin_user.name]
     await local_kelvin_school_class.save()
@@ -299,7 +299,7 @@ async def test_handle_attr_users(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=local_kelvin_school_class.name,
-        school=f"{s_a_name}-{kelvin_school_sender.name}",
+        school=f"{s_a_name}-{local_kelvin_school.name}",
         users=[f"{s_a_name}-{local_kelvin_user.name}"],
     )
     # test IDBrokerPerSAUserDispatcher._handle_attr_context
@@ -308,10 +308,10 @@ async def test_handle_attr_users(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{local_kelvin_user.name}",
-        school=f"{s_a_name}-{kelvin_school_sender.name}",
+        school=f"{s_a_name}-{local_kelvin_school.name}",
     )
     assert (
         local_kelvin_school_class.name
-        in remote_user.school_classes[f"{s_a_name}-{kelvin_school_sender.name}"]
+        in remote_user.school_classes[f"{s_a_name}-{local_kelvin_school.name}"]
     )
     assert set(local_kelvin_user.roles) == set(remote_user.roles)

@@ -343,7 +343,7 @@ async def make_school_authority(
     ucsschool_id_connector_api_url,
     req_headers,
     http_request,
-    kelvin_school_authority_configuration,
+    school_authority_configuration,
 ) -> SchoolAuthorityConfiguration:
     """
     Fixture factory to create (and at the same time save) school authorities.
@@ -362,6 +362,7 @@ async def make_school_authority(
         url: UrlStr,
         plugins: List[str],
         plugin_configs: Dict[str, Dict[str, Any]],
+        plugin_name: str = "kelvin",
     ) -> SchoolAuthorityConfiguration:
         """
         Creates and saves a school authority
@@ -379,7 +380,7 @@ async def make_school_authority(
             expected_statuses=(204, 404),
         )
         # (re)create school authority configuration
-        school_authority = kelvin_school_authority_configuration(
+        school_authority = school_authority_configuration(
             name=name,
             active=active,
             url=url,
@@ -387,8 +388,8 @@ async def make_school_authority(
             plugin_configs=plugin_configs,
         )
         config_as_dict = school_authority.dict()
-        config_as_dict["plugin_configs"]["kelvin"]["password"] = school_authority.plugin_configs[
-            "kelvin"
+        config_as_dict["plugin_configs"][plugin_name]["password"] = school_authority.plugin_configs[
+            plugin_name
         ]["password"].get_secret_value()
         url = ucsschool_id_connector_api_url("school_authorities")
         http_request(
@@ -401,8 +402,8 @@ async def make_school_authority(
         async for loaded_s_a in ConfigurationStorage.load_school_authorities():
             if (
                 loaded_s_a.name == name
-                and loaded_s_a.plugin_configs["kelvin"]["password"].get_secret_value()
-                == plugin_configs["kelvin"]["password"]
+                and loaded_s_a.plugin_configs[plugin_name]["password"].get_secret_value()
+                == plugin_configs[plugin_name]["password"]
             ):
                 break
         else:

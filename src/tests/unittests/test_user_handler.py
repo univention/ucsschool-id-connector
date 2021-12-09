@@ -47,7 +47,7 @@ async def test_map_attributes(
     api,
     mock_plugins,
     listener_user_add_modify_object,
-    kelvin_school_authority_configuration,
+    school_authority_configuration,
 ):
     load_plugins()
     user_handler_class = {
@@ -59,7 +59,7 @@ async def test_map_attributes(
     else:
         raise AssertionError(f"Cannot find handler class for {api!r} API in plugins.")
     s_a_config = {
-        "kelvin": kelvin_school_authority_configuration(),
+        "kelvin": school_authority_configuration(),
     }[api]
     # can only be imported after load_plugins():
     import ucsschool_id_connector_defaults.kelvin_connection
