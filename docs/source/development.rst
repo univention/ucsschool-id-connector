@@ -248,6 +248,10 @@ The complete picture might be a bit too full. If you want have it anyway, here a
 Dev setup
 ==========
 
+You might be tempted to think you can develop everything on your developer machine / laptop.
+However, running the |IDC| requires an LDAP, listeners etc, so you really need a full blown
+UCS installation. Hence, we rather have a local checkout on the dev machine,
+and then sync the code changes into an ID-Connector container that is running on a VM.
 
 .. figure:: static/dev_setup.svg
    :target: _static/dev_setup.svg
@@ -394,43 +398,20 @@ Lets do it!
 
     # Log is in /var/log/univention/ucsschool-id-connector/queues.log
 
-    # [in container]
-    $ cd src
-
-    # [in container]
-    $ python3 -m pytest -l -v
 
 
-Install Kelvin API on sender for integration tests
---------------------------------------------------
+Run unit tests
+--------------
 
-A HTTP-API is required for the integration tests (running in the container) to be able to
-create/modify/delete users in the host and the target systems:
+Unit tests are executed as part of the :ref:`build process <Building>`.
+To start them manually in the installed apps running Docker container, run:
 
 .. code-block:: bash
 
-    $ univention-app install ucsschool-kelvin-rest-api
-    $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json \
-         /var/lib/ucs-school-import/configs/user_import.json
-    $ python -c 'import json;\
-                 fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w");\
-                 config = json.load(fp);\
-                 config["configuration_checks"] = ["defaults", "mapped_udm_properties"];\
-                 config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"];\
-                 fp.seek(0);\
-                 json.dump(config, fp, indent=4, sort_keys=True);\
-                 fp.close()'
-
-To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses.
-Username "Administrator" and password "univention" is assumed.
-
-Please execute on the sender system:
-
-.. code-block:: bash
-
-    $ echo IP_TRAEGER1 > /var/www/IP_traeger1.txt
-    $ echo IP_TRAEGER2 > /var/www/IP_traeger2.txt
-
+    root@ucs-host:# univention-app shell ucsschool-id-connector
+    $ cd src/
+    $ python3 -m pytest -l -v tests/unittests
+    $ exit
 
 
 Plugin development
@@ -548,60 +529,11 @@ When the app starts, all plugins will be discovered and logged:
    INFO  [ucsschool_id_connector.plugins.load_plugins:84] Installed hooks: [.., 'dummy_func']
    ...
 
-Build release
-=============
+Building
+========
 
-* Update the apps version in ``VERSION.txt``.
-* Add an entry to ``src/HISTORY.rst``.
-* Build and push Docker image to Docker registry
-
-To upload ("push") a new Docker image to Univentions Docker registry
-(``docker-test.software-univention.de``), run:
-
-.. code-block:: bash
-
-    $ cd ~/git/ucsschool-id-connector
-    $ make build-docker-img-on-knut
-
-
-Tests
-=====
-
-Unit tests are executed as part of the build process.
-To start them manually in the installed apps running Docker container, run:
-
-.. code-block:: bash
-
-    root@ucs-host:# univention-app shell ucsschool-id-connector
-    /ucsschool-id-connector # cd src/
-    /ucsschool-id-connector/src # python3 -m pytest -l -v tests/unittests
-    /ucsschool-id-connector/src # exit
-
-To run integration tests (*not safe, will modify source and target systems!*), run:
-
-.. code-block:: bash
-
-    root@ucs-host:# univention-app shell ucsschool-id-connector
-    /ucsschool-id-connector # cd src/
-    /ucsschool-id-connector/src # python3 -m pytest -l -v tests/integration_tests
-    /ucsschool-id-connector/src # exit
-
-# schedule_user for testing
-
-Old Diagrams and Texts
-======================
-
-.. figure:: static/ucsschool-id-connector_overview2.png
-   :target: _static/ucsschool-id-connector_overview2.png
-   :width: 500
-
-   The |IDC|, *less* simplified
-
-
-From Dev machine
-----------------
-
-
+Build image
+-----------
 
 Build Docker image:
 
@@ -621,22 +553,9 @@ Replace version (in above command ``1.0.0``) with current version. See ``APP_VER
 at the start of the build process.
 
 
-.. note:
-    Running the ID-Connector on your dev machine doesn't make much sense, because it requires
-    a UCS setup, containing an LDAP, to work. So rather develop your code on your local machine,
-    and ``devsync`` to an actual installation
-
-From Dev VM
------------
-TODO To be continued
-
 When the container is started that way (not through the appcenter)
 it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
 after stopping the firewall (``service univention-firewall stop``).
-
-
-
-
 
 
 You can also:
@@ -660,3 +579,79 @@ To enter the running container run:
 .. code-block:: bash
 
     $ docker exec -it ucsschool_id_connector /bin/ash
+
+
+
+Build release
+-------------
+
+* Update the apps version in ``VERSION.txt``.
+* Add an entry to ``src/HISTORY.rst``.
+* Build and push Docker image to Docker registry
+
+To upload ("push") a new Docker image to Univentions Docker registry
+(``docker-test.software-univention.de``), run:
+
+.. code-block:: bash
+
+    $ cd ~/git/ucsschool-id-connector
+    $ make build-docker-img-on-knut
+
+
+Integration tests
+=================
+
+Setup of integration tests
+--------------------------
+
+.. note::
+
+    To setup integration tests, first setup an environment. Look here:
+
+    ``ucs/test/scenarios/autotest-244-ucsschool-id-sync.cfg``
+
+
+Install Kelvin API on sender for integration tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A HTTP-API is required for the integration tests (running in the container) to be able to
+create/modify/delete users in the host and the target systems:
+
+.. code-block:: bash
+
+    $ univention-app install ucsschool-kelvin-rest-api
+    $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json \
+         /var/lib/ucs-school-import/configs/user_import.json
+    $ python -c 'import json;\
+                 fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w");\
+                 config = json.load(fp);\
+                 config["configuration_checks"] = ["defaults", "mapped_udm_properties"];\
+                 config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"];\
+                 fp.seek(0);\
+                 json.dump(config, fp, indent=4, sort_keys=True);\
+                 fp.close()'
+
+To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses.
+Username "Administrator" and password "univention" is assumed.
+
+# maybe only needed for integration tests. Cough, cough,... TODO
+Please execute on the sender system:
+
+.. code-block:: bash
+
+    $ echo IP_TRAEGER1 > /var/www/IP_traeger1.txt
+    $ echo IP_TRAEGER2 > /var/www/IP_traeger2.txt
+
+
+
+Run integration tests
+---------------------
+
+To run integration tests (*not safe, will modify source and target systems!*), run:
+
+.. code-block:: bash
+
+    root@ucs-host:# univention-app shell ucsschool-id-connector
+    # cd src/
+    # python3 -m pytest -l -v tests/integration_tests
+    # exit
