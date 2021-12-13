@@ -55,11 +55,13 @@ from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.utils import school_class_dn_regex
 from ucsschool_id_connector_defaults.group_handler_base import (
     GroupDispatcherPluginBase,
+    GroupNotFoundError,
     PerSchoolAuthorityGroupDispatcherBase,
 )
 from ucsschool_id_connector_defaults.user_handler_base import (
     PerSchoolAuthorityUserDispatcherBase,
     UserDispatcherPluginBase,
+    UserNotFoundError,
 )
 
 
@@ -125,13 +127,14 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         return {"id": obj.id}
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> User:
-        """Retrieve a user from ID Broker API."""
+        """Retrieve a user from ID Broker API.
+        If it does not exist on the id broker, we need to
+        raise an UserNotFoundError, so it will be created."""
         self.logger.debug("Retrieving user with search parameters: %r", search_params)
         try:
             return await self.id_broker_user.get(user_id=search_params["id"])
         except IDBrokerNotFoundError:
-            self.logger.error(f"No user found with search params: {search_params!r}.")
-            raise
+            raise UserNotFoundError(f"No user found with search params: {search_params!r}.")
 
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
@@ -237,15 +240,16 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
         return {"school_authority": self.school_authority.name, "name": name, "school": school}
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> SchoolClass:
-        """Retrieve a school class from ID Broker API."""
+        """Retrieve a school class from ID Broker API.
+        If it does not exist on the id broker, we need to
+        raise an GroupNotFoundError, so it will be created."""
         self.logger.debug("Retrieving school class with search parameters: %r", search_params)
         try:
             return await self.id_broker_school_class.get(
                 name=search_params["name"], school=search_params["school"]
             )
         except (IDBrokerNotFoundError, IDBrokerError):
-            self.logger.error(f"No school class found with search params: {search_params!r}.")
-            raise
+            raise GroupNotFoundError(f"No school class found with search params: {search_params!r}.")
 
     async def _handle_attr_school(self, obj: ListenerGroupAddModifyObject) -> str:
         """Name of school for this school class on the target."""
