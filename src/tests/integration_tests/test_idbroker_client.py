@@ -64,11 +64,6 @@ from idbroker.id_broker_client import (  # isort:skip  # noqa: E402
 fake = faker.Faker()
 
 
-@pytest.fixture
-def mock_env(monkeypatch):
-    monkeypatch.setenv("UNSAFE_SSL", "1")
-
-
 @pytest.fixture(scope="session")
 async def new_school_auth(delete_kelvin_school, kelvin_session, id_broker_ip) -> Tuple[str, str]:
     s_a_name = "".join(fake.street_name().split())
@@ -114,9 +109,9 @@ async def new_school_auth(delete_kelvin_school, kelvin_session, id_broker_ip) ->
 
 @pytest.fixture(scope="session")
 async def school_auth_conf(
-    school_auth_config_id_broker, new_school_auth
+    school_auth_config_id_broker, new_id_broker_school_auth
 ) -> SchoolAuthorityConfiguration:
-    s_a_name, password = new_school_auth
+    s_a_name, password = new_id_broker_school_auth
     sac = school_auth_config_id_broker(s_a_name, password)
     return SchoolAuthorityConfiguration(**sac)
 

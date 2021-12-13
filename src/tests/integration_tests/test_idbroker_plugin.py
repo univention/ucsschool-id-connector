@@ -27,7 +27,6 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import os
 import random
 import subprocess
 from typing import List
@@ -45,23 +44,12 @@ from ucsschool.kelvin.client import (
     User as KelvinUser,
     UserResource as KelvinUserResource,
 )
-from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 
 # load ID Broker plugin
 ucsschool_id_connector.plugin_loader.load_plugins()
 id_broker = pytest.importorskip("idbroker")
 
 fake = faker.Faker()
-
-
-@pytest.fixture
-def mock_env(monkeypatch):
-    monkeypatch.setenv("UNSAFE_SSL", "1")
-
-
-@pytest.fixture(scope="session")
-def id_connector_ip():
-    return os.environ["nameserver1"]
 
 
 @pytest.fixture(scope="session")
@@ -111,40 +99,6 @@ async def local_kelvin_school(kelvin_session, id_connector_ip):
     return school
 
 
-@pytest.fixture(scope="session")
-async def new_school_auth(kelvin_session, id_broker_ip):
-    """
-    create a provisioning-admin user on the id broker system.
-    """
-    s_a_name = "".join(fake.street_name().split())
-    print(f"*** Creating school authority {s_a_name!r}...")
-    password = fake.password(length=15)
-    kelvin_user = KelvinUser(
-        name=f"provisioning-{s_a_name}",
-        school="DEMOSCHOOL",
-        firstname=fake.first_name(),
-        lastname=fake.last_name(),
-        disabled=False,
-        password=password,
-        record_uid=fake.uuid4(),
-        roles=["teacher"],
-        schools=["DEMOSCHOOL"],
-        session=kelvin_session(id_broker_ip),
-    )
-    await kelvin_user.save()
-    print(f"Created admin user {kelvin_user.name!r}.")
-
-    yield s_a_name, password
-
-
-@pytest.fixture(scope="session")
-async def school_auth_conf(
-    new_school_auth, school_auth_config_id_broker
-) -> SchoolAuthorityConfiguration:
-    s_a_name, password = new_school_auth
-    return school_auth_config_id_broker(s_a_name, password)
-
-
 # TODO cleanup schools, user & classes cf. test_id_broker_plugin.py
 # This has to be done both on the ID-Connector & the ID Broker side.
 
@@ -157,7 +111,7 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
     kelvin_session,
     id_connector_ip,
     id_broker_ip,
-    school_auth_conf,
+    id_broker_school_auth_conf,
     make_school_authority,
 ):
     """
@@ -166,7 +120,7 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
     -> the display_name should be set correct
     """
 
-    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
     kelvin_user: KelvinUser = get_local_kelvin_user(
@@ -198,14 +152,14 @@ async def test_school_exists_after_school_class_with_non_existin_school_is_synce
     id_connector_ip,
     id_broker_ip,
     make_school_authority,
-    school_auth_conf,
+    id_broker_school_auth_conf,
 ):
     """
     create kelvin schoolclass with non existing school
     -> school should be created on id-broker side
-        -> the display_name should be set correct
+    -> the display_name should be set correct
     """
-    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
     kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
@@ -232,13 +186,13 @@ async def test_handle_attr_description_empty(
     id_connector_ip,
     id_broker_ip,
     make_school_authority,
-    school_auth_conf,
+    id_broker_school_auth_conf,
 ):
     """
     Creating a school class with an empty descritption should not
     lead to an error but set it to an empty string on the id-broker side.
     """
-    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
     kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
@@ -267,7 +221,7 @@ async def test_handle_attr_users(
     id_connector_ip,
     id_broker_ip,
     make_school_authority,
-    school_auth_conf,
+    id_broker_school_auth_conf,
 ):
     """
     Tests if the users of the kelvin class are placed inside on the
@@ -277,7 +231,7 @@ async def test_handle_attr_users(
     - IDBrokerPerSAGroupDispatcher._handle_attr_name
     - IDBrokerPerSAGroupDispatcher._handle_attr_school
     """
-    school_authority = await make_school_authority(plugin_name="id_broker", **school_auth_conf)
+    school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
     local_kelvin_user: KelvinUser = get_local_kelvin_user(

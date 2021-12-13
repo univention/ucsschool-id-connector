@@ -217,6 +217,16 @@ def id_broker_ip(docker_hostname: str, http_request) -> str:
 
 
 @pytest.fixture(scope="session")
+def id_connector_ip(docker_hostname):
+    return docker_hostname
+
+
+@pytest.fixture
+def mock_env(monkeypatch):
+    monkeypatch.setenv("UNSAFE_SSL", "1")
+
+
+@pytest.fixture(scope="session")
 def school_auth_config_id_broker(id_broker_ip):
     """
     Fixture to create configurations for replicating to the ID Broker.
@@ -243,6 +253,40 @@ def school_auth_config_id_broker(id_broker_ip):
         }
 
     return _school_auth_config_id_broker
+
+
+@pytest.fixture(scope="session")
+async def new_id_broker_school_auth(kelvin_session, id_broker_ip):
+    """
+    create a provisioning-admin user on the id broker system.
+    """
+    s_a_name = "".join(fake.street_name().split())
+    print(f"*** Creating school authority {s_a_name!r}...")
+    password = fake.password(length=15)
+    kelvin_user = User(
+        name=f"provisioning-{s_a_name}",
+        school="DEMOSCHOOL",
+        firstname=fake.first_name(),
+        lastname=fake.last_name(),
+        disabled=False,
+        password=password,
+        record_uid=fake.uuid4(),
+        roles=["teacher"],
+        schools=["DEMOSCHOOL"],
+        session=kelvin_session(id_broker_ip),
+    )
+    await kelvin_user.save()
+    print(f"Created admin user {kelvin_user.name!r}.")
+
+    yield s_a_name, password
+
+
+@pytest.fixture(scope="session")
+async def id_broker_school_auth_conf(
+    new_id_broker_school_auth, school_auth_config_id_broker
+) -> SchoolAuthorityConfiguration:
+    s_a_name, password = new_id_broker_school_auth
+    return school_auth_config_id_broker(s_a_name, password)
 
 
 @pytest.fixture()
@@ -492,6 +536,7 @@ async def save_mapping(
 
 
 def create_school(host: str, ou_name: str):
+    # TODO this should be done via kelvin
     print(f"Creating school {ou_name!r} on host {host!r}...")
     if not Path("/usr/bin/ssh").exists() or not Path("/usr/bin/sshpass").exists():
         print("Installing 'ssh' and 'sshpass'...")
