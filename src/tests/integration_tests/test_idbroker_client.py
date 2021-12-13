@@ -676,17 +676,23 @@ async def test_user_update(
     schedule_delete_kelvin_school_class(s_a_name, class_name, school)
     schedule_delete_kelvin_user(s_a_name, kelvin_user.name.split("-", 1)[-1])
     await kelvin_user.save()
-    user_1: User = await id_broker_user.get(kelvin_user.record_uid)
-    compare_kelvin_and_id_broker_user(kelvin_user, user_1, s_a_name)
-    user_1.first_name = fake.first_name()
-    user_1.last_name = fake.last_name()
-    for school, context in user_1.context.items():
+    id_broker_user: User = await id_broker_user.get(kelvin_user.record_uid)
+    compare_kelvin_and_id_broker_user(kelvin_user, id_broker_user, s_a_name)
+    id_broker_user.first_name = fake.first_name()
+    id_broker_user.last_name = fake.last_name()
+    for school, context in id_broker_user.context.items():
         context.classes.clear()
         context.classes.extend(["2b", "1a"])
-    user_2: User = await id_broker_user.update(user_1)
-    user_3: User = await id_broker_user.get(user_1.id)
-    assert user_2 == user_3
-    assert user_1 == user_2
+    updated_id_broker_user: User = await id_broker_user.update(id_broker_user)
+    get_updated_id_broker_user: User = await id_broker_user.get(id_broker_user.id)
+    assert updated_id_broker_user == get_updated_id_broker_user
+    orig_user_classes = [
+        (school, set(context.classes)) for school, context in id_broker_user.context.items()
+    ]
+    updated_user_classes = [
+        (school, set(context.classes)) for school, context in updated_id_broker_user.context.items()
+    ]
+    assert orig_user_classes == updated_user_classes
 
 
 @pytest.mark.asyncio
