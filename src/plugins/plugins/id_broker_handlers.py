@@ -55,13 +55,11 @@ from ucsschool_id_connector.plugins import hook_impl, plugin_manager
 from ucsschool_id_connector.utils import school_class_dn_regex
 from ucsschool_id_connector_defaults.group_handler_base import (
     GroupDispatcherPluginBase,
-    GroupNotFoundError,
     PerSchoolAuthorityGroupDispatcherBase,
 )
 from ucsschool_id_connector_defaults.user_handler_base import (
     PerSchoolAuthorityUserDispatcherBase,
     UserDispatcherPluginBase,
-    UserNotFoundError,
 )
 
 
@@ -104,7 +102,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         return True
 
     async def print_ids(self, obj: ListenerUserAddModifyObject) -> None:
-        self.logger.error(f"Object that is being created or updated: {obj}")
+        self.logger.info(f"Object that is being created or updated: {obj}")
 
     async def _handle_attr_context(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
         context = {
@@ -132,7 +130,8 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         try:
             return await self.id_broker_user.get(user_id=search_params["id"])
         except IDBrokerNotFoundError:
-            raise UserNotFoundError(f"No user found with search params: {search_params!r}.")
+            self.logger.error(f"No user found with search params: {search_params!r}.")
+            raise
 
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
@@ -146,7 +145,10 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
                         School(name=school, display_name=str(entries[0].displayName))
                     )
                 else:
-                    self.logger.error(f"School {school} was not found on sender system.")
+                    raise Exception(
+                        f"School {school} of User {request_body['username']}"
+                        f" was not found on sender system."
+                    )
             self.logger.info(
                 "Going to create user %r in school %r: %r...",
                 request_body["id"],
@@ -241,11 +243,9 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             return await self.id_broker_school_class.get(
                 name=search_params["name"], school=search_params["school"]
             )
-        except IDBrokerNotFoundError:
-            raise GroupNotFoundError(f"No school class found with search params: {search_params!r}.")
-        except IDBrokerError:
-            # happend in tests - why?
-            raise GroupNotFoundError(f"No school class found with search params: {search_params!r}.")
+        except (IDBrokerNotFoundError, IDBrokerError):
+            self.logger.error(f"No school class found with search params: {search_params!r}.")
+            raise
 
     async def _handle_attr_school(self, obj: ListenerGroupAddModifyObject) -> str:
         """Name of school for this school class on the target."""
@@ -301,13 +301,15 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
                     School(name=school, display_name=str(entries[0].displayName))
                 )
             else:
-                self.logger.error(f"School {school} was not found on sender system.")
+                raise Exception(
+                    f"School {school} of School class {request_body['name']}"
+                    f" was not found on sender system."
+                )
         try:
             school_class: SchoolClass = await self.id_broker_school_class.create(
                 SchoolClass(**request_body)
             )
             self.logger.info("School class created: %r.", school_class)
-        # except IDBrokerError as exc: # we can't do this - otherwise fetch return 422
         except IDBrokerNotFoundError as exc:
             self.logger.error(
                 "Provisioning API responded with 'invalid request'."
@@ -340,8 +342,6 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
     ) -> None:
         """Delete a school class object at the target."""
         self.logger.info("Going to delete school class: %r...", obj)
-        # TODO where do i generate the python client?
-        # so far we did not have a delete method for school classees
         await self.id_broker_school_class.delete(
             api_school_class_data.name, api_school_class_data.school
         )
