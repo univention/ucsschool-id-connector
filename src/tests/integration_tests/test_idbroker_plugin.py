@@ -36,7 +36,6 @@ import pytest
 
 import ucsschool_id_connector.plugin_loader
 from ucsschool.kelvin.client import (
-    School as KelvinSchool,
     SchoolClass as KelvinSchoolClass,
     SchoolClassResource as KelvinSchoolClassResource,
     SchoolResource as KelvinSchoolResource,
@@ -53,7 +52,8 @@ fake = faker.Faker()
 
 
 @pytest.fixture(scope="session")
-def get_local_kelvin_user():
+def make_kelvin_user_on_sender():
+    # todo use make_sender_user instead
     def _func(
         session: KelvinSession, school_name: str, classes: List[str], roles: List[str], s_a_name: str
     ) -> KelvinUser:
@@ -75,7 +75,7 @@ def get_local_kelvin_user():
 
 
 @pytest.fixture(scope="session")
-def get_local_kelvin_school_class():
+def make_kelvin_school_class_on_sender():
     def _func(session: KelvinSession, school_name: str) -> KelvinSchoolClass:
         return KelvinSchoolClass(
             name=fake.user_name(),
@@ -89,14 +89,8 @@ def get_local_kelvin_school_class():
 
 
 @pytest.fixture(scope="function")
-async def local_kelvin_school(kelvin_session, id_connector_ip):
-    school = KelvinSchool(
-        name=f"{fake.user_name()}",
-        display_name=fake.first_name(),
-        session=kelvin_session(id_connector_ip),
-    )
-    await school.save()
-    return school
+async def kelvin_school_on_sender(create_school, id_connector_host_name):
+    return await create_school(id_connector_host_name)
 
 
 # TODO cleanup schools, user & classes cf. test_id_broker_plugin.py
@@ -105,11 +99,11 @@ async def local_kelvin_school(kelvin_session, id_connector_ip):
 
 @pytest.mark.asyncio
 async def test_school_exists_after_user_with_non_existing_school_is_synced(
-    local_kelvin_school,
-    get_local_kelvin_user,
+    kelvin_school_on_sender,
+    make_kelvin_user_on_sender,
     wait_for_kelvin_object_exists,
     kelvin_session,
-    id_connector_ip,
+    id_connector_host_name,
     id_broker_ip,
     id_broker_school_auth_conf,
     make_school_authority,
@@ -123,10 +117,10 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    kelvin_user: KelvinUser = get_local_kelvin_user(
+    kelvin_user: KelvinUser = make_kelvin_user_on_sender(
         s_a_name=s_a_name,
-        session=kelvin_session(id_connector_ip),
-        school_name=local_kelvin_school.name,
+        session=kelvin_session(id_connector_host_name),
+        school_name=kelvin_school_on_sender.name,
         classes=[],
         roles=[random.choice(("student", "teacher"))],
     )
@@ -136,7 +130,7 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{kelvin_user.school}",
-        display_name=local_kelvin_school.display_name,
+        display_name=kelvin_school_on_sender.display_name,
     )
 
 
@@ -145,11 +139,11 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
 
 @pytest.mark.asyncio
 async def test_school_exists_after_school_class_with_non_existin_school_is_synced(
-    local_kelvin_school,
-    get_local_kelvin_school_class,
+    kelvin_school_on_sender,
+    make_kelvin_school_class_on_sender,
     wait_for_kelvin_object_exists,
     kelvin_session,
-    id_connector_ip,
+    id_connector_host_name,
     id_broker_ip,
     make_school_authority,
     id_broker_school_auth_conf,
@@ -162,9 +156,9 @@ async def test_school_exists_after_school_class_with_non_existin_school_is_synce
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
-        session=kelvin_session(id_connector_ip),
-        school_name=local_kelvin_school.name,
+    kelvin_school_class: KelvinSchoolClass = make_kelvin_school_class_on_sender(
+        session=kelvin_session(id_connector_host_name),
+        school_name=kelvin_school_on_sender.name,
     )
     await kelvin_school_class.save()
     await wait_for_kelvin_object_exists(
@@ -172,18 +166,18 @@ async def test_school_exists_after_school_class_with_non_existin_school_is_synce
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{kelvin_school_class.school}",
-        display_name=local_kelvin_school.display_name,
+        display_name=kelvin_school_on_sender.display_name,
     )
 
 
 @pytest.mark.asyncio
 async def test_handle_attr_description_empty(
-    local_kelvin_school,
-    get_local_kelvin_school_class,
-    get_local_kelvin_user,
+    kelvin_school_on_sender,
+    make_kelvin_school_class_on_sender,
+    make_kelvin_user_on_sender,
     wait_for_kelvin_object_exists,
     kelvin_session,
-    id_connector_ip,
+    id_connector_host_name,
     id_broker_ip,
     make_school_authority,
     id_broker_school_auth_conf,
@@ -195,9 +189,9 @@ async def test_handle_attr_description_empty(
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
-        session=kelvin_session(id_connector_ip),
-        school_name=local_kelvin_school.name,
+    kelvin_school_class: KelvinSchoolClass = make_kelvin_school_class_on_sender(
+        session=kelvin_session(id_connector_host_name),
+        school_name=kelvin_school_on_sender.name,
     )
     kelvin_school_class.description = None
     await kelvin_school_class.save()
@@ -206,19 +200,19 @@ async def test_handle_attr_description_empty(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=kelvin_school_class.name,
-        school=f"{s_a_name}-{local_kelvin_school.name}",
+        school=f"{s_a_name}-{kelvin_school_on_sender.name}",
         descritpion="",
     )
 
 
 @pytest.mark.asyncio
 async def test_handle_attr_users(
-    local_kelvin_school,
-    get_local_kelvin_school_class,
-    get_local_kelvin_user,
+    kelvin_school_on_sender,
+    make_kelvin_school_class_on_sender,
+    make_kelvin_user_on_sender,
     wait_for_kelvin_object_exists,
     kelvin_session,
-    id_connector_ip,
+    id_connector_host_name,
     id_broker_ip,
     make_school_authority,
     id_broker_school_auth_conf,
@@ -234,17 +228,17 @@ async def test_handle_attr_users(
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    local_kelvin_user: KelvinUser = get_local_kelvin_user(
+    local_kelvin_user: KelvinUser = make_kelvin_user_on_sender(
         s_a_name=s_a_name,
-        session=kelvin_session(id_connector_ip),
-        school_name=local_kelvin_school.name,
+        session=kelvin_session(id_connector_host_name),
+        school_name=kelvin_school_on_sender.name,
         classes=[],
         roles=[random.choice(("student", "teacher"))],
     )
     await local_kelvin_user.save()
-    local_kelvin_school_class: KelvinSchoolClass = get_local_kelvin_school_class(
-        session=kelvin_session(id_connector_ip),
-        school_name=local_kelvin_school.name,
+    local_kelvin_school_class: KelvinSchoolClass = make_kelvin_school_class_on_sender(
+        session=kelvin_session(id_connector_host_name),
+        school_name=kelvin_school_on_sender.name,
     )
     local_kelvin_school_class.users = [local_kelvin_user.name]
     await local_kelvin_school_class.save()
@@ -253,7 +247,7 @@ async def test_handle_attr_users(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=local_kelvin_school_class.name,
-        school=f"{s_a_name}-{local_kelvin_school.name}",
+        school=f"{s_a_name}-{kelvin_school_on_sender.name}",
         users=[f"{s_a_name}-{local_kelvin_user.name}"],
     )
     # test IDBrokerPerSAUserDispatcher._handle_attr_context
@@ -262,10 +256,10 @@ async def test_handle_attr_users(
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{local_kelvin_user.name}",
-        school=f"{s_a_name}-{local_kelvin_school.name}",
+        school=f"{s_a_name}-{kelvin_school_on_sender.name}",
     )
     assert (
         local_kelvin_school_class.name
-        in remote_user.school_classes[f"{s_a_name}-{local_kelvin_school.name}"]
+        in remote_user.school_classes[f"{s_a_name}-{kelvin_school_on_sender.name}"]
     )
     assert set(local_kelvin_user.roles) == set(remote_user.roles)

@@ -28,6 +28,7 @@
 # <http://www.gnu.org/licenses/>.
 
 
+import subprocess
 from typing import Any, Dict
 
 import faker
@@ -44,10 +45,10 @@ fake = faker.Faker()
 
 
 @pytest.mark.asyncio
-async def test_handle_attr_users(
+async def test_compatibilty_of_user_sync(
     wait_for_kelvin_object_exists,
     kelvin_session,
-    id_connector_ip,
+    id_connector_host_name,
     id_broker_ip,
     make_school_authority,
     id_broker_school_auth_conf,
@@ -61,16 +62,13 @@ async def test_handle_attr_users(
     tests if all users are replicated on the id broker and
     a subset is replicated on another school authority
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
-    target_ip_2 = school_auth_host_configs["IP_traeger2"]
-    target_number = 1
-    if id_broker_ip == target_ip_2:
-        target_number = 2
-    other_school_authority = await make_school_authority(**school_auth_config_kelvin(target_number))
+    target_ip = school_auth_host_configs["IP_traeger1"]
+    other_school_authority = await make_school_authority(**school_auth_config_kelvin(2))
     broker_school_authority = await make_school_authority(
         plugin_name="id_broker", **id_broker_school_auth_conf
     )
-    auth_school_mapping = create_schools([(other_school_authority, target_number)])
+    subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
+    auth_school_mapping = await create_schools([(other_school_authority, 2)])
     ou_auth1 = auth_school_mapping[other_school_authority.name][0]
     mapping = {
         ou_auth1: other_school_authority.name,
@@ -82,14 +80,14 @@ async def test_handle_attr_users(
     await wait_for_kelvin_object_exists(
         resource_cls=KelvinUserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_ip),
         name=sender_user["name"],
     )
-    print(f"... looking for it in {other_school_authority.name}...")
+    print(f"... looking for it in {broker_school_authority.name}...")
     await wait_for_kelvin_object_exists(
         resource_cls=KelvinUserResource,
         method="get",
         session=kelvin_session(id_broker_ip),
-        name=f"{broker_school_authority.name}-{sender_user.name}",
-        school=f"{broker_school_authority.name}-{sender_user.name}",
+        name=f"{broker_school_authority.name}-{sender_user['name']}",
+        school=f"{broker_school_authority.name}-{sender_user['name']}",
     )
