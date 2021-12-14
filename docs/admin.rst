@@ -74,8 +74,9 @@ UDM
    - know the basic structure of UDM objects and their attributes
    - add and manage extended attributes
 
-   |rarr| TODO Nico simple UDM documentation. Where are the basic concepts defined? |br|
    |rarr| https://docs.software-univention.de/developer-reference-5.0.html#chap:udm
+   |rarr| TODO Nico simple UDM documentation would be needed, where
+   the basic concepts are defined. Any ideas? |br|
 
 .. _UCR:
 
@@ -126,7 +127,7 @@ Appcenter settings
    |rarr| https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630 |br|
    |rarr|  https://help.univention.com/t/ucs-school-work-groups-and-school-classes/16925 |br|
    |rarr|  https://docs.software-univention.de/ucsschool-handbuch-5.0.html (german only)|br|
-   |rarr|  TODO Nico english needed, basic concepts would be needed
+   |rarr|  TODO Nico english version would be needed, at least basic concepts
 
 |UAS| |KLV| REST API
    The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
@@ -137,8 +138,8 @@ Appcenter settings
    You need to be able to install and configure kelvin.
 
    |rarr| https://docs.software-univention.de/ucsschool-kelvin-rest-api/overview.html |br|
-   |rarr| TODO Nico concepts of properties and mappings (not sample files, but answering the why, and
-   describing the problem that |KLV| solves)
+   |rarr| TODO Nico concepts of properties and mappings (not just sample files, but answering
+   the why, and describing the problem that |KLV| solves)
 
    - best so far: https://docs.software-univention.de/ucsschool-handbuch-5.0.html#structure:ldap
 
@@ -213,7 +214,8 @@ To add a dedicated |KLV| API user for the |UAS| ID-Connector
 consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
 on how to do that.
 
-TODO Nico: link to proper section in documentation
+TODO Nico:
+   - link to proper section in documentation
    - write the proper section first
 
 Configuration
