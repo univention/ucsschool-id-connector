@@ -48,6 +48,8 @@ from ucsschool.kelvin.client import (
     KelvinResource,
     NoObject,
     School,
+    SchoolClass,
+    SchoolClassResource,
     Session,
     User,
     UserResource,
@@ -780,6 +782,33 @@ def id_broker_kelvin_session(kelvin_session):
         return kelvin_session(host=host, username=username, password=password)
 
     return _func
+
+
+@pytest.fixture()
+async def make_kelvin_school_class(kelvin_session, id_connector_host_name, id_broker_ip):
+    created_school_classes: List[Tuple[str]] = []
+
+    async def _func(school_name: str, sa_name: str, host: str) -> SchoolClass:
+        sc_obj = SchoolClass(
+            name=fake.user_name(),
+            school=school_name,
+            description=fake.first_name(),
+            session=kelvin_session(id_connector_host_name),
+            users=[],
+        )
+        await sc_obj.save()
+        created_school_classes.append((id_connector_host_name, sc_obj.name, sc_obj.school))
+        return sc_obj
+
+    yield _func
+
+    for host, name, school in created_school_classes:
+        try:
+            _sc = await SchoolClassResource(session=kelvin_session(host)).get(name=name, school=school)
+            await _sc.delete()
+            print(f"Success deleting school class {name!r} from host {host!r}.")
+        except NoObject:
+            print(f"No school class {name!r} on {host!r}.")
 
 
 @pytest.fixture(scope="session")
