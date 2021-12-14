@@ -32,8 +32,6 @@ import datetime
 import json
 import os
 import re
-import subprocess
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
@@ -44,7 +42,16 @@ import requests
 from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
 
-from ucsschool.kelvin.client import KelvinObject, KelvinResource, NoObject, Session, User, UserResource
+from ucsschool.kelvin.client import (
+    InvalidRequest,
+    KelvinObject,
+    KelvinResource,
+    NoObject,
+    School,
+    Session,
+    User,
+    UserResource,
+)
 from ucsschool_id_connector.config_storage import ConfigurationStorage
 from ucsschool_id_connector.constants import APP_ID, OUT_QUEUE_TOP_DIR
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
@@ -217,7 +224,7 @@ def id_broker_ip(docker_hostname: str, http_request) -> str:
 
 
 @pytest.fixture(scope="session")
-def id_connector_ip(docker_hostname):
+def id_connector_host_name(docker_hostname):
     return docker_hostname
 
 
@@ -535,50 +542,30 @@ async def save_mapping(
     print(f"Restored original s2s mapping: {s2s_mapping.dict()!r}")
 
 
-def create_school(host: str, ou_name: str):
-    # TODO this should be done via kelvin
-    print(f"Creating school {ou_name!r} on host {host!r}...")
-    if not Path("/usr/bin/ssh").exists() or not Path("/usr/bin/sshpass").exists():
-        print("Installing 'ssh' and 'sshpass'...")
-        process = subprocess.Popen(
-            ["apk", "add", "--no-cache", "openssh-client", "sshpass"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+@pytest.fixture(scope="session")
+def create_school(kelvin_session):
+    async def _func(host: str, ou_name: str = ""):
+        if not ou_name:
+            ou_name = f"{fake.user_name()}"
+        school = School(
+            name=ou_name,
+            display_name=fake.first_name(),
+            session=kelvin_session(host),
         )
-        stdout, stderr = process.communicate()
-        stderr = stderr.decode()
-        print(f"stdout={stdout}")
-        print(f"stderr={stderr}")
-    print(f"ssh to {host!r} to create {ou_name!r} with /usr/share/ucs-school-import/scripts/create_ou")
-    process = subprocess.Popen(
-        [
-            "/usr/bin/sshpass",
-            "-p",
-            "univention",
-            "/usr/bin/ssh",
-            "-o",
-            "StrictHostKeyChecking no",
-            f"root@{host}",
-            "/usr/share/ucs-school-import/scripts/create_ou",
-            ou_name,
-            f"dc{ou_name}"[:13],
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    stdout, stderr = process.communicate()
-    stderr = stderr.decode()
-    print(f"stdout={stdout}")
-    print(f"stderr={stderr}")
-    assert (not stderr) or ("Already attached!" in stderr) or ("created successfully" in stderr)
-    if "Already attached!" in stderr:
-        print(f" => OU {ou_name!r} exists in {host!r}.")
-    else:
-        print(f" => OU {ou_name!r} created in {host!r}.")
+
+        try:
+            school = await school.save()
+            print(f" => OU {ou_name!r} created in {host!r}.")
+        except InvalidRequest:
+            print(f" => OU {ou_name!r} exists in {host!r}.")
+
+        return school
+
+    return _func
 
 
 @pytest.fixture()
-def create_schools(docker_hostname, random_name):
+def create_schools(docker_hostname, random_name, create_school):
     """
     Fixture factory to create OUs. The OUs are cached during multiple test runs
     to save development time.
@@ -589,7 +576,7 @@ def create_schools(docker_hostname, random_name):
     else:
         auth_school_mapping = dict()
 
-    def _create_schools(
+    async def _create_schools(
         school_authorities: List[Tuple[SchoolAuthorityConfiguration, int]]
     ) -> Dict[str, List[str]]:
         """
@@ -613,12 +600,8 @@ def create_schools(docker_hostname, random_name):
                 hosts = [docker_hostname]
                 if ip := re.search(r"[\d+\.]+", auth.url).group():
                     hosts.append(ip)
-                print(f"Creating OU {ou!r} on hosts {hosts!r}) in parallel...")
-                with ThreadPoolExecutor(max_workers=len(hosts)) as executor:
-                    res = executor.map(
-                        create_school, hosts, [ou for _ in range(len(hosts))], timeout=120
-                    )
-                list(res)  # for the side effect of actually evaluating map()
+                for ip in hosts:
+                    await create_school(host=ip, ou_name=ou)
                 if ou not in auth_school_mapping[auth.name]:
                     auth_school_mapping[auth.name].append(ou)
         with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:

@@ -136,7 +136,7 @@ async def test_create_user(
     target_ip_2 = school_auth_host_configs["IP_traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
-    auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
+    auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     ou_auth2 = auth_school_mapping[school_auth2.name][0]
@@ -215,7 +215,7 @@ async def test_delete_user(
     target_ip_2 = school_auth_host_configs["IP_traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
-    auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
+    auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     ou_auth2 = auth_school_mapping[school_auth2.name][0]
@@ -296,7 +296,7 @@ async def test_modify_user(
     target_ip_1 = school_auth_host_configs["IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
-    auth_school_mapping = create_schools([(school_auth1, 2), (school_auth2, 1)])
+    auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     ou_auth2 = auth_school_mapping[school_auth2.name][0]
@@ -387,7 +387,7 @@ async def test_class_change(
     """
     target_ip_1 = school_auth_host_configs["IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
-    auth_school_mapping = create_schools([(school_auth1, 1)])
+    auth_school_mapping = await create_schools([(school_auth1, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     await save_mapping({ou_auth1: school_auth1.name})
     sender_user: Dict[str, Any] = await make_sender_user(ous=[ou_auth1])
