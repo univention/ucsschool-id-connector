@@ -118,12 +118,18 @@ OPA (optional)
 
 
 Pre-commit (optional)
-
    Description
 
    You need to be able to: TODO
 
    |rarr| https://pre-commit.com/
+
+Pluggy
+   Description
+
+   You need to be able to: TODO
+
+   |rarr| https://pluggy.readthedocs.io/en/latest/
 
 
 
@@ -204,7 +210,7 @@ ID-Connector
 .. include:: legend.txt
 
 * We already know that he *DC Primary* writes data to the *Large in-queue*. This folder is
-  accessible by the host UCS system as well be the *ID Connector* docker container (where
+  accessible by the host UCS system as well be the |iIDC| docker container (where
   it is mounted).
 * *In Queue* is a python process, that reads out the *Large in-queue*. It still might need
   extra data from the LDAP in the *DC Primary*, which it will do using ``python-ldap``.
@@ -417,39 +423,97 @@ To start them manually in the installed apps running Docker container, run:
 Plugin development
 ==================
 
+How does the plugin system work?
+--------------------------------
 
-The code of the *UCS\@school ID Connector* app can be adapted through plugins.
-The ``pluggy`` plugin system is used to define, implement and call plugins. TODO: link to pluggy
-To share code between plugins additional Python packages can be installed.
-The following demonstrates a simple example of a custom Python packages
-and a plugin for *UCS\@school ID Connector*.
+The code of the |iUASIDC| app can be adapted through plugins.
+The `pluggy <https://pluggy.readthedocs.io/en/latest/>`_ plugin system is used
+to define, implement and call plugins.
 
-All plugin *specifications* (function signatures) are defined in ``src/ucsschool_id_connector/plugins.py``.
+Best have a quick peek at the
+`toy example <https://pluggy.readthedocs.io/en/latest/#a-toy-example>`_
 
-The directory structure for custom plugins and packages can be found
-in the host system below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``:
+The basic idea:
 
-.. code-block:: bash
+* specify hook specifications: callables with the signature you
+  want to have, decorated with a ``hook_spec`` marker.
+* write actual hook implementations, a.k.a 'plugins' that are later on called:
+  callables with the same name and signature as in the specification, but this
+  time decorated with a ``hook_impl`` marker
 
-    /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/
-    /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/packages/
-    /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/plugins/
+The ``hook_spec`` and ``hook_impl`` marker are already defined by the |IDC| system,
+you just need to use them. The same way calling your custom plugin is also catered for,
+as well as finding your plugins.
+
+The key file for |IDC| in this context is ``src/ucsschool_id_connector/plugins.py``.
+In there you you find the ``hook_spec`` and ``hook_impl`` markers.
+
+In this file you also find the plugin *specifications* (function signatures) - search for
+``@hook_spec`` to find them.
 
 The app is released with default plugins, that implement a default version
 for all specifications found in ``src/ucsschool_id_connector/plugins.py``.
+Search for ``@hook_impl`` in ``src/plugins`` to find them.
 
-An example plugin specification:
+For the following hooks the default plugins are only used if no custom plugins are used:
+* TODO
+
+To ease development of plugins there is also a mechanism for custom packages for shared code.
+
+A simple custom plugin
+----------------------
+
+The following demonstrates a simple example of a custom plugin for |IDC|, and an example of
+of a custom shared python package.
+
+The directory structure for your custom plugins and packages can be found
+in the host system below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``::
+
+    /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/packages/
+    /var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/plugins/plugins/
+
+You can now simple put a file containing a plugin class into the ``plugins/plugins`` directory.
+E.g. save the following into a file called ``myplugin.py``:
 
 .. code-block:: python
 
-    class DummyPluginSpec:
-        @hook_spec(firstresult=True)
-        def dummy_func(self, arg1, arg2):
-            """An example hook."""
+    from ucsschool_id_connector.utils import ConsoleAndFileLogging
+    from ucsschool_id_connector.plugins import hook_impl, plugin_manager
+    logger = ConsoleAndFileLogging.get_logger(__name__)
 
+    class MyPlugin:
 
-A directory structure for a custom plugin ``dummy`` and custom package ``example_package``
-below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``:
+        @hook_impl
+        def get_listener_object(self, obj_dict):
+            loggern.info("Myplugin runs get_listener_obj with %r", obj_dict)
+
+    plugin_manager.register(MyPlugin())
+
+You can now restart the |IDC|:
+
+.. code-block:: bash
+
+    $ univention-app  restart ucsschool-id-connector
+
+You can then check the queues log in ``/var/log/univention/ucsschool-id-connector/queues.log``
+and find entries like this::
+
+    2021-12-13 14:32:52 INFO  [ucsschool_id_connector.plugin_loader.load_plugins:79] Loaded plugins:
+    [...]
+    2021-12-13 14:32:52 INFO  [ucsschool_id_connector.plugin_loader.load_plugins:81]     'myplugin.MyPlugin': ['get_listener_object']
+
+This tells you that ``MyPlugin`` was found and the hook implementation for ``get_listener_object`` was found.
+
+Advanced example
+----------------
+
+In this example you will see how to additionally:
+
+* define your own hook specs
+* use an extra package for shared code across plugins.
+
+The directory structure for a custom plugin ``dummy`` and custom package ``example_package``
+below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/`` looks as follows:
 
 .. code-block:: bash
 
@@ -461,44 +525,13 @@ below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/``:
     .../plugins/plugins
     .../plugins/plugins/dummy.py
 
+.. note::
 
-Content of ``plugins/plugins/dummy.py``:
+    Putting the ``example_package`` into the ``packages`` directory solves
+    an import problem. As the ``packages`` is appended to the ``sys.path`` by
+    the module loader in ``plugin_loader.py``, packages herein can be imported
+    easily without being 'properbly' installed.
 
-.. code-block:: python
-
-    #
-    # An example plugin that will be usable as "plugin_manager.hook.dummy_func()".
-    # It uses a class from a module in a custom package:
-    # plugins/packages/example_package/example_module.py
-    #
-    # The plugin specifications are in src/ucsschool_id_connector/plugins.py
-    #
-
-    from ucsschool_id_connector.utils import ConsoleAndFileLogging
-    from ucsschool_id_connector.plugins import hook_impl, plugin_manager
-    from example_package.example_module import ExampleClass
-
-    logger = ConsoleAndFileLogging.get_logger(__name__)
-
-
-    class DummyPlugin:
-        @hook_impl
-        def dummy_func(self, arg1, arg2):  # <-- this must match the specification!
-            """
-            Example plugin function.
-
-            Returns the sum of its arguments.
-            Uses a class from a custom package.
-            """
-            logger.info("Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
-            example_obj = ExampleClass()
-            res = example_obj.add(arg1, arg2)
-            assert res == arg1 + arg2
-            return res
-
-
-    # register plugins
-    plugin_manager.register(DummyPlugin())
 
 Content of ``plugins/packages/example_package/example_module.py``:
 
@@ -520,7 +553,54 @@ Content of ``plugins/packages/example_package/example_module.py``:
             logger.info("Running ExampleClass.add() with arg1=%r arg2=%r.", arg1, arg2)
             return arg1 + arg2
 
+
+
+
+Content of ``plugins/plugins/dummy.py``:
+
+.. code-block:: python
+
+    #
+    # An example plugin that will be usable as "plugin_manager.hook.dummy_func()".
+    # It uses a class from a module in a custom package:
+    # plugins/packages/example_package/example_module.py
+    #
+
+    from ucsschool_id_connector.utils import ConsoleAndFileLogging
+    from ucsschool_id_connector.plugins import hook_impl, hook_spec, plugin_manager
+    from example_package.example_module import ExampleClass
+
+    logger = ConsoleAndFileLogging.get_logger(__name__)
+
+    class DummyPluginSpec:
+        @hook_spec(firstresult=True)
+        def dummy_func(self, arg1, arg2):
+            """An example hook."""
+
+    class DummyPlugin:
+        @hook_impl
+        def dummy_func(self, arg1, arg2):  # <-- this must match the specification!
+            """
+            Example plugin function.
+
+            Returns the sum of its arguments.
+            Uses a class from a custom package.
+            """
+            logger.info("Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
+            example_obj = ExampleClass()
+            res = example_obj.add(arg1, arg2)
+            assert res == arg1 + arg2
+            return res
+
+
+    # register plugins
+    plugin_manager.register(DummyPlugin())
+
+
 When the app starts, all plugins will be discovered and logged:
+
+You will then find successful messages like this in the queues log in
+``/var/log/univention/ucsschool-id-connector/queues.log``:
 
 .. code-block:: bash
 
@@ -541,21 +621,19 @@ Build Docker image:
 
     $ make build-docker-img
 
-You could start the docker image on its own, but this doesn't make too much sense (see below):
+You could start the docker image on its own, but it can't easily be used productively,
+so this only for testing/dev purposes:
 
 .. code-block:: bash
 
     $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
       docker-test-upload.software-univention.de/ucsschool-id-connector:$(cat VERSION.txt)
 
+.. note::
 
-Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in the output
-at the start of the build process.
-
-
-When the container is started that way (not through the appcenter)
-it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
-after stopping the firewall (``service univention-firewall stop``).
+    When the container is started that way (not through the appcenter)
+    it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
+    after stopping the firewall (``service univention-firewall stop``).
 
 
 You can also:
@@ -585,6 +663,10 @@ To enter the running container run:
 Build release
 -------------
 
+.. warning::
+
+    You need to be an univention developer to use this section
+
 * Update the apps version in ``VERSION.txt``.
 * Add an entry to ``src/HISTORY.rst``.
 * Build and push Docker image to Docker registry
@@ -606,7 +688,8 @@ Setup of integration tests
 
 .. note::
 
-    To setup integration tests, first setup an environment. Look here:
+    To setup integration tests, first setup an environment. Look in the ucs
+    repository in this file:
 
     ``ucs/test/scenarios/autotest-244-ucsschool-id-sync.cfg``
 
@@ -634,7 +717,6 @@ create/modify/delete users in the host and the target systems:
 To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses.
 Username "Administrator" and password "univention" is assumed.
 
-# maybe only needed for integration tests. Cough, cough,... TODO
 Please execute on the sender system:
 
 .. code-block:: bash
@@ -651,7 +733,7 @@ To run integration tests (*not safe, will modify source and target systems!*), r
 
 .. code-block:: bash
 
-    root@ucs-host:# univention-app shell ucsschool-id-connector
-    # cd src/
-    # python3 -m pytest -l -v tests/integration_tests
-    # exit
+    root@ucs-host$ univention-app shell ucsschool-id-connector
+    $ cd src/
+    $ python3 -m pytest -l -v tests/integration_tests
+    $ exit

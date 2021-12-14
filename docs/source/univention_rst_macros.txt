@@ -57,8 +57,10 @@
 .. |TCS| replace:: Univention Thin Client Services
 .. |iTCS| replace:: *Univention Thin Client Services*
 
-.. |IDC|     replace:: |UAS| ID Connector
-.. |iIDC|    replace:: |iUAS| *ID Connector*
+.. |IDC|     replace:: ID Connector
+.. |iIDC|    replace:: *ID Connector*
+.. |UASIDC|  replace:: |UAS| |IDC|
+.. |iUASIDC| replace:: |iUAS| |iIDC|
 .. |IDCS|    replace:: |IDC| Service
 .. |iIDCS|   replace:: |iIDC| *Service*
 .. |IDCH|    replace:: |IDC| HTTP API
@@ -68,4 +70,3 @@
 .. |br|      raw:: html
 
     <br>
-
