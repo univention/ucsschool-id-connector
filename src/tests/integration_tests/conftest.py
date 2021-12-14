@@ -48,6 +48,7 @@ from ucsschool.kelvin.client import (
     KelvinResource,
     NoObject,
     School,
+    SchoolClass,
     Session,
     User,
     UserResource,
@@ -564,6 +565,11 @@ def create_school(kelvin_session):
     return _func
 
 
+@pytest.fixture(scope="function")
+async def kelvin_school_on_sender(create_school, id_connector_host_name):
+    return await create_school(id_connector_host_name)
+
+
 @pytest.fixture()
 def create_schools(docker_hostname, random_name, create_school):
     """
@@ -737,6 +743,21 @@ def kelvin_session_kwargs(ca_cert):
             "host": host,
             "verify": False if is_ip(host) else str(ca_cert(host)),
         }
+
+    return _func
+
+
+@pytest.fixture(scope="session")
+def make_kelvin_school_class():
+    # todo return to_dict & delete after test
+    def _func(session: Session, school_name: str, users: List[str]) -> SchoolClass:
+        return SchoolClass(
+            name=fake.user_name(),
+            school=school_name,
+            description=fake.first_name(),
+            session=session,
+            users=[],
+        )
 
     return _func
 
