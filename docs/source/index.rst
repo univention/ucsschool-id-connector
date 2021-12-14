@@ -18,7 +18,6 @@ Welcome to |UAS| ID Connector's documentation!
     :alt: Python 3.8
     :target: https://www.python.org/downloads/release/python-382/
 
-TODO: Change links from 4.4 to 5.0.
 
 Overview
 ========
@@ -75,7 +74,7 @@ Contents
 
    admin
    development
-   appendix
+   file_locations
    example_json
    HISTORY
 
