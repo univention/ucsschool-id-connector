@@ -28,13 +28,14 @@
 # <http://www.gnu.org/licenses/>.
 
 import subprocess
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 import faker
 import pytest
 
 import ucsschool_id_connector.plugin_loader
 from ucsschool.kelvin.client import (
+    NoObject,
     SchoolClass as KelvinSchoolClass,
     SchoolClassResource as KelvinSchoolClassResource,
     SchoolResource as KelvinSchoolResource,
@@ -47,8 +48,46 @@ id_broker = pytest.importorskip("idbroker")
 
 fake = faker.Faker()
 
-# TODO cleanup schools, user & classes cf. test_id_broker_plugin.py
-# This has to be done both on the ID-Connector & the ID Broker side.
+# TODO cleanup schools & user
+# This has to be done both on the ID-Connector & the ID Broker side,
+# like in the fixture make_kelvin_school_class.
+# Hint: the fixture make_sender_user is not sufficient as it
+# does not know the full name on the id broker side.
+
+
+@pytest.fixture()
+async def make_kelvin_school_class(kelvin_session, id_connector_host_name):
+    """
+    - create a school class on the id-connector
+    - delete it after the test
+    - delete the synced object "sa_name-name" on the id-broker.
+    """
+    created_school_classes: List[Tuple[str]] = []
+
+    async def _func(host: str, school_name: str, sa_name: str) -> KelvinSchoolClass:
+        sc_obj = KelvinSchoolClass(
+            name=fake.user_name(),
+            school=school_name,
+            description=fake.first_name(),
+            session=kelvin_session(host),
+            users=[],
+        )
+        await sc_obj.save()
+        created_school_classes.append((id_connector_host_name, sa_name, sc_obj))
+        created_school_classes.append((host, sa_name, sc_obj))
+        return sc_obj
+
+    yield _func
+
+    for host, sa_name, sc_obj in created_school_classes:
+        try:
+            _sc = await KelvinSchoolClassResource(session=kelvin_session(host)).get(
+                name=sc_obj.name, school=f"{sa_name}-{sc_obj.school}"
+            )
+            await _sc.delete()
+            print(f"Success deleting school class {sc_obj.name!r} from host {host!r}.")
+        except NoObject:
+            print(f"No school class {sc_obj.name!r} on {host!r}.")
 
 
 @pytest.mark.asyncio
@@ -102,11 +141,10 @@ async def test_school_exists_after_school_class_with_non_existin_school_is_synce
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    kelvin_school_class: KelvinSchoolClass = make_kelvin_school_class(
-        session=kelvin_session(id_connector_host_name),
+    kelvin_school_class = await make_kelvin_school_class(
+        host=id_connector_host_name,
         school_name=kelvin_school_on_sender.name,
     )
-    await kelvin_school_class.save()
     await wait_for_kelvin_object_exists(
         resource_cls=KelvinSchoolResource,
         method="get",
@@ -134,9 +172,10 @@ async def test_school_class_handle_attr_description_empty(
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    kelvin_school_class: KelvinSchoolClass = make_kelvin_school_class(
-        session=kelvin_session(id_connector_host_name),
+    kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class(
+        host=id_connector_host_name,
         school_name=kelvin_school_on_sender.name,
+        sa_name=s_a_name,
     )
     kelvin_school_class.description = None
     await kelvin_school_class.save()
@@ -174,9 +213,10 @@ async def test_handle_attr_users(
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
     sender_user: Dict[str, Any] = await make_sender_user(ous=[kelvin_school_on_sender.name])
-    sender_kelvin_school_class: KelvinSchoolClass = make_kelvin_school_class(
-        session=kelvin_session(id_connector_host_name),
+    sender_kelvin_school_class: Dict[str, Any] = await make_kelvin_school_class(
+        host=id_connector_host_name,
         school_name=kelvin_school_on_sender.name,
+        sa_name=s_a_name,
     )
     sender_kelvin_school_class.users = [sender_user["name"]]
     await sender_kelvin_school_class.save()
