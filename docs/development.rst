@@ -5,8 +5,8 @@
 Development
 ***********
 
-Overview
-========
+Dev overview
+============
 
 .. figure:: images/id-connector-containers-simplified.svg
    :width: 400
@@ -35,8 +35,8 @@ This, of course, is a simplification. It is on a container level (in the sense u
 
 Let's have a look at what you need to know before we dive any deeper.
 
-Prerequisites
-=============
+Dev prerequisites
+=================
 First, we assume that you are already familiar with the chapter :doc:`admin`.
 
 You also need the following knowledge to follow this manual and to develop for ID-Connector:
@@ -142,7 +142,7 @@ Overview, less simplified
 .. include:: legend.txt
 
 
-Ok, isn't this more or less the same as above in `Overview`_? Yes, right you are. The additional
+Ok, isn't this more or less the same as above in `Dev overview`_? Yes, right you are. The additional
 element is the *Large in-queue*. This is a folder which interacts as the interface between the
 *DC Primary* and the *ID-Connector*. JSON files are written to the folder, and then read out.
 
@@ -288,7 +288,7 @@ You can later on also "activate" the ``venv`` using:
 
 Run ``make`` without argument to see more useful commands:
 
-.. code-block:: bash
+.. code-block::
 
     $ make
 

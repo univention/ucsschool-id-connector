@@ -1,0 +1,1 @@
+.. include:: ../src/HISTORY.rst

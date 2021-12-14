@@ -10,24 +10,24 @@ Example json
 ************
 
 
-Sending system
-==============
+Sending system examples
+=======================
 
 .. _school-authority-mapping:
 
 School authority config
 -----------------------
 
-.. literalinclude:: ../../examples/school_authority_kelvin.json
+.. literalinclude:: ../examples/school_authority_kelvin.json
 
 
 
 .. _school-to-authority-mapping:
 
-School to authority mapping
----------------------------
+School to authority mapping example
+-----------------------------------
 
-.. literalinclude:: ../../examples/mapping.json
+.. literalinclude:: ../examples/mapping.json
 
 
 
@@ -36,7 +36,7 @@ School to authority mapping
 Role specific Kelvin plugin mapping
 -----------------------------------
 
-.. literalinclude:: ../../examples/school_authority_role_specific_kelvin_mapping.json
+.. literalinclude:: ../examples/school_authority_role_specific_kelvin_mapping.json
 
 
 
@@ -50,16 +50,16 @@ Partial group sync
 This uses the ``kelvin-partial-group-sync`` plugin instead of the ``kelvin`` plugin in the
 `Role specific Kelvin plugin mapping`_.
 
-.. literalinclude:: ../../examples/school_authority_kelvin_partial_group_sync.json
+.. literalinclude:: ../examples/school_authority_kelvin_partial_group_sync.json
 
 
 
-Receiving system
-================
+Receiving system examples
+=========================
 
 .. _mapped_udm_properties_json:
 
 Mapped UDM properties
 ---------------------
 
-.. literalinclude:: ../../examples/mapped_udm_properties.json
+.. literalinclude:: ../examples/mapped_udm_properties.json

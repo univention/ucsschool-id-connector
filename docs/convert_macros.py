@@ -5,7 +5,7 @@
 import re
 import sys
 
-if len(sys.argv)<2:
+if len(sys.argv) < 2:
     print(f"Call as: {sys.argv[0]} <name of file>")
     sys.exit(1)
 lines = open(sys.argv[1]).readlines()
@@ -13,15 +13,16 @@ for line in lines:
     match = re.match(r'<!ENTITY\s+(\w*)\s+"(.+)"', line)
     if match:
         shortcut = match.group(1)
-        shortcut = shortcut.replace('ucs','')
+        shortcut = shortcut.replace("ucs", "")
 
         longform = match.group(2)
-        longform = longform.replace('@',r'\@')
+        longform = longform.replace("@", r"\@")
 
         print(f".. |{shortcut}| replace:: {longform}")
         print(f".. |i{shortcut}| replace:: *{longform}*")
 
-print("""
+print(
+    """
 .. |IDC|     replace:: |UAS| ID Connector
 .. |iIDC|    replace:: |iUAS| *ID Connector*
 .. |IDCS|    replace:: |IDC| Service
@@ -33,7 +34,5 @@ print("""
 .. |br|      raw:: html
 
     <br>
-""")
-
-
-
+"""
+)

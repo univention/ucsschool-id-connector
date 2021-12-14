@@ -32,9 +32,9 @@ For this a configuration is necessary in advance to create an assignment
 "Which school users should be transferred to which remote instance?"
 Then these users are created, updated and deleted.
 
-.. figure:: static/ucsschool-id-connector_overview_extended.svg
+.. figure:: images/ucsschool-id-connector_overview_extended.svg
+   :width: 600
    :align: center
-
 
 In this documentation you will learn how to administer an id-connector setup,
 and we hope to teach you how to develop plugins for id-connector as well.

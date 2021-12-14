@@ -7,8 +7,8 @@
 Administration
 **************
 
-Overview
-========
+Admin overview
+==============
 
 .. figure:: images/ucsschool-id-connector_overview_extended.svg
    :width: 700
@@ -33,8 +33,9 @@ The |IDC| replication system is composed of four components:
 
 
 
-Prerequisites
-=============
+Admin prerequisites
+===================
+
 This chapter is useful when you need to administer an id-connector setup,
 or you need to integrate id-connector.
 To follow this manual you should be familiar with the following aspects
@@ -361,7 +362,7 @@ to properties on the receiving side.
 
 Here is what the mapping related part of an example config looks like:
 
-.. code-block:: json
+.. code-block::
 
    ...
     {
@@ -409,7 +410,7 @@ receiving school:
 
 Here is a complete example that you can also find in   :ref:`school-authority-mapping`.
 
-.. literalinclude:: ../../examples/school_authority_kelvin.json
+.. literalinclude:: ../examples/school_authority_kelvin.json
 
 .. _auth_config:
 

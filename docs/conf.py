@@ -30,7 +30,6 @@ release = "2.1.1"
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "myst_parser",
     "sphinxcontrib.mermaid",
     "sphinx.ext.autosectionlabel",
     "sphinx_toolbox.collapse",
@@ -43,7 +42,14 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".pytest_cache", "sphinx-univention/*"]
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    ".pytest_cache",
+    "sphinx-univention/*",
+    "README.md",
+]
 
 pygments_style = "sphinx"
 # -- Options for HTML output -------------------------------------------------
@@ -82,7 +88,6 @@ title = "ID Connector - UCS@school"
 
 source_suffix = {
     ".rst": "restructuredtext",
-    ".md": "markdown",
 }
 
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: | +"
