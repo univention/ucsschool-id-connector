@@ -87,49 +87,41 @@ Docker
 
    |rarr| https://www.docker.com/
 
+Pluggy
+   Pluggy is the crystallized core of plugin management and hook calling (from pytest).
+
+   You need to be able to:
+
+   - understand basic concepts of hook specs, implentation and calling
+
+   |rarr| https://pluggy.readthedocs.io/en/latest/
+
+
 UDM REST-API
    A REST API which can be used to inspect, modify, create and delete UDM objects via HTTP requests.
 
-   You need to be able to: TODO
+   You will only need to know about this if you want to access extra information about objects
+   within your custom plugin.
+
+   You need to be able to:
+
+   - understand the structure of udm objects
+   - understand how to read (and maybe write) udm objects, according to your needs
 
    |rarr| https://docs.software-univention.de/developer-reference-4.4.html#udm:rest_api
 
-UCS-APIs auth plugin
-   Description
-
-   You need to be able to: TODO
-
-   |rarr| TODO
-
-Kelvin REST API
-   Description
-
-   You need to be able to: TODO
-
-   |rarr| https://docs.software-univention.de/ucsschool-kelvin-rest-api/
-
-OPA (optional)
-   Description
-
-   You need to be able to: TODO
-
-   |rarr| https://www.openpolicyagent.org/
-
-
-
 Pre-commit (optional)
-   Description
+   A framework for managing and maintaining multi-language pre-commit hooks.
 
-   You need to be able to: TODO
+   This is only needed if you need to commit to the univention ucsschool-id-connector repo.
+
+   You need to be able to:
+
+   - install pre-commit definitions
+   - run pre-commit checks
+   - be aware of using different venvs for writing code and running pre-commits
 
    |rarr| https://pre-commit.com/
-
-Pluggy
-   Description
-
-   You need to be able to: TODO
-
-   |rarr| https://pluggy.readthedocs.io/en/latest/
 
 
 
