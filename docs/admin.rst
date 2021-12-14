@@ -125,7 +125,7 @@ Appcenter settings
 
    |rarr| https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630 |br|
    |rarr|  https://help.univention.com/t/ucs-school-work-groups-and-school-classes/16925 |br|
-   |rarr|  https://docs.software-univention.de/ucsschool-handbuch-4.4.html |br|
+   |rarr|  https://docs.software-univention.de/ucsschool-handbuch-5.0.html (german only)|br|
    |rarr|  TODO Nico english needed, basic concepts would be needed
 
 |UAS| |KLV| REST API
@@ -140,7 +140,7 @@ Appcenter settings
    |rarr| TODO Nico concepts of properties and mappings (not sample files, but answering the why, and
    describing the problem that |KLV| solves)
 
-   - best so far: https://docs.software-univention.de/ucsschool-handbuch-4.4.html#structure:ldap
+   - best so far: https://docs.software-univention.de/ucsschool-handbuch-5.0.html#structure:ldap
 
 If you want to also develop for the id-connector, please also see the next chapter :doc:`development`.
 
@@ -739,4 +739,4 @@ To retrieve a list of the extended attributes on the old school authority server
 
 .. _create a user: https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630#a-sample-command-9
 
-.. _Import CLI manual (german only): https://docs.software-univention.de/ucsschool-import-handbuch-4.4.html
+.. _Import CLI manual (german only): https://docs.software-univention.de/ucsschool-import-handbuch-5.0.html
