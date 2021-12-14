@@ -3,12 +3,6 @@
 .. include:: <isonum.txt>
 .. include:: univention_rst_macros.txt
 
-
-TODO:
-
- - LDAP and Openldap
-
-
 **************
 Administration
 **************
@@ -17,6 +11,7 @@ Overview
 ========
 
 .. figure:: static/ucsschool-id-connector_overview_extended.svg
+   :width: 700
 
    Simplified overview of the id-connector
 

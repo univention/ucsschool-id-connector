@@ -1,8 +1,7 @@
 
 .. collapse:: Legend
 
-    .. figure:: static/legend.svg
-      :target: _static/legend.svg
+    .. figure:: images/legend.svg
       :width: 700
 
       Diagram elements

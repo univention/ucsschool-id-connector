@@ -14,6 +14,12 @@ help:
 
 .PHONY: help Makefile
 
+
+plantuml:
+	plantuml -tpng images/*.puml
+	plantuml -tsvg images/*.puml
+	ls images/*.svg | xargs -i dos2unix {}
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile

@@ -8,8 +8,7 @@ Development
 Overview
 ========
 
-.. figure:: static/id-connector-containers-simplified.svg
-   :target: _static/id-connector-containers-simplified.svg
+.. figure:: images/id-connector-containers-simplified.svg
    :width: 400
 
    |IDC| - Containers (`C4 Style <https://c4model.com/>`_)
@@ -137,8 +136,7 @@ Overview, less simplified
 -------------------------
 
 
-.. figure:: static/id-connector-containers.svg
-   :target: _static/id-connector-containers.svg
+.. figure:: images/id-connector-containers.svg
    :width: 400
 
 .. include:: legend.txt
@@ -157,8 +155,7 @@ DC Primary
 ----------
 
 
-.. figure:: static/id-connector-container-ucs.svg
-   :target: _static/id-connector-container-ucs.svg
+.. figure:: images/id-connector-container-ucs.svg
    :width: 700
 
 .. include:: legend.txt
@@ -194,8 +191,7 @@ ID-Connector
 ------------
 
 
-.. figure:: static/id-connector-container-docker.svg
-   :target: _static/id-connector-container-docker.svg
+.. figure:: images/id-connector-container-docker.svg
    :width: 700
 
 
@@ -226,8 +222,7 @@ The complete picture might be a bit too full. If you want have it anyway, here a
 
 .. collapse:: Complete overview, C4 style
 
-    .. figure:: static/id-connector-unified.svg
-       :target: _static/id-connector-unified.svg
+    .. figure:: images/id-connector-unified.svg
        :width: 800
 
     .. include:: legend.txt
@@ -235,8 +230,7 @@ The complete picture might be a bit too full. If you want have it anyway, here a
 
 .. collapse:: Overview, manually drawn, with file locations
 
-    .. figure:: static/ucsschool-id-connector_details2.svg
-       :target: _static/ucsschool-id-connector_details2.svg
+    .. figure:: images/ucsschool-id-connector_details2.svg
        :width: 800
 
        The |IDC|, *not* simplified.
@@ -251,8 +245,7 @@ However, running the |IDC| requires an LDAP, listeners etc, so you really need a
 UCS installation. Hence, we rather have a local checkout on the dev machine,
 and then sync the code changes into an ID-Connector container that is running on a VM.
 
-.. figure:: static/dev_setup.svg
-   :target: _static/dev_setup.svg
+.. figure:: images/dev_setup.svg
    :width: 700
 
 .. include:: legend.txt
@@ -652,8 +645,8 @@ To enter the running container run:
 
 
 
-Build release
--------------
+Build release image
+-------------------
 
 .. warning::
 
