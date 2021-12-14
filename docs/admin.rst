@@ -74,9 +74,9 @@ UDM
    - know the basic structure of UDM objects and their attributes
    - add and manage extended attributes
 
-   |rarr| https://docs.software-univention.de/developer-reference-5.0.html#chap:udm
+   |rarr| https://docs.software-univention.de/developer-reference-5.0.html#chap:udm  |br|
    |rarr| TODO Nico simple UDM documentation would be needed, where
-   the basic concepts are defined. Any ideas? |br|
+   the basic concepts are defined. Any ideas?
 
 .. _UCR:
 
