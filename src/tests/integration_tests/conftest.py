@@ -250,7 +250,7 @@ def school_auth_config_id_broker(id_broker_ip):
         return {
             "name": s_a_name,
             "active": True,
-            "url": f"http://{id_broker_ip}/",
+            "url": f"https://{id_broker_ip}/",
             "plugins": ["id_broker-users", "id_broker-groups"],
             "plugin_configs": {
                 "id_broker": {

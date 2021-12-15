@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import os
 from typing import Any, Dict, List, Union
 from urllib.parse import urljoin
 
@@ -70,8 +71,9 @@ async def ping_open_api_json(school_authority: SchoolAuthorityConfiguration) -> 
     To ping the id-broker side, we try to get the openapi.json.
     """
     url = urljoin(school_authority.url, "ucsschool/apis/openapi.json")
+    verify_ssl = "UNSAFE_SSL" not in os.environ
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
+        async with session.get(url, ssl=verify_ssl) as resp:
             if resp.status != 200:
                 return False
     return True

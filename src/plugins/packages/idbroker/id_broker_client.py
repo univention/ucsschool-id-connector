@@ -211,7 +211,7 @@ class Token:
 
 class ProvisioningAPIClient(abc.ABC):
     API_METHODS: Dict[str, str]
-    PROVISIONING_URL_REGEX = r"^http://(?P<host>.+?)/"
+    PROVISIONING_URL_REGEX = r"^https://(?P<host>.+?)/"
     _object_type: IDBrokerObjectType
     _gen_api_handler: Type[GenApiHandler]
     _share_token = True  # whether all client instances should use the same Token instance
@@ -226,10 +226,8 @@ class ProvisioningAPIClient(abc.ABC):
                 f" {school_authority.url!r}. Correct form is: 'https://FQDN/'."
             )
         host = m.groupdict()["host"]
-        target_url = f"http://{host}"
+        target_url = f"https://{host}"
         try:
-            # TODO brauchen wir das in dieser Form noch?
-            # self.school_authority_name = school_authority.plugin_configs[plugin_name]["tenant"]
             self.school_authority_name = school_authority.name
             username = school_authority.plugin_configs[plugin_name]["username"]
             password = school_authority.plugin_configs[plugin_name]["password"].get_secret_value()
