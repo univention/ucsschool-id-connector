@@ -23,14 +23,14 @@ cache:
   extends: .prep
   stage: test
 
-linkcheck:
-  extends: .checks
-  script:
-    - cd docs
-    - make linkcheck
-  artifacts:
-    paths:
-      - public
+#linkcheck:
+#  extends: .checks
+#  script:
+#    - cd docs
+#    - make linkcheck
+#  artifacts:
+#    paths:
+#      - public
 
 spelling:
   extends: .checks
