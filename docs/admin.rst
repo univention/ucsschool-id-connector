@@ -20,11 +20,11 @@ The |IDC| replication system is composed of four components:
 1. An *LDAP server* containing user data.
 2. A process on the data source UCS server,
    receiving user creation/modification/deletion events from
-   the LDAP server and relaying them to multiple recipients via HTTP.
-   Henceforth called the  |iIDCS|.
+   the LDAP server and relaying them to multiple recipients via HTTP,
+   called the  |iIDCS|.
 3. A process on the data source UCS server to monitor and configure
    the |UAS| ID Connector service,
-   henceforth called the  |iIDCH|.
+   called the  |iIDCH|.
 4. Multiple recipients of the directory data relayed by the
    |iIDCS|.
    They run a HTTP-API service, that the
@@ -36,10 +36,12 @@ The |IDC| replication system is composed of four components:
 Admin prerequisites
 ===================
 
-This chapter is useful when you need to administer an id-connector setup,
+This administration chapter is useful when you need to administer an id-connector setup,
 or you need to integrate id-connector.
-To follow this manual you should be familiar with the following aspects
+To follow this text you should be familiar with the following aspects
 of the UCS environment:
+
+.. glossary::
 
 LDAP and LDAP listener
    LDAP is used because it is optimized for reading in a hierarchical structure.
@@ -60,8 +62,8 @@ LDAP and LDAP listener
 
 .. _UDM:
 
-UDM
-   |UDM| (UDM) is used for handling user data
+|UDM|
+   |UDM| (**UDM**) is used for handling user data
    (and other data) that is stored in the LDAP server,
    one of two core storage places (the other one is `UCR`_).
    Examples for data are users, roles or machine info.
@@ -75,13 +77,11 @@ UDM
    - add and manage extended attributes
 
    |rarr| https://docs.software-univention.de/developer-reference-5.0.html#chap:udm  |br|
-   |rarr| TODO Nico simple UDM documentation would be needed, where
-   the basic concepts are defined. Any ideas?
 
 .. _UCR:
 
-UCR
-   The |UCR| (UCR) stores configuration variables and settings to run the system,
+|UCR|
+   The |UCR| (**UCR**) stores configuration variables and settings to run the system,
    and creates and changes actual linux configuration files
    as configured by these variables upon setting said variables.
 
@@ -93,7 +93,7 @@ UCR
    |rarr| `<https://docs.software-univention.de/manual-5.0.html#computers:Administration_of_local_system_configuration_with_Univention_Configuration_Registry>`_
 
 
-Appcenter settings
+|AppC| settings
    The |AppC| is an ecosystem similar to the app stores known from mobile platforms
    like Apple or Google.
    It provides an infrastructure to build, deploy and run enterprise applications
@@ -102,11 +102,8 @@ Appcenter settings
 
    Within the app center you can configure settings for the individual apps.
 
-   |rarr| TODO Nico - documentation on how to set app settings. What we have so far is only:
-
    - https://docs.software-univention.de/app-provider.html#app-settings
    - https://docs.software-univention.de/manual-5.0.html#appcenter-configure
-
 
 
 |UAS| basics
@@ -127,7 +124,6 @@ Appcenter settings
    |rarr| https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630 |br|
    |rarr|  https://help.univention.com/t/ucs-school-work-groups-and-school-classes/16925 |br|
    |rarr|  https://docs.software-univention.de/ucsschool-handbuch-5.0.html (german only)|br|
-   |rarr|  TODO Nico english version would be needed, at least basic concepts
 
 |UAS| |KLV| REST API
    The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
@@ -138,10 +134,7 @@ Appcenter settings
    You need to be able to install and configure kelvin.
 
    |rarr| https://docs.software-univention.de/ucsschool-kelvin-rest-api/overview.html |br|
-   |rarr| TODO Nico concepts of properties and mappings (not just sample files, but answering
-   the why, and describing the problem that |KLV| solves)
-
-   - best so far: https://docs.software-univention.de/ucsschool-handbuch-5.0.html#structure:ldap
+   |rarr| https://docs.software-univention.de/ucsschool-handbuch-5.0.html#structure:ldap
 
 If you want to also develop for the id-connector, please also see the next chapter :doc:`development`.
 
@@ -151,13 +144,13 @@ Installation
 Sending system
 --------------
 
-The app is  available in the appcenter. You can install it with:
+The app is available in the appcenter. You can install it with:
 
 .. code-block:: bash
 
     $ univention-app install ucsschool-id-connector
 
-This should run the  join script ``50ucsschool-id-connector.inst``, which creates:
+This runs the  join script ``50ucsschool-id-connector.inst``, which creates:
 
 * the file ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret``
   containing the key with which JWT tokens are signed.
@@ -198,10 +191,10 @@ on the target systems an HTTP-API is required on the target system.
 Currently only the Kelvin API is supported.
 
 .. note::
-  This of course only makes sense if the target system is in a different domain,
-  because otherwise users and groups are synced with other UCS mechanisms.
+  This only makes sense if the sender and target systems are in a different domains,
+  because in the same domain users and groups already get synced using other UCS mechanisms.
 
-Install the |KLV| api on each target system:
+Install the |KLV| API on each target system:
 
 .. code-block:: bash
 
@@ -214,15 +207,11 @@ To add a dedicated |KLV| API user for the |UAS| ID-Connector
 consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
 on how to do that.
 
-TODO Nico:
-   - link to proper section in documentation
-   - write the proper section first
-
 Configuration
 =============
 
-Now that everything is installed, let us configure the setups. We do the receiving system first,
-because we need auth credentials used there later on on the sending system.
+Now that everything is installed, let's configure the setups. We configure the receiving system first,
+because we need auth credentials used on the receiving system later on on the sending system.
 
 Configure receiving system - HTTP-API (|KLV|)
 ---------------------------------------------
@@ -235,8 +224,8 @@ We assume that you have a current version of |KLV| installed after reading the d
 .. _kelvin_credentials:
 
 .. note::
-   For the authorization of the UCS@school-ID-Connector at the target system, it needs
-   credentials with special privileges.
+   For the authorization of the *UCS\@school ID Connector* at the target system
+   it needs credentials with special privileges.
    Create a user with the name and password of your choice and add him to the group
    ucsschool-kelvin-rest-api-admins.
 
@@ -273,11 +262,11 @@ This would make the listed properties available for the ``user`` and ``school`` 
    When configuring |KLV| in detail, remember that the password hashes for LDAP and Kerberos
    authentication are collectively transmitted in one JSON object to one target attribute.
    This means it's all or nothing: all hashes are synced, even if empty.
-   You can't select individual hashes. TODO Ole: better place for this?
+   You can't select individual hashes.
 
 .. note::
    Please make sure that you configure all the mapped properties that the sending system sends, e.g.
-   ``displayName`` or so. If the sender sends more than the receiver is configured to process,
+   ``displayName``. If the sender sends more than the receiver is configured to process,
    you will end up with weird errors, e.g. ``404`` in the log.
 
 
@@ -324,7 +313,7 @@ In production only the regular admin user accounts should be used.
 You can authorize yourself in e.g. the Swagger UI using the ``Authorize`` button.
 
 To use the  |iIDCH| from a script, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
-must be retrieved from``https://FQDN/ucsschool-id-connector/api/token``.
+must be retrieved from ``https://FQDN/ucsschool-id-connector/api/token``.
 The token will be valid for a configurable amount of time (default 60 minutes),
 after which it must be renewed.
 To change the TTL of the token, open the corresponding *app settings* in the UCS app center.
@@ -349,12 +338,14 @@ We now need to configure two things:
 2. What actual schools are handled by which receiving system (school authority)? This is described in the
    following section: :ref:`School to authority mapping`.
 
-So, let us start with the first mapping, the one for school authorities.
+We start with the first mapping, the one for school authorities.
 
 In order to send user data to the target system, it must be decided
 which properties of which objects to send, and more important,
 which properties *not* to send.
+
 .. _phone_numbers_example:
+
 E.g. there might be telephone numbers for students in the system on the sending side,
 but those should not be made available on the receiving school system.
 Instead of forbidding properties we "map" properties on the sending side
@@ -391,7 +382,9 @@ receiving school:
 
 .. note::
    ``roles`` is *virtual* because there is special handling by the |iIDC| app
-   mapping ``ucsschoolRole`` to ``roles``  TODO Ask Daniel
+   mapping ``ucsschoolRole`` to ``roles``.
+
+.. TODO Daniel - is the above true?
 
 .. warning::
 
@@ -429,10 +422,10 @@ These are the keys in the configuration:
 - *ssl_context* - contains values that are passed to the
   `ssl context object <https://docs.python.org/3.8/library/ssl.html#ssl.SSLContext>`_
   which is used to communicate with the receiving system.
-- *active* - configures if this school authority... TODO Daniel
+- *active* - configures if this school authority is active.
 - *plugins* - which plugins are going to be used for this school authority. Usually just "kelvin".
 
-
+.. TODO Daniel: what does *active* really do?
 
 
 
@@ -496,8 +489,9 @@ Role specific attribute mapping
   This is an advanced scenario. If you don't need this,
   jump to the :ref:`next section <Trying it out>`.
 
-Back to our example about telephone numbers. Imagine that while telephone numbers should not be
-transferred for students, they are actually needed for teachers.
+Back to our  :ref:`example about telephone numbers <phone_numbers_example>`.
+Imagine that while telephone numbers should not be transferred for students,
+they are actually needed for teachers.
 This means, that we have a need to define per role which properties should be transferred.
 
 With version ``2.1.0`` role specific attribute mapping was added to the default |KLV| plugin.
@@ -575,8 +569,8 @@ when a school class is added:
    and add them.
 
 This results in school classes having only members with roles not configured to ignore, |br|
-plus members with roles to ignore that were added on the target system, |br|
-plus any users added on the target system which are unknown to the ID Connector.
++ members with roles to ignore that were added on the target system, |br|
++ any users added on the target system which are unknown to the ID Connector.
 
 .. warning::
    To achieve this behavior several additional LDAP queries on the ID Connector
@@ -602,7 +596,7 @@ See :ref:`partial-groupsync` for an example config.
 Trying it out
 =============
 
-Now time has come to try it out. What we want to do:
+Time has come to try it out. What we want to do:
 
 1. Create a testuser
 2. Import the testuser on the sending side
@@ -616,7 +610,7 @@ Now time has come to try it out. What we want to do:
 
 
 
-The slow way would be to  `create a user`_   individually (and make sure to ammend the
+The slow way would be to  `create a user`_   individually (and make sure to amend the
 required properties),
 and then import the user in a second step.
 You can read all about importing users in the `Import CLI manual (german only)`_.

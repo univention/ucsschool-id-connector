@@ -28,7 +28,7 @@ listener --> small_queue: <b>write entryUUIDs\n<b>and changes\n<i>JSON
 small_queue -right-> converter:  <b>read entryUUIDS\n<b>and changes\n<i>JSON
 converter --> large_queue: <b>write\n<b> user/group data\n<i>JSON
 large_queue -->id_connector:<b>read user/group data\n<i>JSON
-ldap --> converter: <b>read user/group data\n<i>python-ldap
+ldap --> converter: <b>read user/group\n data\n<i>python-ldap
 ldap -left-> id_connector : <b>get extra data\n<i>python-ldap
 ' id_connector --> ldap
 @enduml

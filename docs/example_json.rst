@@ -1,13 +1,11 @@
 .. This file is formatted in the spirit of
    https://rhodesmill.org/brandon/2012/one-sentence-per-line/
 .. include:: <isonum.txt>
-.. |br| raw:: html
 
-  <br>
 
-************
-Example json
-************
+********************
+Example json configs
+********************
 
 
 Sending system examples

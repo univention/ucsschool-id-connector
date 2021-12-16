@@ -1,7 +1,6 @@
 File Locations
 ==============
 
-
 This section lists relevant directories and files. Configuration file *must not* be edited by hand.
 All configuration is done either trough the *app settings* in the UCS app center or through the
 *UCS\@school ID Connector HTTP API*.

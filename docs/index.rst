@@ -26,8 +26,8 @@ The |IDC| connects an |UAS| directory to any number of other |UAS| directories (
 It is designed to connect state directories with school districts,
 but can also be used in other contexts.
 The connection takes place unidirectional: user data (user, school affiliation, class affiliations)
-are transferred from a central directory (e.g. country directory) to district or school directories.
-Prerequisite is the use of the |UAS| |KLV| API on the school authorities.
+is transferred from a central directory (e.g. country directory) to district or school directories.
+Prerequisite is the use of the |iUAS| |iKLV| API on the school authorities.
 For this a configuration is necessary in advance to create an assignment
 "Which school users should be transferred to which remote instance?"
 Then these users are created, updated and deleted.
