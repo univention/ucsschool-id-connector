@@ -41,23 +41,21 @@ spelling:
     paths:
       - public
 
-html:
-  extends: .checks
-  script:
-    - sphinx-build -b html docs public
-  except:
-    - main
-  artifacts:
-    paths:
-      - public
+#html:
+#  extends: .checks
+#  script:
+#    - sphinx-build -b html docs public
+#  except:
+#    - main
+#  artifacts:
+#    paths:
+#      - public
 
 pages:
   extends: .prep
   stage: deploy
   script:
     - sphinx-build -b html docs public
-  only:
-    - main
   artifacts:
     paths:
       - public
