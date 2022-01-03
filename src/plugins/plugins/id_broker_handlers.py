@@ -47,7 +47,6 @@ from ucsschool_id_connector.ldap_access import LDAPAccess
 from ucsschool_id_connector.models import (
     ListenerGroupAddModifyObject,
     ListenerGroupRemoveObject,
-    ListenerObject,
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
     SchoolAuthorityConfiguration,
@@ -190,12 +189,6 @@ class IDBrokerUserDispatcher(UserDispatcherPluginBase):
             )
             return False
         return True
-
-    @hook_impl
-    async def handle_listener_object(
-        self, school_authority: SchoolAuthorityConfiguration, obj: ListenerObject
-    ) -> bool:
-        return await super().handle_listener_object(school_authority, obj)
 
 
 #
