@@ -33,9 +33,9 @@ from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 
 
 def test_school_authority_configuration_password_is_secret_str(
-    faker_obj, kelvin_school_authority_configuration
+    faker_obj, school_authority_configuration
 ):
-    sac: SchoolAuthorityConfiguration = kelvin_school_authority_configuration()
+    sac: SchoolAuthorityConfiguration = school_authority_configuration()
     password = faker_obj.password()
     sac_kwargs = sac.dict()
     sac_kwargs["plugin_configs"]["kelvin"]["password"] = password
@@ -44,8 +44,8 @@ def test_school_authority_configuration_password_is_secret_str(
     assert sac_new.plugin_configs["kelvin"]["password"].get_secret_value() == password
 
 
-def test_school_authority_configuration_as_dict_pw_is_secrets(kelvin_school_authority_configuration):
-    sac: SchoolAuthorityConfiguration = kelvin_school_authority_configuration()
+def test_school_authority_configuration_as_dict_pw_is_secrets(school_authority_configuration):
+    sac: SchoolAuthorityConfiguration = school_authority_configuration()
     assert isinstance(sac.plugin_configs["kelvin"]["password"], SecretStr)
     password = sac.plugin_configs["kelvin"]["password"].get_secret_value()
     sac_as_dict_with_pw_as_secret = sac.dict()
@@ -56,8 +56,8 @@ def test_school_authority_configuration_as_dict_pw_is_secrets(kelvin_school_auth
     )
 
 
-def test_school_authority_configuration_as_dict_pw_is_str(kelvin_school_authority_configuration):
-    sac: SchoolAuthorityConfiguration = kelvin_school_authority_configuration()
+def test_school_authority_configuration_as_dict_pw_is_str(school_authority_configuration):
+    sac: SchoolAuthorityConfiguration = school_authority_configuration()
     assert isinstance(sac.plugin_configs["kelvin"]["password"], SecretStr)
     password = sac.plugin_configs["kelvin"]["password"].get_secret_value()
     sac_as_dict_with_pw_as_str = sac.dict_secrets_as_str()

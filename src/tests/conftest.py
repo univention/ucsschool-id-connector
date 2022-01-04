@@ -460,7 +460,7 @@ def listener_user_add_modify_object(listener_dump_user_object):
 
 
 @pytest.fixture
-def kelvin_school_authority_configuration():
+def school_authority_configuration():
     def _func(**kwargs) -> ucsschool_id_connector.models.SchoolAuthorityConfiguration:
         return KelvinSchoolAuthorityConfigurationFactory(**kwargs)
 

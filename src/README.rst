@@ -214,8 +214,8 @@ To retrieve a list of the extended attributes on the old school authority server
     $ udm settings/extended_attribute list
 
 
-Installation of target HTTP-API
--------------------------------
+Installation of target HTTP-API (Kelvin)
+----------------------------------------
 
 On each target system run::
 
@@ -224,8 +224,8 @@ On each target system run::
 To allow the *UCS\@school ID Connector* app to access the APIs it needs an authorized user account. By default the Administrator account is the only authorized user. To add a dedicated Kelvin API user for the UCS@school ID-Connector consult the Kelvin documentation on how to do that.
 
 
-Configuration of target HTTP-API
---------------------------------
+Configuration of target HTTP-API (Kelvin)
+-----------------------------------------
 The Kelvin API must be version ``1.2.0`` or higher to work with the UCS@school ID Connector.
 The password hashes for LDAP and Kerberos authentication are collectively transmitted in one JSON object to one target attribute.
 
@@ -238,6 +238,73 @@ The example configuration above can be created with the following command::
       config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; \
       config["mapped_udm_properties"] = ["phone", "e-mail", "organisation"]; fp.seek(0); \
       json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
+
+
+ID Broker Plugin
+----------------
+
+The ID Broker plugin can be used to sync all users of all schools to one target, which we call ID Broker.
+While doing so, other plugins like the kelvin plugin can still be used to sync specific
+schools to school authorities defined in the school-to-authority mapping.
+
+Installation and configuration of target HTTP-APIs (Kelvin & UCS@school APIs)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On each target system run::
+
+    $ univention-app install ucsschool-kelvin-rest-api
+    $ univention-app install ucsschool-apis
+
+and copy the the plugin code into the ucsschool-apis docker container.
+The debian package ``id-broker-plugin`` takes care of this.
+
+The steps to activate the provisioning-API are described in the id-broker-plugin readme of the repository.
+
+
+Add this mapped_udm_property::
+
+    $ echo '{ "mapped_udm_properties": ["brokerID"] }' > /var/lib/ucs-school-import/configs/kelvin.json
+    $ univention-app shell ucsschool-kelvin-rest-api /etc/init.d/ucsschool-kelvin-rest-api restart
+
+Create users which can use the internal kelvin-rest-api-client::
+
+    $ udm users/user create --position "cn=users,$(ucr get ldap/base)" --set username=id-broker-kelvin-user --set firstname="ID Broker" --set lastname="Kelvin User" --set password=secret --append "groups=cn=ucsschool-kelvin-rest-api-admins,cn=groups,$(ucr get ldap/base)"
+
+
+For each school authority, there must exist a provisioning user. For the school authority ``TEST`` do the following::
+
+    $ udm users/user create --position "cn=users,$(ucr get ldap/base)" --set username=provisioning-TEST --set firstname="Provisioning User1" --set lastname="TEST" --set password=secet
+
+Create a settings file for the ID Broker and replace IDBroker_IP with your IP::
+
+    $ IDBroker_IP="1.2.3.4" # your IP
+    $ echo "{ \"host\": \"$IDBroker_IP\", \"username\": \"id-broker-kelvin-user\", \"password\": \"secret\", \"verify_ssl\": false }" > /etc/ucsschool/apis/id_broker/settings.json
+    $ univention-app restart ucsschool-apis
+
+
+
+
+Configuration of school authorities
+------------------------------------
+
+POST the following JSON to ``https://SCHOOL_AUTH_FQDN/ucsschool-id-connector/api/v1/school_authorities``::
+
+    {
+        "name": "SchoolAuthorityName",
+        "active": true,
+        "url": "https://ID_BROKER_FQDN/",
+        "plugins": ["id_broker-users", "id_broker-groups"],
+        "plugin_configs": {
+            "id_broker": {
+                "password": "g3h31m",
+                "username": "provisioning-SchoolAuthorityName",
+                "version": 1
+            }
+        }
+    }
+
+
+We do not have to modify the mapping, because we only sync objects for schools of school authorities which have an ID Broker configuration.
 
 
 Plugins

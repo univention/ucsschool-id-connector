@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import os
 import re
 from pathlib import Path
 
@@ -53,7 +54,7 @@ except PermissionError:
     # not allowed when run by user outside of container (on dev system)
     DOCKER_LOG_FD = open("/proc/self/fd/2", "w")
 HTTP_REQUEST_TIMEOUT = 20.0
-LOG_DIR = Path(f"/var/log/univention/{APP_ID}")
+LOG_DIR = Path(os.environ.get("LOG_DIR", f"/var/log/univention/{APP_ID}"))
 LOG_FILE_PATH_HTTP = Path(LOG_DIR, "http.log")
 LOG_FILE_PATH_MIGRATION = Path(LOG_DIR, "migration.log")
 LOG_FILE_PATH_QUEUES = Path(LOG_DIR, "queues.log")

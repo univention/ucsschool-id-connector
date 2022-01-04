@@ -63,11 +63,11 @@ def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
     """
     all_hcaller_names = set()
     for plugin_name in plugins:
-        hcallers = [
-            hcaller.name
-            for hcaller in plugin_manager.get_hookcallers(plugin_manager.get_plugin(plugin_name))
-        ]
-        all_hcaller_names.update(hcallers)
+        hcallers = plugin_manager.get_hookcallers(plugin_manager.get_plugin(plugin_name))
+        if hcallers:
+            hcallers = [hcaller.name for hcaller in hcallers]
+            all_hcaller_names.update(hcallers)
+
     if hook_name not in all_hcaller_names:
         plugins = [DEFAULT_PLUGIN]
     plugins_to_remove = [
