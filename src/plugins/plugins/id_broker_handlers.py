@@ -65,16 +65,24 @@ from ucsschool_id_connector_defaults.user_handler_base import (
 )
 
 
-async def ping_open_api_json(school_authority: SchoolAuthorityConfiguration) -> bool:
+async def ping_id_broker(school_authority: SchoolAuthorityConfiguration) -> bool:
     """
-    To ping the id-broker side, we try to get the openapi.json.
+    To ping the id-broker side, we try to login and get a token.
     """
-    url = urljoin(school_authority.url, "ucsschool/apis/openapi.json")
+    url = urljoin(school_authority.url, "ucsschool/apis/auth/token")
     verify_ssl = "UNSAFE_SSL" not in os.environ
+    id_broker_conf = school_authority.plugin_configs["id_broker"]
+    payload = {
+        "username": id_broker_conf["username"],
+        "password": id_broker_conf["password"].get_secret_value(),
+    }
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, ssl=verify_ssl) as resp:
-            if resp.status != 200:
-                return False
+        try:
+            async with session.post(url, ssl=verify_ssl, data=payload) as resp:
+                if resp.status != 200:
+                    return False
+        except aiohttp.client_exceptions.ClientConnectorError:
+            return False
     return True
 
 
@@ -182,12 +190,13 @@ class IDBrokerUserDispatcher(UserDispatcherPluginBase):
     @hook_impl
     async def school_authority_ping(self, school_authority: SchoolAuthorityConfiguration) -> bool:
         """impl for ucsschool_id_connector.plugins.Postprocessing.school_authority_ping"""
-        if not await ping_open_api_json(school_authority):
+        if not await ping_id_broker(school_authority):
             self.logger.error(
                 "Failed to call ucsschool-api for school authority API (%s)",
                 school_authority.name,
             )
             return False
+
         return True
 
 
@@ -354,7 +363,7 @@ class IDBrokerGroupDispatcher(GroupDispatcherPluginBase):
     @hook_impl
     async def school_authority_ping(self, school_authority: SchoolAuthorityConfiguration) -> bool:
         """impl for ucsschool_id_connector.plugins.Postprocessing.school_authority_ping"""
-        if not await ping_open_api_json(school_authority):
+        if not await ping_id_broker(school_authority):
             self.logger.error(
                 "Failed to call ucsschool-api for school authority API (%s)",
                 school_authority.name,
