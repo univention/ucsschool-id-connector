@@ -54,9 +54,9 @@ class LDAPAccessMock:
 
 
 @pytest.fixture()
-def school_auth_config(kelvin_school_authority_configuration):
+def school_auth_config(school_authority_configuration):
     def _school_auth_config(ignore_roles: List[str]):
-        config: SchoolAuthorityConfiguration = kelvin_school_authority_configuration()
+        config: SchoolAuthorityConfiguration = school_authority_configuration()
         config.name = "auth1"
         config.plugin_configs["kelvin-partial-group-sync"] = config.plugin_configs["kelvin"]
         del config.plugin_configs["kelvin"]

@@ -50,9 +50,9 @@ all_roles_mapping = {
     ],
 )
 @pytest.mark.asyncio
-async def test_handled_schools(mapping, expected, idc_defaults, kelvin_school_authority_configuration):
+async def test_handled_schools(mapping, expected, idc_defaults, school_authority_configuration):
 
-    school_auth = kelvin_school_authority_configuration()
+    school_auth = school_authority_configuration()
     school_auth.name = "auth1"
     school2school_auth_mapping = School2SchoolAuthorityMapping(mapping=mapping)
     with patch.object(
@@ -112,9 +112,9 @@ async def test_handled_schools(mapping, expected, idc_defaults, kelvin_school_au
 )
 @pytest.mark.asyncio
 async def test__get_role_specific_mapping(
-    mapping, handled_schools, roles, expected, kelvin_school_authority_configuration, idc_defaults
+    mapping, handled_schools, roles, expected, school_authority_configuration, idc_defaults
 ):
-    school_auth = kelvin_school_authority_configuration()
+    school_auth = school_authority_configuration()
     school_auth.name = "auth1"
     dispatcher = idc_defaults.users_kelvin.KelvinPerSAUserDispatcher(school_auth, "kelvin")
     with patch.object(dispatcher, "handled_schools") as handled_schools_mock:
@@ -124,13 +124,13 @@ async def test__get_role_specific_mapping(
 
 
 @pytest.mark.asyncio
-async def test_correct_mapping_used(idc_defaults, kelvin_school_authority_configuration):
+async def test_correct_mapping_used(idc_defaults, school_authority_configuration):
     with patch(
         "ucsschool_id_connector_defaults.user_handler_base"
         ".PerSchoolAuthorityUserDispatcherBase.map_attributes"
     ) as map_attr_mock:
         dispatcher = idc_defaults.users_kelvin.KelvinPerSAUserDispatcher(
-            kelvin_school_authority_configuration(), "kelvin"
+            school_authority_configuration(), "kelvin"
         )
         with patch.object(dispatcher, "_get_role_specific_mapping") as get_role_mapping_mock:
             get_role_mapping_mock.return_value = 1
