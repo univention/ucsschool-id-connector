@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.2.0 (2021-01-04)</h2>
+<ul>
+    <li>
+        A new plugin was added to sync all user data to the ID-Broker.
+    </li>
+</ul>
+
 <h2>v2.1.1 (2021-10-25)</h2>
 <ul>
     <li>
