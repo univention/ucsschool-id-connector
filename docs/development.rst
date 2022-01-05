@@ -19,11 +19,11 @@ This diagram shows - in a different style - more or less as the diagram
 at the top of the last chapter :doc:`admin`:
 
 * The *school management software* that runs on the state level, and exports user data in a file
-  format, e.g. csv.
+  format, e.g. CSV
 * |iUAS| *import* which is a python script to import users into a *DC Primary UCS* System
 * The *DC Primary UCS*  system passes on the user/group data to the actual |iIDC| running
   in a docker container
-* The |iIDC| finally writes user/group data to the school authorities.
+* The |iIDC| finally writes user/group data to the school authorities
 
 This, of course, is a simplification. It is on a container level (in the sense used by
 `C4 <https://c4model.com/>`_).
@@ -43,11 +43,11 @@ prerequisites described therein.
 You also need the following knowledge to follow this manual and to develop for |IDC|:
 
 HTTP
-   The foundation of data communication for the www. Our APIs use this
+   The foundation of data communication for the WWW. Our APIs use this.
 
    You need to be able to:
 
-   - understand http messages
+   - understand HTTP messages
    - understand auth concepts
    - understand error codes
 
@@ -66,7 +66,7 @@ Python & pytest
    |rarr| https://pytest.org
 
 Fastapi
-   The framework in which http APIs are developed.
+   The framework in which our HTTP APIs are developed.
 
    You need to be able to:
 
@@ -81,7 +81,7 @@ Docker
 
    You need to be able to:
 
-   - understand dockerfile basics
+   - understand Dockerfile basics
    - run containers
    - understand mounts
 
@@ -92,7 +92,7 @@ Pluggy
 
    You need to be able to:
 
-   - understand basic concepts of hook specs, hook implementation and hook calling.
+   - understand basic concepts of hook specs, hook implementation and hook calling
 
    |rarr| https://pluggy.readthedocs.io/en/latest/
 
@@ -107,15 +107,15 @@ UDM REST-API (optional)
 
    You need to be able to:
 
-   - understand the structure of udm objects
-   - understand how to read (and maybe write) udm objects, according to your needs
+   - understand the structure of UDM objects
+   - understand how to read (and maybe write) UDM objects, according to your needs
 
    |rarr| https://docs.software-univention.de/developer-reference-5.0.html#udm:rest_api
 
 Pre-commit (optional)
    A framework for managing and maintaining multi-language pre-commit hooks.
 
-   This is only needed if you need to commit to the univention ucsschool-id-connector repo.
+   This is only needed if you need to commit to the univention |IDC| repo.
 
    You need to be able to:
 
@@ -143,7 +143,7 @@ Overview, less simplified
 .. include:: legend.txt
 
 
-Ok, isn't this more or less the same as above in `Dev overview`_? Yes, right you are. The additional
+Ok, isn't this more or less the same as above in `Dev overview`_? Yes, right, you are. The additional
 element is the *Large in-queue*. This is a folder which interacts as the interface between the
 *DC Primary* and the |iIDC|. JSON files are written to the folder, and then read out.
 
@@ -162,7 +162,7 @@ DC Primary
 .. include:: legend.txt
 
 * The |iUCS| *import*, a python script, reads in e.g. CSV data, and writes the contained user and
-  group data to the *LDAP*. As mentioned in the diagram there are also other mechanisms that
+  group data to the *LDAP*. As mentioned in the diagram, there are other mechanisms that
   modify the LDAP, the UMC being one of them. The point is that user/group data
   "somehow" arrives.
 
@@ -198,16 +198,16 @@ ID Connector
 
 .. include:: legend.txt
 
-* We already know that he *DC Primary* writes data to the *Large in-queue*. This folder is
+* We already know that the *DC Primary* writes data to the *Large in-queue*. This folder is
   accessible by the host UCS system as well be the |iIDC| docker container (where
   it is mounted).
 * *In Queue* is a python process, that reads out the *Large in-queue*. It still might need
   extra data from the LDAP in the *DC Primary*, which it will do using ``python-ldap``.
   For caching purposes it uses an ``sqlite`` database as a caching mechanism, the
-  *UUDI record cache*.
+  *UUID record cache*.
 * The *In Queue* decides, what user/group data to send where (using the
   :ref:`school_to_authority_mapping` in the process). For each potential recipient there is
-  a separate *Out queue*. User/group data is written in JSON format into these folder.
+  a separate *Out queue*. User/group data is written in JSON format into the respective folder.
 * The JSON data is picked up the plugin processes, e.g. *Out A*. Usually there is only the
   ``Kelvin ID Connector plugin``, which helps |IDC| to talk to Kelvin REST APIs.
   The Kelvin plugin process then talks to Kelvin API on the *School authority A*, doing the final
@@ -246,7 +246,7 @@ Dev setup
 ==========
 
 Sadly, you can't develop everything on your developer machine / laptop:
-running the |IDC| requires an LDAP, listeners etc, so you really need a full blown
+running the |IDC| requires an LDAP, listeners etc., so you really need a full-blown
 UCS installation. Hence, we rather have a local checkout on the dev machine,
 and then sync the code changes into an |IDC| container that is running on a VM.
 
@@ -313,16 +313,16 @@ Run ``make`` without argument to see more useful commands:
 Dev VM
 ------
 
-You need to install the |IDC| app through the appcenter on your development vm.
+You need to install the |IDC| app through the |AppC| on your development vm.
 
-When started through the appcenter use the following to enter the container of the app:
+When started through the |AppC| use the following to enter the container of the app:
 
 .. code-block:: bash
 
     $ univention-app shell ucsschool-id-connector
 
 
-Inside the container you can use the system Python:
+Inside the container, you can use the system Python:
 
 .. code-block:: bash
 
@@ -344,8 +344,8 @@ Now, in order to sync  your working copy into the running |IDC| container on the
 we need to:
 
 1. Stop the |IDC| in it's container,
-2. Find out its id,
-3. Use this id to sync the files into the container,
+2. Find out its ID,
+3. Use this ID to sync the files into the container,
 4. Restart and prepare the container for development.
 
 Lets do it!
@@ -428,16 +428,16 @@ The basic idea:
 
 * specify hook specifications: callables with the signature you
   want to have, decorated with a ``hook_spec`` marker.
-* write actual hook implementations, a.k.a 'plugins' that are later on called:
+* write actual hook implementations, a.k.a. 'plugins' that are later on called:
   callables with the same name and signature as in the specification, but this
   time decorated with a ``hook_impl`` marker
 
 The ``hook_spec`` and ``hook_impl`` marker are already defined by the |IDC| system,
-you just need to use them. The same way calling your custom plugin is also catered for,
+you just need to use them. The same way, calling your custom plugin is also catered for,
 as well as finding your plugins.
 
 The key file for |IDC| in this context is ``src/ucsschool_id_connector/plugins.py``.
-In there you you find the ``hook_spec`` and ``hook_impl`` markers.
+In there you find the ``hook_spec`` and ``hook_impl`` markers.
 
 In this file you also find the plugin *specifications* (function signatures) - they
 are decorated with ``@hook_spec``.
@@ -446,7 +446,7 @@ The app is released with default plugins, that implement a default version
 for all specifications found in ``src/ucsschool_id_connector/plugins.py``.
 Search for ``@hook_impl`` in ``src/plugins`` to find them.
 
-Some of the default plugins are only used if not custom plugins are present:
+Some of the default plugins are only used if no custom plugins are present:
 
 - create_request_kwargs
 - school_authority_ping
@@ -501,7 +501,7 @@ This tells you that ``MyPlugin`` was found and the hook implementation for ``get
 Advanced example
 ----------------
 
-In this example you will see how to additionally:
+In this example, you will learn how to additionally:
 
 * define your own hook specs
 * use an extra package for shared code across plugins.
@@ -624,7 +624,7 @@ The image can't easily be used productively, so this only for testing/dev purpos
 
 .. note::
 
-    When the container is started that way (not through the appcenter)
+    When the container is started that way (not through the |AppC|)
     it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
     after stopping the firewall (``service univention-firewall stop``).
 
@@ -676,12 +676,12 @@ To upload ("push") a new Docker image to the Univention Docker registry
 Integration tests
 =================
 
-Univention has automated integration tests. These are configured from this jenkins config file:
+Univention has automated integration tests. These are configured from this Jenkins config file:
 
 `https://github.com/univention/univention-corporate-server/\
 blob/5.0-0/test/scenarios/\
 autotest-244-ucsschool-id-sync.cfg <https://github.com/univention/univention-corporate-server/\
 blob/5.0-0/test/scenarios/autotest-244-ucsschool-id-sync.cfg>`_
 
-If you want to manually set up integration tests, for the moment you need to look there
+If you want to manually set up integration tests, for the moment, you need to look there
 for hints on how to do it.

@@ -2,7 +2,7 @@ File Locations
 ==============
 
 This section lists relevant directories and files. Configuration file *must not* be edited by hand.
-All configuration is done either trough the *app settings* in the UCS app center or through the
+All configuration is done either through the *app settings* in the UCS app center or through the
 *UCS\@school ID Connector HTTP API*.
 
 Nothing needs to be backed up and restored before and after an app update,
@@ -19,8 +19,8 @@ The directory contains:
 
 * ``http.log``: log of the HTTP-API (both ASGI server and API application)
 * ``queues.log``: log of the queue management daemon
-* Old versions of above logfiles with timestamps appended to the file name.
-  Logfile rotation happens mondays and 15 copies are kept.
+* Old versions of above log files with timestamps appended to the file name.
+  Log file rotation happens on Mondays and 15 copies are kept.
 
 Log output can also be seen running::
 

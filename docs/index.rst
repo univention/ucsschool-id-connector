@@ -36,15 +36,15 @@ Then these users are created, updated and deleted.
    :width: 600
    :align: center
 
-In this documentation you will learn how to administer an id-connector setup,
+In this documentation, you will learn how to administer an id-connector setup,
 and we hope to teach you how to develop plugins for id-connector as well.
 
 .. _l10n:
 
 .. note::
 
-   At the moment the ID-Connector setup is only used in German speaking countries. Hence you will
-   encounter, also in this documentation, a few german terms.
+   At the moment, the ID-Connector setup is only used in German-speaking countries. Hence, you will
+   encounter a few German terms in this documentation.
 
    Sender
       An easy one to guess - it actually refers to the sending side of the sync process,
