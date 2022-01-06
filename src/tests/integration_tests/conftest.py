@@ -548,7 +548,7 @@ async def save_mapping(
 async def create_school(kelvin_session):
     async def _func(host: str, ou_name: str = ""):
         if not ou_name:
-            ou_name = f"{fake.user_name()}"
+            ou_name = f"{fake.user_name()[:10]}"
         school = School(
             name=ou_name,
             display_name=fake.first_name(),
