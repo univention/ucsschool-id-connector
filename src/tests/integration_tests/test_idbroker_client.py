@@ -118,13 +118,28 @@ async def school_auth_conf(
 
 @pytest.fixture(scope="session")
 def get_schools(school_auth_conf, id_broker_kelvin_session):
-    async def _func(s_a_name: str) -> List[KelvinSchool]:
+    """
+    searches for schools on the id-broker system
+    if no school is found, a new one is created.
+    """
+
+    async def _get_schools(s_a_name: str) -> List[KelvinSchool]:
         return [
             school
             async for school in KelvinSchoolResource(
                 session=id_broker_kelvin_session(school_auth_conf)
             ).search(name=f"{s_a_name}-*")
         ]
+
+    async def _func(s_a_name: str) -> List[KelvinSchool]:
+        schools_on_s_a = await _get_schools(s_a_name)
+        if not schools_on_s_a:
+            school_name = fake.user_name()
+            id_broker_school = IDBrokerSchool(school_auth_conf, "id_broker")
+            school_1 = School(name=school_name, display_name=f"{s_a_name} {school_name}")
+            await id_broker_school.create(school_1)
+            return await _get_schools(s_a_name)
+        return schools_on_s_a
 
     return _func
 
@@ -440,7 +455,6 @@ async def test_school_class_get(
     id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     s_a_name = id_broker_sc.school_authority_name
     school: str = await test_school_name(s_a_name)
-    # TODO include user & refactor
     kelvin_sc = KelvinSchoolClass(
         name=fake.user_name(),
         school=f"{s_a_name}-{school}",
@@ -671,18 +685,18 @@ async def test_user_update(
     schedule_delete_kelvin_school_class(s_a_name, class_name, school)
     schedule_delete_kelvin_user(s_a_name, kelvin_user.name.split("-", 1)[-1])
     await kelvin_user.save()
-    id_broker_user: User = await id_broker_user.get(kelvin_user.record_uid)
-    compare_kelvin_and_id_broker_user(kelvin_user, id_broker_user, s_a_name)
-    id_broker_user.first_name = fake.first_name()
-    id_broker_user.last_name = fake.last_name()
-    for school, context in id_broker_user.context.items():
+    orig_id_broker_user: User = await id_broker_user.get(kelvin_user.record_uid)
+    compare_kelvin_and_id_broker_user(kelvin_user, orig_id_broker_user, s_a_name)
+    orig_id_broker_user.first_name = fake.first_name()
+    orig_id_broker_user.last_name = fake.last_name()
+    for school, context in orig_id_broker_user.context.items():
         context.classes.clear()
         context.classes.extend(["2b", "1a"])
-    updated_id_broker_user: User = await id_broker_user.update(id_broker_user)
-    get_updated_id_broker_user: User = await id_broker_user.get(id_broker_user.id)
+    updated_id_broker_user: User = await id_broker_user.update(orig_id_broker_user)
+    get_updated_id_broker_user: User = await id_broker_user.get(orig_id_broker_user.id)
     assert updated_id_broker_user == get_updated_id_broker_user
     orig_user_classes = [
-        (school, set(context.classes)) for school, context in id_broker_user.context.items()
+        (school, set(context.classes)) for school, context in orig_id_broker_user.context.items()
     ]
     updated_user_classes = [
         (school, set(context.classes)) for school, context in updated_id_broker_user.context.items()

@@ -773,8 +773,7 @@ async def kelvin_session(kelvin_session_kwargs):
 @pytest.fixture(scope="session")
 def id_broker_kelvin_session(kelvin_session):
     def _func(sac: SchoolAuthorityConfiguration) -> Session:
-        # TODO check: do we test with https?
-        m = re.match(r"^http://(?P<host>.+?)/", sac.url)
+        m = re.match(r"^https://(?P<host>.+?)/", sac.url)
         assert m
         host = m.groupdict()["host"]
         username = sac.plugin_configs["id_broker"]["username"]
