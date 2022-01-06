@@ -711,7 +711,7 @@ If we already have a school authority set up and want to set up a second one
 
 2. Retrieve the configuration for our old school authority.
 
-   For this we open the HTTP-API Swagger UI ( https://FQDN/ucsschool-id-connector/api/v1/docs )
+   For this we open the HTTP-API Swagger UI ( ``https://FQDN/ucsschool-id-connector/api/v1/docs``)
    and authenticate ourselves. The button can be found in the top right corner of the page.
 
    Then we retrieve a list of the available school authorities
