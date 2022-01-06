@@ -1,3 +1,10 @@
+# Automatic built documentation
+
+This documentation is automatically built and available at:
+
+http://univention.gitpages.knut.univention.de/components/ucsschool-id-connector/
+
+
 # Build and install of the documentation
 
 ```bash
@@ -24,5 +31,5 @@ In order to use `make plantuml` you need to have a recent version of plantuml on
 known to work with versions  > 1.2021.14. In order to get plantuml on your path you can create a
 plantuml script with the following content in $HOME/bin::
 
-    #!/bin/bash
-    java -jar /PATH/TO/CURRENT/plantuml.jar "$@"
+    #!/bin/sh
+    exec java -jar /PATH/TO/CURRENT/plantuml.jar "$@"
