@@ -630,7 +630,7 @@ The image can't easily be used productively, so this only for testing/dev purpos
 .. note::
 
     When the container is started that way (not through the |AppC|)
-    it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs
+    it must be accessed through ``https://FQDN:8911/ucsschool-id-connector/api/v1/docs``
     after stopping the firewall (``service univention-firewall stop``).
 
 
@@ -683,10 +683,7 @@ Integration tests
 
 Univention has automated integration tests. These are configured from this Jenkins config file:
 
-`https://github.com/univention/univention-corporate-server/\
-blob/5.0-0/test/scenarios/\
-autotest-244-ucsschool-id-sync.cfg <https://github.com/univention/univention-corporate-server/\
-blob/5.0-0/test/scenarios/autotest-244-ucsschool-id-sync.cfg>`_
+https://github.com/univention/univention-corporate-server/blob/5.0-1/test/scenarios/autotest-244-ucsschool-id-sync.cfg
 
 If you want to manually set up integration tests, for the moment, you need to look there
 for hints on how to do it.

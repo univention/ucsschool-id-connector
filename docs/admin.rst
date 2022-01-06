@@ -298,14 +298,14 @@ They can be visited with a browser at their respective URLs:
 
 .. _swagger_ui:
 
-* `Swagger UI <https://github.com/swagger-api/swagger-ui>`_: https://FQDN/ucsschool-id-connector/api/v1/docs
-* `ReDoc <https://github.com/Rebilly/ReDoc>`_: https://FQDN/ucsschool-id-connector/api/v1/redoc
+* `Swagger UI <https://github.com/swagger-api/swagger-ui>`_: ``https://FQDN/ucsschool-id-connector/api/v1/docs``
+* `ReDoc <https://github.com/Rebilly/ReDoc>`_: ``https://FQDN/ucsschool-id-connector/api/v1/redoc``
 
 The Swagger UI page is especially helpful as it allows sending queries directly from the browser.
 The equivalent ``curl`` command lines are then displayed.
 
 An `OpenAPI v3 (formerly "Swagger") schema <https://swagger.io/docs/specification/about/>`_
-can be downloaded from https://FQDN/ucsschool-id-connector/api/v1/openapi.json
+can be downloaded from ``https://FQDN/ucsschool-id-connector/api/v1/openapi.json``
 
 
 Authentication
