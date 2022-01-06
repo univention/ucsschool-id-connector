@@ -57,7 +57,7 @@ pages:
   script:
     - sphinx-build -b html docs public
   only:
-    - main
+    - jbaach/279/dev_documentation
   artifacts:
     paths:
       - public
