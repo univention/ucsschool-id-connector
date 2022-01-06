@@ -157,7 +157,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
                         School(name=school, display_name=str(entries[0].displayName))
                     )
                 else:
-                    raise Exception(
+                    raise IDBrokerNotFoundError(
                         f"School {school} of User {request_body['username']}"
                         f" was not found on sender system."
                     )
@@ -309,7 +309,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
                     School(name=school, display_name=str(entries[0].displayName))
                 )
             else:
-                raise Exception(
+                raise IDBrokerNotFoundError(
                     f"School {school} of School class {request_body['name']}"
                     f" was not found on sender system."
                 )
@@ -319,7 +319,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             )
             self.logger.info("School class created: %r.", school_class)
         except IDBrokerNotFoundError as exc:
-            self.logger.error(
+            raise IDBrokerNotFoundError(
                 "Provisioning API responded with 'invalid request'."
                 " This usually means that a user in the school "
                 "class doesn't exist on the server: %s",
@@ -338,7 +338,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
                 "School class modified: %r  in school %r: %r...", name, school, request_body
             )
         except IDBrokerNotFoundError as exc:
-            self.logger.error(
+            raise IDBrokerNotFoundError(
                 "Provisioning API responded with 'invalid request'."
                 " This usually means that a user in the school "
                 "class doesn't exist on the server: %s",

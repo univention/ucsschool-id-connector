@@ -282,6 +282,17 @@ Create a settings file for the ID Broker and replace IDBroker_IP with your IP::
     $ univention-app restart ucsschool-apis
 
 
+Add the CA of ID Broker to ID Connector CA storage::
+
+    $ curl -k https://$IDBroker_IP/ucs-root-ca.crt > /tmp/idbroker_ca.crt
+    $ docker cp /tmp/idbroker_ca.crt "$(ucr get appcenter/apps/ucsschool-id-connector/container)":/usr/local/share/ca-certificates/idbroker.crt
+
+
+Update the certificate and make sure everything works with::
+
+    $ univention-app shell ucsschool-id-connector update-ca-certificates
+    $ curl -i -k -X POST https://$IDBroker_IP/ucsschool/apis/auth/token -H "Content-Type:application/x-www-form-urlencoded" -d "username=id-broker-kelvin-user" -d "password=secret"; echo
+
 
 
 Configuration of school authorities
