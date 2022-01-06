@@ -1,6 +1,4 @@
-This file is temporary, and needs to be deleted before releasing the documentation.
-
-### Build and install:
+# Build and install of the documentation
 
 ```bash
   pip install sphinx livereload myst-parser sphinxcontrib-mermaid sphinx-toolbox sphinx-copybutton
@@ -13,15 +11,8 @@ This file is temporary, and needs to be deleted before releasing the documentati
 
 ```
 
-### Run
+# Run
 ```bash
   make html
   python liveserver.py
-```
-
-
-# Install 2
-
-```bash
-
 ```

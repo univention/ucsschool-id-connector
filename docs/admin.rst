@@ -236,11 +236,16 @@ We assume that you have a current version of |KLV| installed after reading the d
         --set password="PASSWORD-OF-YOUR-CHOICE"
 
       $ udm groups/group modify --dn "cn=ucsschool-kelvin-rest-api-admins,cn=groups,$(ucr get ldap/base)" \
-        --append users="uid=USERNAME-OF-YOUR-CHOICE,cn=users,$(ucr get ldap/base)" && history -c
-
+        --append users="uid=USERNAME-OF-YOUR-CHOICE,cn=users,$(ucr get ldap/base)"
 
    Note down the credentials, they are needed for the
    :ref:`school authority configuration on the sending system <auth_config>` further down.
+
+   **WARNING**: the password is now in the command history. You might want to delete this using e.g:
+
+   .. code-block:: bash
+
+      history -d -2
 
 After installation and basic configuration you might want to configure mapped UDM properties.
 
@@ -267,7 +272,7 @@ This would make the listed properties available for the ``user`` and ``school`` 
 .. note::
    Please make sure that you configure all the mapped properties that the sending system sends, e.g.
    ``displayName``. If the sender sends more than the receiver is configured to process,
-   you will end up with errors, e.g. ``404`` in the log.
+   you will end up with unexpected errors, e.g. ``404`` in the log.
 
 
 

@@ -15,7 +15,7 @@ Dev overview
 
 .. include:: legend.txt
 
-This diagram shows - in a different style - more or less as the diagram
+This diagram shows - in a different style - the diagram
 at the top of the last chapter :doc:`admin`:
 
 * The *school management software* that runs on the state level, and exports user data in a file
@@ -260,6 +260,11 @@ We are going to develop with the following setup:
 * You have a git *checkout* of the *ucsschool-id-connector* on your *dev machine*
 * There you use the script *devsync* to synchronize changes,
 * which are synced to the corresponding *installation* folder of the |iIDC| docker app.
+
+.. note::
+    If you don't have *devsync* (from the toolshed), you might as well use scp, rsync, or any
+    other transfer mechanism of your liking.
+
 
 
 Dev machine
