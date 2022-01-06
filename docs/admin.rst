@@ -282,7 +282,7 @@ Do not edit configuration files directly.
 
 UCS\@school ID Connector HTTP API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The HTTP-API of the |iIDC| app offers two resources:
+The HTTP-API of the |iIDC| app offers three resources:
 
 * *queues*: monitoring of queues
 * *school_authorities*: configuration of school authorities
@@ -517,7 +517,7 @@ An example for such a configuration can be found in :ref:`role-specific-kelvin-p
 
 .. note::
    The priority order for the roles was chosen in order of common specificity in |UAS|.
-   A student is only ever has the role ``student``.
+   A student only ever has the role ``student``.
    But teachers, staff and school admins can have multiple roles.
 
 .. note::
@@ -576,7 +576,7 @@ This results in school classes having only members with roles not configured to 
 + any users added on the target system which are unknown to the ID Connector.
 
 .. warning::
-   To achieve this behavior, several additional LDAP queries on the ID Connector
+   To achieve this behavior, several additional LDAP queries on the |IDC|
    and one additional request to the target system are necessary.
    This affects performance.
 
