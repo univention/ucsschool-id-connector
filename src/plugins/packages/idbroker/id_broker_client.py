@@ -241,7 +241,6 @@ class ProvisioningAPIClient(abc.ABC):
             raise ValueError(f"Unsupported ID Broker Provisioning API version {version!r}.")
         self.configuration = GenConfiguration(host=target_url, username=username, password=password)
         self.configuration.verify_ssl = "UNSAFE_SSL" not in os.environ
-        logger.info(self.configuration)
         shared_token = _get_shared_token()
         if self._share_token and shared_token:
             self.token = shared_token

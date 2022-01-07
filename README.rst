@@ -112,12 +112,12 @@ To run the ID Broker tests the following steps are needed::
 The integration tests for the ID Broker plugin are not using SSL. To achieve this you have to set the environment
  variable ``UNSAFE_SSL`` on the target system inside the UCS\@school APIs container::
 
-    $ univention-app shell ucsschool-apis /bin/bash -c "rc-service ucsschool-apis stop && UNSAFE_SSL=1 /usr/local/bin/run_ucsschool_apis"
+    $ univention-app shell ucsschool-apis sh -c 'export UNSAFE_SSL=1 && /etc/init.d/ucsschool-apis restart'
 
 
 Inside the ID Connector container run::
 
-    $ univention-app shell ucsschool-id-connector export UNSAFE_SSL=1 && /etc/init.d/ucsschool-id-connector restart
+    $ univention-app shell ucsschool-id-connector  sh -c 'export UNSAFE_SSL=1 && /etc/init.d/ucsschool-id-connector restart'
 
 
 Using devsync with running app container

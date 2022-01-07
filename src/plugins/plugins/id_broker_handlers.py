@@ -156,6 +156,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
                     await self.id_broker_school.create(
                         School(name=school, display_name=str(entries[0].displayName))
                     )
+                    self.logger.info("Created school: %r.", school)
                 else:
                     raise IDBrokerNotFoundError(
                         f"School {school} of User {request_body['username']}"
@@ -196,7 +197,10 @@ class IDBrokerUserDispatcher(UserDispatcherPluginBase):
                 school_authority.name,
             )
             return False
-
+        self.logger.info(
+            "Successfully called ucsschool-api for school authority API (%s)",
+            school_authority.name,
+        )
         return True
 
 
@@ -308,6 +312,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
                 await self.id_broker_school.create(
                     School(name=school, display_name=str(entries[0].displayName))
                 )
+                self.logger.info("Created school: %r.", school)
             else:
                 raise IDBrokerNotFoundError(
                     f"School {school} of School class {request_body['name']}"
@@ -369,6 +374,10 @@ class IDBrokerGroupDispatcher(GroupDispatcherPluginBase):
                 school_authority.name,
             )
             return False
+        self.logger.info(
+            "Successfully called ucsschool-api for school authority API (%s)",
+            school_authority.name,
+        )
         return True
 
 
