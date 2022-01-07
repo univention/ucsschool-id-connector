@@ -129,10 +129,10 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
 
     async def handle_create_or_update(self, obj: AddModifyObject) -> None:
         """Create or modify object."""
-        self.logger.info("Going to create or update %r.", obj)
-        self.logger.debug("*** obj.dict()=%r", obj.dict())
         if not await self.create_or_update_preconditions_met(obj):
             return
+        self.logger.info("Going to create or update %r.", obj)
+        self.logger.debug("*** obj.dict()=%r", obj.dict())
         await self.print_ids(obj)
         await self.do_create_or_update(obj)
 
