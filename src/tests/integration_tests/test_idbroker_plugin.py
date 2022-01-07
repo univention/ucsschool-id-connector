@@ -44,6 +44,7 @@ from ucsschool.kelvin.client import (
 # load ID Broker plugin
 ucsschool_id_connector.plugin_loader.load_plugins()
 id_broker = pytest.importorskip("idbroker")
+pytestmark = pytest.mark.id_broker
 
 fake = faker.Faker()
 

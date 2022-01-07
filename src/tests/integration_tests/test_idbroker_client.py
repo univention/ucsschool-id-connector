@@ -51,6 +51,8 @@ from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 # load ID Broker plugin
 ucsschool_id_connector.plugin_loader.load_plugins()
 id_broker = pytest.importorskip("idbroker")
+pytestmark = pytest.mark.id_broker
+
 from idbroker.id_broker_client import (  # isort:skip  # noqa: E402
     IDBrokerSchool,
     IDBrokerSchoolClass,

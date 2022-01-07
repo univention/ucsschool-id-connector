@@ -59,6 +59,7 @@ must_run_in_container = pytest.mark.skipif(
     not _inside_docker(),
     reason="Must run inside Docker container started by appcenter.",
 )
+pytestmark = pytest.mark.id_broker
 
 
 @patch("ucsschool_id_connector.token_auth.get_secret_key", AsyncMock(return_value="Foo"))
