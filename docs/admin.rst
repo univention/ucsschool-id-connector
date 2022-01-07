@@ -384,13 +384,11 @@ receiving school:
 
 * The UDM ``ucsschoolRecordUID`` property should be synced to an |UAS| system as ``record_uid``.
 * The UDM ``ucsschoolSourceUID`` property should be synced to an |UAS| system as ``source_uid``.
-* The *virtual* UDM ``roles`` property should be synced to an |UAS| system as ``roles``
+* The *virtual* ``roles`` property should be synced to an |UAS| system as ``roles``
 
 .. note::
    ``roles`` is *virtual* because there is special handling by the |iIDC| app
    mapping ``ucsschoolRole`` to ``roles``.
-
-.. TODO Daniel - is the above true?
 
 .. warning::
 
@@ -428,12 +426,9 @@ These are the keys in the configuration:
 - *ssl_context* - contains values that are passed to the
   `ssl context object <https://docs.python.org/3.8/library/ssl.html#ssl.SSLContext>`_
   which is used to communicate with the receiving system.
-- *active* - configures if this school authority is active.
+- *active* - configures if this configuration for a an out queue for a school authority is active (
+  so you don't have to delete it).
 - *plugins* - which plugins are going to be used for this school authority. Usually just "kelvin".
-
-.. TODO Daniel: what does *active* really do?
-
-
 
 Please adapt this to your needs, of course. The complete and adapted configuration needs to be posted
 to the ``school_authorities`` resource in the :ref:`Swagger UI <swagger_ui>`.

@@ -101,9 +101,7 @@ UDM REST-API (optional)
    A REST API which can be used to inspect, modify, create and delete UDM objects via HTTP requests.
 
    You will only need to know about this if you want to access extra information about objects
-   within your custom plugin.
-
-   .. TODO Daniel: is this correct?
+   within your (custom) plugin.
 
    You need to be able to:
 
@@ -451,13 +449,12 @@ The app is released with default plugins, that implement a default version
 for all specifications found in ``src/ucsschool_id_connector/plugins.py``.
 Search for ``@hook_impl`` in ``src/plugins`` to find them.
 
-Some of the default plugins are only used if no custom plugins are present:
+Some of the default plugins are only used if no custom plugins are present (see
+usages of ``filter_plugins`` defined in ``src/src/ucsschool_id_connector/plugins.py``):
 
 - create_request_kwargs
 - school_authority_ping
 - handle_listener_object
-
-.. TODO Daniel: is this correct?
 
 A simple custom plugin
 ----------------------
