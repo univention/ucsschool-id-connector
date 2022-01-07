@@ -46,7 +46,7 @@ html:
   script:
     - sphinx-build -b html docs public
   except:
-    - main
+    - master
   artifacts:
     paths:
       - public
@@ -57,7 +57,7 @@ pages:
   script:
     - sphinx-build -b html docs public
   only:
-    - main
+    - master
   artifacts:
     paths:
       - public
