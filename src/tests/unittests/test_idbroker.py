@@ -28,7 +28,6 @@
 # <http://www.gnu.org/licenses/>.
 
 import datetime
-import os
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -37,34 +36,15 @@ import pytest
 import ucsschool_id_connector.plugin_loader
 import ucsschool_id_connector.token_auth
 
-
-def _inside_docker():
-    try:
-        os.environ["ldap_base"]
-    except KeyError:
-        return False
-    return True
-
-
-if not _inside_docker:
-    # load ID Broker plugin
-    ucsschool_id_connector.plugin_loader.load_plugins()
-
-id_broker = pytest.importorskip("idbroker")
-from idbroker import id_broker_client  # isort:skip  # noqa: E402
-from idbroker.provisioning_api import Token as GenToken  # isort:skip # noqa: E402
-
-
-must_run_in_container = pytest.mark.skipif(
-    not _inside_docker(),
-    reason="Must run inside Docker container started by appcenter.",
-)
-pytestmark = pytest.mark.id_broker
+pytestmark = [pytest.mark.id_broker, pytest.mark.usefixtures("mock_plugins")]
 
 
 @patch("ucsschool_id_connector.token_auth.get_secret_key", AsyncMock(return_value="Foo"))
 @pytest.mark.asyncio
 async def test_current_token_is_valid():
+    from idbroker import id_broker_client  # isort:skip  # noqa: E402
+    from idbroker.provisioning_api import Token as GenToken  # isort:skip # noqa: E402
+
     access_token = await ucsschool_id_connector.token_auth.create_access_token(
         data={"sub": "bar"}, expires_delta=datetime.timedelta(minutes=60)
     )
@@ -79,6 +59,9 @@ async def test_current_token_is_valid():
 @patch("ucsschool_id_connector.token_auth.get_secret_key", AsyncMock(return_value="Foo"))
 @pytest.mark.asyncio
 async def test_token_fetch_expired_token():
+    from idbroker import id_broker_client  # isort:skip  # noqa: E402
+    from idbroker.provisioning_api import Token as GenToken  # isort:skip # noqa: E402
+
     access_token = await ucsschool_id_connector.token_auth.create_access_token(
         data={"sub": "bar"}, expires_delta=datetime.timedelta(minutes=-6)
     )
@@ -92,6 +75,9 @@ async def test_token_fetch_expired_token():
 @patch("ucsschool_id_connector.token_auth.get_secret_key", AsyncMock(return_value="Foo"))
 @pytest.mark.asyncio
 async def test_token_gets_refreshed():
+    from idbroker import id_broker_client  # isort:skip  # noqa: E402
+    from idbroker.provisioning_api import Token as GenToken  # isort:skip # noqa: E402
+
     access_token = await ucsschool_id_connector.token_auth.create_access_token(
         data={"sub": "bar"}, expires_delta=datetime.timedelta(seconds=2)
     )

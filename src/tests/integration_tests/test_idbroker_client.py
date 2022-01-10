@@ -194,9 +194,9 @@ def test_kelvin_user():
 @pytest.fixture(scope="session")
 def get_kelvin_user(id_broker_ip, kelvin_session):
     async def _func(s_a_name: str, user_name: str) -> KelvinUser:
-        return await KelvinUserResource(session=kelvin_session(id_broker_ip)).get(
-            name=f"{s_a_name}-{user_name}"
-        )
+        if s_a_name not in user_name:
+            user_name = f"{s_a_name}-{user_name}"
+        return await KelvinUserResource(session=kelvin_session(id_broker_ip)).get(name=f"{user_name}")
 
     return _func
 
@@ -239,6 +239,7 @@ def compare_kelvin_and_id_broker_school(
 def compare_kelvin_and_id_broker_school_class(get_kelvin_user):
     async def _func(kelvin_class: KelvinSchoolClass, id_broker_class: SchoolClass, s_a_name: str):
         assert kelvin_class.name == id_broker_class.name
+        kelvin_class.description = "" if kelvin_class.description is None else kelvin_class.description
         assert kelvin_class.description == id_broker_class.description
         assert kelvin_class.school == f"{s_a_name}-{id_broker_class.school}"
         kelvin_users: List[KelvinUser] = [
@@ -415,7 +416,7 @@ async def test_school_class_create(
     sc_2 = await id_broker_sc.create(sc_1)
     assert sc_1 == sc_2
     kelvin_class: KelvinSchoolClass = await get_kelvin_school_class(s_a_name, class_name, school)
-    compare_kelvin_and_id_broker_school_class(kelvin_class, sc_2, s_a_name)
+    await compare_kelvin_and_id_broker_school_class(kelvin_class, sc_2, s_a_name)
 
 
 @pytest.mark.asyncio
@@ -466,7 +467,7 @@ async def test_school_class_get(
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc.name, school)
     await kelvin_sc.save()
     sc: SchoolClass = await id_broker_sc.get(kelvin_sc.name, school)
-    compare_kelvin_and_id_broker_school_class(kelvin_sc, sc, s_a_name)
+    await compare_kelvin_and_id_broker_school_class(kelvin_sc, sc, s_a_name)
 
 
 @pytest.mark.asyncio
@@ -494,7 +495,7 @@ async def test_school_class_update(
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc_1.name, school)
     await kelvin_sc_1.save()
     sc_1: SchoolClass = await id_broker_sc.get(kelvin_sc_1.name, school)
-    compare_kelvin_and_id_broker_school_class(kelvin_sc_1, sc_1, s_a_name)
+    await compare_kelvin_and_id_broker_school_class(kelvin_sc_1, sc_1, s_a_name)
     kelvin_user: KelvinUser = test_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_broker_ip),
@@ -512,7 +513,7 @@ async def test_school_class_update(
     assert sc_2 == sc_3
     assert sc_1 == sc_2
     kelvin_sc_2: KelvinSchoolClass = await get_kelvin_school_class(s_a_name, kelvin_sc_1.name, school)
-    compare_kelvin_and_id_broker_school_class(kelvin_sc_2, sc_3, s_a_name)
+    await compare_kelvin_and_id_broker_school_class(kelvin_sc_2, sc_3, s_a_name)
 
 
 @pytest.mark.asyncio
@@ -538,7 +539,7 @@ async def test_school_class_delete(
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc.name, school)
     await kelvin_sc.save()
     sc: SchoolClass = await id_broker_sc.get(kelvin_sc.name, school)
-    compare_kelvin_and_id_broker_school_class(kelvin_sc, sc, s_a_name)
+    await compare_kelvin_and_id_broker_school_class(kelvin_sc, sc, s_a_name)
     await id_broker_sc.delete(sc.name, school)
     with pytest.raises(KelvinNoObject):
         await get_kelvin_school_class(s_a_name, sc.name, school)

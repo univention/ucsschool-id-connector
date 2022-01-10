@@ -596,6 +596,8 @@ def mock_plugins(
     user_passwords_object,
     db_path,
     ldap_access_mock,
+    setup_environ,
+    setup_logging,
 ):
     mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
 

@@ -108,16 +108,23 @@ To run the ID Broker tests the following steps are needed::
     $ echo IP_IDBroker > /var/www/IP_idbroker.txt
     $ echo IP_TRAEGER1 > /var/www/IP_traeger1.txt
 
+The ``IP_TRAEGER1`` is necessary to test if of the ID Broker plugin can be used aside to the
+Kelvin plugins. If you do not want to test this scenario, add the pytest mark ``not id_broker_compatibility``
+when you execute the tests.
 
 The integration tests for the ID Broker plugin are not using SSL. To achieve this you have to set the environment
  variable ``UNSAFE_SSL`` on the target system inside the UCS\@school APIs container::
 
     $ univention-app shell ucsschool-apis sh -c 'export UNSAFE_SSL=1 && /etc/init.d/ucsschool-apis restart'
 
-
 Inside the ID Connector container run::
 
     $ univention-app shell ucsschool-id-connector  sh -c 'export UNSAFE_SSL=1 && /etc/init.d/ucsschool-id-connector restart'
+
+Before running the integration tests, make sure to remove all remaining school_authority configurations.
+To run only the tests for the ID Broker plugin, run::
+
+    $ univention-app shell ucsschool-id-connector sh -c "export UNSAFE_SSL=1 && cd src/tests && pytest -lv -m 'id_broker'"
 
 
 Using devsync with running app container
