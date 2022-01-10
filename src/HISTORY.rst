@@ -9,6 +9,7 @@ v2.2.0 (2022-01-04)
 ...................
 
 * A new plugin was added to sync all user data to the ID-Broker.
+* The ID Connector can now also be installed on DC Backups.
 
 v2.1.1 (2021-10-25)
 ...................
