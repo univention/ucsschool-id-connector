@@ -38,6 +38,7 @@ import ucsschool_id_connector.config_storage
 import ucsschool_id_connector.models
 
 fake = faker.Faker()
+pytestmark = pytest.mark.usefixtures("mock_plugins")
 
 
 @pytest.mark.asyncio
