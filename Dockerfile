@@ -57,7 +57,7 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
    # install Python packages
     python3 -m pip install --no-cache-dir --compile --upgrade pip wheel && \
     # build ujson from source https://github.com/esnme/ultrajson/issues/326
-    python3 -m pip install --no-cache-dir --compile git+git://github.com/esnme/ultrajson.git@2.0.3 && \
+    python3 -m pip install --no-cache-dir --compile git+https://github.com/esnme/ultrajson.git@2.0.3 && \
     python3 -m pip install --no-cache-dir --compile -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
     rm -rf /root/.cache/ /tmp/* && \
     apk del --no-cache mybuilddeps
