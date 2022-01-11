@@ -117,7 +117,7 @@ class LDAPAccess:
         raise_on_bind_error: bool = True,
     ) -> List[Entry]:
         base = base or self.ldap_base
-        bind_dn = bind_dn or self.host_dn
+        bind_dn = bind_dn or str(self.host_dn)
         bind_pw = bind_pw or await self.machine_password()
         try:
             with Connection(
@@ -135,7 +135,7 @@ class LDAPAccess:
             self.logger.exception(
                 "When connecting to %r with bind_dn %r: %s",
                 self.server.host,
-                self.host_dn,
+                bind_dn,
                 exc,
             )
             raise

@@ -94,15 +94,15 @@ def filter_ous(user: Dict[str, Any], auth: str, mapping: Dict[str, str]) -> Dict
 def assert_equal_password_hashes(school_auth_host_configs):
     async def _func(username: str, host1: str, host2: str) -> None:
         print(f"Comparing password hashes of user {username!r} on host {host1!r} and {host2!r}...")
-        ldap_access = LDAPAccess(host=host1)
-        hashes1 = await ldap_access.get_passwords(
+        ldap_access1 = LDAPAccess(host=host1)
+        hashes1 = await ldap_access1.get_passwords(
             username,
             base=school_auth_host_configs["base_dn_traeger1"],
             bind_dn=school_auth_host_configs["administrator_dn_traeger1"],
             bind_pw="univention",
         )
-        ldap_access = LDAPAccess(host=host2)
-        hashes2 = await ldap_access.get_passwords(
+        ldap_access2 = LDAPAccess(host=host2)
+        hashes2 = await ldap_access2.get_passwords(
             username,
             base=school_auth_host_configs["base_dn_traeger2"],
             bind_dn=school_auth_host_configs["administrator_dn_traeger2"],
