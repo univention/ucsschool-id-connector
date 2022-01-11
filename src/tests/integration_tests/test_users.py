@@ -455,7 +455,7 @@ async def test_school_change(
     """
     target_ip_1 = school_auth_host_configs["IP_traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
-    auth_school_mapping = create_schools([(school_auth1, 2)])
+    auth_school_mapping = await create_schools([(school_auth1, 2)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
     ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
     await save_mapping({ou_auth1: school_auth1.name, ou_auth1_2: school_auth1.name})
