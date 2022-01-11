@@ -40,8 +40,7 @@ from ucsschool.kelvin.client import UserResource as KelvinUserResource
 # load ID Broker plugin
 ucsschool_id_connector.plugin_loader.load_plugins()
 id_broker = pytest.importorskip("idbroker")
-pytestmark = pytest.mark.id_broker
-pytestmark = pytest.mark.id_broker_compatibility
+pytestmark = [pytest.mark.id_broker, pytest.mark.id_broker_compatibility]
 
 fake = faker.Faker()
 
