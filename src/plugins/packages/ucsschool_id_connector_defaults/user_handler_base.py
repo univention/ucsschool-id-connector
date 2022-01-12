@@ -46,6 +46,7 @@ To implement a UCS@school ID connector plugin :
 """
 
 import abc
+import datetime
 import random
 import string
 from collections import defaultdict
@@ -222,6 +223,11 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         return res
 
     @staticmethod
+    async def _handle_attr_birthday(obj: ListenerUserAddModifyObject) -> datetime.date:
+        """Convert ISO 8601 'birthday' to datetime.date object."""
+        return datetime.datetime.strptime(obj.object["birthday"], "%Y-%m-%d").date()
+
+    @staticmethod
     async def _handle_attr_disabled(obj: ListenerUserAddModifyObject) -> bool:
         """Pass on state of 'disabled'."""
         return obj.object["disabled"] == "1"
@@ -313,6 +319,13 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
     async def _handle_attr_source_uid(obj: ListenerUserAddModifyObject) -> str:
         """Get a source_uid."""
         return obj.source_uid or get_source_uid()
+
+    @staticmethod
+    async def _handle_attr_userexpiry(obj: ListenerUserAddModifyObject) -> datetime.date:
+        """
+        Convert ISO 8601 'userexpiry' (in Kelvin called 'expiration_date') to datetime.date object.
+        """
+        return datetime.datetime.strptime(obj.object["userexpiry"], "%Y-%m-%d").date()
 
     def _handle_password_hashes(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
         """

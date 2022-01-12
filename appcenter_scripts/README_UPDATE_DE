@@ -11,6 +11,9 @@
     <li>
         The Kelvin plugin can now be imported by other plugins, so they can subclass it.
     </li>
+    <li>
+        The synchronization of the <code>birthday</code> and <code>userexpiry</code> attributes was fixed.
+    </li>
 </ul>
 
 <h2>v2.1.1 (2021-10-25)</h2>
