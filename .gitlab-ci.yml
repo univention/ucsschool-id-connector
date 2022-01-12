@@ -27,6 +27,12 @@ cache:
   tags:
     - omar
 
+.production:
+  extends: .publish
+  rules:
+    - changes:
+      - "docs/**/*"
+
 .buildhtml:
   extends: .prep
   script:
@@ -106,18 +112,18 @@ pages:
 
 staging:
   stage: staging
-  extends: .publish
+  extends: .production
   rules:
-      - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   script:
-      - rsync -av --delete public/ /var/univention/buildsystem2/test_mirror/ftp/download/docs
+      - rsync -av --delete public/ /var/univention/buildsystem2/test_mirror/ftp/download/docs/ucsschool-id-connector/
   environment:
     name: staging
-    url: http://apt.knut.univention.de/download/docs/
+    url: http://apt.knut.univention.de/download/docs/ucsschool-id-connector/
 
 production:
   stage: production
-  extends: .publish
+  extends: .production
   cache:
     paths:
       - docs
