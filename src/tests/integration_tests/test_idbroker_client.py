@@ -172,7 +172,11 @@ def test_id_broker_user():
 @pytest.fixture(scope="session")
 def test_kelvin_user():
     def _func(
-        s_a_name: str, session: KelvinSession, school_name: str, classes: List[str], roles: List[str]
+        s_a_name: str,
+        session: KelvinSession,
+        school_name: str,
+        classes: List[str],
+        roles: List[str],
     ) -> KelvinUser:
         return KelvinUser(
             name=f"{s_a_name}-{fake.user_name()}",
@@ -560,7 +564,9 @@ async def test_user_create(
     school: str = await test_school_name(s_a_name)
     class_name = fake.user_name()
     user_1: User = await test_id_broker_user(
-        school_name=school, classes=[class_name], roles=[random.choice(("student", "teacher"))]
+        school_name=school,
+        classes=[class_name],
+        roles=[random.choice(("student", "teacher"))],
     )
     schedule_delete_kelvin_school_class(s_a_name, class_name, school)
     schedule_delete_kelvin_user(s_a_name, user_1.user_name.split("-", 1)[-1])

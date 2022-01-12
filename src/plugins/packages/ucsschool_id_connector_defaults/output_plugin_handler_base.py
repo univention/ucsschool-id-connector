@@ -151,7 +151,9 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
             await self.do_remove(obj, api_user_data)
         else:
             self.logger.info(
-                "Skipping deletion of %s not found on the target system: %r.", self.object_type_name, obj
+                "Skipping deletion of %s not found on the target system: %r.",
+                self.object_type_name,
+                obj,
             )
 
     async def create_or_update_preconditions_met(self, obj: AddModifyObject) -> bool:
@@ -221,7 +223,10 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
     async def refresh_roles(self):
         self._roles_on_target_cache.clear()
         self._roles_on_target_cache.update(await self.fetch_roles())
-        self.logger.debug("Roles known by API server: %s", ", ".join(self._roles_on_target_cache.keys()))
+        self.logger.debug(
+            "Roles known by API server: %s",
+            ", ".join(self._roles_on_target_cache.keys()),
+        )
 
     async def fetch_roles(self) -> Dict[str, str]:
         """
@@ -252,7 +257,10 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
             self.logger.info("%s exists on target system, modifying it.", self.object_type_name)
             await self.do_modify(request_body, api_obj_data)
         else:
-            self.logger.info("%s does not exist on target system, creating it.", self.object_type_name)
+            self.logger.info(
+                "%s does not exist on target system, creating it.",
+                self.object_type_name,
+            )
             await self.do_create(request_body)
 
     async def exists_on_target(

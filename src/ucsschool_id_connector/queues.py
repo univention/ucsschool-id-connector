@@ -405,7 +405,9 @@ class InQueue(FileQueue):
             ):
                 s_a_names.update(await result)
             self.logger.debug(
-                "Plugins for 'school_authorities_to_distribute_to' returned: %r for %r", s_a_names, obj
+                "Plugins for 'school_authorities_to_distribute_to' returned: %r for %r",
+                s_a_names,
+                obj,
             )
             # copy listener file to out queues for affected school authorities
             if not s_a_names:

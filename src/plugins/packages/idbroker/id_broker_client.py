@@ -299,7 +299,11 @@ class ProvisioningAPIClient(abc.ABC):
                     f"Error HTTP {exc.status} ({exc.reason}) deleting {self._object_type.__name__} "
                     f"{obj_id!r}.",
                 )
-            logger.info("%s %r not deleted, as it did not exist.", self._object_type.__name__, obj_id)
+            logger.info(
+                "%s %r not deleted, as it did not exist.",
+                self._object_type.__name__,
+                obj_id,
+            )
 
     async def _exists(self, id_arg_name: str, **kwargs) -> bool:
         """
@@ -411,13 +415,17 @@ class IDBrokerUser(ProvisioningAPIClient):
     async def delete(self, user_id: str) -> None:
         """Delete user with id `user_id`."""
         await self._delete(
-            id_arg_name="user_id", school_authority=self.school_authority_name, user_id=user_id
+            id_arg_name="user_id",
+            school_authority=self.school_authority_name,
+            user_id=user_id,
         )
 
     async def exists(self, user_id: str) -> bool:
         """Check if the user with the ID `user_id` exists on the server."""
         return await self._exists(
-            id_arg_name="user_id", school_authority=self.school_authority_name, user_id=user_id
+            id_arg_name="user_id",
+            school_authority=self.school_authority_name,
+            user_id=user_id,
         )
 
     async def get(self, user_id: str) -> User:
@@ -447,7 +455,9 @@ class IDBrokerSchool(ProvisioningAPIClient):
     async def create(self, school: School) -> School:
         """Create school. Returned value is the data from the server."""
         res = await super()._create(
-            obj_arg_name="school", school_authority=self.school_authority_name, school=school
+            obj_arg_name="school",
+            school_authority=self.school_authority_name,
+            school=school,
         )
         return cast(School, res)
 
@@ -485,7 +495,10 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
     async def exists(self, name: str, school: str) -> bool:
         """Check if the schoolclass with the name `name` and the school `school` exists on the server."""
         return await self._exists(
-            id_arg_name="name", school_authority=self.school_authority_name, name=name, school=school
+            id_arg_name="name",
+            school_authority=self.school_authority_name,
+            name=name,
+            school=school,
         )
 
     async def get(self, name: str, school: str) -> SchoolClass:
@@ -507,5 +520,8 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
     async def delete(self, name: str, school: str) -> None:
         """Delete school_class with `name` in `school`."""
         await self._delete(
-            id_arg_name="name", school_authority=self.school_authority_name, name=name, school=school
+            id_arg_name="name",
+            school_authority=self.school_authority_name,
+            name=name,
+            school=school,
         )

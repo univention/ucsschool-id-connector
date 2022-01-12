@@ -245,7 +245,11 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
         m = self.class_dn_regex.match(obj.dn)
         name = m.groupdict()["name"]
         school = m.groupdict()["ou"]
-        return {"school_authority": self.school_authority.name, "name": name, "school": school}
+        return {
+            "school_authority": self.school_authority.name,
+            "name": name,
+            "school": school,
+        }
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> SchoolClass:
         """Retrieve a school class from ID Broker API.
@@ -334,13 +338,18 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
     async def do_modify(self, request_body: Dict[str, Any], api_school_class_data: SchoolClass) -> None:
         """Modify a school class object at the target."""
         self.logger.info(
-            "Going to modify school class %r: %r...", api_school_class_data.name, request_body
+            "Going to modify school class %r: %r...",
+            api_school_class_data.name,
+            request_body,
         )
         name, school = request_body["name"], request_body["school"]
         try:
             await self.id_broker_school_class.update(SchoolClass(**request_body))
             self.logger.info(
-                "School class modified: %r  in school %r: %r...", name, school, request_body
+                "School class modified: %r  in school %r: %r...",
+                name,
+                school,
+                request_body,
             )
         except IDBrokerNotFoundError as exc:
             raise IDBrokerNotFoundError(

@@ -68,7 +68,13 @@ def kelvin_client_session(school_authority: SchoolAuthorityConfiguration, plugin
     for k, v in school_authority.plugin_configs[plugin_name].get("ssl_context", {}).items():
         logger.info("Applying to SSL context: %r=%r", k, v)
         setattr(ssl_context, k, v)
-    return Session(username=username, password=password, host=host, verify=ssl_context, timeout=timeout)
+    return Session(
+        username=username,
+        password=password,
+        host=host,
+        verify=ssl_context,
+        timeout=timeout,
+    )
 
 
 def fetch_ucs_certificate(host: str) -> Path:

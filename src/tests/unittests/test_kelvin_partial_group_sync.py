@@ -110,8 +110,20 @@ async def test__check_user_ignore(ignore_roles, roles, expected, school_class_ha
             ["user1", "user2", "user3"],
             [],
         ),
-        (["user1", "user2", "user3"], ["user1", "user2"], ["School1"], ["user1", "user2", "user3"], []),
-        (["user1", "user2"], ["user1", "user2", "user3"], ["School1"], ["user1", "user2"], []),
+        (
+            ["user1", "user2", "user3"],
+            ["user1", "user2"],
+            ["School1"],
+            ["user1", "user2", "user3"],
+            [],
+        ),
+        (
+            ["user1", "user2"],
+            ["user1", "user2", "user3"],
+            ["School1"],
+            ["user1", "user2"],
+            [],
+        ),
         # New behavior
         (
             ["user1", "user2"],
@@ -120,7 +132,13 @@ async def test__check_user_ignore(ignore_roles, roles, expected, school_class_ha
             ["unkown", "user1", "user2"],
             [],
         ),
-        (["user1", "user2", "user3"], ["user2", "user3"], ["School1"], ["user2", "user3"], ["student"]),
+        (
+            ["user1", "user2", "user3"],
+            ["user2", "user3"],
+            ["School1"],
+            ["user2", "user3"],
+            ["student"],
+        ),
         ([], ["user2", "user3"], ["School1"], ["user3"], ["student"]),
         # Users from other schools are removed, regardless of their role
         (["user2"], ["user4"], ["School1"], ["user2"], []),
@@ -133,7 +151,13 @@ async def test__check_user_ignore(ignore_roles, roles, expected, school_class_ha
     "KelvinPerSASchoolClassDispatcher._handle_attr_users"
 )
 async def test__handle_attr_users(
-    handle_mock, local_users, remote_users, handled_schools, expected, ignore_roles, school_class_handler
+    handle_mock,
+    local_users,
+    remote_users,
+    handled_schools,
+    expected,
+    ignore_roles,
+    school_class_handler,
 ):
     sc_handler = school_class_handler(ignore_roles)
     handle_mock.return_value = local_users

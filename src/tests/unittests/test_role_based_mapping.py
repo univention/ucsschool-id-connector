@@ -44,7 +44,10 @@ all_roles_mapping = {
 @pytest.mark.parametrize(
     "mapping,expected",
     [
-        ({"School1": "auth1", "School2": "auth2", "School3": "auth1"}, ["School1", "School3"]),
+        (
+            {"School1": "auth1", "School2": "auth2", "School3": "auth1"},
+            ["School1", "School3"],
+        ),
         ({}, []),
         ({"School1": "auth2"}, []),
     ],
@@ -90,9 +93,24 @@ async def test_handled_schools(mapping, expected, idc_defaults, school_authority
             3,
         ),
         # order (users[1]<student[2]<teacher[3]<staff[4]<school_admin[5])
-        (all_roles_mapping, ["School1"], ["student:school:School1", "school_admin:school:School1"], 5),
-        (all_roles_mapping, ["School1"], ["student:school:School1", "staff:school:School1"], 4),
-        (all_roles_mapping, ["School1"], ["student:school:School1", "teacher:school:School1"], 3),
+        (
+            all_roles_mapping,
+            ["School1"],
+            ["student:school:School1", "school_admin:school:School1"],
+            5,
+        ),
+        (
+            all_roles_mapping,
+            ["School1"],
+            ["student:school:School1", "staff:school:School1"],
+            4,
+        ),
+        (
+            all_roles_mapping,
+            ["School1"],
+            ["student:school:School1", "teacher:school:School1"],
+            3,
+        ),
         (all_roles_mapping, ["School1"], ["student:school:School1"], 2),
         (all_roles_mapping, ["School1"], [], 1),
         # fallbacks both teacher and staff, no staff mapping -> fallback to teacher
@@ -112,7 +130,12 @@ async def test_handled_schools(mapping, expected, idc_defaults, school_authority
 )
 @pytest.mark.asyncio
 async def test__get_role_specific_mapping(
-    mapping, handled_schools, roles, expected, school_authority_configuration, idc_defaults
+    mapping,
+    handled_schools,
+    roles,
+    expected,
+    school_authority_configuration,
+    idc_defaults,
 ):
     school_auth = school_authority_configuration()
     school_auth.name = "auth1"

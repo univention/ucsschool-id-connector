@@ -245,7 +245,8 @@ def query_service(
     except zmq.error.ZMQError as exc:
         get_logger().fatal("Error waiting for response from RPC server: %s", exc)
         raise HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="No/Bad response from connector."
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No/Bad response from connector.",
         )
     # logger.debug("Received response: %r", response)
     return ujson.loads(response)

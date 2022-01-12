@@ -163,7 +163,9 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
                 obj.source_uid,
             )
             old_data = ListenerUserOldDataEntry(
-                record_uid=obj.record_uid, source_uid=obj.source_uid, schools=obj.schools
+                record_uid=obj.record_uid,
+                source_uid=obj.source_uid,
+                schools=obj.schools,
             )
         remove_obj = ListenerUserRemoveObject(
             dn=obj.dn,
