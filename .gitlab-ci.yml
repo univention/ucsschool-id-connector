@@ -16,7 +16,7 @@ cache:
   before_script:
     - python -m pip install --upgrade pip wheel
     - apt-get -qq update
-    - apt-get -q --assume-yes install libenchant-2-2 ca-certificates
+    - apt-get -q --assume-yes install libenchant-2-2 ca-certificates rsync
     - install -m644 -D ./ucs-root-ca.crt "/usr/local/share/ca-certificates/knut-ca.crt"
     - update-ca-certificates
     - pip install -r requirements.txt --cert /etc/ssl/certs/ca-certificates.crt
