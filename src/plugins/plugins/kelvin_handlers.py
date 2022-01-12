@@ -36,6 +36,7 @@ from ucsschool_id_connector.models import (
     SchoolAuthorityConfiguration,
 )
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 from ucsschool_id_connector_defaults.output_plugin_handler_base import DispatcherPluginBase
 from ucsschool_id_connector_defaults.school_classes_kelvin import KelvinSchoolClassDispatcher
 from ucsschool_id_connector_defaults.users_kelvin import KelvinPerSAUserDispatcher, KelvinUserDispatcher
@@ -87,4 +88,11 @@ class KelvinHandler(DispatcherPluginBase):
         return await self.user_handler.school_authority_ping(school_authority)
 
 
-plugin_manager.register(KelvinHandler(), KelvinHandler.plugin_name)
+try:
+    plugin_manager.register(KelvinHandler(), KelvinHandler.plugin_name)
+except ValueError as exc:
+    if "Plugin already registered" in str(exc):
+        logger = ConsoleAndFileLogging.get_logger(__name__)
+        logger.error("Ignoring already loaded plugin %r: %s", KelvinHandler.plugin_name, exc)
+    else:
+        raise
