@@ -3,7 +3,7 @@
 <h2>v2.2.0 (2021-01-04)</h2>
 <ul>
     <li>
-        A new plugin was added to sync all user data to the ID-Broker.
+        A new plugin was added to sync all user data to the ID Broker.
     </li>
     <li>
         The ID Connector can now also be installed on DC Backups.

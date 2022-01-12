@@ -38,6 +38,6 @@ v2.1.1 (2021-10-25)
 
 v2.2.0 (2022-01-04)
 ...................
-* A new plugin was added to sync all user data to the ID-Broker.
+* A new plugin was added to sync all user data to the ID Broker.
 * The ID Connector can now also be installed on DC Backups.
 * The Kelvin plugin can now be imported by other plugins, so they can subclass it.
