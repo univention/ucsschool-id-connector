@@ -101,6 +101,8 @@ pages:
   rules:
       - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   script:
+    - apt-get -qq update
+    - apt-get -q --assume-yes install libenchant-2-2 ca-certificates rsync
     - mkdir public
     - rsync -av --delete docs/_build/html/ public
   environment:
