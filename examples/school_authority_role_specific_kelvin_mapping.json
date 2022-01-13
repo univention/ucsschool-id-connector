@@ -27,7 +27,7 @@
           "roles": "roles",
           "title": "title",
           "displayName": "displayName",
-          "userexpiry": "userexpiry",
+          "userexpiry": "expiration_date",
           "phone": "phone",
           "ucsschoolRecordUID": "record_uid"
         },
@@ -45,7 +45,7 @@
           "roles": "roles",
           "title": "title",
           "displayName": "displayName",
-          "userexpiry": "userexpiry",
+          "userexpiry": "expiration_date",
           "phone": "phone",
           "ucsschoolRecordUID": "record_uid"
         }

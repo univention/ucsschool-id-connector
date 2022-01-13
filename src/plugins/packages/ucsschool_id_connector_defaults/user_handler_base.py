@@ -50,7 +50,7 @@ import datetime
 import random
 import string
 from collections import defaultdict
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 from ucsschool_id_connector.models import (
     ListenerActionEnum,
@@ -321,11 +321,14 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         return obj.source_uid or get_source_uid()
 
     @staticmethod
-    async def _handle_attr_userexpiry(obj: ListenerUserAddModifyObject) -> datetime.date:
+    async def _handle_attr_userexpiry(obj: ListenerUserAddModifyObject) -> Optional[datetime.date]:
         """
         Convert ISO 8601 'userexpiry' (in Kelvin called 'expiration_date') to datetime.date object.
         """
-        return datetime.datetime.strptime(obj.object["userexpiry"], "%Y-%m-%d").date()
+        if obj.object.get("userexpiry"):
+            return datetime.datetime.strptime(obj.object["userexpiry"], "%Y-%m-%d").date()
+        else:
+            return None
 
     def _handle_password_hashes(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
         """

@@ -122,31 +122,32 @@ def http_request():
 
 
 @pytest.fixture(scope="session")
-def school_auth_host_configs(docker_hostname: str, http_request):
+def school_auth_host_configs(docker_hostname: str, http_request) -> Dict[str, str]:
     configs = {}
     for i in ("1", "2"):
         url = urljoin(f"https://{docker_hostname}", f"IP_traeger{i}.txt")
         resp = http_request("get", url, verify=False)
         assert resp.status_code == 200, (resp.status_code, resp.reason, url)
-        configs["IP_traeger" + i] = resp.text.strip("\n")
+        configs[f"IP_traeger{i}"] = resp.text.strip("\n")
         resp = http_request(
             "get",
-            f"https://Administrator:univention@{configs['IP_traeger' + i]}"
+            f"https://Administrator:univention@{configs[f'IP_traeger{i}']}"
             f"/univention/udm/ldap/base/",
             headers={"Accept": "application/json"},
             verify=False,
         )
         resp_json = resp.json()
-        configs["base_dn_traeger" + i] = resp_json["dn"]
+        configs[f"base_dn_traeger{i}"] = resp_json["dn"]
         resp = http_request(
             "get",
-            f"https://Administrator:univention@{configs['IP_traeger' + i]}"
+            f"https://Administrator:univention@{configs[f'IP_traeger{i}']}"
             f"/univention/udm/users/user/?query[username]=Administrator",
             headers={"Accept": "application/json"},
             verify=False,
         )
         resp_json = resp.json()
-        configs["administrator_dn_traeger" + i] = resp_json["_embedded"]["udm:object"][0]["dn"]
+        configs[f"administrator_dn_traeger{i}"] = resp_json["_embedded"]["udm:object"][0]["dn"]
+    print(f"school_auth_host_configs: {configs!r}")
     return configs
 
 
@@ -198,7 +199,7 @@ def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_ho
                             "roles": "roles",
                             "title": "title",
                             "displayName": "displayName",
-                            "userexpiry": "userexpiry",
+                            "userexpiry": "expiration_date",
                             "phone": "phone",
                             "ucsschoolRecordUID": "record_uid",
                         },

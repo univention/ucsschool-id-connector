@@ -23,7 +23,7 @@
           "school_classes": "school_classes",
           "title": "title",
           "displayName": "displayName",
-          "userexpiry": "userexpiry",
+          "userexpiry": "expiration_date",
           "phone": "phone",
           "roles": "roles",
           "ucsschoolRecordUID": "record_uid",
