@@ -651,7 +651,7 @@ async def make_sender_user(
             disabled=False,
             firstname=firstname,
             lastname=lastname,
-            password=fake.password(length=15),
+            password=fake.password(length=15, special_chars=False),
             record_uid=f"{firstname[:5]}.{lastname}.{fake.pyint(1000, 9999)}",
             roles=roles,
             school=ous[0],
