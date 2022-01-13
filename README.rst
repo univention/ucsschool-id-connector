@@ -167,6 +167,27 @@ To upload ("push") a new Docker image to Univentions Docker registry (``docker-t
     $ cd ~/git/ucsschool-id-connector
     $ make build-docker-img-on-knut
 
+Automatic documentation build
+-----------------------------
+
+Once documentation changes are pushed to the repository, GitLab builds the HTML
+deliverable.
+
+The pipeline always builds the HTML and provides the results for review in the
+browser. The jobs create environments and provide a link to view the
+environment. The jobs in the pipeline are:
+
+* For the feature branch: *Review*. Look at ``http://apt.knut.univention.de/download/docs.$BRANCH_REF_SLUG/``
+* For the default branch: *Staging*. Look at http://apt.knut.univention.de/download/docs/ucsschool-id-connector/
+
+To publish the reviewed documentation to docs.univention.de you need to manually
+trigger the *production* job in the pipeline. This will commit and push the
+documentation to the `docs.univention.de repository
+<https://git.knut.univention.de/univention/docs.univention.de>`_ It has it's own
+pipeline and there you also need to manually trigger the *production*. See
+https://hutten.knut.univention.de/mediawiki/index.php/Docbook#The_publication_of_the_doc_takes_place_via_GitLab
+for the last step.
+
 
 Tests
 -----
