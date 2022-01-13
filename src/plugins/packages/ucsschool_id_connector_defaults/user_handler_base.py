@@ -223,9 +223,12 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         return res
 
     @staticmethod
-    async def _handle_attr_birthday(obj: ListenerUserAddModifyObject) -> datetime.date:
+    async def _handle_attr_birthday(obj: ListenerUserAddModifyObject) -> Optional[datetime.date]:
         """Convert ISO 8601 'birthday' to datetime.date object."""
-        return datetime.datetime.strptime(obj.object["birthday"], "%Y-%m-%d").date()
+        if obj.object.get("birthday"):
+            return datetime.datetime.strptime(obj.object["birthday"], "%Y-%m-%d").date()
+        else:
+            return None
 
     @staticmethod
     async def _handle_attr_disabled(obj: ListenerUserAddModifyObject) -> bool:

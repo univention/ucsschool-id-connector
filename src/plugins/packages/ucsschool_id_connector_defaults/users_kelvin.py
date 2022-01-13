@@ -203,6 +203,8 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
     def _handle_none_value(self, key_here: str) -> Any:
         """`none` can be invalid, for example if a list is expected."""
+        if key_here in ("birthday", "userexpiry"):
+            return None
         raise SkipAttribute()
 
     def _update_for_mapping_data(self, key_here: str, key_there: str, value_here: Any) -> Dict[str, Any]:
