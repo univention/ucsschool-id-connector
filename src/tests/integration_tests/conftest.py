@@ -647,6 +647,7 @@ async def make_sender_user(
         user_obj = User(
             name=f"test.{firstname[:5]}.{lastname}"[:15],
             birthday=fake.date_of_birth(minimum_age=6, maximum_age=67),
+            expiration_date=fake.date_between(start_date="+1y", end_date="+10y"),
             disabled=False,
             firstname=firstname,
             lastname=lastname,

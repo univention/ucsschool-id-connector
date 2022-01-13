@@ -64,6 +64,7 @@ def compare_user(compare_dicts):
             "firstname",
             "lastname",
             "birthday",
+            "expiration_date",
             "disabled",
             "record_uid",
             "school_classes",
@@ -331,7 +332,8 @@ async def test_modify_user(
         "firstname": fake.first_name(),
         "lastname": fake.last_name(),
         "disabled": not sender_user["disabled"],
-        "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67).strftime("%Y-%m-%d"),
+        "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67),
+        "expiration_date": fake.date_between(start_date="+1y", end_date="+10y"),
         "password": new_password,
     }
     await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)

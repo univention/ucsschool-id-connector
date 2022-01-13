@@ -12,7 +12,7 @@
         The Kelvin plugin can now be imported by other plugins, so they can subclass it.
     </li>
     <li>
-        The synchronization of the <code>birthday</code> and <code>userexpiry</code> (in Kelvin <code>expiration_date</code>) attributes was fixed.
+        The synchronization of the <code>birthday</code> and <code>userexpiry</code> (in Kelvin <code>expiration_date</code>) attributes was fixed. The Kelvin REST API on the school authority side must be of version <code>1.5.1</code> or above!
     </li>
 </ul>
 

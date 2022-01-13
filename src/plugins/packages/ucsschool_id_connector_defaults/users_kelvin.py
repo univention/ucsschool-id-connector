@@ -49,6 +49,7 @@ KELVIN_API_SCHOOL_ATTRIBUTES = {
     "birthday",
     "disabled",
     "email",
+    "expiration_date",
     "firstname",
     "lastname",
     "password",
