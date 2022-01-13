@@ -33,7 +33,7 @@ This, of course, is a simplification. It is on a container level (in the sense u
    Arrows in these diagrams are in the direction of data flow. It should be apparent from the
    source and target nodes what the label on the arrow refers to.
 
-Let's have a look at what you need to know before we dive any deeper.
+Let's have a look at what you need to know before we dive any deeper. Hi from the QA!
 
 Dev prerequisites
 =================

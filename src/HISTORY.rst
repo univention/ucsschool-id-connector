@@ -42,3 +42,8 @@ v2.2.0 (2022-01-04)
 * The ID Connector can now also be installed on DC Backups.
 * The Kelvin plugin can now be imported by other plugins, so they can subclass it.
 * The synchronization of the ``birthday`` and ``userexpiry`` (in Kelvin ``expiration_date``) attributes was fixed. The Kelvin REST API on the school authority side must be of version ``1.5.1`` or above!
+
+
+v2.2.1 (2022-01-04)
+...................
+* something unimportant
