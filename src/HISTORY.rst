@@ -5,6 +5,11 @@
 Changelog
 ---------
 
+**v2.2.1 (2022-01-04)**
+
+* new stuff
+
+
 **v2.2.0 (2022-01-04)**
 
 * A new plugin was added to sync all user data to the ID Broker.
