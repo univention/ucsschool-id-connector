@@ -138,7 +138,7 @@ production:
     - git clean -f -d
     - git fetch --no-tags origin
     - git reset --hard origin/master
-    - rsync -av --delete ../_build/html/ ./ucsschool-id-connector/
+    - rsync -av --delete ../docs/_build/html/ ./ucsschool-id-connector/
     - git add -u
     - git commit -m "Automatic doc deployment by GitLab commit $CI_COMMIT_SHA"
     - git push
