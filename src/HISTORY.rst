@@ -22,6 +22,7 @@ v2.0.0 (2020-11-10)
   at least version ``1.2.0`` of the Kelvin API.
 * The BB API plugin has been removed.
 
+
 v2.0.1 (2021-03-04)
 ...................
 * The transfer of Kerberos key hashes has been fixed.
