@@ -36,14 +36,14 @@ Then these users are created, updated and deleted.
    :width: 600
    :align: center
 
-In this documentation, you will learn how to administer an id-connector setup,
-and we hope to teach you how to develop plugins for id-connector as well.
+In this documentation, you will learn how to administer an |IDC| setup,
+and we hope to teach you how to develop plugins for |IDC| as well.
 
 .. _l10n:
 
 .. note::
 
-   At the moment, the ID-Connector setup is only used in German-speaking countries. Hence, you will
+   At the moment, the |IDC| setup is only used in German-speaking countries. Hence, you will
    encounter a few German terms in this documentation.
 
    Sender
@@ -51,7 +51,7 @@ and we hope to teach you how to develop plugins for id-connector as well.
       which in Germany most likely is a state department.
 
    Traeger
-      This is the organization managing schools. In the ID-Connector context it can be thought
+      This is the organization managing schools. In the |IDC| context it can be thought
       of as the *recipient* of sync data.
 
 .. note::
