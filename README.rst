@@ -177,7 +177,7 @@ The pipeline always builds the HTML and provides the results for review in the
 browser. The jobs create environments and provide a link to view the
 environment. The jobs in the pipeline are:
 
-* For the feature branch: *Review*. Look at ``http://apt.knut.univention.de/download/docs.$BRANCH_REF_SLUG/``
+* For the feature branch: *Review*. Look at ``http://apt.knut.univention.de/download/docs-ucsschool-id-connector.$BRANCH_REF_SLUG/``
 * For the default branch: *Staging*. Look at http://apt.knut.univention.de/download/docs/ucsschool-id-connector/
 
 To publish the reviewed documentation to docs.univention.de you need to manually
