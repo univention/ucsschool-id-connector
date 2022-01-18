@@ -129,7 +129,7 @@ LDAP and LDAP listener
    The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
    to create and manage individual |UAS| domain objects
    like school users, school classes and schools (OUs).
-   It is written in fastapi, hence in python3.
+   It is written in FastAPI, hence in Python 3.
 
    You need to be able to install and configure Kelvin.
 
@@ -724,7 +724,7 @@ If we already have a school authority set up and want to set up a second one
 
    Click *try it out* and insert the copied JSON object from before into the request body.
 
-   Now we just have to alter the name, url, and login credentials before executing the request.
+   Now we just have to alter the name, URL, and login credentials before executing the request.
 
    - The URL has to point to the new school authorities HTTP-API.
    - The name can be chosen at your leisure
@@ -743,3 +743,7 @@ To retrieve a list of the extended attributes on the old school authority server
 .. _create a user: https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630#a-sample-command-9
 
 .. _Import CLI manual (german only): https://docs.software-univention.de/ucsschool-import-handbuch-5.0.html
+
+.. spelling::
+
+   Schulbetreiber

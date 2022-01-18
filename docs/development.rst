@@ -113,13 +113,13 @@ UDM REST-API (optional)
 Pre-commit (optional)
    A framework for managing and maintaining multi-language pre-commit hooks.
 
-   This is only needed if you need to commit to the univention |IDC| repo.
+   This is only needed if you need to commit to the Univention |IDC| repo.
 
    You need to be able to:
 
    - install pre-commit definitions
    - run pre-commit checks
-   - be aware of using different venvs for writing code and running pre-commits
+   - be aware of using different virtual environments for writing code and running pre-commits
 
    |rarr| https://pre-commit.com/
 
@@ -280,7 +280,7 @@ Setup development environment:
     $ pre-commit run -a
 
 
-This will create a directory ``venv`` with a Python virtualenv with the app and all its dependencies in it.
+This will create a directory ``venv`` with a Python virtual environment with the app and all its dependencies in it.
 
 You can later on also "activate" the ``venv`` using:
 
@@ -316,7 +316,7 @@ Run ``make`` without argument to see more useful commands:
 Dev VM
 ------
 
-You need to install the |IDC| app through the |AppC| on your development vm.
+You need to install the |IDC| app through the |AppC| on your development VM.
 
 When started through the |AppC| use the following to enter the container of the app:
 
@@ -343,7 +343,7 @@ Inside the container, you can use the system Python:
     In [1]: from ucsschool_id_connector import models
 
 
-Now, in order to sync  your working copy into the running |IDC| container on the dev vm,
+Now, in order to sync  your working copy into the running |IDC| container on the dev VM,
 we need to:
 
 1. Stop the |IDC| in it's container,
@@ -617,7 +617,7 @@ Build the docker image:
 
     $ make build-docker-img
 
-The image can't easily be used productively, so this only for testing/dev purposes:
+The image can't easily be used productively, so this only for testing and development purposes:
 
 .. code-block:: bash
 
@@ -660,7 +660,7 @@ Build release image
 
 .. warning::
 
-    You need to be an univention developer to use this section
+    You need to be an Univention developer to use this section
 
 * Update the apps version in ``VERSION.txt``.
 * Add an entry to ``src/HISTORY.rst``.
