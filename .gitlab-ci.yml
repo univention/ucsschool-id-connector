@@ -141,6 +141,7 @@ production:
     - rsync -av --delete ../docs/_build/html/ ./ucsschool-id-connector/
     - git add -u
     - git commit -m "Automatic doc deployment by GitLab commit $CI_COMMIT_SHA"
+    - git remote set-url --push origin https://ucsschool-id-connector-docs-deployment:$DOCS_TOKEN@git.knut.univention.de/univention/docs.univention.de.git
     - pwd
     - git config --list
     - git push
