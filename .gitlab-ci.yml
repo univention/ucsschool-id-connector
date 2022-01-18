@@ -141,6 +141,8 @@ production:
     - rsync -av --delete ../docs/_build/html/ ./ucsschool-id-connector/
     - git add -u
     - git commit -m "Automatic doc deployment by GitLab commit $CI_COMMIT_SHA"
+    - pwd
+    - git config --list
     - git push
   environment:
     name: production
