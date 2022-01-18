@@ -11,7 +11,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 # import os
-# import sys
+import sys
 # sys.path.insert(0, os.path.abspath("."))
 
 
@@ -34,6 +34,8 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinx_toolbox.collapse",
     "sphinx_copybutton",
+    "univention_sphinx_extension",
+    "sphinxcontrib.spelling",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -92,3 +94,10 @@ source_suffix = {
 
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: | +"
 copybutton_prompt_is_regexp = True
+
+if "spelling" in sys.argv:
+    spelling_lang = "en_US"
+    spelling_show_suggestions = True
+    spelling_warning = True
+    spelling_word_list_filename = list()
+#    spelling_word_list_filename = ["spelling_wordlist"]
