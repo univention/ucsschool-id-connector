@@ -678,7 +678,7 @@ To upload ("push") a new Docker image to the Univention Docker registry
 Integration tests
 =================
 
-Univention has automated integration tests. These are configured from this Jenkins config file:
+Univention has automated integration tests. These are configured from this Jenkins configuration file:
 
 https://github.com/univention/univention-corporate-server/blob/5.0-1/test/scenarios/autotest-244-ucsschool-id-sync.cfg
 

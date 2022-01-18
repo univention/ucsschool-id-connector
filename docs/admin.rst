@@ -363,7 +363,7 @@ to properties on the receiving side.
 
 .. _example_kelvin_config:
 
-Here is what the mapping related part of an example config looks like:
+Here is what the mapping related part of an example configuration looks like:
 
 .. code-block::
 
@@ -590,7 +590,7 @@ The configuration options are exactly the same as for the ``kelvin`` plugin,
 except for the addition of ``school_classes_ignore_roles``,
 which holds the list of user roles to ignore for school class changes.
 
-See :ref:`partial-groupsync` for an example config.
+See :ref:`partial-groupsync` for an example configuration.
 
 .. warning::
    Please be aware that this plugin can only alter the handling of dedicated school class change events.

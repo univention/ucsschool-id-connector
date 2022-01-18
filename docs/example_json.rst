@@ -3,9 +3,9 @@
 .. include:: <isonum.txt>
 
 
-********************
-Example json configs
-********************
+***************************
+Example json configurations
+***************************
 
 
 Sending system examples
