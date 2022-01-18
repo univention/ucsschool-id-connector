@@ -141,6 +141,7 @@ production:
     - git reset --hard origin/master
     - rsync -av --delete ../docs/_build/html/ ./ucsschool-id-connector/
     - git add -u
+    - git add .
     - git commit -m "Automatic doc deployment by GitLab commit $CI_COMMIT_SHA"
     - git push
   environment:
