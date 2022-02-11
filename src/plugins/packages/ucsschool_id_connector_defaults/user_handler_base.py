@@ -264,6 +264,8 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         """
         target_schools = await self.schools_ids_on_target
         schools = sorted(set([obj.school] + obj.schools))
+        schools.remove(obj.school)
+        schools.insert(0, obj.school)
         for school in schools:
             try:
                 return target_schools[school]

@@ -5,6 +5,11 @@
 Changelog
 ---------
 
+**v2.2.1 (2022-02-11)**
+
+* Fixed users with multiple schools being created in alphabetical first, instead of same as in source domain (Bug #54439).
+
+
 **v2.2.0 (2022-01-04)**
 
 * A new plugin was added to sync all user data to the ID Broker.
