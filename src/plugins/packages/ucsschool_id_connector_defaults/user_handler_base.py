@@ -264,6 +264,8 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         """
         target_schools = await self.schools_ids_on_target
         schools = sorted(set([obj.school] + obj.schools))
+        # 1st test if primary school exists on target, so source and target can have same primary school
+        # if not found try in alphanum order, same as the ucsschool.lib does, when removing users pri. OU
         schools.remove(obj.school)
         schools.insert(0, obj.school)
         for school in schools:
