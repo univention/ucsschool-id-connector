@@ -341,7 +341,8 @@ class SecretsMixin:
     def __init__(self, **data: Any) -> None:
         super(SecretsMixin, self).__init__(**data)
         # when passed into a HTTP resource, parse_obj() is not called
-        self.plugin_configs_plain_to_secret(self.plugin_configs)
+        if self.plugin_configs:
+            self.plugin_configs_plain_to_secret(self.plugin_configs)
 
     def dict_secrets_as_str(self, *args, **kwargs) -> Dict[str, Any]:
         """
@@ -349,7 +350,8 @@ class SecretsMixin:
         `plugin_configs` will be plain str.
         """
         res = self.dict(*args, **kwargs)
-        self.plugin_configs_secrets_to_plain(res["plugin_configs"])
+        if res["plugin_configs"]:
+            self.plugin_configs_secrets_to_plain(res["plugin_configs"])
         return res
 
     @staticmethod
@@ -375,7 +377,8 @@ class SecretsMixin:
     @classmethod
     def parse_obj(cls: Type["Model"], obj: Any) -> "Model":
         res: SchoolAuthorityConfiguration = super(SecretsMixin, cls).parse_obj(obj)
-        cls.plugin_configs_plain_to_secret(res.plugin_configs)
+        if res.plugin_configs:
+            cls.plugin_configs_plain_to_secret(res.plugin_configs)
         return res
 
 
@@ -411,7 +414,7 @@ class SchoolAuthorityConfigurationPatchDocument(SecretsMixin, BaseModel):
     plugins: List[str] = None
     """the plugins that should be executed for this specific school
     authority during handling in the out queue"""
-    plugin_configs: Dict[str, Dict[str, Any]]
+    plugin_configs: Dict[str, Dict[str, Any]] = None
     """Plugin specific configurations,
     e.g. {
         "kelvin": {"username": "..", "password": "..", "sync_password_hashes": ".."},
