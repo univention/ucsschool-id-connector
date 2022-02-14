@@ -4,15 +4,15 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete**](SchoolClassesApi.md#delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete) | **DELETE** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Delete
-[**get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head**](SchoolClassesApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Get Head
-[**get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get**](SchoolClassesApi.md#get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get) | **GET** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Get
+[**delete_ucsschool_apis_provisioning_v1_school_authority_classes_id_delete**](SchoolClassesApi.md#delete_ucsschool_apis_provisioning_v1_school_authority_classes_id_delete) | **DELETE** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{id} | Delete
+[**get_head_ucsschool_apis_provisioning_v1_school_authority_classes_id_head**](SchoolClassesApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_classes_id_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{id} | Get Head
+[**get_ucsschool_apis_provisioning_v1_school_authority_classes_id_get**](SchoolClassesApi.md#get_ucsschool_apis_provisioning_v1_school_authority_classes_id_get) | **GET** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{id} | Get
 [**post_ucsschool_apis_provisioning_v1_school_authority_classes_post**](SchoolClassesApi.md#post_ucsschool_apis_provisioning_v1_school_authority_classes_post) | **POST** /ucsschool/apis/provisioning/v1/{school_authority}/classes | Post
-[**put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put**](SchoolClassesApi.md#put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put) | **PUT** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{school}/{name} | Put
+[**put_ucsschool_apis_provisioning_v1_school_authority_classes_id_put**](SchoolClassesApi.md#put_ucsschool_apis_provisioning_v1_school_authority_classes_id_put) | **PUT** /ucsschool/apis/provisioning/v1/{school_authority}/classes/{id} | Put
 
 
-# **delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete**
-> delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete(name, school_authority, school)
+# **delete_ucsschool_apis_provisioning_v1_school_authority_classes_id_delete**
+> delete_ucsschool_apis_provisioning_v1_school_authority_classes_id_delete(id, school_authority)
 
 Delete
 
@@ -46,24 +46,22 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    name = 'name_example' # str |
-school_authority = 'school_authority_example' # str |
-school = 'school_example' # str |
+    id = 'id_example' # str | Unique ID of LDAP object on school authority side.
+school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
 
     try:
         # Delete
-        api_instance.delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete(name, school_authority, school)
+        api_instance.delete_ucsschool_apis_provisioning_v1_school_authority_classes_id_delete(id, school_authority)
     except ApiException as e:
-        print("Exception when calling SchoolClassesApi->delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete: %s\n" % e)
+        print("Exception when calling SchoolClassesApi->delete_ucsschool_apis_provisioning_v1_school_authority_classes_id_delete: %s\n" % e)
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **str**|  |
- **school_authority** | **str**|  |
- **school** | **str**|  |
+ **id** | **str**| Unique ID of LDAP object on school authority side. | 
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
 
 ### Return type
 
@@ -86,8 +84,8 @@ void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head**
-> object get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head(name, school_authority, school)
+# **get_head_ucsschool_apis_provisioning_v1_school_authority_classes_id_head**
+> object get_head_ucsschool_apis_provisioning_v1_school_authority_classes_id_head(id, school_authority)
 
 Get Head
 
@@ -121,25 +119,23 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    name = 'name_example' # str |
-school_authority = 'school_authority_example' # str |
-school = 'school_example' # str |
+    id = 'id_example' # str | Unique ID of LDAP object on school authority side.
+school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
 
     try:
         # Get Head
-        api_response = api_instance.get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head(name, school_authority, school)
+        api_response = api_instance.get_head_ucsschool_apis_provisioning_v1_school_authority_classes_id_head(id, school_authority)
         pprint(api_response)
     except ApiException as e:
-        print("Exception when calling SchoolClassesApi->get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head: %s\n" % e)
+        print("Exception when calling SchoolClassesApi->get_head_ucsschool_apis_provisioning_v1_school_authority_classes_id_head: %s\n" % e)
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **str**|  |
- **school_authority** | **str**|  |
- **school** | **str**|  |
+ **id** | **str**| Unique ID of LDAP object on school authority side. | 
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
 
 ### Return type
 
@@ -162,8 +158,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get**
-> SchoolClass get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get(name, school_authority, school)
+# **get_ucsschool_apis_provisioning_v1_school_authority_classes_id_get**
+> SchoolClass get_ucsschool_apis_provisioning_v1_school_authority_classes_id_get(id, school_authority)
 
 Get
 
@@ -197,25 +193,23 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    name = 'name_example' # str |
-school_authority = 'school_authority_example' # str |
-school = 'school_example' # str |
+    id = 'id_example' # str | Unique ID of LDAP object on school authority side.
+school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
 
     try:
         # Get
-        api_response = api_instance.get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get(name, school_authority, school)
+        api_response = api_instance.get_ucsschool_apis_provisioning_v1_school_authority_classes_id_get(id, school_authority)
         pprint(api_response)
     except ApiException as e:
-        print("Exception when calling SchoolClassesApi->get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get: %s\n" % e)
+        print("Exception when calling SchoolClassesApi->get_ucsschool_apis_provisioning_v1_school_authority_classes_id_get: %s\n" % e)
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **str**|  |
- **school_authority** | **str**|  |
- **school** | **str**|  |
+ **id** | **str**| Unique ID of LDAP object on school authority side. | 
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
 
 ### Return type
 
@@ -273,8 +267,8 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    school_authority = 'school_authority_example' # str |
-school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass |
+    school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
+school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass | 
 
     try:
         # Post
@@ -288,8 +282,8 @@ school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass |
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **school_authority** | **str**|  |
- **school_class** | [**SchoolClass**](SchoolClass.md)|  |
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
+ **school_class** | [**SchoolClass**](SchoolClass.md)|  | 
 
 ### Return type
 
@@ -312,8 +306,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put**
-> SchoolClass put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put(school_authority, school, name, school_class)
+# **put_ucsschool_apis_provisioning_v1_school_authority_classes_id_put**
+> SchoolClass put_ucsschool_apis_provisioning_v1_school_authority_classes_id_put(id, school_authority, school_class)
 
 Put
 
@@ -347,27 +341,25 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolClassesApi(api_client)
-    school_authority = 'school_authority_example' # str |
-school = 'school_example' # str |
-name = 'name_example' # str |
-school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass |
+    id = 'id_example' # str | Unique ID of LDAP object on school authority side.
+school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
+school_class = idbroker.provisioning_api.SchoolClass() # SchoolClass | 
 
     try:
         # Put
-        api_response = api_instance.put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put(school_authority, school, name, school_class)
+        api_response = api_instance.put_ucsschool_apis_provisioning_v1_school_authority_classes_id_put(id, school_authority, school_class)
         pprint(api_response)
     except ApiException as e:
-        print("Exception when calling SchoolClassesApi->put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put: %s\n" % e)
+        print("Exception when calling SchoolClassesApi->put_ucsschool_apis_provisioning_v1_school_authority_classes_id_put: %s\n" % e)
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **school_authority** | **str**|  |
- **school** | **str**|  |
- **name** | **str**|  |
- **school_class** | [**SchoolClass**](SchoolClass.md)|  |
+ **id** | **str**| Unique ID of LDAP object on school authority side. | 
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
+ **school_class** | [**SchoolClass**](SchoolClass.md)|  | 
 
 ### Return type
 
@@ -389,3 +381,4 @@ Name | Type | Description  | Notes
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+

@@ -107,7 +107,7 @@ pages:
     - rsync -av --delete docs/_build/html/ public
   environment:
     name: pages/$CI_BUILD_REF_NAME
-    url: http://univention.gitpages.knut.univention.de/components/ucsschool-id-connector/
+    url: https://univention.gitpages.knut.univention.de/components/ucsschool-id-connector/
   artifacts:
     paths:
       - public
@@ -147,4 +147,3 @@ production:
   environment:
     name: production
     url: http://updates.knut.univention.de/download/docs/
-

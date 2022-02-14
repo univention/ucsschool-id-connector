@@ -4,13 +4,13 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head**](SchoolsApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/schools/{name} | Get Head
-[**get_ucsschool_apis_provisioning_v1_school_authority_schools_name_get**](SchoolsApi.md#get_ucsschool_apis_provisioning_v1_school_authority_schools_name_get) | **GET** /ucsschool/apis/provisioning/v1/{school_authority}/schools/{name} | Get
+[**get_head_ucsschool_apis_provisioning_v1_school_authority_schools_id_head**](SchoolsApi.md#get_head_ucsschool_apis_provisioning_v1_school_authority_schools_id_head) | **HEAD** /ucsschool/apis/provisioning/v1/{school_authority}/schools/{id} | Get Head
+[**get_ucsschool_apis_provisioning_v1_school_authority_schools_id_get**](SchoolsApi.md#get_ucsschool_apis_provisioning_v1_school_authority_schools_id_get) | **GET** /ucsschool/apis/provisioning/v1/{school_authority}/schools/{id} | Get
 [**post_ucsschool_apis_provisioning_v1_school_authority_schools_post**](SchoolsApi.md#post_ucsschool_apis_provisioning_v1_school_authority_schools_post) | **POST** /ucsschool/apis/provisioning/v1/{school_authority}/schools | Post
 
 
-# **get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head**
-> object get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head(name, school_authority)
+# **get_head_ucsschool_apis_provisioning_v1_school_authority_schools_id_head**
+> object get_head_ucsschool_apis_provisioning_v1_school_authority_schools_id_head(id, school_authority)
 
 Get Head
 
@@ -44,23 +44,23 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolsApi(api_client)
-    name = 'name_example' # str | 
-school_authority = 'school_authority_example' # str | 
+    id = 'id_example' # str | Unique ID of LDAP object on school authority side.
+school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
 
     try:
         # Get Head
-        api_response = api_instance.get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head(name, school_authority)
+        api_response = api_instance.get_head_ucsschool_apis_provisioning_v1_school_authority_schools_id_head(id, school_authority)
         pprint(api_response)
     except ApiException as e:
-        print("Exception when calling SchoolsApi->get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head: %s\n" % e)
+        print("Exception when calling SchoolsApi->get_head_ucsschool_apis_provisioning_v1_school_authority_schools_id_head: %s\n" % e)
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **str**|  | 
- **school_authority** | **str**|  | 
+ **id** | **str**| Unique ID of LDAP object on school authority side. | 
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
 
 ### Return type
 
@@ -83,8 +83,8 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_ucsschool_apis_provisioning_v1_school_authority_schools_name_get**
-> School get_ucsschool_apis_provisioning_v1_school_authority_schools_name_get(name, school_authority)
+# **get_ucsschool_apis_provisioning_v1_school_authority_schools_id_get**
+> School get_ucsschool_apis_provisioning_v1_school_authority_schools_id_get(id, school_authority)
 
 Get
 
@@ -118,23 +118,23 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolsApi(api_client)
-    name = 'name_example' # str | 
-school_authority = 'school_authority_example' # str | 
+    id = 'id_example' # str | Unique ID of LDAP object on school authority side.
+school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
 
     try:
         # Get
-        api_response = api_instance.get_ucsschool_apis_provisioning_v1_school_authority_schools_name_get(name, school_authority)
+        api_response = api_instance.get_ucsschool_apis_provisioning_v1_school_authority_schools_id_get(id, school_authority)
         pprint(api_response)
     except ApiException as e:
-        print("Exception when calling SchoolsApi->get_ucsschool_apis_provisioning_v1_school_authority_schools_name_get: %s\n" % e)
+        print("Exception when calling SchoolsApi->get_ucsschool_apis_provisioning_v1_school_authority_schools_id_get: %s\n" % e)
 ```
 
 ### Parameters
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **name** | **str**|  | 
- **school_authority** | **str**|  | 
+ **id** | **str**| Unique ID of LDAP object on school authority side. | 
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
 
 ### Return type
 
@@ -192,7 +192,7 @@ configuration.access_token = 'YOUR_ACCESS_TOKEN'
 with idbroker.provisioning_api.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = idbroker.provisioning_api.SchoolsApi(api_client)
-    school_authority = 'school_authority_example' # str | 
+    school_authority = 'school_authority_example' # str | Identifier of the school authority this object originates from.
 school = idbroker.provisioning_api.School() # School | 
 
     try:
@@ -207,7 +207,7 @@ school = idbroker.provisioning_api.School() # School |
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **school_authority** | **str**|  | 
+ **school_authority** | **str**| Identifier of the school authority this object originates from. | 
  **school** | [**School**](School.md)|  | 
 
 ### Return type

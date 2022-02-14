@@ -2,7 +2,7 @@
 
 This documentation is automatically built and available at:
 
-http://univention.gitpages.knut.univention.de/components/ucsschool-id-connector/
+https://univention.gitpages.knut.univention.de/components/ucsschool-id-connector/
 
 
 # Build and install of the documentation

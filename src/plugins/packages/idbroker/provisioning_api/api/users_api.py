@@ -36,19 +36,19 @@ class UsersApi(object):
             api_client = ApiClient()
         self.api_client = api_client
 
-    def delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete(self, school_authority, user_id, **kwargs):  # noqa: E501
+    def delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete(self, id, school_authority, **kwargs):  # noqa: E501
         """Delete  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete(school_authority, user_id, async_req=True)
+        >>> thread = api.delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete(id, school_authority, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -65,21 +65,21 @@ class UsersApi(object):
         :rtype: None
         """
         kwargs['_return_http_data_only'] = True
-        return self.delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete_with_http_info(school_authority, user_id, **kwargs)  # noqa: E501
+        return self.delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete_with_http_info(id, school_authority, **kwargs)  # noqa: E501
 
-    def delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete_with_http_info(self, school_authority, user_id, **kwargs):  # noqa: E501
+    def delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete_with_http_info(self, id, school_authority, **kwargs):  # noqa: E501
         """Delete  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete_with_http_info(school_authority, user_id, async_req=True)
+        >>> thread = api.delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete_with_http_info(id, school_authority, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -106,8 +106,8 @@ class UsersApi(object):
         local_var_params = locals()
 
         all_params = [
-            'school_authority',
-            'user_id'
+            'id',
+            'school_authority'
         ]
         all_params.extend(
             [
@@ -123,31 +123,32 @@ class UsersApi(object):
             if key not in all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete" % key
+                    " to method delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete" % key
                 )
             local_var_params[key] = val
         del local_var_params['kwargs']
+        # verify the required parameter 'id' is set
+        if self.api_client.client_side_validation and ('id' not in local_var_params or  # noqa: E501
+                                                        local_var_params['id'] is None):  # noqa: E501
+            raise ApiValueError("Missing the required parameter `id` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete`")  # noqa: E501
         # verify the required parameter 'school_authority' is set
         if self.api_client.client_side_validation and ('school_authority' not in local_var_params or  # noqa: E501
                                                         local_var_params['school_authority'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `school_authority` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete`")  # noqa: E501
-        # verify the required parameter 'user_id' is set
-        if self.api_client.client_side_validation and ('user_id' not in local_var_params or  # noqa: E501
-                                                        local_var_params['user_id'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `user_id` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete`")  # noqa: E501
+            raise ApiValueError("Missing the required parameter `school_authority` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete`")  # noqa: E501
 
+        if self.api_client.client_side_validation and ('id' in local_var_params and  # noqa: E501
+                                                        len(local_var_params['id']) < 1):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `id` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete`, length must be greater than or equal to `1`")  # noqa: E501
         if self.api_client.client_side_validation and ('school_authority' in local_var_params and  # noqa: E501
                                                         len(local_var_params['school_authority']) < 1):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `school_authority` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete`, length must be greater than or equal to `1`")  # noqa: E501
-        if self.api_client.client_side_validation and 'user_id' in local_var_params and not re.search(r'^[^*]+$', local_var_params['user_id']):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `user_id` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete`, must conform to the pattern `/^[^*]+$/`")  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school_authority` when calling `delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete`, length must be greater than or equal to `1`")  # noqa: E501
         collection_formats = {}
 
         path_params = {}
+        if 'id' in local_var_params:
+            path_params['id'] = local_var_params['id']  # noqa: E501
         if 'school_authority' in local_var_params:
             path_params['school_authority'] = local_var_params['school_authority']  # noqa: E501
-        if 'user_id' in local_var_params:
-            path_params['user_id'] = local_var_params['user_id']  # noqa: E501
 
         query_params = []
 
@@ -167,7 +168,7 @@ class UsersApi(object):
         response_types_map = {}
 
         return self.api_client.call_api(
-            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{user_id}', 'DELETE',
+            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{id}', 'DELETE',
             path_params,
             query_params,
             header_params,
@@ -183,19 +184,19 @@ class UsersApi(object):
             collection_formats=collection_formats,
             _request_auth=local_var_params.get('_request_auth'))
 
-    def get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head(self, school_authority, user_id, **kwargs):  # noqa: E501
+    def get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head(self, id, school_authority, **kwargs):  # noqa: E501
         """Get Head  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head(school_authority, user_id, async_req=True)
+        >>> thread = api.get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head(id, school_authority, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -212,21 +213,21 @@ class UsersApi(object):
         :rtype: object
         """
         kwargs['_return_http_data_only'] = True
-        return self.get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head_with_http_info(school_authority, user_id, **kwargs)  # noqa: E501
+        return self.get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head_with_http_info(id, school_authority, **kwargs)  # noqa: E501
 
-    def get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head_with_http_info(self, school_authority, user_id, **kwargs):  # noqa: E501
+    def get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head_with_http_info(self, id, school_authority, **kwargs):  # noqa: E501
         """Get Head  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head_with_http_info(school_authority, user_id, async_req=True)
+        >>> thread = api.get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head_with_http_info(id, school_authority, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -253,8 +254,8 @@ class UsersApi(object):
         local_var_params = locals()
 
         all_params = [
-            'school_authority',
-            'user_id'
+            'id',
+            'school_authority'
         ]
         all_params.extend(
             [
@@ -270,31 +271,32 @@ class UsersApi(object):
             if key not in all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head" % key
+                    " to method get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head" % key
                 )
             local_var_params[key] = val
         del local_var_params['kwargs']
+        # verify the required parameter 'id' is set
+        if self.api_client.client_side_validation and ('id' not in local_var_params or  # noqa: E501
+                                                        local_var_params['id'] is None):  # noqa: E501
+            raise ApiValueError("Missing the required parameter `id` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head`")  # noqa: E501
         # verify the required parameter 'school_authority' is set
         if self.api_client.client_side_validation and ('school_authority' not in local_var_params or  # noqa: E501
                                                         local_var_params['school_authority'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `school_authority` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head`")  # noqa: E501
-        # verify the required parameter 'user_id' is set
-        if self.api_client.client_side_validation and ('user_id' not in local_var_params or  # noqa: E501
-                                                        local_var_params['user_id'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `user_id` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head`")  # noqa: E501
+            raise ApiValueError("Missing the required parameter `school_authority` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head`")  # noqa: E501
 
+        if self.api_client.client_side_validation and ('id' in local_var_params and  # noqa: E501
+                                                        len(local_var_params['id']) < 1):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `id` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head`, length must be greater than or equal to `1`")  # noqa: E501
         if self.api_client.client_side_validation and ('school_authority' in local_var_params and  # noqa: E501
                                                         len(local_var_params['school_authority']) < 1):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `school_authority` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head`, length must be greater than or equal to `1`")  # noqa: E501
-        if self.api_client.client_side_validation and 'user_id' in local_var_params and not re.search(r'^[^*]+$', local_var_params['user_id']):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `user_id` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head`, must conform to the pattern `/^[^*]+$/`")  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school_authority` when calling `get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head`, length must be greater than or equal to `1`")  # noqa: E501
         collection_formats = {}
 
         path_params = {}
+        if 'id' in local_var_params:
+            path_params['id'] = local_var_params['id']  # noqa: E501
         if 'school_authority' in local_var_params:
             path_params['school_authority'] = local_var_params['school_authority']  # noqa: E501
-        if 'user_id' in local_var_params:
-            path_params['user_id'] = local_var_params['user_id']  # noqa: E501
 
         query_params = []
 
@@ -317,7 +319,7 @@ class UsersApi(object):
         }
 
         return self.api_client.call_api(
-            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{user_id}', 'HEAD',
+            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{id}', 'HEAD',
             path_params,
             query_params,
             header_params,
@@ -333,19 +335,19 @@ class UsersApi(object):
             collection_formats=collection_formats,
             _request_auth=local_var_params.get('_request_auth'))
 
-    def get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get(self, school_authority, user_id, **kwargs):  # noqa: E501
+    def get_ucsschool_apis_provisioning_v1_school_authority_users_id_get(self, id, school_authority, **kwargs):  # noqa: E501
         """Get  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get(school_authority, user_id, async_req=True)
+        >>> thread = api.get_ucsschool_apis_provisioning_v1_school_authority_users_id_get(id, school_authority, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _preload_content: if False, the urllib3.HTTPResponse object will
@@ -362,21 +364,21 @@ class UsersApi(object):
         :rtype: User
         """
         kwargs['_return_http_data_only'] = True
-        return self.get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get_with_http_info(school_authority, user_id, **kwargs)  # noqa: E501
+        return self.get_ucsschool_apis_provisioning_v1_school_authority_users_id_get_with_http_info(id, school_authority, **kwargs)  # noqa: E501
 
-    def get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get_with_http_info(self, school_authority, user_id, **kwargs):  # noqa: E501
+    def get_ucsschool_apis_provisioning_v1_school_authority_users_id_get_with_http_info(self, id, school_authority, **kwargs):  # noqa: E501
         """Get  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get_with_http_info(school_authority, user_id, async_req=True)
+        >>> thread = api.get_ucsschool_apis_provisioning_v1_school_authority_users_id_get_with_http_info(id, school_authority, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param async_req: Whether to execute the request asynchronously.
         :type async_req: bool, optional
         :param _return_http_data_only: response data without head status code
@@ -403,8 +405,8 @@ class UsersApi(object):
         local_var_params = locals()
 
         all_params = [
-            'school_authority',
-            'user_id'
+            'id',
+            'school_authority'
         ]
         all_params.extend(
             [
@@ -420,31 +422,32 @@ class UsersApi(object):
             if key not in all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get" % key
+                    " to method get_ucsschool_apis_provisioning_v1_school_authority_users_id_get" % key
                 )
             local_var_params[key] = val
         del local_var_params['kwargs']
+        # verify the required parameter 'id' is set
+        if self.api_client.client_side_validation and ('id' not in local_var_params or  # noqa: E501
+                                                        local_var_params['id'] is None):  # noqa: E501
+            raise ApiValueError("Missing the required parameter `id` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_id_get`")  # noqa: E501
         # verify the required parameter 'school_authority' is set
         if self.api_client.client_side_validation and ('school_authority' not in local_var_params or  # noqa: E501
                                                         local_var_params['school_authority'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `school_authority` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get`")  # noqa: E501
-        # verify the required parameter 'user_id' is set
-        if self.api_client.client_side_validation and ('user_id' not in local_var_params or  # noqa: E501
-                                                        local_var_params['user_id'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `user_id` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get`")  # noqa: E501
+            raise ApiValueError("Missing the required parameter `school_authority` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_id_get`")  # noqa: E501
 
+        if self.api_client.client_side_validation and ('id' in local_var_params and  # noqa: E501
+                                                        len(local_var_params['id']) < 1):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `id` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_id_get`, length must be greater than or equal to `1`")  # noqa: E501
         if self.api_client.client_side_validation and ('school_authority' in local_var_params and  # noqa: E501
                                                         len(local_var_params['school_authority']) < 1):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `school_authority` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get`, length must be greater than or equal to `1`")  # noqa: E501
-        if self.api_client.client_side_validation and 'user_id' in local_var_params and not re.search(r'^[^*]+$', local_var_params['user_id']):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `user_id` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get`, must conform to the pattern `/^[^*]+$/`")  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school_authority` when calling `get_ucsschool_apis_provisioning_v1_school_authority_users_id_get`, length must be greater than or equal to `1`")  # noqa: E501
         collection_formats = {}
 
         path_params = {}
+        if 'id' in local_var_params:
+            path_params['id'] = local_var_params['id']  # noqa: E501
         if 'school_authority' in local_var_params:
             path_params['school_authority'] = local_var_params['school_authority']  # noqa: E501
-        if 'user_id' in local_var_params:
-            path_params['user_id'] = local_var_params['user_id']  # noqa: E501
 
         query_params = []
 
@@ -467,7 +470,7 @@ class UsersApi(object):
         }
 
         return self.api_client.call_api(
-            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{user_id}', 'GET',
+            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{id}', 'GET',
             path_params,
             query_params,
             header_params,
@@ -492,7 +495,7 @@ class UsersApi(object):
         >>> thread = api.post_ucsschool_apis_provisioning_v1_school_authority_users_post(school_authority, user, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
         :param user: (required)
         :type user: User
@@ -523,7 +526,7 @@ class UsersApi(object):
         >>> thread = api.post_ucsschool_apis_provisioning_v1_school_authority_users_post_with_http_info(school_authority, user, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
         :param user: (required)
         :type user: User
@@ -635,19 +638,19 @@ class UsersApi(object):
             collection_formats=collection_formats,
             _request_auth=local_var_params.get('_request_auth'))
 
-    def put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put(self, school_authority, user_id, user, **kwargs):  # noqa: E501
+    def put_ucsschool_apis_provisioning_v1_school_authority_users_id_put(self, id, school_authority, user, **kwargs):  # noqa: E501
         """Put  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put(school_authority, user_id, user, async_req=True)
+        >>> thread = api.put_ucsschool_apis_provisioning_v1_school_authority_users_id_put(id, school_authority, user, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param user: (required)
         :type user: User
         :param async_req: Whether to execute the request asynchronously.
@@ -666,21 +669,21 @@ class UsersApi(object):
         :rtype: User
         """
         kwargs['_return_http_data_only'] = True
-        return self.put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put_with_http_info(school_authority, user_id, user, **kwargs)  # noqa: E501
+        return self.put_ucsschool_apis_provisioning_v1_school_authority_users_id_put_with_http_info(id, school_authority, user, **kwargs)  # noqa: E501
 
-    def put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put_with_http_info(self, school_authority, user_id, user, **kwargs):  # noqa: E501
+    def put_ucsschool_apis_provisioning_v1_school_authority_users_id_put_with_http_info(self, id, school_authority, user, **kwargs):  # noqa: E501
         """Put  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
 
-        >>> thread = api.put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put_with_http_info(school_authority, user_id, user, async_req=True)
+        >>> thread = api.put_ucsschool_apis_provisioning_v1_school_authority_users_id_put_with_http_info(id, school_authority, user, async_req=True)
         >>> result = thread.get()
 
-        :param school_authority: (required)
+        :param id: Unique ID of LDAP object on school authority side. (required)
+        :type id: str
+        :param school_authority: Identifier of the school authority this object originates from. (required)
         :type school_authority: str
-        :param user_id: (required)
-        :type user_id: str
         :param user: (required)
         :type user: User
         :param async_req: Whether to execute the request asynchronously.
@@ -709,8 +712,8 @@ class UsersApi(object):
         local_var_params = locals()
 
         all_params = [
+            'id',
             'school_authority',
-            'user_id',
             'user'
         ]
         all_params.extend(
@@ -727,35 +730,36 @@ class UsersApi(object):
             if key not in all_params:
                 raise ApiTypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put" % key
+                    " to method put_ucsschool_apis_provisioning_v1_school_authority_users_id_put" % key
                 )
             local_var_params[key] = val
         del local_var_params['kwargs']
+        # verify the required parameter 'id' is set
+        if self.api_client.client_side_validation and ('id' not in local_var_params or  # noqa: E501
+                                                        local_var_params['id'] is None):  # noqa: E501
+            raise ApiValueError("Missing the required parameter `id` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_id_put`")  # noqa: E501
         # verify the required parameter 'school_authority' is set
         if self.api_client.client_side_validation and ('school_authority' not in local_var_params or  # noqa: E501
                                                         local_var_params['school_authority'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `school_authority` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put`")  # noqa: E501
-        # verify the required parameter 'user_id' is set
-        if self.api_client.client_side_validation and ('user_id' not in local_var_params or  # noqa: E501
-                                                        local_var_params['user_id'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `user_id` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put`")  # noqa: E501
+            raise ApiValueError("Missing the required parameter `school_authority` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_id_put`")  # noqa: E501
         # verify the required parameter 'user' is set
         if self.api_client.client_side_validation and ('user' not in local_var_params or  # noqa: E501
                                                         local_var_params['user'] is None):  # noqa: E501
-            raise ApiValueError("Missing the required parameter `user` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put`")  # noqa: E501
+            raise ApiValueError("Missing the required parameter `user` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_id_put`")  # noqa: E501
 
+        if self.api_client.client_side_validation and ('id' in local_var_params and  # noqa: E501
+                                                        len(local_var_params['id']) < 1):  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `id` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_id_put`, length must be greater than or equal to `1`")  # noqa: E501
         if self.api_client.client_side_validation and ('school_authority' in local_var_params and  # noqa: E501
                                                         len(local_var_params['school_authority']) < 1):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `school_authority` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put`, length must be greater than or equal to `1`")  # noqa: E501
-        if self.api_client.client_side_validation and 'user_id' in local_var_params and not re.search(r'^[^*]+$', local_var_params['user_id']):  # noqa: E501
-            raise ApiValueError("Invalid value for parameter `user_id` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put`, must conform to the pattern `/^[^*]+$/`")  # noqa: E501
+            raise ApiValueError("Invalid value for parameter `school_authority` when calling `put_ucsschool_apis_provisioning_v1_school_authority_users_id_put`, length must be greater than or equal to `1`")  # noqa: E501
         collection_formats = {}
 
         path_params = {}
+        if 'id' in local_var_params:
+            path_params['id'] = local_var_params['id']  # noqa: E501
         if 'school_authority' in local_var_params:
             path_params['school_authority'] = local_var_params['school_authority']  # noqa: E501
-        if 'user_id' in local_var_params:
-            path_params['user_id'] = local_var_params['user_id']  # noqa: E501
 
         query_params = []
 
@@ -784,7 +788,7 @@ class UsersApi(object):
         }
 
         return self.api_client.call_api(
-            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{user_id}', 'PUT',
+            '/ucsschool/apis/provisioning/v1/{school_authority}/users/{id}', 'PUT',
             path_params,
             query_params,
             header_params,

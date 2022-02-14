@@ -36,6 +36,7 @@ class SchoolClass(object):
                             and the value is json key in definition.
     """
     openapi_types = {
+        'id': 'str',
         'name': 'str',
         'description': 'str',
         'school': 'str',
@@ -43,28 +44,57 @@ class SchoolClass(object):
     }
 
     attribute_map = {
+        'id': 'id',
         'name': 'name',
         'description': 'description',
         'school': 'school',
         'members': 'members'
     }
 
-    def __init__(self, name=None, description=None, school=None, members=None, local_vars_configuration=None):  # noqa: E501
+    def __init__(self, id=None, name=None, description=None, school=None, members=None, local_vars_configuration=None):  # noqa: E501
         """SchoolClass - a model defined in OpenAPI"""  # noqa: E501
         if local_vars_configuration is None:
             local_vars_configuration = Configuration.get_default_copy()
         self.local_vars_configuration = local_vars_configuration
 
+        self._id = None
         self._name = None
         self._description = None
         self._school = None
         self._members = None
         self.discriminator = None
 
+        self.id = id
         self.name = name
         self.description = description
         self.school = school
         self.members = members
+
+    @property
+    def id(self):
+        """Gets the id of this SchoolClass.  # noqa: E501
+
+
+        :return: The id of this SchoolClass.  # noqa: E501
+        :rtype: str
+        """
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        """Sets the id of this SchoolClass.
+
+
+        :param id: The id of this SchoolClass.  # noqa: E501
+        :type id: str
+        """
+        if self.local_vars_configuration.client_side_validation and id is None:  # noqa: E501
+            raise ValueError("Invalid value for `id`, must not be `None`")  # noqa: E501
+        if (self.local_vars_configuration.client_side_validation and
+                id is not None and len(id) < 1):
+            raise ValueError("Invalid value for `id`, length must be greater than or equal to `1`")  # noqa: E501
+
+        self._id = id
 
     @property
     def name(self):
