@@ -202,24 +202,23 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
+        self.logger.info(
+            "Going to create user %r (%r)...", request_body["user_name"], request_body["id"]
+        )
+        self.logger.debug("request_body=%r", request_body)
         for school in sorted(request_body["context"]):
             await create_school_if_missing(school, self.ldap_access, self.id_broker_school, self.logger)
             for school_class in request_body["context"][school]["classes"]:
                 await create_class_if_missing(
                     school_class, school, self.ldap_access, self.id_broker_school_class, self.logger
                 )
-            self.logger.info(
-                "Going to create user %r in school %r: %r...",
-                request_body["id"],
-                school,
-                request_body,
-            )
         user: User = await self.id_broker_user.create(User(**request_body))
         self.logger.info("User created: %r.", user)
 
     async def do_modify(self, request_body: Dict[str, Any], api_user_data: User) -> None:
         """Modify a user object at the target."""
-        self.logger.info("Going to modify user %r: %r...", api_user_data.user_name, request_body)
+        self.logger.info("Going to modify user %r (%r)...", api_user_data.user_name, api_user_data.id)
+        self.logger.debug("request_body=%r", request_body)
         user: User = await self.id_broker_user.update(User(**request_body))
         self.logger.info("User modified: %r.", user)
 
@@ -357,11 +356,10 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             self.logger.info("School class created: %r.", school_class)
         except IDBrokerNotFoundError as exc:
             raise IDBrokerNotFoundError(
-                "Provisioning API responded with 'invalid request'."
-                " This usually means that a user in the school "
-                "class doesn't exist on the server: %s",
-                exc,
-            )
+                404,
+                f"Provisioning API responded with 'invalid request'. This usually means that a user in "
+                f"the school class doesn't exist on the server: {exc!s}",
+            ) from exc
 
     async def do_modify(self, request_body: Dict[str, Any], api_school_class_data: SchoolClass) -> None:
         """Modify a school class object at the target."""
@@ -381,10 +379,9 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             )
         except IDBrokerNotFoundError as exc:
             raise IDBrokerNotFoundError(
-                "Provisioning API responded with 'invalid request'."
-                " This usually means that a user in the school "
-                "class doesn't exist on the server: %s",
-                exc,
+                404,
+                f"Provisioning API responded with 'invalid request'. This usually means that a user in "
+                f"the school class doesn't exist on the server: {exc!s}",
             )
 
     async def do_remove(

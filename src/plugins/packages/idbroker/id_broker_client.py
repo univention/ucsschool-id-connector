@@ -210,6 +210,8 @@ class Token:
 
     async def _fetch_token(self) -> GenToken:
         logger.debug("Retrieving token...")
+        if not self._configuration.verify_ssl:
+            logger.warning("SSL verification is disabled.")
         async with ApiClient(self._configuration) as api_client:
             api_instance = AuthApi(api_client)
             api_response = await api_instance.login_for_access_token_ucsschool_apis_auth_token_post(
@@ -252,6 +254,8 @@ class ProvisioningAPIClient(abc.ABC):
             raise ValueError(f"Unsupported ID Broker Provisioning API version {version!r}.")
         self.configuration = GenConfiguration(host=target_url, username=username, password=password)
         self.configuration.verify_ssl = "UNSAFE_SSL" not in os.environ
+        if not self.configuration.verify_ssl:
+            logger.warning("SSL verification is disabled.")
         shared_token = _get_shared_token()
         if self._share_token and shared_token:
             self.token = shared_token
@@ -363,7 +367,8 @@ class ProvisioningAPIClient(abc.ABC):
         """
         Modify object on the server
 
-        `obj_arg_name` is the key to the object to modify in kwargs that has to be used in the API call.
+        `obj_arg_name` is the key to the object to modify that will be put into `kwargs`.
+        `kwargs` will be passed on to API call.
         Returned value is the object actually created by the server.
         """
         obj = cast(IDBrokerObject, kwargs.pop(obj_arg_name))
@@ -488,7 +493,7 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
     _gen_api_handler = GenSchoolClassesApi
 
     async def create(self, school_class: SchoolClass) -> SchoolClass:
-        """Create schoolclass. Returned value is the data from the server."""
+        """Create school class. Returned value is the data from the server."""
         res = await super()._create(
             obj_arg_name="school_class",
             school_authority=self.school_authority_name,
