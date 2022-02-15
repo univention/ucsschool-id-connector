@@ -12,6 +12,7 @@
 #
 # import os
 import sys
+
 # sys.path.insert(0, os.path.abspath("."))
 
 
@@ -22,7 +23,7 @@ copyright = "2021, univention"
 author = "univention"
 
 # The full version, including alpha/beta/rc tags
-release = "2.2.0"
+release = "2.2.2"
 
 # -- General configuration ---------------------------------------------------
 

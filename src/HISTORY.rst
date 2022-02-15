@@ -5,6 +5,11 @@
 Changelog
 ---------
 
+**v2.2.2 (2022-02-15)**
+
+* The ID Broker plugin now handles the new Provisioning API with ``entryUUID`` values as identifiers (Bug #54455).
+
+
 **v2.2.1 (2022-02-11)**
 
 * Fixed users with multiple schools being created in alphabetical first, instead of same as in source domain (Bug #54439).

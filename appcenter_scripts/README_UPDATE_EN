@@ -1,5 +1,19 @@
 <h1>Changelog</h1>
 
+<h2>v2.2.2 (2021-02-15)</h2>
+<ul>
+    <li>
+        The ID Broker plugin now handles the new Provisioning API with ``entryUUID`` values as identifiers (Bug #54455).
+    </li>
+</ul>
+
+<h2>v2.2.1 (2021-02-11)</h2>
+<ul>
+    <li>
+        Users with multiple schools are now created with the correct primary OU (Bug #54439).
+    </li>
+</ul>
+
 <h2>v2.2.0 (2021-01-04)</h2>
 <ul>
     <li>

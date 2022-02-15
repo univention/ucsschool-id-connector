@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import logging
 import os
 from typing import Any, Dict, List, Union
 from urllib.parse import urljoin
@@ -42,6 +43,7 @@ from idbroker.id_broker_client import (
     SchoolClass,
     User,
 )
+from ldap3.utils.conv import escape_filter_chars
 
 from ucsschool_id_connector.ldap_access import LDAPAccess
 from ucsschool_id_connector.models import (
@@ -86,6 +88,48 @@ async def ping_id_broker(school_authority: SchoolAuthorityConfiguration) -> bool
     return True
 
 
+async def create_school_if_missing(
+    ou: str, ldap_access: LDAPAccess, id_broker_school: IDBrokerSchool, logger: logging.Logger
+) -> None:
+    entries = await ldap_access.search(
+        filter_s=f"(&(objectClass=ucsschoolOrganizationalUnit)(ou={escape_filter_chars(ou)}))",
+        attributes=["displayName", "entryUUID"],
+    )
+    if len(entries) == 1:
+        entry_uuid = entries[0].entryUUID.value
+        display_name = entries[0].displayName.value
+        if not await id_broker_school.exists(entry_uuid):
+            logger.info("Creating school %r...", ou)
+            await id_broker_school.create(School(id=entry_uuid, name=ou, display_name=display_name))
+    else:
+        raise IDBrokerNotFoundError(404, f"School {ou!r} does not exist on sender system.")
+
+
+async def create_class_if_missing(
+    school_class: str,
+    ou: str,
+    ldap_access: LDAPAccess,
+    id_broker_school_class: IDBrokerSchoolClass,
+    logger: logging.Logger,
+) -> None:
+    entries = await ldap_access.search(
+        filter_s=f"(&(objectClass=univentionGroup)(cn={escape_filter_chars(f'{ou}-{school_class}')}))",
+        attributes=["description", "entryUUID"],
+    )
+    if len(entries) == 1:
+        entry_uuid = entries[0].entryUUID.value
+        description = entries[0].description.value
+        if not await id_broker_school_class.exists(entry_uuid):
+            logger.info("Creating school class %r in school %r...", school_class, ou)
+            await id_broker_school_class.create(
+                SchoolClass(id=entry_uuid, name=ou, description=description, school=ou, members=[])
+            )
+    else:
+        raise IDBrokerNotFoundError(
+            404, f"School class {school_class!r} in school {ou!r} does not exist on sender system."
+        )
+
+
 #
 # Users
 #
@@ -105,6 +149,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
             "lastname": "last_name",
             "context": "context",
         }
+        self.id_broker_school_class = IDBrokerSchoolClass(self.school_authority, "id_broker")
         self.id_broker_school = IDBrokerSchool(self.school_authority, "id_broker")
         self.id_broker_user = IDBrokerUser(self.school_authority, "id_broker")
         self.ldap_access = LDAPAccess()
@@ -116,9 +161,16 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         self.logger.info(f"Object that is being created or updated: {obj}")
 
     async def _handle_attr_context(self, obj: ListenerUserAddModifyObject) -> Dict[str, Any]:
+        # Add primary school 1st to context dict (which is always ordered in cpython3). It will then be
+        # the 1st in the requests json (at least with the OpenAPI client we're using) and will then
+        # hopefully become the primary school at the ID Broker. That is not strictly necessary, as the
+        # Self-Disclosure API does not expose that, but it'll be less confusing, when comparing users.
+        schools = sorted(obj.schools)
+        schools.remove(obj.school)
+        schools.insert(0, obj.school)
         context = {
             school_name: {"roles": set(obj.school_user_roles), "classes": set()}
-            for school_name in obj.schools
+            for school_name in schools
         }
         for group_dn in obj.object.get("groups", []):
             if m := self.class_dn_regex.match(group_dn):
@@ -136,32 +188,26 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         return {"id": obj.id}
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> User:
-        """Retrieve a user from ID Broker API.
-        If it does not exist on the id broker, we need to
-        raise an UserNotFoundError, so it will be created."""
+        """
+        Retrieve a user from ID Broker API.
+
+        If it does not exist on the id broker, we need to raise an UserNotFoundError, so it will be
+        created.
+        """
         self.logger.debug("Retrieving user with search parameters: %r", search_params)
         try:
-            return await self.id_broker_user.get(user_id=search_params["id"])
+            return await self.id_broker_user.get(obj_id=search_params["id"])
         except IDBrokerNotFoundError:
             raise UserNotFoundError(f"No user found with search params: {search_params!r}.")
 
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
-        for school in request_body["context"]:
-            if not await self.id_broker_school.exists(school):
-                entries = await self.ldap_access.search(
-                    filter_s=f"(ou={school})", attributes=["displayName"]
+        for school in sorted(request_body["context"]):
+            await create_school_if_missing(school, self.ldap_access, self.id_broker_school, self.logger)
+            for school_class in request_body["context"][school]["classes"]:
+                await create_class_if_missing(
+                    school_class, school, self.ldap_access, self.id_broker_school_class, self.logger
                 )
-                if len(entries) == 1:
-                    await self.id_broker_school.create(
-                        School(name=school, display_name=str(entries[0].displayName))
-                    )
-                    self.logger.info("Created school: %r.", school)
-                else:
-                    raise IDBrokerNotFoundError(
-                        f"School {school} of User {request_body['username']}"
-                        f" was not found on sender system."
-                    )
             self.logger.info(
                 "Going to create user %r in school %r: %r...",
                 request_body["id"],
@@ -213,6 +259,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         super(IDBrokerPerSAGroupDispatcher, self).__init__(school_authority, plugin_name)
         self.attribute_mapping = {
+            "id": "id",
             "name": "name",
             "description": "description",
             "school": "school",
@@ -242,26 +289,23 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
     async def search_params(
         self, obj: Union[ListenerGroupAddModifyObject, ListenerGroupRemoveObject]
     ) -> Dict[str, Any]:
-        m = self.class_dn_regex.match(obj.dn)
-        name = m.groupdict()["name"]
-        school = m.groupdict()["ou"]
-        return {
-            "school_authority": self.school_authority.name,
-            "name": name,
-            "school": school,
-        }
+        return {"school_authority": self.school_authority.name, "id": obj.id}
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> SchoolClass:
-        """Retrieve a school class from ID Broker API.
-        If it does not exist on the id broker, we need to
-        raise an GroupNotFoundError, so it will be created."""
+        """
+        Retrieve a school class from ID Broker API.
+
+        :return SchoolClass: school class object on the ID Broker
+        :raises GroupNotFoundError: if it does not exist on the ID Broker
+        """
         self.logger.debug("Retrieving school class with search parameters: %r", search_params)
         try:
-            return await self.id_broker_school_class.get(
-                name=search_params["name"], school=search_params["school"]
-            )
+            return await self.id_broker_school_class.get(obj_id=search_params["id"])
         except (IDBrokerNotFoundError, IDBrokerError):
             raise GroupNotFoundError(f"No school class found with search params: {search_params!r}.")
+
+    async def _handle_attr_id(self, obj: ListenerUserAddModifyObject) -> str:
+        return obj.id
 
     async def _handle_attr_school(self, obj: ListenerGroupAddModifyObject) -> str:
         """Name of school for this school class on the target."""
@@ -269,7 +313,8 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
         return m.groupdict()["ou"]
 
     async def _handle_attr_users(self, obj: ListenerGroupAddModifyObject) -> List[str]:
-        """User dns of class have to be entryUUID of the users.
+        """
+        User dns of class have to be entryUUID of the users.
         Hint: In the user plugin the record_uid of the user is set to entryUUID on the id-broker side.
         Here we want to do this again. The record_uid of the user is a different value.
         """
@@ -278,26 +323,22 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             user_entries = await self.ldap_access.search(
                 base=dn, filter_s="(objectClass=*)", attributes=["entryUUID"]
             )
-            if len(user_entries) >= 1:
-                if len(user_entries) != 1:
-                    self.logger.warning(f"User {dn} was found multiple times.")
+            if len(user_entries) > 1:
+                self.logger.warning(f"Member {dn!r} of group {obj.name!r} was found multiple times.")
+            elif len(user_entries) < 1:
+                self.logger.warning(f"Member {dn!r} of group {obj.name!r} was not found.")
+            else:
                 record_uids.append(str(user_entries[0].entryUUID))
         return record_uids
 
     async def _handle_attr_name(self, obj: ListenerGroupAddModifyObject) -> str:
-        """
-        The name should not include the school prefix. It is prepended on the
-        id-broker side.
-        """
+        """The name should not include the school prefix. It is prepended on the id-broker side."""
         if m := self.class_dn_regex.match(obj.dn):
             school = m.groupdict()["ou"]
             prefix = f"{school}-"
             if obj.name.startswith(prefix):
                 return obj.name[len(prefix) :]
-            return obj.name
-
-    async def _handle_attr_description(self, obj: ListenerGroupAddModifyObject) -> str:
-        return "" if not hasattr(obj, "description") else obj.description
+        return obj.name
 
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a school class object at the target."""
@@ -308,20 +349,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             school,
             request_body,
         )
-        if not await self.id_broker_school.exists(school):
-            entries = await self.ldap_access.search(
-                filter_s=f"(ou={school})", attributes=["displayName"]
-            )
-            if len(entries) == 1:
-                await self.id_broker_school.create(
-                    School(name=school, display_name=str(entries[0].displayName))
-                )
-                self.logger.info("Created school: %r.", school)
-            else:
-                raise IDBrokerNotFoundError(
-                    f"School {school} of School class {request_body['name']}"
-                    f" was not found on sender system."
-                )
+        await create_school_if_missing(school, self.ldap_access, self.id_broker_school, self.logger)
         try:
             school_class: SchoolClass = await self.id_broker_school_class.create(
                 SchoolClass(**request_body)
@@ -364,9 +392,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
     ) -> None:
         """Delete a school class object at the target."""
         self.logger.info("Going to delete school class: %r...", obj)
-        await self.id_broker_school_class.delete(
-            api_school_class_data.name, api_school_class_data.school
-        )
+        await self.id_broker_school_class.delete(api_school_class_data.id)
         self.logger.info("School class deleted: %r.", api_school_class_data)
 
 

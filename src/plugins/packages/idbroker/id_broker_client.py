@@ -105,17 +105,25 @@ class IDBrokerObjectBase(BaseModel):
 
 
 class School(IDBrokerObjectBase):
+    id: str
     name: str
     display_name: str
     _gen_class = GenSchool
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(name={self.name!r}, id={self.id!r})"
+
 
 class SchoolClass(IDBrokerObjectBase):
+    id: str
     name: str
     description: str
     school: str
     members: List[str]
     _gen_class = GenSchoolClass
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(name={self.name!r}, id={self.id!r})"
 
 
 class SchoolContext(IDBrokerObjectBase):
@@ -131,6 +139,9 @@ class User(IDBrokerObjectBase):
     user_name: str
     context: Dict[str, SchoolContext]
     _gen_class = GenUser
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(user_name={self.user_name!r}, id={self.id!r})"
 
     @classmethod
     def from_gen_obj(cls, gen_obj: GenApiObject) -> "User":
@@ -284,13 +295,14 @@ class ProvisioningAPIClient(abc.ABC):
             )
         return new_obj
 
-    async def _delete(self, id_arg_name: str, **kwargs) -> None:
-        """Delete object with id `obj_id`."""
-        obj_id = kwargs.pop(id_arg_name)
+    async def _delete(self, obj_id: str, **kwargs) -> None:
+        """
+        Delete object with ID `obj_id`.
+        `kwargs` will be passed on to API call.
+        """
         logger.debug("Deleting %s %r...", self._object_type.__name__, obj_id)
-        kwargs[id_arg_name] = obj_id
         try:
-            await self._request("delete", **kwargs)
+            await self._request("delete", id=obj_id, **kwargs)
             logger.debug("%s %r deleted.", self._object_type.__name__, obj_id)
         except ApiException as exc:
             if exc.status != 404:
@@ -305,17 +317,14 @@ class ProvisioningAPIClient(abc.ABC):
                 obj_id,
             )
 
-    async def _exists(self, id_arg_name: str, **kwargs) -> bool:
+    async def _exists(self, obj_id: str, **kwargs) -> bool:
         """
-        Check if an object exists on the server.
-
-        `id_arg_name` is the key to the id in kwargs that has to be used in the API call.
+        Check if object with ID `obj_id` exists on the server.
+        `kwargs` will be passed on to API call.
         """
-        obj_id = kwargs.pop(id_arg_name)
         logger.debug("Checking existence of %s %r...", self._object_type.__name__, obj_id)
-        kwargs[id_arg_name] = obj_id
         try:
-            await self._request("head", **kwargs)
+            await self._request("head", id=obj_id, **kwargs)
             logger.debug("%s %r exists.", self._object_type.__name__, obj_id)
         except ApiException as exc:
             if exc.status != 404:
@@ -328,11 +337,14 @@ class ProvisioningAPIClient(abc.ABC):
             return False
         return True
 
-    async def _get(self, **kwargs) -> IDBrokerObject:
-        """Retrieve the object from the server."""
-        logger.debug("Retrieving %s using %r...", self._object_type.__name__, kwargs)
+    async def _get(self, obj_id: str, **kwargs) -> IDBrokerObject:
+        """
+        Retrieve the object with ID `obj_id` from the server.
+        `kwargs` will be passed on to API call.
+        """
+        logger.debug("Retrieving %s %r with kwargs %r...", self._object_type.__name__, obj_id, kwargs)
         try:
-            obj = await self._request("get", **kwargs)
+            obj = await self._request("get", id=obj_id, **kwargs)
         except ApiException as exc:
             exc_cls = IDBrokerNotFoundError if exc.status == 404 else IDBrokerError
             raise exc_cls(
@@ -396,11 +408,11 @@ class ProvisioningAPIClient(abc.ABC):
 
 class IDBrokerUser(ProvisioningAPIClient):
     API_METHODS = {
-        "delete": "delete_ucsschool_apis_provisioning_v1_school_authority_users_user_id_delete",
-        "get": "get_ucsschool_apis_provisioning_v1_school_authority_users_user_id_get",
-        "head": "get_head_ucsschool_apis_provisioning_v1_school_authority_users_user_id_head",
+        "delete": "delete_ucsschool_apis_provisioning_v1_school_authority_users_id_delete",
+        "get": "get_ucsschool_apis_provisioning_v1_school_authority_users_id_get",
+        "head": "get_head_ucsschool_apis_provisioning_v1_school_authority_users_id_head",
         "post": "post_ucsschool_apis_provisioning_v1_school_authority_users_post",
-        "put": "put_ucsschool_apis_provisioning_v1_school_authority_users_user_id_put",
+        "put": "put_ucsschool_apis_provisioning_v1_school_authority_users_id_put",
     }
     _object_type = User
     _gen_api_handler = GenUsersApi
@@ -412,24 +424,17 @@ class IDBrokerUser(ProvisioningAPIClient):
         )
         return cast(User, res)
 
-    async def delete(self, user_id: str) -> None:
-        """Delete user with id `user_id`."""
-        await self._delete(
-            id_arg_name="user_id",
-            school_authority=self.school_authority_name,
-            user_id=user_id,
-        )
+    async def delete(self, obj_id: str) -> None:
+        """Delete user with ID `obj_id`."""
+        await self._delete(obj_id=obj_id, school_authority=self.school_authority_name)
 
-    async def exists(self, user_id: str) -> bool:
-        """Check if the user with the ID `user_id` exists on the server."""
-        return await self._exists(
-            id_arg_name="user_id",
-            school_authority=self.school_authority_name,
-            user_id=user_id,
-        )
+    async def exists(self, obj_id: str) -> bool:
+        """Check if the user with the ID `obj_id` exists on the server."""
+        return await self._exists(obj_id=obj_id, school_authority=self.school_authority_name)
 
-    async def get(self, user_id: str) -> User:
-        res = await super()._get(school_authority=self.school_authority_name, user_id=user_id)
+    async def get(self, obj_id: str) -> User:
+        """Retrieve user with ID `obj_id` from the server."""
+        res = await super()._get(obj_id=obj_id, school_authority=self.school_authority_name)
         return cast(User, res)
 
     async def update(self, user: User) -> User:
@@ -437,7 +442,7 @@ class IDBrokerUser(ProvisioningAPIClient):
         res = await super()._update(
             obj_arg_name="user",
             school_authority=self.school_authority_name,
-            user_id=user.id,
+            id=user.id,
             user=user,
         )
         return cast(User, res)
@@ -445,8 +450,8 @@ class IDBrokerUser(ProvisioningAPIClient):
 
 class IDBrokerSchool(ProvisioningAPIClient):
     API_METHODS = {
-        "get": "get_ucsschool_apis_provisioning_v1_school_authority_schools_name_get",
-        "head": "get_head_ucsschool_apis_provisioning_v1_school_authority_schools_name_head",
+        "get": "get_ucsschool_apis_provisioning_v1_school_authority_schools_id_get",
+        "head": "get_head_ucsschool_apis_provisioning_v1_school_authority_schools_id_head",
         "post": "post_ucsschool_apis_provisioning_v1_school_authority_schools_post",
     }
     _object_type = School
@@ -461,24 +466,23 @@ class IDBrokerSchool(ProvisioningAPIClient):
         )
         return cast(School, res)
 
-    async def exists(self, name: str) -> bool:
-        """Check if the school with the name `name` exists on the server."""
-        return await self._exists(
-            id_arg_name="name", school_authority=self.school_authority_name, name=name
-        )
+    async def exists(self, obj_id: str) -> bool:
+        """Check if school with ID `obj_id` exists on the server."""
+        return await self._exists(obj_id=obj_id, school_authority=self.school_authority_name)
 
-    async def get(self, name: str) -> School:
-        res = await super()._get(school_authority=self.school_authority_name, name=name)
+    async def get(self, obj_id: str) -> School:
+        """Retrieve school with ID `obj_id` from the server."""
+        res = await super()._get(obj_id=obj_id, school_authority=self.school_authority_name)
         return cast(School, res)
 
 
 class IDBrokerSchoolClass(ProvisioningAPIClient):
     API_METHODS = {
-        "get": "get_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_get",
-        "head": "get_head_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_head",
+        "get": "get_ucsschool_apis_provisioning_v1_school_authority_classes_id_get",
+        "head": "get_head_ucsschool_apis_provisioning_v1_school_authority_classes_id_head",
         "post": "post_ucsschool_apis_provisioning_v1_school_authority_classes_post",
-        "put": "put_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_put",
-        "delete": "delete_ucsschool_apis_provisioning_v1_school_authority_classes_school_name_delete",
+        "put": "put_ucsschool_apis_provisioning_v1_school_authority_classes_id_put",
+        "delete": "delete_ucsschool_apis_provisioning_v1_school_authority_classes_id_delete",
     }
     _object_type = SchoolClass
     _gen_api_handler = GenSchoolClassesApi
@@ -492,36 +496,25 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
         )
         return cast(SchoolClass, res)
 
-    async def exists(self, name: str, school: str) -> bool:
-        """Check if the schoolclass with the name `name` and the school `school` exists on the server."""
-        return await self._exists(
-            id_arg_name="name",
-            school_authority=self.school_authority_name,
-            name=name,
-            school=school,
-        )
+    async def exists(self, obj_id: str) -> bool:
+        """Check if the school class with the ID `obj_id` exists on the server."""
+        return await self._exists(obj_id=obj_id, school_authority=self.school_authority_name)
 
-    async def get(self, name: str, school: str) -> SchoolClass:
-        res = await super()._get(school_authority=self.school_authority_name, name=name, school=school)
+    async def get(self, obj_id: str) -> SchoolClass:
+        """Retrieve school class with ID `obj_id` from the server."""
+        res = await super()._get(obj_id=obj_id, school_authority=self.school_authority_name)
         return cast(SchoolClass, res)
 
     async def update(self, school_class: SchoolClass) -> SchoolClass:
-        """Modify the schoolclass with the name `school_class.name`
-        and the school `school_class.school` on the server."""
+        """Modify the school class with the ID `school_class.id` on the server."""
         res = await super()._update(
             obj_arg_name="school_class",
             school_authority=self.school_authority_name,
-            name=school_class.name,
-            school=school_class.school,
+            id=school_class.id,
             school_class=school_class,
         )
         return cast(SchoolClass, res)
 
-    async def delete(self, name: str, school: str) -> None:
-        """Delete school_class with `name` in `school`."""
-        await self._delete(
-            id_arg_name="name",
-            school_authority=self.school_authority_name,
-            name=name,
-            school=school,
-        )
+    async def delete(self, obj_id: str) -> None:
+        """Delete school_class with ID `obj_id`."""
+        await self._delete(obj_id=obj_id, school_authority=self.school_authority_name)

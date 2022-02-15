@@ -1,6 +1,6 @@
-black>=20.8b1
+black==22.1.0
 coverage
 flake8>=3.8.4
 ipython
-isort>=5.6.4
+isort==5.10.1
 pre-commit

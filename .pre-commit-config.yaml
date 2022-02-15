@@ -57,12 +57,12 @@ repos:
     -   id: seed-isort-config
         args: [--application-directories, src]
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.6.4
+    rev: 5.10.1
     hooks:
     -   id: isort
         entry: isort --check-only --diff
 -   repo: https://github.com/psf/black
-    rev: 20.8b1
+    rev: 22.1.0
     hooks:
     -   id: black
         entry: black --check --diff --config .black

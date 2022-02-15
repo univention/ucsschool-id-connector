@@ -138,16 +138,18 @@ def get_schools(school_auth_conf, id_broker_kelvin_session):
         if not schools_on_s_a:
             school_name = fake.user_name()
             id_broker_school = IDBrokerSchool(school_auth_conf, "id_broker")
-            school_1 = School(name=school_name, display_name=f"{s_a_name} {school_name}")
+            school_1 = School(
+                id=fake.uuid4(), name=school_name, display_name=f"{s_a_name} {school_name}"
+            )
             await id_broker_school.create(school_1)
-            return await _get_schools(s_a_name)
+            schools_on_s_a = await _get_schools(s_a_name)
         return schools_on_s_a
 
     return _func
 
 
 @pytest.fixture(scope="session")
-def test_school_name(get_schools):
+def a_school_name(get_schools):
     async def _func(s_a_name: str) -> str:
         test_school = random.choice(await get_schools(s_a_name))
         return test_school.name.split("-", 1)[-1]
@@ -156,7 +158,7 @@ def test_school_name(get_schools):
 
 
 @pytest.fixture(scope="session")
-def test_id_broker_user():
+def a_id_broker_user():
     async def _func(school_name: str, classes: List[str], roles: List[str]) -> User:
         return User(
             id=fake.uuid4(),
@@ -170,7 +172,7 @@ def test_id_broker_user():
 
 
 @pytest.fixture(scope="session")
-def test_kelvin_user():
+def a_kelvin_user():
     def _func(
         s_a_name: str,
         session: KelvinSession,
@@ -188,7 +190,7 @@ def test_kelvin_user():
             roles=roles,
             schools=[f"{s_a_name}-{school_name}"],
             school_classes={f"{s_a_name}-{school_name}": classes},
-            source_uid=f"IDBROKER-{s_a_name}",
+            source_uid=s_a_name,
             session=session,
         )
 
@@ -217,7 +219,7 @@ def get_kelvin_school_class(id_broker_ip, kelvin_session):
 
 def compare_kelvin_and_id_broker_user(kelvin_user: KelvinUser, id_broker_user: User, s_a_name: str):
     assert kelvin_user.record_uid == id_broker_user.id
-    assert kelvin_user.source_uid == f"IDBROKER-{s_a_name}"
+    assert kelvin_user.source_uid == s_a_name
     assert kelvin_user.firstname == id_broker_user.first_name
     assert kelvin_user.lastname == id_broker_user.last_name
     assert kelvin_user.name == f"{s_a_name}-{id_broker_user.user_name}"
@@ -235,6 +237,7 @@ def compare_kelvin_and_id_broker_user(kelvin_user: KelvinUser, id_broker_user: U
 def compare_kelvin_and_id_broker_school(
     kelvin_school: KelvinSchool, id_broker_school: School, s_a_name: str
 ):
+    assert kelvin_school.udm_properties["ucsschoolRecordUID"] == id_broker_school.id
     assert kelvin_school.name == f"{s_a_name}-{id_broker_school.name}"
     assert kelvin_school.display_name == id_broker_school.display_name
 
@@ -333,6 +336,29 @@ async def schedule_delete_kelvin_school_class(get_kelvin_school_class):
             )
 
 
+@pytest.fixture
+def create_school_class(schedule_delete_kelvin_school_class):
+    async def _func(
+        class_name: str,
+        school: str,
+        s_a_name: str,
+        members: List[str],
+        id_broker_school_class: IDBrokerSchoolClass,
+    ) -> str:
+        sc_1 = SchoolClass(
+            id=fake.uuid4(),
+            name=class_name,
+            description=f"desc {s_a_name} {class_name}",
+            school=school,
+            members=members,
+        )
+        schedule_delete_kelvin_school_class(s_a_name, class_name, school)
+        await id_broker_school_class.create(sc_1)
+        return sc_1.id
+
+    return _func
+
+
 @pytest.mark.asyncio
 async def test_school_create(
     get_schools,
@@ -343,7 +369,7 @@ async def test_school_create(
     id_broker_school = IDBrokerSchool(school_auth_conf, "id_broker")
     s_a_name = id_broker_school.school_authority_name
     school_name = fake.user_name()
-    school_1 = School(name=school_name, display_name=f"{s_a_name} {school_name}")
+    school_1 = School(id=fake.uuid4(), name=school_name, display_name=f"{s_a_name} {school_name}")
     schedule_delete_kelvin_school(s_a_name, school_name)
     school_2 = await id_broker_school.create(school_1)
     assert school_1 == school_2
@@ -364,9 +390,9 @@ async def test_school_exists(
     s_a_name = id_broker_school.school_authority_name
     s_a_schools: List[KelvinSchool] = await get_schools(s_a_name)
     kelvin_school = random.choice(s_a_schools)
-    res = await id_broker_school.exists(kelvin_school.name.split("-", 1)[-1])
+    res = await id_broker_school.exists(kelvin_school.udm_properties["ucsschoolRecordUID"])
     assert res is True
-    res = await id_broker_school.exists(fake.user_name())
+    res = await id_broker_school.exists(fake.uuid4())
     assert res is False
 
 
@@ -380,7 +406,7 @@ async def test_school_get(
     s_a_name = id_broker_school.school_authority_name
     s_a_schools: List[KelvinSchool] = await get_schools(s_a_name)
     kelvin_school = random.choice(s_a_schools)
-    school = await id_broker_school.get(kelvin_school.name.split("-", 1)[-1])
+    school = await id_broker_school.get(kelvin_school.udm_properties["ucsschoolRecordUID"])
     compare_kelvin_and_id_broker_school(kelvin_school, school, s_a_name)
 
 
@@ -394,14 +420,14 @@ async def test_school_class_create(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_kelvin_user,
-    test_school_name,
+    a_kelvin_user,
+    a_school_name,
 ):
     id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     s_a_name = id_broker_sc.school_authority_name
     class_name = fake.user_name()
-    school: str = await test_school_name(s_a_name)
-    kelvin_user: KelvinUser = test_kelvin_user(
+    school: str = await a_school_name(s_a_name)
+    kelvin_user: KelvinUser = a_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_broker_ip),
         school_name=school,
@@ -411,6 +437,7 @@ async def test_school_class_create(
     schedule_delete_kelvin_user(s_a_name, kelvin_user.name.split("-", 1)[-1])
     await kelvin_user.save()
     sc_1 = SchoolClass(
+        id=fake.uuid4(),
         name=class_name,
         description=f"desc {s_a_name} {class_name}",
         school=school,
@@ -430,22 +457,23 @@ async def test_school_class_exists(
     mock_env,
     schedule_delete_kelvin_school_class,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_school_name,
+    a_school_name,
 ):
     id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     s_a_name = id_broker_sc.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     kelvin_sc = KelvinSchoolClass(
         name=fake.user_name(),
         school=f"{s_a_name}-{school}",
+        udm_properties={"ucsschoolRecordUID": fake.uuid4(), "ucsschoolSourceUID": s_a_name},
         users=[],
         session=kelvin_session(id_broker_ip),
     )
-    res = await id_broker_sc.exists(kelvin_sc.name, school)
+    res = await id_broker_sc.exists(kelvin_sc.udm_properties["ucsschoolRecordUID"])
     assert res is False
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc.name, school)
     await kelvin_sc.save()
-    res = await id_broker_sc.exists(kelvin_sc.name, school)
+    res = await id_broker_sc.exists(kelvin_sc.udm_properties["ucsschoolRecordUID"])
     assert res is True
 
 
@@ -457,20 +485,21 @@ async def test_school_class_get(
     mock_env,
     schedule_delete_kelvin_school_class,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_school_name,
+    a_school_name,
 ):
     id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     s_a_name = id_broker_sc.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     kelvin_sc = KelvinSchoolClass(
         name=fake.user_name(),
         school=f"{s_a_name}-{school}",
+        udm_properties={"ucsschoolRecordUID": fake.uuid4(), "ucsschoolSourceUID": s_a_name},
         users=[],
         session=kelvin_session(id_broker_ip),
     )
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc.name, school)
     await kelvin_sc.save()
-    sc: SchoolClass = await id_broker_sc.get(kelvin_sc.name, school)
+    sc: SchoolClass = await id_broker_sc.get(kelvin_sc.udm_properties["ucsschoolRecordUID"])
     await compare_kelvin_and_id_broker_school_class(kelvin_sc, sc, s_a_name)
 
 
@@ -484,23 +513,24 @@ async def test_school_class_update(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_kelvin_user,
-    test_school_name,
+    a_kelvin_user,
+    a_school_name,
 ):
     id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     s_a_name = id_broker_sc.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     kelvin_sc_1 = KelvinSchoolClass(
         name=fake.user_name(),
         school=f"{s_a_name}-{school}",
+        udm_properties={"ucsschoolRecordUID": fake.uuid4(), "ucsschoolSourceUID": s_a_name},
         users=[],
         session=kelvin_session(id_broker_ip),
     )
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc_1.name, school)
     await kelvin_sc_1.save()
-    sc_1: SchoolClass = await id_broker_sc.get(kelvin_sc_1.name, school)
+    sc_1: SchoolClass = await id_broker_sc.get(kelvin_sc_1.udm_properties["ucsschoolRecordUID"])
     await compare_kelvin_and_id_broker_school_class(kelvin_sc_1, sc_1, s_a_name)
-    kelvin_user: KelvinUser = test_kelvin_user(
+    kelvin_user: KelvinUser = a_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_broker_ip),
         school_name=school,
@@ -513,7 +543,7 @@ async def test_school_class_update(
     sc_1.members.clear()
     sc_1.members.append(kelvin_user.record_uid)
     sc_2: SchoolClass = await id_broker_sc.update(sc_1)
-    sc_3: SchoolClass = await id_broker_sc.get(kelvin_sc_1.name, school)
+    sc_3: SchoolClass = await id_broker_sc.get(kelvin_sc_1.udm_properties["ucsschoolRecordUID"])
     assert sc_2 == sc_3
     assert sc_1 == sc_2
     kelvin_sc_2: KelvinSchoolClass = await get_kelvin_school_class(s_a_name, kelvin_sc_1.name, school)
@@ -527,24 +557,25 @@ async def test_school_class_delete(
     mock_env,
     schedule_delete_kelvin_school_class,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_school_name,
+    a_school_name,
     compare_kelvin_and_id_broker_school_class,
     get_kelvin_school_class,
 ):
     id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     s_a_name = id_broker_sc.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     kelvin_sc = KelvinSchoolClass(
         name=fake.user_name(),
         school=f"{s_a_name}-{school}",
+        udm_properties={"ucsschoolRecordUID": fake.uuid4(), "ucsschoolSourceUID": s_a_name},
         users=[],
         session=kelvin_session(id_broker_ip),
     )
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc.name, school)
     await kelvin_sc.save()
-    sc: SchoolClass = await id_broker_sc.get(kelvin_sc.name, school)
+    sc: SchoolClass = await id_broker_sc.get(kelvin_sc.udm_properties["ucsschoolRecordUID"])
     await compare_kelvin_and_id_broker_school_class(kelvin_sc, sc, s_a_name)
-    await id_broker_sc.delete(sc.name, school)
+    await id_broker_sc.delete(kelvin_sc.udm_properties["ucsschoolRecordUID"])
     with pytest.raises(KelvinNoObject):
         await get_kelvin_school_class(s_a_name, sc.name, school)
 
@@ -556,20 +587,23 @@ async def test_user_create(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_id_broker_user,
-    test_school_name,
+    a_id_broker_user,
+    a_school_name,
+    create_school_class,
 ):
+    id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     id_broker_user = IDBrokerUser(school_auth_conf, "id_broker")
     s_a_name = id_broker_user.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     class_name = fake.user_name()
-    user_1: User = await test_id_broker_user(
+    user_1: User = await a_id_broker_user(
         school_name=school,
         classes=[class_name],
         roles=[random.choice(("student", "teacher"))],
     )
     schedule_delete_kelvin_school_class(s_a_name, class_name, school)
     schedule_delete_kelvin_user(s_a_name, user_1.user_name.split("-", 1)[-1])
+    await create_school_class(class_name, school, s_a_name, [], id_broker_sc)
     user_2: User = await id_broker_user.create(user_1)
     assert user_1 == user_2
     kelvin_user = await get_kelvin_user(s_a_name, user_1.user_name)
@@ -585,14 +619,14 @@ async def test_user_delete(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_kelvin_user,
-    test_school_name,
+    a_kelvin_user,
+    a_school_name,
 ):
     id_broker_user = IDBrokerUser(school_auth_conf, "id_broker")
     s_a_name = id_broker_user.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     class_name = fake.user_name()
-    kelvin_user: KelvinUser = test_kelvin_user(
+    kelvin_user: KelvinUser = a_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_broker_ip),
         school_name=school,
@@ -616,14 +650,14 @@ async def test_user_exists(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_kelvin_user,
-    test_school_name,
+    a_kelvin_user,
+    a_school_name,
 ):
     id_broker_user = IDBrokerUser(school_auth_conf, "id_broker")
     s_a_name = id_broker_user.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     class_name = fake.user_name()
-    kelvin_user: KelvinUser = test_kelvin_user(
+    kelvin_user: KelvinUser = a_kelvin_user(
         s_a_name=s_a_name,
         session=id_broker_kelvin_session(school_auth_conf),
         school_name=school,
@@ -648,14 +682,14 @@ async def test_user_get(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_kelvin_user,
-    test_school_name,
+    a_kelvin_user,
+    a_school_name,
 ):
     id_broker_user = IDBrokerUser(school_auth_conf, "id_broker")
     s_a_name = id_broker_user.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     class_name = fake.user_name()
-    kelvin_user: KelvinUser = test_kelvin_user(
+    kelvin_user: KelvinUser = a_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_broker_ip),
         school_name=school,
@@ -677,14 +711,16 @@ async def test_user_update(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_kelvin_user,
-    test_school_name,
+    a_kelvin_user,
+    a_school_name,
+    create_school_class,
 ):
+    id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     id_broker_user = IDBrokerUser(school_auth_conf, "id_broker")
     s_a_name = id_broker_user.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     class_name = fake.user_name()
-    kelvin_user: KelvinUser = test_kelvin_user(
+    kelvin_user: KelvinUser = a_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_broker_ip),
         school_name=school,
@@ -693,6 +729,7 @@ async def test_user_update(
     )
     schedule_delete_kelvin_school_class(s_a_name, class_name, school)
     schedule_delete_kelvin_user(s_a_name, kelvin_user.name.split("-", 1)[-1])
+    await create_school_class(class_name, school, s_a_name, [], id_broker_sc)
     await kelvin_user.save()
     orig_id_broker_user: User = await id_broker_user.get(kelvin_user.record_uid)
     compare_kelvin_and_id_broker_user(kelvin_user, orig_id_broker_user, s_a_name)
@@ -701,6 +738,8 @@ async def test_user_update(
     for school, context in orig_id_broker_user.context.items():
         context.classes.clear()
         context.classes.extend(["2b", "1a"])
+    await create_school_class("2b", school, s_a_name, [], id_broker_sc)
+    await create_school_class("1a", school, s_a_name, [], id_broker_sc)
     updated_id_broker_user: User = await id_broker_user.update(orig_id_broker_user)
     get_updated_id_broker_user: User = await id_broker_user.get(orig_id_broker_user.id)
     assert updated_id_broker_user == get_updated_id_broker_user
@@ -722,14 +761,16 @@ async def test_user_update_change_username(
     schedule_delete_kelvin_school_class,
     schedule_delete_kelvin_user,
     school_auth_conf: SchoolAuthorityConfiguration,
-    test_kelvin_user,
-    test_school_name,
+    a_kelvin_user,
+    a_school_name,
+    create_school_class,
 ):
+    id_broker_sc = IDBrokerSchoolClass(school_auth_conf, "id_broker")
     id_broker_user = IDBrokerUser(school_auth_conf, "id_broker")
     s_a_name = id_broker_user.school_authority_name
-    school: str = await test_school_name(s_a_name)
+    school: str = await a_school_name(s_a_name)
     class_name = fake.user_name()
-    kelvin_user: KelvinUser = test_kelvin_user(
+    kelvin_user: KelvinUser = a_kelvin_user(
         s_a_name=s_a_name,
         session=kelvin_session(id_broker_ip),
         school_name=school,
@@ -739,6 +780,7 @@ async def test_user_update_change_username(
     old_user_name = kelvin_user.name.split("-", 1)[-1]
     schedule_delete_kelvin_school_class(s_a_name, class_name, school)
     schedule_delete_kelvin_user(s_a_name, old_user_name)
+    await create_school_class(class_name, school, s_a_name, [], id_broker_sc)
     await kelvin_user.save()
     user_1: User = await id_broker_user.get(kelvin_user.record_uid)
     compare_kelvin_and_id_broker_user(kelvin_user, user_1, s_a_name)
