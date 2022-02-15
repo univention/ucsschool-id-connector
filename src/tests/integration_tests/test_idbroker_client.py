@@ -29,11 +29,12 @@
 
 import random
 import zlib
-from typing import List, Tuple
+from typing import AsyncGenerator, List, Tuple
 
 import faker
 import httpx
 import pytest
+import pytest_asyncio
 
 import ucsschool_id_connector.plugin_loader
 from ucsschool.kelvin.client import (
@@ -66,8 +67,10 @@ from idbroker.id_broker_client import (  # isort:skip  # noqa: E402
 fake = faker.Faker()
 
 
-@pytest.fixture(scope="session")
-async def new_school_auth(delete_kelvin_school, kelvin_session, id_broker_ip) -> Tuple[str, str]:
+@pytest_asyncio.fixture(scope="session")
+async def new_school_auth(
+    delete_kelvin_school, kelvin_session, id_broker_ip
+) -> AsyncGenerator[Tuple[str, str], None]:
     s_a_name = "".join(fake.street_name().split())
     print(f"*** Creating school authority {s_a_name!r}...")
     password = fake.password(length=15)
@@ -109,7 +112,7 @@ async def new_school_auth(delete_kelvin_school, kelvin_session, id_broker_ip) ->
         print(f"User {kelvin_user.name!r} does not exist.")
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def school_auth_conf(
     school_auth_config_id_broker, new_id_broker_school_auth
 ) -> SchoolAuthorityConfiguration:
@@ -257,7 +260,7 @@ def compare_kelvin_and_id_broker_school_class(get_kelvin_user):
     return _func
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def schedule_delete_kelvin_user(get_kelvin_user):
     s_a_and_user_names: List[Tuple[str, str]] = []
 
@@ -299,7 +302,7 @@ def delete_kelvin_school(kelvin_session, id_broker_ip):
     return _func
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def schedule_delete_kelvin_school(
     delete_kelvin_school, school_auth_conf, id_broker_kelvin_session
 ):
@@ -315,7 +318,7 @@ async def schedule_delete_kelvin_school(
         await delete_kelvin_school(s_a_name, name)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def schedule_delete_kelvin_school_class(get_kelvin_school_class):
     s_a_and_sc_names: List[Tuple[str, str, str]] = []
 
