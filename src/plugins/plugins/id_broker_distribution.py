@@ -26,43 +26,43 @@
 # License with the Debian GNU/Linux or Univention distribution in file
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
-from typing import Iterable
+from typing import Iterable, List, Optional
 
-from ucsschool_id_connector.models import ListenerObject
+from ucsschool_id_connector.models import ListenerObject, SchoolAuthorityConfiguration
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
-from ucsschool_id_connector.queues import InQueue
+from ucsschool_id_connector.queues import InQueue, OutQueue
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 # That are all existing plugins for the id broker. If names change, this should be updated!
-ID_BROKER_PLUGIN_NAMES = ("id_broker-users", "id_broker-groups")
+ID_BROKER_PLUGIN_NAMES = {"id_broker-users", "id_broker-groups"}
 
 
 class IDBrokerDistributionImpl:
     def __init__(self):
         self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__)
 
+    @staticmethod
+    def _get_id_broker_school_authority(
+        out_queues: List[OutQueue],
+    ) -> Optional[SchoolAuthorityConfiguration]:
+        for out_queue in out_queues:
+            if any(plugin in ID_BROKER_PLUGIN_NAMES for plugin in out_queue.school_authority.plugins):
+                return out_queue.school_authority
+        return None
+
     @hook_impl
     async def school_authorities_to_distribute_to(
         self, obj: ListenerObject, in_queue: InQueue
     ) -> Iterable[str]:
         """
-        We ignore the school_authority mapping
-        and sync objects for schools which have an ID Broker configuration.
+        We ignore the school_authority mapping and sync all objects if an ID Broker configuration exists.
         """
-        s_a_names = set()
-        s_a_names.update(
-            [
-                out_queue.school_authority.name
-                for out_queue in in_queue.out_queues
-                if any(plugin in ID_BROKER_PLUGIN_NAMES for plugin in out_queue.school_authority.plugins)
-            ]
-        )
-        if s_a_names:
-            self.logger.info(
-                f"The changes are distributed to these school authorities, "
-                f"since they are configured as id broker systems: {s_a_names}"
-            )
-        return s_a_names
+        sac = self._get_id_broker_school_authority(in_queue.out_queues)
+        if sac and sac.active:
+            self.logger.error("Active ID Broker configuration found.")
+            return [sac.name]
+        else:
+            return []
 
 
 plugin_manager.register(IDBrokerDistributionImpl())

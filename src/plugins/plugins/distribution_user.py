@@ -27,21 +27,30 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-from typing import Iterable, Set
+from typing import Iterable, List, Set
 
 from ucsschool_id_connector.models import (
     ListenerObject,
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
+    SchoolAuthorityConfiguration,
 )
 from ucsschool_id_connector.plugins import hook_impl, plugin_manager
-from ucsschool_id_connector.queues import InQueue
+from ucsschool_id_connector.queues import InQueue, OutQueue
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
 class UserDistributionImpl:
     def __init__(self):
         self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__)
+
+    @staticmethod
+    def _get_school_authority_configs(out_queues: List[OutQueue]) -> List[SchoolAuthorityConfiguration]:
+        return [
+            out_queue.school_authority
+            for out_queue in out_queues
+            if "kelvin" in out_queue.school_authority.plugins and out_queue.school_authority.active
+        ]
 
     @hook_impl
     async def school_authorities_to_distribute_to(
@@ -60,6 +69,11 @@ class UserDistributionImpl:
             in ``SchoolAuthorityConfiguration.name``
         :rtype: list
         """
+        kelvin_s_a = self._get_school_authority_configs(in_queue.out_queues)
+        if not kelvin_s_a:
+            self.logger.debug("No active Kelvin configuration found.")
+            return []
+
         s_a_names: Set[str] = set()
 
         if not isinstance(obj, ListenerUserAddModifyObject) and not isinstance(
