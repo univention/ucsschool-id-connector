@@ -122,7 +122,9 @@ async def create_class_if_missing(
         if not await id_broker_school_class.exists(entry_uuid):
             logger.info("Creating school class %r in school %r...", school_class, ou)
             await id_broker_school_class.create(
-                SchoolClass(id=entry_uuid, name=ou, description=description, school=ou, members=[])
+                SchoolClass(
+                    id=entry_uuid, name=school_class, description=description, school=ou, members=[]
+                )
             )
     else:
         raise IDBrokerNotFoundError(
