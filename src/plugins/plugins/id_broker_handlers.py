@@ -29,7 +29,7 @@
 
 import logging
 import os
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Iterable, List, Union
 from urllib.parse import urljoin
 
 import aiohttp
@@ -65,6 +65,8 @@ from ucsschool_id_connector_defaults.user_handler_base import (
     UserDispatcherPluginBase,
     UserNotFoundError,
 )
+
+ContextDictType = Dict[str, Dict[str, Iterable[str]]]
 
 
 async def ping_id_broker(school_authority: SchoolAuthorityConfiguration) -> bool:
@@ -202,18 +204,21 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         except IDBrokerNotFoundError:
             raise UserNotFoundError(f"No user found with search params: {search_params!r}.")
 
+    async def _create_schools_and_classes_if_missing(self, context: ContextDictType) -> None:
+        for school in sorted(context):
+            await create_school_if_missing(school, self.ldap_access, self.id_broker_school, self.logger)
+            for school_class in context[school]["classes"]:
+                await create_class_if_missing(
+                    school_class, school, self.ldap_access, self.id_broker_school_class, self.logger
+                )
+
     async def do_create(self, request_body: Dict[str, Any]) -> None:
         """Create a user object at the target."""
         self.logger.info(
             "Going to create user %r (%r)...", request_body["user_name"], request_body["id"]
         )
         self.logger.debug("request_body=%r", request_body)
-        for school in sorted(request_body["context"]):
-            await create_school_if_missing(school, self.ldap_access, self.id_broker_school, self.logger)
-            for school_class in request_body["context"][school]["classes"]:
-                await create_class_if_missing(
-                    school_class, school, self.ldap_access, self.id_broker_school_class, self.logger
-                )
+        await self._create_schools_and_classes_if_missing(request_body["context"])
         user: User = await self.id_broker_user.create(User(**request_body))
         self.logger.info("User created: %r.", user)
 
@@ -221,6 +226,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         """Modify a user object at the target."""
         self.logger.info("Going to modify user %r (%r)...", api_user_data.user_name, api_user_data.id)
         self.logger.debug("request_body=%r", request_body)
+        await self._create_schools_and_classes_if_missing(request_body["context"])
         user: User = await self.id_broker_user.update(User(**request_body))
         self.logger.info("User modified: %r.", user)
 
