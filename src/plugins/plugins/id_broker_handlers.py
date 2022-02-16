@@ -141,7 +141,7 @@ async def create_class_if_missing(
 
 class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
 
-    _required_search_params = ("id",)
+    _required_search_params = ("id", "school_authority")
 
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         super(IDBrokerPerSAUserDispatcher, self).__init__(school_authority, plugin_name)
@@ -189,7 +189,7 @@ class IDBrokerPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
     async def search_params(
         self, obj: Union[ListenerUserAddModifyObject, ListenerUserRemoveObject]
     ) -> Dict[str, Any]:
-        return {"id": obj.id}
+        return {"school_authority": self.school_authority.name, "id": obj.id}
 
     async def fetch_obj(self, search_params: Dict[str, Any]) -> User:
         """
@@ -263,6 +263,9 @@ class IDBrokerUserDispatcher(UserDispatcherPluginBase):
 
 
 class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
+
+    _required_search_params = ("id", "school_authority")
+
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):
         super(IDBrokerPerSAGroupDispatcher, self).__init__(school_authority, plugin_name)
         self.attribute_mapping = {
