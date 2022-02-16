@@ -40,7 +40,7 @@ from typing import Dict, List, Match, Optional, Type, Union, cast
 import jwt
 import lazy_object_proxy
 from async_property import async_property
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
@@ -107,23 +107,35 @@ class IDBrokerObjectBase(BaseModel):
 class School(IDBrokerObjectBase):
     id: str
     name: str
-    display_name: str
+    display_name: str = ""
     _gen_class = GenSchool
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name!r}, id={self.id!r})"
 
+    @validator("display_name", pre=True)
+    def none_to_str(cls, value: Optional[str]):
+        if value is None:
+            return ""
+        return value
+
 
 class SchoolClass(IDBrokerObjectBase):
     id: str
     name: str
-    description: str
+    description: str = ""
     school: str
-    members: List[str]
+    members: List[str] = []
     _gen_class = GenSchoolClass
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name!r}, id={self.id!r})"
+
+    @validator("description", pre=True)
+    def none_to_str(cls, value: Optional[str]):
+        if value is None:
+            return ""
+        return value
 
 
 class SchoolContext(IDBrokerObjectBase):

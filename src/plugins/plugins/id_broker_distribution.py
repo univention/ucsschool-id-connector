@@ -59,7 +59,7 @@ class IDBrokerDistributionImpl:
         """
         sac = self._get_id_broker_school_authority(in_queue.out_queues)
         if sac and sac.active:
-            self.logger.error("Active ID Broker configuration found.")
+            self.logger.debug("Active ID Broker configuration found.")
             return [sac.name]
         else:
             return []
