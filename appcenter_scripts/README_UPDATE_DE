@@ -5,6 +5,9 @@
     <li>
         The ID Broker plugin now handles the new Provisioning API with ``entryUUID`` values as identifiers (Bug #54455).
     </li>
+    <li>
+        The ID Broker partial group sync plugin now safely handles group names with hyphen (Bug #54464).
+    </li>
 </ul>
 
 <h2>v2.2.1 (2021-02-11)</h2>

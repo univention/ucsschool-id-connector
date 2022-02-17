@@ -101,7 +101,7 @@ class KelvinPartialGroupSyncPerSASchoolClassDispatcher(KelvinPerSASchoolClassDis
         Calculates the new set of members that should be set for the school class
         to be created or modified. The way this is done is documented in the README.md
         """
-        school, name = obj.object["name"].split("-")
+        school, name = obj.object["name"].split("-", 1)
         local_usernames = await super()._handle_attr_users(obj)
         local_users = [
             await self._ldap_access.get_user(username, attributes=["ucsschoolRole"])
