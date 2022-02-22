@@ -124,7 +124,7 @@ Inside the ID Connector container run::
 Before running the integration tests, make sure to remove all remaining school_authority configurations.
 To run only the tests for the ID Broker plugin, run::
 
-    $ univention-app shell ucsschool-id-connector sh -c "export UNSAFE_SSL=1 && cd src/tests && pytest -lv -m 'id_broker'"
+    $ univention-app shell ucsschool-id-connector sh -c "export UNSAFE_SSL=1 && cd src/tests && pytest -lv -m 'id_broker and not id_broker_compatibility'"
 
 
 Using devsync with running app container

@@ -32,13 +32,13 @@ import datetime
 import json
 import os
 import re
+import shutil
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
 
 import faker
 import pytest
-import pytest_asyncio
 import requests
 from pydantic import UrlStr
 from urllib3.exceptions import InsecureRequestWarning
@@ -238,7 +238,34 @@ def mock_env(monkeypatch):
 
 
 @pytest.fixture(scope="session")
-def school_auth_config_id_broker(id_broker_ip):
+def temp_clear_dir():
+    """Temporarily clear a directory by moving its content away and later back."""
+    ori_tmp_paths = []
+
+    def _func(path: Path) -> None:
+        temp_dir = path.parent / fake.user_name()
+        ori_tmp_paths.append((path, temp_dir))
+        temp_dir.mkdir()
+        print(f"Temporarily moving content of '{path!s}' to '{temp_dir!s}'.")
+        for p in os.listdir(path):
+            shutil.move(os.path.join(path, p), temp_dir)
+
+    yield _func
+
+    for path, temp_dir in ori_tmp_paths:
+        for p in os.listdir(path):
+            pp = Path(path, p)
+            if pp.is_dir():
+                shutil.rmtree(pp)
+            else:
+                pp.unlink()
+        for p in os.listdir(temp_dir):
+            shutil.move(os.path.join(temp_dir, p), path)
+        temp_dir.rmdir()
+
+
+@pytest.fixture(scope="session")
+def school_auth_config_id_broker(id_broker_ip, temp_clear_dir):
     """
     Fixture to create configurations for replicating to the ID Broker.
     """
@@ -263,17 +290,22 @@ def school_auth_config_id_broker(id_broker_ip):
             },
         }
 
+    # save existing school authority configurations
+    temp_clear_dir("/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities/")
     return _school_auth_config_id_broker
 
 
-@pytest_asyncio.fixture(scope="session")
-async def new_id_broker_school_auth(kelvin_session, id_broker_ip):
+@pytest.fixture(scope="session")
+async def new_id_broker_school_auth(kelvin_session, id_broker_ip, create_school):
     """
     create a provisioning-admin user on the id broker system.
+    is only used in the idbroker_client tests
     """
     s_a_name = "".join(fake.street_name().split())
     print(f"*** Creating school authority {s_a_name!r}...")
     password = fake.password(length=15)
+    await create_school(host=id_broker_ip, ou_name="DEMOSCHOOL")
+
     kelvin_user = User(
         name=f"provisioning-{s_a_name}",
         school="DEMOSCHOOL",
@@ -292,7 +324,7 @@ async def new_id_broker_school_auth(kelvin_session, id_broker_ip):
     yield s_a_name, password
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest.fixture(scope="session")
 async def id_broker_school_auth_conf(
     new_id_broker_school_auth, school_auth_config_id_broker
 ) -> SchoolAuthorityConfiguration:
@@ -392,7 +424,7 @@ def host_ucsschool_id_connector_token(docker_hostname: str, http_request) -> str
     return response.json()["access_token"]
 
 
-@pytest_asyncio.fixture()
+@pytest.fixture()
 async def make_school_authority(
     host_ucsschool_id_connector_token: str,
     ucsschool_id_connector_api_url,
@@ -489,7 +521,7 @@ async def make_school_authority(
         assert not out_queue_dir.exists()
 
 
-@pytest_asyncio.fixture()
+@pytest.fixture()
 async def save_mapping(
     ucsschool_id_connector_api_url,
     req_headers,
@@ -546,7 +578,7 @@ async def save_mapping(
     print(f"Restored original s2s mapping: {s2s_mapping.dict()!r}")
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest.fixture(scope="session")
 async def create_school(kelvin_session):
     async def _func(host: str, ou_name: str = ""):
         if not ou_name:
@@ -568,7 +600,7 @@ async def create_school(kelvin_session):
     return _func
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest.fixture(scope="function")
 async def kelvin_school_on_sender(create_school, id_connector_host_name):
     return await create_school(id_connector_host_name)
 
@@ -620,7 +652,7 @@ def create_schools(docker_hostname, random_name, create_school):
     return _create_schools
 
 
-@pytest_asyncio.fixture()
+@pytest.fixture()
 async def make_sender_user(
     random_name,
     source_uid: str,
@@ -751,7 +783,7 @@ def kelvin_session_kwargs(ca_cert):
     return _func
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest.fixture(scope="session")
 async def kelvin_session(kelvin_session_kwargs):
     """
     An open Kelvin API client session to `host`, that will close automatically
@@ -786,7 +818,7 @@ def id_broker_kelvin_session(kelvin_session):
     return _func
 
 
-@pytest_asyncio.fixture()
+@pytest.fixture()
 async def make_kelvin_school_class(kelvin_session, id_connector_host_name, id_broker_ip):
     created_school_classes: List[Tuple[str]] = []
 

@@ -170,33 +170,6 @@ def temp_file_func():
             pass
 
 
-@pytest.fixture
-def temp_clear_dir():
-    """Temporarily clear a directory by moving its content away and later back."""
-    ori_tmp_paths = []
-
-    def _func(path: Path) -> None:
-        temp_dir = path.parent / fake.user_name()
-        ori_tmp_paths.append((path, temp_dir))
-        temp_dir.mkdir()
-        print(f"Temporarily moving content of '{path!s}' to '{temp_dir!s}'.")
-        for p in os.listdir(path):
-            shutil.move(os.path.join(path, p), temp_dir)
-
-    yield _func
-
-    for path, temp_dir in ori_tmp_paths:
-        for p in os.listdir(path):
-            pp = Path(path, p)
-            if pp.is_dir():
-                shutil.rmtree(pp)
-            else:
-                pp.unlink()
-        for p in os.listdir(temp_dir):
-            shutil.move(os.path.join(temp_dir, p), path)
-        temp_dir.rmdir()
-
-
 # Monkey patch get_logger() for the whole test session
 @pytest.fixture(scope="session")
 def setup_logging(temp_dir_session, tmp_path_factory):
