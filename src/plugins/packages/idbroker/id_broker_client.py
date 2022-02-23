@@ -126,6 +126,19 @@ class SchoolClass(IDBrokerObjectBase):
     members: List[str] = []
     _gen_class = GenSchoolClass
 
+    def __eq__(self, other):
+        if not isinstance(other, SchoolClass):
+            return False
+        return all(
+            (
+                self.id == other.id,
+                self.name == other.name,
+                self.description == other.description,
+                self.school == other.school,
+                set(self.members) == set(other.members),
+            )
+        )
+
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name!r}, id={self.id!r})"
 
@@ -139,6 +152,16 @@ class SchoolContext(IDBrokerObjectBase):
     roles: List[str]
     _gen_class = GenSchoolContext
 
+    def __eq__(self, other):
+        if not isinstance(other, SchoolContext):
+            return False
+        return all(
+            (
+                set(self.classes) == set(other.classes),
+                set(self.roles) == set(other.roles),
+            )
+        )
+
 
 class User(IDBrokerObjectBase):
     id: str
@@ -147,6 +170,19 @@ class User(IDBrokerObjectBase):
     user_name: str
     context: Dict[str, SchoolContext]
     _gen_class = GenUser
+
+    def __eq__(self, other):
+        if not isinstance(other, User):
+            return False
+        return all(
+            (
+                self.id == other.id,
+                self.first_name == other.first_name,
+                self.last_name == other.last_name,
+                self.user_name == other.user_name,
+                self.context == other.context,
+            )
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}(user_name={self.user_name!r}, id={self.id!r})"
@@ -433,7 +469,9 @@ class IDBrokerUser(ProvisioningAPIClient):
     async def create(self, user: User) -> User:
         """Create user. Returned value is the data from the server."""
         res = await super()._create(
-            obj_arg_name="user", school_authority=self.school_authority_name, user=user
+            obj_arg_name="user",
+            school_authority=self.school_authority_name,
+            user=self._sorted_context_lists(user),
         )
         return cast(User, res)
 
@@ -448,7 +486,7 @@ class IDBrokerUser(ProvisioningAPIClient):
     async def get(self, obj_id: str) -> User:
         """Retrieve user with ID `obj_id` from the server."""
         res = await super()._get(obj_id=obj_id, school_authority=self.school_authority_name)
-        return cast(User, res)
+        return self._sorted_context_lists(cast(User, res))
 
     async def update(self, user: User) -> User:
         """Modify the user with the ID `user.id` on the server."""
@@ -456,9 +494,16 @@ class IDBrokerUser(ProvisioningAPIClient):
             obj_arg_name="user",
             school_authority=self.school_authority_name,
             id=user.id,
-            user=user,
+            user=self._sorted_context_lists(user),
         )
         return cast(User, res)
+
+    @staticmethod
+    def _sorted_context_lists(user: User) -> User:
+        for context in user.context.values():
+            context.roles.sort()
+            context.classes.sort()
+        return user
 
 
 class IDBrokerSchool(ProvisioningAPIClient):
@@ -505,8 +550,9 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
         res = await super()._create(
             obj_arg_name="school_class",
             school_authority=self.school_authority_name,
-            school_class=school_class,
+            school_class=self._sorted_members(school_class),
         )
+        # return self._sorted_members(cast(SchoolClass, res))
         return cast(SchoolClass, res)
 
     async def exists(self, obj_id: str) -> bool:
@@ -516,7 +562,7 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
     async def get(self, obj_id: str) -> SchoolClass:
         """Retrieve school class with ID `obj_id` from the server."""
         res = await super()._get(obj_id=obj_id, school_authority=self.school_authority_name)
-        return cast(SchoolClass, res)
+        return self._sorted_members(cast(SchoolClass, res))
 
     async def update(self, school_class: SchoolClass) -> SchoolClass:
         """Modify the school class with the ID `school_class.id` on the server."""
@@ -524,10 +570,16 @@ class IDBrokerSchoolClass(ProvisioningAPIClient):
             obj_arg_name="school_class",
             school_authority=self.school_authority_name,
             id=school_class.id,
-            school_class=school_class,
+            school_class=self._sorted_members(school_class),
         )
+        # return self._sorted_members(cast(SchoolClass, res))
         return cast(SchoolClass, res)
 
     async def delete(self, obj_id: str) -> None:
         """Delete school_class with ID `obj_id`."""
         await self._delete(obj_id=obj_id, school_authority=self.school_authority_name)
+
+    @staticmethod
+    def _sorted_members(school_class: SchoolClass) -> SchoolClass:
+        school_class.members.sort()
+        return school_class

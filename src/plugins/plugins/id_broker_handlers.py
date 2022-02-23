@@ -277,6 +277,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
         }
         self.id_broker_school_class = IDBrokerSchoolClass(self.school_authority, "id_broker")
         self.id_broker_school = IDBrokerSchool(self.school_authority, "id_broker")
+        self.id_broker_user = IDBrokerUser(self.school_authority, "id_broker")
         self.class_dn_regex = school_class_dn_regex()
         self.ldap_access = LDAPAccess()
 
@@ -339,7 +340,7 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
                 self.logger.warning(f"Member {dn!r} of group {obj.name!r} was not found.")
             else:
                 record_uids.append(str(user_entries[0].entryUUID))
-        return record_uids
+        return sorted(record_uids)
 
     async def _handle_attr_name(self, obj: ListenerGroupAddModifyObject) -> str:
         """The name should not include the school prefix. It is prepended on the id-broker side."""
@@ -360,17 +361,16 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             request_body,
         )
         await create_school_if_missing(school, self.ldap_access, self.id_broker_school, self.logger)
+        sc = SchoolClass(**request_body)
         try:
-            school_class: SchoolClass = await self.id_broker_school_class.create(
-                SchoolClass(**request_body)
-            )
-            self.logger.info("School class created: %r.", school_class)
-        except IDBrokerNotFoundError as exc:
-            raise IDBrokerNotFoundError(
-                404,
-                f"Provisioning API responded with 'invalid request'. This usually means that a user in "
-                f"the school class doesn't exist on the server: {exc!s}",
-            ) from exc
+            sc = await self.id_broker_school_class.create(sc)
+        except IDBrokerError as exc:
+            if exc.status == 422 and "member" in str(exc).lower():
+                self.logger.error("Unknown member(s) when creating school class %r: %s", name, exc)
+                await self._fix_school_class_members(sc)
+            else:
+                raise
+        self.logger.info("School class created: %r.", sc)
 
     async def do_modify(self, request_body: Dict[str, Any], api_school_class_data: SchoolClass) -> None:
         """Modify a school class object at the target."""
@@ -380,20 +380,25 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
             request_body,
         )
         name, school = request_body["name"], request_body["school"]
+        sc = SchoolClass(**request_body)
         try:
-            await self.id_broker_school_class.update(SchoolClass(**request_body))
-            self.logger.info(
-                "School class modified: %r  in school %r: %r...",
-                name,
-                school,
-                request_body,
-            )
-        except IDBrokerNotFoundError as exc:
-            raise IDBrokerNotFoundError(
-                404,
-                f"Provisioning API responded with 'invalid request'. This usually means that a user in "
-                f"the school class doesn't exist on the server: {exc!s}",
-            )
+            await self.id_broker_school_class.update(sc)
+        except IDBrokerError as exc:
+            if exc.status == 422 and "member" in str(exc).lower():
+                self.logger.error(
+                    "Unknown member(s) when updating school class %r: %s",
+                    api_school_class_data.name,
+                    exc,
+                )
+                await self._fix_school_class_members(sc)
+            else:
+                raise
+        self.logger.info(
+            "School class modified: %r  in school %r: %r...",
+            name,
+            school,
+            request_body,
+        )
 
     async def do_remove(
         self, obj: ListenerGroupRemoveObject, api_school_class_data: SchoolClass
@@ -402,6 +407,46 @@ class IDBrokerPerSAGroupDispatcher(PerSchoolAuthorityGroupDispatcherBase):
         self.logger.info("Going to delete school class: %r...", obj)
         await self.id_broker_school_class.delete(api_school_class_data.id)
         self.logger.info("School class deleted: %r.", api_school_class_data)
+
+    async def _fix_school_class_members(self, school_class: SchoolClass):
+        self.logger.info("Trying to fix members of %r...", school_class)
+        # 1st check if school class exists
+        try:
+            await self.fetch_obj({"id": school_class.id})
+        except GroupNotFoundError:
+            self.logger.info("School class does %r not exists, creating...", school_class)
+            members = school_class.members.copy()
+            school_class.members.clear()
+            school_class = await self.id_broker_school_class.create(school_class)
+            school_class.members.extend(members)
+        # now let's add as much members as possible
+        self.logger.debug("Verifying existence of members of %r...", school_class)
+        new_members = []
+        for user_id in school_class.members:
+            try:
+                user: User = await self.id_broker_user.get(obj_id=user_id)
+                self.logger.debug("Found member of %r at ID Broker server: %r.", school_class, user)
+                new_members.append(user_id)
+            except IDBrokerNotFoundError:
+                self.logger.error("Missing member of %r at ID Broker server: %r.", school_class, user_id)
+                filter_s = f"(&(objectClass=posixAccount)(entryUUID={user_id}))"
+                results = await self.ldap_access.search(filter_s=filter_s)
+                if len(results) == 1:
+                    self.logger.error("Missing member DN in local LDAP is: %r", results[0].entry_dn)
+                else:
+                    self.logger.error(
+                        "Could not find user in local LDAP when searching with %r.", filter_s
+                    )
+        if new_members:
+            self.logger.info(
+                "Setting the following members for %r at ID Broker: %r. Omitted members: %r",
+                school_class,
+                new_members,
+                sorted(set(school_class.members) - set(new_members)),
+            )
+            school_class.members.clear()
+            school_class.members.extend(new_members)
+            await self.id_broker_school_class.update(school_class)
 
 
 class IDBrokerGroupDispatcher(GroupDispatcherPluginBase):
