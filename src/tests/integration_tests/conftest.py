@@ -820,7 +820,7 @@ def id_broker_kelvin_session(kelvin_session):
 
 @pytest.fixture()
 async def make_kelvin_school_class(kelvin_session, id_connector_host_name, id_broker_ip):
-    created_school_classes: List[Tuple[str]] = []
+    created_school_classes: List[Tuple[str, str, str]] = []
 
     async def _func(school_name: str, sa_name: str, host: str) -> SchoolClass:
         sc_obj = SchoolClass(

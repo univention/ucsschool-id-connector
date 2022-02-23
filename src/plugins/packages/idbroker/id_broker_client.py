@@ -94,11 +94,11 @@ class IDBrokerObjectBase(BaseModel):
     @classmethod
     def from_gen_obj(cls, gen_obj: GenApiObject) -> BaseModel:
         """Convert OpenAPI client object to pydantic object."""
-        return cls(**{k: v for k, v in gen_obj.to_dict().items()})
+        return cls(**gen_obj.to_dict())
 
     def to_gen_obj(self) -> GenApiObject:
         """Convert pydantic object to OpenAPI client object."""
-        return self._gen_class(**{k: v for k, v in self.dict().items()})
+        return self._gen_class(**self.dict())
 
     def __eq__(self, other):
         return self.dict() == other.dict()
@@ -115,9 +115,7 @@ class School(IDBrokerObjectBase):
 
     @validator("display_name", pre=True)
     def none_to_str(cls, value: Optional[str]):
-        if value is None:
-            return ""
-        return value
+        return "" if value is None else value
 
 
 class SchoolClass(IDBrokerObjectBase):
@@ -133,9 +131,7 @@ class SchoolClass(IDBrokerObjectBase):
 
     @validator("description", pre=True)
     def none_to_str(cls, value: Optional[str]):
-        if value is None:
-            return ""
-        return value
+        return "" if value is None else value
 
 
 class SchoolContext(IDBrokerObjectBase):
@@ -284,7 +280,7 @@ class ProvisioningAPIClient(abc.ABC):
         Returned value is the object actually created by the server.
         """
         obj = cast(IDBrokerObject, kwargs.pop(obj_arg_name))
-        logger.debug("Creating %s %r...", self._object_type.__name__, obj)
+        logger.debug("Creating %r...", obj)
         gen_obj = obj.to_gen_obj()
         kwargs[obj_arg_name] = gen_obj
         try:
@@ -300,10 +296,10 @@ class ProvisioningAPIClient(abc.ABC):
             raise RuntimeError(
                 f"Empty response creating {self._object_type.__name__} object {gen_obj!r}."
             )
-        logger.debug("Created %s: %r", self._object_type.__name__, new_obj)
+        logger.debug("Created %r", new_obj)
         if obj != new_obj:
             logger.warning(
-                "Requested %s to be created and object returned by server differ."
+                "Requested %s to be created and object returned by server differ. "
                 "Requested object:\n%r, returned object:\n%r",
                 self._object_type.__name__,
                 obj.dict(),
@@ -372,7 +368,7 @@ class ProvisioningAPIClient(abc.ABC):
             raise RuntimeError(
                 f"Empty response retrieving {self._object_type.__name__} object with {kwargs!r}."
             )
-        logger.debug("Retrieved %s: %r", self._object_type.__name__, obj)
+        logger.debug("Retrieved %r.", obj)
         return obj
 
     async def _update(self, obj_arg_name: str, **kwargs) -> IDBrokerObject:
@@ -384,7 +380,7 @@ class ProvisioningAPIClient(abc.ABC):
         Returned value is the object actually created by the server.
         """
         obj = cast(IDBrokerObject, kwargs.pop(obj_arg_name))
-        logger.debug("Updating %s %r...", self._object_type.__name__, obj)
+        logger.debug("Updating %r...", obj)
         gen_obj = obj.to_gen_obj()
         kwargs[obj_arg_name] = gen_obj
         try:
@@ -398,10 +394,10 @@ class ProvisioningAPIClient(abc.ABC):
             )
         if not new_obj:
             raise RuntimeError(f"Empty response updating {self._object_type.__name__} {gen_obj!r}.")
-        logger.debug("Updated %s: %r", self._object_type.__name__, new_obj)
+        logger.debug("Updated %r.", new_obj)
         if obj != new_obj:
             logger.warning(
-                "Requested %s to be updated and object returned by server differ."
+                "Requested %s to be updated and object returned by server differ. "
                 "Requested object:\n%r, returned object:\n%r",
                 self._object_type.__name__,
                 obj.dict(),

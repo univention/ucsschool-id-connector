@@ -177,7 +177,7 @@ async def test_school_exists_after_school_class_with_non_existin_school_is_synce
     id_broker_school_auth_conf,
 ):
     """
-    create kelvin schoolclass with non existing school
+    create kelvin school class with non existing school
     -> school should be created on id-broker side
     -> the display_name should be set correct
     """
