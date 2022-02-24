@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import asyncio
 import random
 import zlib
 from typing import AsyncGenerator, List, Tuple
@@ -113,12 +114,8 @@ async def new_school_auth(
 
 
 @pytest_asyncio.fixture(scope="session")
-async def school_auth_conf(
-    school_auth_config_id_broker, new_id_broker_school_auth
-) -> SchoolAuthorityConfiguration:
-    s_a_name, password = new_id_broker_school_auth
-    sac = school_auth_config_id_broker(s_a_name, password)
-    return SchoolAuthorityConfiguration(**sac)
+async def school_auth_conf(id_broker_school_auth_conf) -> SchoolAuthorityConfiguration:
+    return SchoolAuthorityConfiguration(**id_broker_school_auth_conf)
 
 
 @pytest.fixture(scope="session")
@@ -145,6 +142,7 @@ def get_schools(school_auth_conf, id_broker_kelvin_session):
                 id=fake.uuid4(), name=school_name, display_name=f"{s_a_name} {school_name}"
             )
             await id_broker_school.create(school_1)
+            await asyncio.sleep(4)
             schools_on_s_a = await _get_schools(s_a_name)
         return schools_on_s_a
 
@@ -376,6 +374,7 @@ async def test_school_create(
     schedule_delete_kelvin_school(s_a_name, school_name)
     school_2 = await id_broker_school.create(school_1)
     assert school_1 == school_2
+    await asyncio.sleep(4)
     s_a_schools: List[KelvinSchool] = await get_schools(s_a_name)
     kelvin_school_name = f"{s_a_name}-{school_name}"
     assert kelvin_school_name in {school.name for school in s_a_schools}
@@ -576,6 +575,7 @@ async def test_school_class_delete(
     )
     schedule_delete_kelvin_school_class(s_a_name, kelvin_sc.name, school)
     await kelvin_sc.save()
+    await asyncio.sleep(4)
     sc: SchoolClass = await id_broker_sc.get(kelvin_sc.udm_properties["ucsschoolRecordUID"])
     await compare_kelvin_and_id_broker_school_class(kelvin_sc, sc, s_a_name)
     await id_broker_sc.delete(kelvin_sc.udm_properties["ucsschoolRecordUID"])

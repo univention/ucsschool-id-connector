@@ -36,6 +36,7 @@ import pytest
 import ucsschool_id_connector.plugin_loader
 from ucsschool.kelvin.client import (
     NoObject,
+    School as KelvinSchool,
     SchoolClass as KelvinSchoolClass,
     SchoolClassResource as KelvinSchoolClassResource,
     SchoolResource as KelvinSchoolResource,
@@ -43,11 +44,14 @@ from ucsschool.kelvin.client import (
     User as KelvinUser,
     UserResource as KelvinUserResource,
 )
+from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 
 # load ID Broker plugin
 ucsschool_id_connector.plugin_loader.load_plugins()
 id_broker = pytest.importorskip("idbroker")
 pytestmark = pytest.mark.id_broker
+
+from idbroker.id_broker_client import IDBrokerUser  # isort:skip  # noqa: E402
 
 fake = faker.Faker()
 
@@ -111,7 +115,7 @@ async def make_sender_user(
             schools=ous,
             school_classes={}
             if roles == ("staff",)
-            else dict((ou, sorted([random_name(4), random_name(4)])) for ou in ous),
+            else {ou: sorted([random_name(4), random_name(4)]) for ou in ous},
             source_uid=source_uid,
             session=kelvin_session(docker_hostname),
         )
@@ -153,13 +157,13 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
     sender_user: Dict[str, Any] = await make_sender_user(
         ous=[kelvin_school_on_sender.name], s_a_name=s_a_name
     )
-    await wait_for_kelvin_object_exists(
+    kelvin_school_on_id_broker: KelvinSchool = await wait_for_kelvin_object_exists(
         resource_cls=KelvinSchoolResource,
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{sender_user['school']}",
-        display_name=kelvin_school_on_sender.display_name,
     )
+    assert kelvin_school_on_id_broker.display_name == kelvin_school_on_sender.display_name
 
 
 # IDBrokerPerSAGroupDispatcher
@@ -168,7 +172,7 @@ async def test_school_exists_after_user_with_non_existing_school_is_synced(
 @pytest.mark.asyncio
 async def test_school_exists_after_school_class_with_non_existin_school_is_synced(
     kelvin_school_on_sender,
-    make_kelvin_school_class,
+    make_kelvin_school_class_on_id_connector,
     wait_for_kelvin_object_exists,
     kelvin_session,
     id_connector_host_name,
@@ -184,24 +188,22 @@ async def test_school_exists_after_school_class_with_non_existin_school_is_synce
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class(
+    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class_on_id_connector(
         school_name=kelvin_school_on_sender.name,
-        sa_name=s_a_name,
-        host=id_connector_host_name,
     )
-    await wait_for_kelvin_object_exists(
+    kelvin_school_on_id_broker: KelvinSchool = await wait_for_kelvin_object_exists(
         resource_cls=KelvinSchoolResource,
         method="get",
         session=kelvin_session(id_broker_ip),
         name=f"{s_a_name}-{sender_kelvin_school_class.school}",
-        display_name=kelvin_school_on_sender.display_name,
     )
+    assert kelvin_school_on_id_broker.display_name == kelvin_school_on_sender.display_name
 
 
 @pytest.mark.asyncio
 async def test_school_class_handle_attr_description_empty(
     kelvin_school_on_sender,
-    make_kelvin_school_class,
+    make_kelvin_school_class_on_id_connector,
     wait_for_kelvin_object_exists,
     kelvin_session,
     id_connector_host_name,
@@ -216,27 +218,25 @@ async def test_school_class_handle_attr_description_empty(
     school_authority = await make_school_authority(plugin_name="id_broker", **id_broker_school_auth_conf)
     subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
     s_a_name = school_authority.name
-    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class(
+    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class_on_id_connector(
         school_name=kelvin_school_on_sender.name,
-        sa_name=s_a_name,
-        host=id_connector_host_name,
     )
     sender_kelvin_school_class.description = None
     await sender_kelvin_school_class.save()
-    await wait_for_kelvin_object_exists(
+    kelvin_school_class_on_id_broker: KelvinSchoolClass = await wait_for_kelvin_object_exists(
         resource_cls=KelvinSchoolClassResource,
         method="get",
         session=kelvin_session(id_broker_ip),
         name=sender_kelvin_school_class.name,
         school=f"{s_a_name}-{kelvin_school_on_sender.name}",
-        descritpion="",
     )
+    assert kelvin_school_class_on_id_broker.description == ""
 
 
 @pytest.mark.asyncio
 async def test_handle_attr_users(
     kelvin_school_on_sender,
-    make_kelvin_school_class,
+    make_kelvin_school_class_on_id_connector,
     wait_for_kelvin_object_exists,
     kelvin_session,
     id_connector_host_name,
@@ -259,23 +259,21 @@ async def test_handle_attr_users(
     sender_user: Dict[str, Any] = await make_sender_user(
         ous=[kelvin_school_on_sender.name], s_a_name=s_a_name
     )
-    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class(
+    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class_on_id_connector(
         school_name=kelvin_school_on_sender.name,
-        sa_name=s_a_name,
-        host=id_connector_host_name,
     )
     sender_kelvin_school_class.users = [sender_user["name"]]
     await sender_kelvin_school_class.save()
-    await wait_for_kelvin_object_exists(
+    kelvin_school_class: KelvinSchoolClass = await wait_for_kelvin_object_exists(
         resource_cls=KelvinSchoolClassResource,
         method="get",
         session=kelvin_session(id_broker_ip),
         name=sender_kelvin_school_class.name,
         school=f"{s_a_name}-{kelvin_school_on_sender.name}",
-        users=[f"{s_a_name}-{sender_user['name']}"],
     )
+    assert kelvin_school_class == [f"{s_a_name}-{sender_user['name']}"]
     # test IDBrokerPerSAUserDispatcher._handle_attr_context
-    remote_user: KelvinUserResource = await wait_for_kelvin_object_exists(
+    remote_user: KelvinUser = await wait_for_kelvin_object_exists(
         resource_cls=KelvinUserResource,
         method="get",
         session=kelvin_session(id_broker_ip),
@@ -287,3 +285,116 @@ async def test_handle_attr_users(
         in remote_user.school_classes[f"{s_a_name}-{kelvin_school_on_sender.name}"]
     )
     assert set(sender_user["roles"]) == set(remote_user.roles)
+
+
+@pytest.mark.asyncio
+async def test_school_class_is_created_with_missing_users(
+    kelvin_school_on_sender,
+    make_kelvin_school_class_on_id_connector,
+    wait_for_kelvin_object_exists,
+    kelvin_session,
+    id_connector_host_name,
+    id_broker_ip,
+    make_school_authority,
+    id_broker_school_auth_conf,
+    make_sender_user,
+):
+    """
+    Create school class with a user existing on the ID Broker and one missing there.
+    -> school class should be created on ID Broker side
+    -> existing user should be in the school class, missing user is ignored
+    """
+    school_authority: SchoolAuthorityConfiguration = await make_school_authority(
+        plugin_name="id_broker", **id_broker_school_auth_conf
+    )
+    subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
+    s_a_name = school_authority.name
+    sender_user1: Dict[str, Any] = await make_sender_user(ous=[kelvin_school_on_sender.name])
+    sender_user2: Dict[str, Any] = await make_sender_user(ous=[kelvin_school_on_sender.name])
+    for sender_user in (sender_user1, sender_user2):
+        await wait_for_kelvin_object_exists(
+            resource_cls=KelvinUserResource,
+            method="get",
+            session=kelvin_session(id_broker_ip),
+            name=f"{s_a_name}-{sender_user['name']}",
+            school=f"{s_a_name}-{kelvin_school_on_sender.name}",
+        )
+    id_broker_user = IDBrokerUser(school_authority, "id_broker")
+    await id_broker_user.delete(sender_user1["record_uid"])
+    assert not await id_broker_user.exists(sender_user1["record_uid"])
+
+    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class_on_id_connector(
+        school_name=kelvin_school_on_sender.name,
+        users=[sender_user1["name"], sender_user2["name"]],
+    )
+    await sender_kelvin_school_class.save()
+    kelvin_school_class: KelvinSchoolClass = await wait_for_kelvin_object_exists(
+        resource_cls=KelvinSchoolClassResource,
+        method="get",
+        session=kelvin_session(id_broker_ip),
+        name=sender_kelvin_school_class.name,
+        school=f"{s_a_name}-{kelvin_school_on_sender.name}",
+    )
+    assert kelvin_school_class.users == [f"{s_a_name}-{sender_user2['name']}"]
+
+
+@pytest.mark.asyncio
+async def test_school_class_is_updated_with_missing_users(
+    kelvin_school_on_sender,
+    make_kelvin_school_class_on_id_connector,
+    wait_for_kelvin_object_exists,
+    kelvin_session,
+    id_connector_host_name,
+    id_broker_ip,
+    make_school_authority,
+    id_broker_school_auth_conf,
+    make_sender_user,
+):
+    """
+    Create school class with NO users, then add two users, from with only one exists on the ID Broker.
+    -> school class should be updated on ID Broker side
+    -> existing user should be in the school class, missing user is ignored
+    """
+    school_authority: SchoolAuthorityConfiguration = await make_school_authority(
+        plugin_name="id_broker", **id_broker_school_auth_conf
+    )
+    subprocess.Popen(["/etc/init.d/ucsschool-id-connector", "restart"])
+    s_a_name = school_authority.name
+    sender_user1: Dict[str, Any] = await make_sender_user(ous=[kelvin_school_on_sender.name])
+    sender_user2: Dict[str, Any] = await make_sender_user(ous=[kelvin_school_on_sender.name])
+    for sender_user in (sender_user1, sender_user2):
+        await wait_for_kelvin_object_exists(
+            resource_cls=KelvinUserResource,
+            method="get",
+            session=kelvin_session(id_broker_ip),
+            name=f"{s_a_name}-{sender_user['name']}",
+            school=f"{s_a_name}-{kelvin_school_on_sender.name}",
+        )
+    id_broker_user = IDBrokerUser(school_authority, "id_broker")
+    await id_broker_user.delete(sender_user1["record_uid"])
+    assert not await id_broker_user.exists(sender_user1["record_uid"])
+
+    sender_kelvin_school_class: KelvinSchoolClass = await make_kelvin_school_class_on_id_connector(
+        school_name=kelvin_school_on_sender.name,
+        users=[],
+    )
+    await sender_kelvin_school_class.save()
+    kelvin_school_class: KelvinSchoolClass = await wait_for_kelvin_object_exists(
+        resource_cls=KelvinSchoolClassResource,
+        method="get",
+        session=kelvin_session(id_broker_ip),
+        name=sender_kelvin_school_class.name,
+        school=f"{s_a_name}-{kelvin_school_on_sender.name}",
+    )
+    assert kelvin_school_class.users == []
+
+    sender_kelvin_school_class.users.extend([sender_user1["name"], sender_user2["name"]])
+    await sender_kelvin_school_class.save()
+    kelvin_school_class: KelvinSchoolClass = await wait_for_kelvin_object_exists(
+        resource_cls=KelvinSchoolClassResource,
+        method="get",
+        session=kelvin_session(id_broker_ip),
+        name=sender_kelvin_school_class.name,
+        school=f"{s_a_name}-{kelvin_school_on_sender.name}",
+    )
+    assert kelvin_school_class.users == [f"{s_a_name}-{sender_user2['name']}"]
