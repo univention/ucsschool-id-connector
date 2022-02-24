@@ -88,4 +88,3 @@ repos:
 #    -   id: pydocstyle
 default_language_version:
     python: python3.8
-exclude: ^src/plugins/packages/idbroker/provisioning_api

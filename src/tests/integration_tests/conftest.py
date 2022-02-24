@@ -221,14 +221,6 @@ def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_ho
 
 
 @pytest.fixture(scope="session")
-def id_broker_ip(docker_hostname: str, http_request) -> str:
-    url = urljoin(f"https://{docker_hostname}", "IP_idbroker.txt")
-    resp = http_request("get", url, verify=False)
-    assert resp.status_code == 200, (resp.status_code, resp.reason, url)
-    return resp.text.strip()
-
-
-@pytest.fixture(scope="session")
 def id_connector_host_name(docker_hostname):
     return docker_hostname
 
@@ -263,74 +255,6 @@ def temp_clear_dir():
         for p in os.listdir(temp_dir):
             shutil.move(os.path.join(temp_dir, p), path)
         temp_dir.rmdir()
-
-
-@pytest.fixture(scope="session")
-def school_auth_config_id_broker(id_broker_ip, temp_clear_dir):
-    """
-    Fixture to create configurations for replicating to the ID Broker.
-    """
-
-    def _school_auth_config_id_broker(s_a_name: str, password: str) -> Dict[str, Any]:
-        """
-        Generates a configuration for a school authority.
-
-        :return: The school authority configuration in dictionary form
-        """
-        return {
-            "name": s_a_name,
-            "active": True,
-            "url": f"https://{id_broker_ip}/",
-            "plugins": ["id_broker-users", "id_broker-groups"],
-            "plugin_configs": {
-                "id_broker": {
-                    "password": password,
-                    "username": f"provisioning-{s_a_name}",
-                    "version": 1,
-                },
-            },
-        }
-
-    # save existing school authority configurations
-    temp_clear_dir("/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities/")
-    return _school_auth_config_id_broker
-
-
-@pytest_asyncio.fixture(scope="session")
-async def new_id_broker_school_auth(kelvin_session, id_broker_ip, create_school):
-    """
-    create a provisioning-admin user on the id broker system.
-    is only used in the idbroker_client tests
-    """
-    s_a_name = "".join(fake.street_name().split())
-    print(f"*** Creating school authority {s_a_name!r}...")
-    password = fake.password(length=15)
-    await create_school(host=id_broker_ip, ou_name="DEMOSCHOOL")
-
-    kelvin_user = User(
-        name=f"provisioning-{s_a_name}",
-        school="DEMOSCHOOL",
-        firstname=fake.first_name(),
-        lastname=fake.last_name(),
-        disabled=False,
-        password=password,
-        record_uid=fake.uuid4(),
-        roles=["teacher"],
-        schools=["DEMOSCHOOL"],
-        session=kelvin_session(id_broker_ip),
-    )
-    await kelvin_user.save()
-    print(f"Created admin user {kelvin_user.name!r}.")
-
-    yield s_a_name, password
-
-
-@pytest_asyncio.fixture(scope="session")
-async def id_broker_school_auth_conf(
-    new_id_broker_school_auth, school_auth_config_id_broker
-) -> Dict[str, Any]:
-    s_a_name, password = new_id_broker_school_auth
-    return school_auth_config_id_broker(s_a_name, password)
 
 
 @pytest.fixture()
@@ -804,19 +728,6 @@ async def kelvin_session(kelvin_session_kwargs):
 
     for session in sessions.values():
         await session.close()
-
-
-@pytest.fixture(scope="session")
-def id_broker_kelvin_session(kelvin_session):
-    def _func(sac: SchoolAuthorityConfiguration) -> Session:
-        m = re.match(r"^https://(?P<host>.+?)/", sac.url)
-        assert m
-        host = m.groupdict()["host"]
-        username = sac.plugin_configs["id_broker"]["username"]
-        password = sac.plugin_configs["id_broker"]["password"].get_secret_value()
-        return kelvin_session(host=host, username=username, password=password)
-
-    return _func
 
 
 @pytest_asyncio.fixture()

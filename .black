@@ -1,4 +1,3 @@
 [tool.black]
 line-length = 105
 target-version = ['py38']
-exclude = 'venv|src/plugins/packages/idbroker/provisioning_api'
