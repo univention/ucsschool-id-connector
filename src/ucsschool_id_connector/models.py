@@ -485,12 +485,8 @@ class RPCRequest(BaseModel):
             # OK: no required arguments
             return value
         for r_arg in required_args:
-            if r_arg == field.name:
-                if not value:
-                    raise MissingArgumentError(missing_argument=r_arg)
-            else:
-                # raise only if we are the validator for the corresponding attribute
-                continue
+            if r_arg == field.name and not value:
+                raise MissingArgumentError(missing_argument=r_arg)
         return value
 
 

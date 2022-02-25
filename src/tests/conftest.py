@@ -377,7 +377,7 @@ def _listener_dump_user_object(
     }
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def listener_dump_user_object():
     def _func(
         base_dn: str = None,
@@ -393,12 +393,12 @@ def listener_dump_user_object():
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def user_passwords_object():
     return lambda: UserPasswordsFactory()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def listener_user_add_modify_object(listener_dump_user_object):
     def _func(
         base_dn: str = None,
@@ -410,12 +410,11 @@ def listener_user_add_modify_object(listener_dump_user_object):
         listener_dump_obj = listener_dump_user_object(
             base_dn=base_dn, ou=ou, ous=ous, options=options, source_uid=source_uid
         )
-        obj = ListenerUserAddModifyObjectFactory(
+        return ListenerUserAddModifyObjectFactory(
             dn=listener_dump_obj["dn"],
             object=listener_dump_obj["object"],
             options=listener_dump_obj["options"],
         )
-        return obj
 
     return _func
 
@@ -432,7 +431,7 @@ def listener_user_add_modify_object(listener_dump_user_object):
 #     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def school_authority_configuration():
     def _func(**kwargs) -> ucsschool_id_connector.models.SchoolAuthorityConfiguration:
         return KelvinSchoolAuthorityConfigurationFactory(**kwargs)
@@ -440,7 +439,7 @@ def school_authority_configuration():
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def random_name():
     def _func(ints=True) -> str:
         name = list(string.ascii_letters)
@@ -452,7 +451,7 @@ def random_name():
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def random_int():
     def _func(start=0, end=12) -> int:
         return fake.pyint(start, end)
@@ -466,7 +465,7 @@ async def recv_string(obj):
     return ujson.dumps(obj)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def zmq_socket():
     def _func(recv_string_args):
         socket = AsyncMock()
@@ -477,7 +476,7 @@ def zmq_socket():
     return _func
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def school2school_authority_mapping():
     return lambda: School2SchoolAuthorityMappingFactory()
 
@@ -622,7 +621,7 @@ def example_user_remove_json_path_copy(example_user_remove_json_path_real, temp_
 
 @pytest.fixture(scope="session")
 def compare_dicts():
-    def _func(source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str] = None):
+    def _func(source: Dict[str, Any], other: Dict[str, Any], to_check: Iterable[str]):
         """
         This function compares two dictionaries. Specifically it checks if all
         key-value pairs from the source also exist in the other dictionary. It

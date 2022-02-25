@@ -171,7 +171,7 @@ def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_ho
         """
         assert 0 < auth_nr < 3
         ip = school_auth_host_configs[f"IP_traeger{auth_nr}"]
-        config = {
+        return {
             "name": f"auth{auth_nr}",
             "active": True,
             "url": f"https://{ip}/ucsschool/kelvin/v1/",
@@ -215,7 +215,6 @@ def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_ho
                 },
             },
         }
-        return config
 
     yield _school_auth_config_kelvin
 
@@ -257,7 +256,7 @@ def temp_clear_dir():
         temp_dir.rmdir()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def req_headers():
     """
     Fixture to create request headers for ucsschool-id-connector-API requests.
@@ -276,7 +275,7 @@ def req_headers():
         :param content_type: The value of the Content-Type header
         :return: The dict containing all specified headers
         """
-        headers = dict()
+        headers = {}
         if token:
             headers["Authorization"] = "Token {}".format(token)
         if bearer:
@@ -290,7 +289,7 @@ def req_headers():
     return _req_headers
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def ucsschool_id_connector_api_url(docker_hostname):
     """
     Fixture to create UCS@school ID Connector API resource URLs.
@@ -317,7 +316,7 @@ def docker_hostname():
     return os.environ["docker_host_name"]
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def source_uid() -> str:
     """
     The source UID as specified in the ucsschool-id-connector App settings.
@@ -525,7 +524,7 @@ async def create_school(kelvin_session):
     return _func
 
 
-@pytest_asyncio.fixture(scope="function")
+@pytest_asyncio.fixture
 async def kelvin_school_on_sender(create_school, id_connector_host_name):
     return await create_school(id_connector_host_name)
 
@@ -616,7 +615,7 @@ async def make_sender_user(
             schools=ous,
             school_classes={}
             if roles == ("staff",)
-            else dict((ou, sorted([random_name(4), random_name(4)])) for ou in ous),
+            else {ou: sorted([random_name(4), random_name(4)]) for ou in ous},
             source_uid=source_uid,
             session=kelvin_session(docker_hostname),
         )
@@ -649,7 +648,7 @@ async def make_sender_user(
                     print(f"No user {user_dict['name']!r} on {host!r}.")
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def check_password(http_request):
     """Check authentication with `username` and `password` using UMC on `host`."""
 
