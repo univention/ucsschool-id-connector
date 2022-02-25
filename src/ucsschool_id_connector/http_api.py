@@ -40,7 +40,7 @@ import zmq
 import zmq.asyncio
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from starlette.responses import HTMLResponse, UJSONResponse
+from starlette.responses import HTMLResponse, Response, UJSONResponse
 from starlette.staticfiles import StaticFiles
 from starlette.status import (
     HTTP_200_OK,
@@ -183,16 +183,12 @@ async def delete_school_authority(
     name: str,
     current_user: User = Depends(get_current_active_user),
     logger: logging.Logger = Depends(get_logger),
-) -> None:
+) -> Response:
     logger.info("User %r deleting school authority %r...", current_user.username, name)
     res = await query_service(cmd="delete_school_authority", name=name)
     if res.get("errors"):
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=res["errors"])
-    # this is raising: h11._util.LocalProtocolError: Too much data for declared Content-Length
-    # but I don't think we're doing anything wrong
-    # the traceback is only in the logfile, no problem for the client
-    # TODO: investigate
-    return None
+    return Response(status_code=HTTP_204_NO_CONTENT)
 
 
 @router.patch("/school_authorities/{name}", tags=["school_authorities"], status_code=HTTP_200_OK)
