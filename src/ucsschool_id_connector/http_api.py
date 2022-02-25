@@ -27,12 +27,11 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import asyncio
 import logging
 from datetime import timedelta
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Coroutine, Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import lazy_object_proxy
 import ujson
@@ -214,15 +213,14 @@ async def patch_school_authority(
 # TODO: sync_school_authority(s_a_c)
 
 
-@asyncio.coroutine
-def query_service(
+async def query_service(
     cmd: str,
     name: str = None,
     school_authority: Union[
         SchoolAuthorityConfiguration, SchoolAuthorityConfigurationPatchDocument
     ] = None,
     school_to_authority_mapping: School2SchoolAuthorityMapping = None,
-) -> Coroutine[Dict[str, Any], None, None]:
+) -> Dict[str, Any]:
     request_kwargs = {"cmd": RPCCommand(cmd)}
     if name is not None:
         request_kwargs["name"] = name
@@ -235,9 +233,9 @@ def query_service(
     socket = zmq_context.socket(zmq.REQ)
     socket.RCVTIMEO = RPC_CLIENT_TIMEOUT
     socket.connect(RPC_ADDR)
-    yield from socket.send_string(request.json())
+    await socket.send_string(request.json())
     try:
-        response = yield from socket.recv_string()
+        response = await socket.recv_string()
     except zmq.error.ZMQError as exc:
         get_logger().fatal("Error waiting for response from RPC server: %s", exc)
         raise HTTPException(

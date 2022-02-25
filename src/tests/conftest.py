@@ -36,7 +36,7 @@ from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 from typing import Any, Dict, Iterable, List
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import factory
 import pytest
@@ -460,16 +460,16 @@ def random_int():
     return _func
 
 
-@asyncio.coroutine
-def recv_string(obj):
-    yield from asyncio.sleep(0.1)
+# @asyncio.coroutine
+async def recv_string(obj):
+    await asyncio.sleep(0.1)
     return ujson.dumps(obj)
 
 
 @pytest.fixture
 def zmq_socket():
     def _func(recv_string_args):
-        socket = MagicMock()
+        socket = AsyncMock()
         socket.send_string.return_value = {}
         socket.recv_string = partial(recv_string, recv_string_args)
         return socket
