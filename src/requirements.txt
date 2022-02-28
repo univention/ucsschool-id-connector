@@ -7,12 +7,12 @@ base58>=2.0.1
 click
 colorlog
 diskcache
-distlib==0.3.4  # installed by apk
+distlib==0.3.0  # must match version installed by apk, or build will fail
 factory_boy
 Faker==13.2.0
 fastapi==0.42.0
 kelvin-rest-api-client>=1.5.1
-lazy-object-proxy==1.7.1
+lazy-object-proxy>=1.6.0
 ldap3==2.9.1
 pluggy>=1.0.0
 pydantic[ujson,email]==0.32.2
