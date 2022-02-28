@@ -13,7 +13,7 @@ APP_IMG_NO_TEST_NO_VERSION="docker-upload.software-univention.de/${APP_ID}"
 APP_IMG_NO_TEST="${APP_IMG_NO_TEST_NO_VERSION}:${APP_VERSION}"
 DOCKER_REGISTRY_SERVER="docker.knut.univention.de"
 DATE="$(date --iso-8601=seconds)"
-COMMIT="$(git rev-parse --short HEAD)"
+COMMIT="$(< .last_git_commit)"
 
 QUICK=0
 [ "$1" = "-q" ] && QUICK=1
@@ -86,6 +86,6 @@ if [ "$PUSH_DEV" = 1 ]; then
     docker tag "$APP_IMG" "$APP_IMG_NO_TEST"
     docker images "$APP_IMG_NO_TEST_NO_VERSION"
     echo "Pushing image to docker registry..."
-    docker push "$APP_IMG_NO_TEST"
+    sudo docker push "$APP_IMG_NO_TEST"
   fi
 fi

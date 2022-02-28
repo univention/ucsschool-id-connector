@@ -96,7 +96,8 @@ install: clean setup_devel_env ## install the package to the active Python's sit
 build-docker-img: ## build docker image locally quickly
 	./build_docker_image -q
 
-build-docker-img-on-knut: clean ## copy source to docker.knut, build and push docker image
-	# TODO: target should depend on 'lint', but that currently fails
-	rsync -av --delete --exclude-from=.gitignore ./ root@docker.knut.univention.de:ucsschool-id-connector/
-	ssh root@docker.knut.univention.de 'cd ucsschool-id-connector && ./build_docker_image --release --push'
+build-docker-img-on-knut: clean lint ## copy source to docker.knut, build and push docker image
+	rsync -av --delete --exclude-from=.gitignore --exclude .git ./ docker.knut.univention.de:git/ucsschool-id-connector/
+	git rev-parse --short HEAD > .last_git_commit
+	scp .last_git_commit docker.knut.univention.de:git/ucsschool-id-connector/
+	ssh docker.knut.univention.de "cd ~/git/ucsschool-id-connector && ./build_docker_image --release --push"
