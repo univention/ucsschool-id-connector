@@ -186,7 +186,7 @@ class FileQueue:
         self.logger.info("Moved directory %s to %s.", self.path, target_dir)
 
     def discard_file(self, path: Path) -> None:
-        self.logger.debug("Moving %s to trash...", path.name)
+        self.logger.info("Moving %s to trash...", path.name)
         try:
             # Bug in shutil.move(): https://bugs.python.org/issue32689
             shutil.move(str(path), str(self.trash_dir))
@@ -200,7 +200,7 @@ class FileQueue:
                 self.logger.error("Deleting the file: %s", exc)
 
     def keep_file(self, path: Path) -> None:
-        self.logger.debug("Moving %s to 'keep' directory...", path.name)
+        self.logger.info("Moving %s to 'keep' directory...", path.name)
         try:
             shutil.move(str(path), str(self.keep_dir))
         except (FileNotFoundError, IOError, OSError) as exc:
@@ -431,7 +431,7 @@ class InQueue(FileQueue):
                     )
                     continue
                 shutil.copy2(str(path), str(out_queue.path))
-                self.logger.debug(
+                self.logger.info(
                     "Copied %r to out queue %r (%s).",
                     path.name,
                     out_queue.name,
@@ -550,13 +550,13 @@ class OutQueue(FileQueue):
                 self._signal_alive()
 
     async def handle(self, path: Path) -> None:
-        self.logger.debug("start handling %r.", path.name)
+        self.logger.info("Start handling %r.", path.name)
         try:
             obj = await self.load_listener_file(path)
         except ListenerLoadingError:
             self.logger.error("Error loading or invalid listener file %r.", path.name)
             self.discard_file(path)
-            self.logger.debug("finished handling %r.", path.name)
+            self.logger.info("Finished handling %r.", path.name)
             return
         self.logger.info("Looking for handlers for %r...", obj)
         try:
@@ -572,7 +572,7 @@ class OutQueue(FileQueue):
         except Exception as exc:
             self.logger.exception(exc)
             self.discard_file(path)
-        self.logger.debug("finished handling %r.", path.name)
+        self.logger.info("Finished handling %r.", path.name)
 
     @classmethod
     def from_school_authority(cls, school_authority: SchoolAuthorityConfiguration) -> "OutQueue":
