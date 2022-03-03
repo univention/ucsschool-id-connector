@@ -7,12 +7,9 @@ Changelog
 
 **v2.2.2 (2022-03-03)**
 
-* The ID Broker plugin was removed from the app and can be installed separately by a Debian package (Bug #54488).
-* The ID Broker partial group sync plugin now safely handles group names with hyphen (Bug #54464).
-
-**v2.2.1 (2022-02-11)**
-
-* Fixed users with multiple schools being created in alphabetical first, instead of same as in source domain (Bug #54439).
+* The ID Broker plugin was removed from the app and can be installed separately by a Debian package.
+* The ID Broker partial group sync plugin now safely handles group names with hyphen).
+* Fixed users with multiple schools being created in alphabetical first, instead of same as in source domain.
 
 
 **v2.2.0 (2022-01-04)**

@@ -8,10 +8,6 @@
     <li>
     	The ID Broker partial group sync plugin now safely handles group names with hyphen (Bug #54464).
     </li>
-</ul>
-
-<h2>v2.2.1 (2021-02-11)</h2>
-<ul>
     <li>
         Users with multiple schools are now created with the correct primary OU (Bug #54439).
     </li>
