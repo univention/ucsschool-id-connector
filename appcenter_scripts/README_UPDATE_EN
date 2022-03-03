@@ -1,9 +1,12 @@
 <h1>Changelog</h1>
 
-<h2>v2.2.2 (2021-02-15)</h2>
+<h2>v2.2.2 (2021-03-03)</h2>
 <ul>
     <li>
         The ID Broker plugin was removed from the app and can be installed separately by a Debian package (Bug #54488).
+    </li>
+    <li>
+    	The ID Broker partial group sync plugin now safely handles group names with hyphen (Bug #54464).
     </li>
 </ul>
 
