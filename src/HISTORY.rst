@@ -5,6 +5,11 @@
 Changelog
 ---------
 
+**v2.2.3 (2022-03-11)**
+
+* The permissions of the school authority configuration files was fixed.
+
+
 **v2.2.2 (2022-03-03)**
 
 * The ID Broker plugin was removed from the app and can be installed separately by a Debian package.

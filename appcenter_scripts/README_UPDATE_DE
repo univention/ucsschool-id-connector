@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.2.3 (2021-03-11)</h2>
+<ul>
+    <li>
+        The permissions of the school authority configuration files was fixed (Bug #54534).
+    </li>
+</ul>
+
 <h2>v2.2.2 (2021-03-03)</h2>
 <ul>
     <li>

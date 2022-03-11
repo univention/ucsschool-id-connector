@@ -33,7 +33,7 @@
 #  Join script that runs on the docker host.
 #
 
-VERSION=2
+VERSION=3
 
 APP_ID="ucsschool-id-connector"
 ADMIN_GROUP="$APP_ID-admins"
@@ -69,12 +69,28 @@ restart_id_connector_service () {
   univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart
 }
 
+fix_school_authority_permissions () {
+  CONF_DIR="/var/lib/univention-appcenter/apps/$APP_ID/conf/school_authorities"
+  MAPPING_FILE="/var/lib/univention-appcenter/apps/$APP_ID/conf/schools_authorities_mapping.json"
+  if [ -d "$CONF_DIR" ]; then
+    chmod 750 "$CONF_DIR"
+    chmod 600 "$CONF_DIR"/*
+  fi
+  if [ -e "$CONF_DIR" ]; then
+    chmod 600 "$MAPPING_FILE"
+  fi
+}
+
 joinscript_init
 
 eval $(ucr shell ldap/base)
 
 create_token_sign_secret_file "$@"
 create_id_connector_admin_group "$@"
+if [ $JS_LAST_EXECUTED_VERSION -lt 3 ] ; then
+  # Bug #54534: ID connector school authority data world readable
+  fix_school_authority_permissions
+fi
 restart_id_connector_service
 
 joinscript_save_current_version

@@ -121,6 +121,7 @@ class ConfigurationStorage:
         path.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
         config_as_dict = config.dict_secrets_as_str()
         async with aiofiles.open(path, "w") as fp:
+            os.fchmod(fp.fileno(), 0o600)
             await fp.write(ujson.dumps(config_as_dict, sort_keys=True, indent=4))
 
     @classmethod
@@ -163,4 +164,5 @@ class ConfigurationStorage:
         path.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
         cls.logger.info("Writing school to school authority mapping to %s...", path)
         async with aiofiles.open(path, "w") as fp:
+            os.fchmod(fp.fileno(), 0o600)
             await fp.write(ujson.dumps(obj.dict(), sort_keys=True, indent=4))
