@@ -25,7 +25,7 @@ endef
 export PRINT_HELP_PYSCRIPT
 
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
-
+APP_VERSION := `cat VERSION.txt`
 
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
@@ -101,3 +101,7 @@ build-docker-img-on-knut: clean lint ## copy source to docker.knut, build and pu
 	git rev-parse --short HEAD > .last_git_commit
 	scp .last_git_commit docker.knut.univention.de:git/ucsschool-id-connector/
 	ssh docker.knut.univention.de "cd ~/git/ucsschool-id-connector && ./build_docker_image --release --push"
+	echo "##################################################################################################"
+	echo "# Automatic 'docker push' doesn't work anymore. Please ssh to docker.knut.univention.de and run: #"
+	echo "# sudo docker push docker-upload.software-univention.de/ucsschool-id-connector:$(APP_VERSION)    #"
+	echo "##################################################################################################"
