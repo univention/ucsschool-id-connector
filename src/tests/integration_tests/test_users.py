@@ -29,6 +29,7 @@
 
 import copy
 import time
+import traceback
 from typing import Any, Dict, Iterable
 from urllib.parse import urlsplit
 
@@ -44,6 +45,8 @@ except ImportError:  # pragma: no cover
     JSONDecodeError = ValueError
 
 fake = faker.Faker()
+# This is not a performance test, so we chose I long interval.
+WAIT_FOR_REPLICATION_TIMEOUT = 600.0
 
 
 @pytest.fixture(scope="session")
@@ -370,6 +373,12 @@ async def test_modify_user(
     await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
 
 
+def _check_schools_and_classes(user_kelvin, new_school, new_schools, new_school_classes):
+    assert user_kelvin.school == new_school
+    assert set(user_kelvin.schools) == new_schools
+    assert user_kelvin.school_classes == new_school_classes
+
+
 @pytest.mark.asyncio
 async def test_class_change(
     make_school_authority,
@@ -423,19 +432,24 @@ async def test_class_change(
     assert sender_user_kelvin.school_classes == new_value["school_classes"]
     print(f"4. User was modified at sender, has now school_classes={school_classes_at_sender!r}.")
     # Check if user was modified on target host
-    timeout = 40
-    while timeout > 0:
-        time.sleep(5)
-        timeout -= 5
-        remote_user: User = await UserResource(session=kelvin_session(docker_hostname)).get(
+    start = time.time()
+    remote_user = None
+    while not remote_user:
+        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
             name=sender_user["name"]
         )
-        if remote_user.school_classes == new_value["school_classes"]:
-            break
-    else:
-        print(f"Waited {timeout}s without the users school classes changing, continuing...")
-
-    assert remote_user.school_classes == new_value["school_classes"]
+        try:
+            _check_schools_and_classes(
+                remote_user,
+                sender_user_kelvin.school,
+                new_schools={sender_user_kelvin.school},
+                new_school_classes=new_value["school_classes"],
+            )
+        except AssertionError:
+            time_taken = time.time() - start
+            assert (
+                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
+            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
 
 
 @pytest.mark.asyncio
@@ -489,26 +503,193 @@ async def test_school_change(
         f"schools={sender_user_kelvin.schools!r} "
         f"school_classes={sender_user_kelvin.school_classes!r}."
     )
-    assert sender_user_kelvin.school == new_school
-    assert sender_user_kelvin.schools == [new_school]
-    assert sender_user_kelvin.school_classes == new_value["school_classes"]
 
-    timeout = 40
-    while timeout > 0:
-        time.sleep(5)
-        timeout -= 5
+    _check_schools_and_classes(
+        sender_user_kelvin,
+        new_school,
+        new_schools={new_school},
+        new_school_classes=new_value["school_classes"],
+    )
+    start = time.time()
+    remote_user = None
+    while not remote_user:
         remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
             name=sender_user["name"]
         )
         try:
-            assert remote_user.school == new_school
-            assert remote_user.schools == [new_school]
-            assert remote_user.school_classes == new_value["school_classes"]
-            break
+            _check_schools_and_classes(
+                remote_user,
+                new_school,
+                new_schools={new_school},
+                new_school_classes=new_value["school_classes"],
+            )
         except AssertionError:
-            pass
-    else:
-        print(f"Waited {timeout}s without the user changing its school, continuing...")
-    assert remote_user.school == new_school
-    assert remote_user.schools == [new_school]
-    assert remote_user.school_classes == new_value["school_classes"]
+            time_taken = time.time() - start
+            assert (
+                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
+            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+
+
+@pytest.mark.parametrize("role", ["student", "teacher"])
+@pytest.mark.asyncio
+async def test_change_school_and_schools(
+    make_school_authority,
+    school_auth_config_kelvin,
+    create_schools,
+    save_mapping,
+    make_sender_user,
+    docker_hostname,
+    random_name,
+    kelvin_session,
+    school_auth_host_configs,
+    wait_for_kelvin_object_exists,
+    role,
+):
+    """
+    Tests if the modifications of a users school + schools are properly distributed by
+    ucsschool-id-connector. (Bug 54411)
+    """
+    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
+    auth_school_mapping = await create_schools([(school_auth1, 3)])
+    ou_auth1_1 = auth_school_mapping[school_auth1.name][0]
+    ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
+    ou_auth1_3 = auth_school_mapping[school_auth1.name][2]
+    await save_mapping(
+        {ou_auth1_1: school_auth1.name, ou_auth1_2: school_auth1.name, ou_auth1_3: school_auth1.name}
+    )
+    sender_user: Dict[str, Any] = await make_sender_user(roles=(role,), ous=[ou_auth1_1, ou_auth1_2])
+    print(
+        f"Created user {sender_user['name']} with school={sender_user['school']!r} and "
+        f"and schools={sender_user['schools']!r} on sender."
+    )
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_1),
+        name=sender_user["name"],
+    )
+    new_prim_school = ou_auth1_2
+    new_add_school = ou_auth1_3
+    new_value = {
+        "school_classes": {new_prim_school: [random_name()], new_add_school: [random_name()]},
+        "school": new_prim_school,
+        "schools": [new_prim_school, new_add_school],
+    }
+
+    print(f"Changing user on sender: {new_value!r}")
+    await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
+    sender_user_kelvin = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
+    )
+    print(
+        f"User was modified at sender, has now school={sender_user_kelvin.school!r} "
+        f"schools={sender_user_kelvin.schools!r} "
+        f"school_classes={sender_user_kelvin.school_classes!r}."
+    )
+
+    _check_schools_and_classes(
+        sender_user_kelvin,
+        new_prim_school,
+        new_schools={new_prim_school, new_add_school},
+        new_school_classes=new_value["school_classes"],
+    )
+    start = time.time()
+    remote_user = None
+    while not remote_user:
+        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+            name=sender_user["name"]
+        )
+        try:
+            _check_schools_and_classes(
+                remote_user,
+                new_prim_school,
+                new_schools={new_prim_school, new_add_school},
+                new_school_classes=new_value["school_classes"],
+            )
+        except AssertionError:
+            time_taken = time.time() - start
+            assert (
+                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
+            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+
+
+@pytest.mark.parametrize("role", ["student", "teacher"])
+@pytest.mark.asyncio
+async def test_add_additional_schools(
+    make_school_authority,
+    school_auth_config_kelvin,
+    create_schools,
+    save_mapping,
+    make_sender_user,
+    docker_hostname,
+    random_name,
+    kelvin_session,
+    school_auth_host_configs,
+    wait_for_kelvin_object_exists,
+    role,
+):
+    """
+    Tests if a user is receives an additional school, the values are properly distributed by
+    the ucsschool-id-connector (Bug 54411)
+    """
+    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
+    auth_school_mapping = await create_schools([(school_auth1, 2)])
+    ou_auth1_1 = auth_school_mapping[school_auth1.name][0]
+    ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
+    await save_mapping({ou_auth1_1: school_auth1.name, ou_auth1_2: school_auth1.name})
+    sender_user: Dict[str, Any] = await make_sender_user(ous=[ou_auth1_1], roles=(role,))
+    print(
+        f"Created user {sender_user['name']} with school={sender_user['school']!r} and "
+        f"and schools={sender_user['schools']!r} on sender."
+    )
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_ip_1),
+        name=sender_user["name"],
+    )
+    old_school = ou_auth1_1
+    new_school = ou_auth1_2
+    new_value = {
+        "school_classes": {new_school: [random_name()], old_school: [random_name()]},
+        "school": old_school,
+        "schools": [old_school, new_school],
+    }
+
+    print(f"Changing user on sender: {new_value!r}")
+    await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
+    sender_user_kelvin = await UserResource(session=kelvin_session(docker_hostname)).get(
+        name=sender_user["name"]
+    )
+    print(
+        f"User was modified at sender, has now school={sender_user_kelvin.school!r} "
+        f"schools={sender_user_kelvin.schools!r} "
+        f"school_classes={sender_user_kelvin.school_classes!r}."
+    )
+    _check_schools_and_classes(
+        sender_user_kelvin,
+        old_school,
+        new_schools={old_school, new_school},
+        new_school_classes=new_value["school_classes"],
+    )
+
+    start = time.time()
+    remote_user = None
+    while not remote_user:
+        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+            name=sender_user["name"]
+        )
+        try:
+            _check_schools_and_classes(
+                remote_user,
+                old_school,
+                new_schools={old_school, new_school},
+                new_school_classes=new_value["school_classes"],
+            )
+        except AssertionError:
+            time_taken = time.time() - start
+            assert (
+                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
+            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
