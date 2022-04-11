@@ -5,6 +5,9 @@
 Changelog
 ---------
 
+**v2.2.3 (2022-04-11)**
+* Users with multiple schools are now updated correctly if the Kelvin REST API is installed in version ``1.5.4`` or above on the school authority side.
+
 **v2.2.2 (2022-03-03)**
 
 * The ID Broker plugin was removed from the app and can be installed separately by a Debian package.
