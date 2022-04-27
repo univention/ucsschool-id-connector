@@ -5,10 +5,9 @@
 Changelog
 ---------
 
-**v2.2.3 (2022-03-11)**
-
+**v2.2.3 (2022-04-11)**
+* Users with multiple schools are now updated correctly if the Kelvin REST API is installed in version ``1.5.4`` or above on the school authority side.
 * The permissions of the school authority configuration files was fixed.
-
 
 **v2.2.2 (2022-03-03)**
 

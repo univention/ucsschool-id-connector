@@ -58,7 +58,7 @@ LDAP and LDAP listener
 
    - understand the basic concepts of LDAP
 
-   |rarr| https://docs.software-univention.de/manual-5.0.html#introduction:LDAP_directory_service
+   |rarr| https://docs.software-univention.de/manual/5.0/en/index.html#introduction-ldap-directory-service
 
 .. _UDM:
 
@@ -90,7 +90,7 @@ LDAP and LDAP listener
    - understand basic UCR concepts
    - set and read UCR variables.
 
-   |rarr| `<https://docs.software-univention.de/manual-5.0.html#computers:Administration_of_local_system_configuration_with_Univention_Configuration_Registry>`_
+   |rarr| `<https://docs.software-univention.de/manual/5.0/en/computers/ucr.html#administration-of-local-system-configuration-with-univention-configuration-registry>`_
 
 
 |AppC| settings
@@ -102,8 +102,8 @@ LDAP and LDAP listener
 
    Within the app center, you can configure settings for the individual apps.
 
-   - https://docs.software-univention.de/app-provider.html#app-settings
-   - https://docs.software-univention.de/manual-5.0.html#appcenter-configure
+   - https://docs.software-univention.de/app-center/5.0/en/configurations.html#app-settings
+   - https://docs.software-univention.de/manual/5.0/en/software/app-center.html#appcenter-configure
 
 
 |UAS| basics
