@@ -61,7 +61,7 @@ KELVIN_API_SCHOOL_ATTRIBUTES = {
     "source_uid",
     "ucsschool_roles",
 }
-KELVIN_API_PASSWORD_HASHES_ATTRIBUTE = "kelvin_password_hashes"
+KELVIN_API_PASSWORD_HASHES_ATTRIBUTE = "kelvin_password_hashes"  # nosec
 
 
 class SSLCACertificateDownloadError(Exception):
