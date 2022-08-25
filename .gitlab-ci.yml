@@ -62,7 +62,7 @@ html:
     - make html
     - rm _build/html/.buildinfo
     - cd _build/html/_static
-    - rm -Rf webpack-macros.html __init__.py __pycache__
+    - rm -Rf *webpack-macros.html __init__.py __pycache__
   artifacts:
     paths:
       - docs/_build/html
