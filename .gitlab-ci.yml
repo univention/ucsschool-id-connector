@@ -6,74 +6,79 @@ stages:
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  SPHINX_DOC: docker-registry.knut.univention.de/sphinx
+  GIT_SYNC: docker-registry.knut.univention.de/knut/git-sync
+  DOCS_DIR: "docs"
 
 cache:
   paths:
     - .cache/pip
 
 .prep:
-  image: python:3.9
-  before_script:
-    - python -m pip install --upgrade pip wheel
-    - apt-get -qq update
-    - apt-get -q --assume-yes install libenchant-2-2 ca-certificates rsync
-    - install -m644 -D ./ucs-root-ca.crt "/usr/local/share/ca-certificates/knut-ca.crt"
-    - update-ca-certificates
-    - pip install -r requirements.txt --cert /etc/ssl/certs/ca-certificates.crt
-
-.publish:
-  variables:
-    GIT_STRATEGY: none
-  tags:
-    - omar
-
-.production:
-  extends: .publish
+  image: $SPHINX_DOC
+  artifacts:
+    expire_in: 1 week
   rules:
     - changes:
       - "docs/**/*"
       - "src/HISTORY.rst"
 
+.publish:
+  variables:
+    GIT_STRATEGY: none
+    GIT_STRATEGY: none
+    GIT_AUTHOR_NAME: $GITLAB_USER_NAME
+    GIT_AUTHOR_EMAIL: $GITLAB_USER_EMAIL
+    GIT_COMMITTER_NAME: $GITLAB_USER_NAME
+    GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
+  interruptible: false
+  resource_group: prod
+  image: $GIT_SYNC
+
+.omar:
+  variables:
+    GIT_STRATEGY: none
+  tags:
+    - omar
+
+
 linkcheck:
   extends: .prep
   stage: build
   script:
-    - cd docs
-    - make linkcheck
+    - make -C "$DOCS_DIR" -e SPHINXOPTS="-W --keep-going" linkcheck
   artifacts:
     paths:
-      - docs/_build/linkcheck
+      - $DOCS_DIR/_build/linkcheck
 
 spelling:
   extends: .prep
   stage: build
   script:
-    - cd docs
-    - make spelling
+    - make -C "$DOCS_DIR" -e SPHINXOPTS="-W --keep-going" spelling
   artifacts:
     paths:
-      - docs/_build/spelling
+      - $DOCS_DIR/_build/spelling
 
 html:
   extends: .prep
   stage: build
   script:
-    - cd docs
-    - make html
-    - rm _build/html/.buildinfo
-    - cd _build/html/_static
-    - rm -Rf *webpack-macros.html __init__.py __pycache__
+    - make -C "$DOCS_DIR" html
+    - mkdir -p "$CI_PROJECT_DIR"/out
+    - rsync -av --delete --exclude-from="$CI_PROJECT_DIR"/"$DOCS_DIR"/pipeline-rsync-exclude.txt "_build/html/" "$CI_PROJECT_DIR"/out
   artifacts:
     paths:
-      - docs/_build/html
+      - $DOCS_DIR/_build/html
+      - out
 
 review:
   stage: review
   rules:
     - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
-  extends: .publish
+  extends: .omar
   script:
-    - rsync -av --delete docs/_build/html/ /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_BUILD_REF_SLUG
+    - rsync -av --delete "$CI_PROJECT_DIR"/out /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_BUILD_REF_SLUG
   environment:
     name: review/$CI_BUILD_REF_NAME
     url: http://apt.knut.univention.de/download/docs-ucs-school-id-connector.$CI_BUILD_REF_SLUG/
@@ -88,7 +93,7 @@ stop_review:
   needs:
     - review
   allow_failure: true
-  extends: .publish
+  extends: .omar
   script:
     - rm -rf /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_BUILD_REF_SLUG
   environment:
@@ -100,49 +105,50 @@ pages:
   stage: staging
   rules:
       - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  image: $GIT_SYNC
   script:
-    - apt-get -qq update
-    - apt-get -q --assume-yes install rsync
     - mkdir public
-    - rsync -av --delete docs/_build/html/ public
+    - rsync -av --delete "$CI_PROJECT_DIR"/out/ public
   environment:
     name: pages/$CI_BUILD_REF_NAME
     url: https://univention.gitpages.knut.univention.de/components/ucsschool-id-connector/
   artifacts:
     paths:
       - public
+    expire_in: 1 week
 
 staging:
   stage: staging
-  extends: .production
+  extends: .omar
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   script:
-      - rsync -av --delete docs/_build/html/ /var/univention/buildsystem2/test_mirror/ftp/download/docs/ucsschool-id-connector/
+      - rsync -av --delete "$CI_PROJECT_DIR"/out/ /var/univention/buildsystem2/test_mirror/ftp/download/docs/ucsschool-id-connector/
   environment:
     name: staging
     url: http://apt.knut.univention.de/download/docs/ucsschool-id-connector/
 
 production:
   stage: production
-  extends: .production
+  extends: .publish
   cache:
+    key: docs-$CI_COMMIT_REF_SLUG
     paths:
-      - docs
+      - univention-docs
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: manual
   script:
-    - '[ -d ucs-docs ] || git clone --branch master --depth 1 --single-branch https://ucsschool-id-connector-docs-deployment:$DOCS_TOKEN@git.knut.univention.de/univention/docs.univention.de.git ucs-docs'
-    - cd ucs-docs
-    - git remote set-url origin https://ucsschool-id-connector-docs-deployment:$DOCS_TOKEN@git.knut.univention.de/univention/docs.univention.de.git
-    - git clean -f -d
+    - git config --global credential.$CI_SERVER_URL.username ucsschool-id-connector-docs-deployment
+    - git config --global credential.$CI_SERVER_URL.helper '!f() { [ "$1" = get ] && echo password="$DOCS_TOKEN"; }; f'
+    - '[ -d univention-docs ] || git clone --branch master --depth 1 --single-branch $CI_SERVER_URL/univention/docs.univention.de.git univention-docs'
+    - cd univention-docs
+    - git clean --force -d
     - git fetch --no-tags origin
     - git reset --hard origin/master
-    - rsync -av --delete ../docs/_build/html/ ./ucsschool-id-connector/
-    - git add -u
-    - git add .
-    - git commit -m "Automatic doc deployment by GitLab commit $CI_COMMIT_SHA"
+    - rsync -av --delete "$CI_PROJECT_DIR"/out/ ./ucsschool-id-connector/
+    - git add -- .
+    - git commit -m "Automatic doc deployment from $CI_PROJECT_PATH by GitLab commit $CI_COMMIT_SHA"
     - git push
   environment:
     name: production
