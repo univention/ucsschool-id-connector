@@ -110,8 +110,8 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         Delete user in school authority if it has no more schools in this
         school authority.
         """
-        api_schools = await self.schools_ids_on_target
-        current_schools = [s for s in obj.schools if s in api_schools]
+        api_schools = {s.lower() for s in await self.schools_ids_on_target}
+        current_schools = [s for s in obj.schools if s.lower() in api_schools]
         if not current_schools:
             await self.handle_has_no_schools(obj)
             return False
