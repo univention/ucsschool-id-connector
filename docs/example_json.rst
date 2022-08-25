@@ -13,8 +13,8 @@ Sending system examples
 
 .. _school-authority-mapping:
 
-School authority config
------------------------
+School authority configuration
+------------------------------
 
 .. literalinclude:: ../examples/school_authority_kelvin.json
 

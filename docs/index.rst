@@ -19,9 +19,6 @@ Welcome to |UAS| ID Connector's documentation!
     :target: https://www.python.org/downloads/release/python-382/
 
 
-Overview
-========
-
 The |IDC| connects an |UAS| directory to any number of other |UAS| directories (1:n).
 It is designed to connect state directories with school districts,
 but can also be used in other contexts.
@@ -84,3 +81,7 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
+
+.. spelling::
+
+   Traeger

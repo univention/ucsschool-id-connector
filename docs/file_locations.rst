@@ -1,4 +1,4 @@
-File Locations
+File locations
 ==============
 
 This section lists relevant directories and files. Configuration file *must not* be edited by hand.
@@ -9,8 +9,8 @@ Nothing needs to be backed up and restored before and after an app update,
 because all important data is persisted in files on volumes
 mounted from the UCS host into the docker container.
 
-Logfiles
---------
+Log files
+---------
 
 ``/var/log/univention/ucsschool-id-connector`` is a volume mounted into the docker container,
 so it can be accessed from the host.

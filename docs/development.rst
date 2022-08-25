@@ -5,8 +5,10 @@
 Development
 ***********
 
-Dev overview
-============
+.. _dev-overview:
+
+Overview
+========
 
 .. figure:: images/id-connector-containers-simplified.svg
    :width: 400
@@ -35,8 +37,8 @@ This, of course, is a simplification. It is on a container level (in the sense u
 
 Let's have a look at what you need to know before we dive any deeper.
 
-Dev prerequisites
-=================
+Prerequisites
+=============
 First, we assume that you are already familiar with the chapter :doc:`admin`, and the
 prerequisites described therein.
 
@@ -54,25 +56,25 @@ HTTP
    |rarr| https://developer.mozilla.org/en-US/docs/Web/HTTP
 
 
-Python & pytest
+Python & *pytest*
    The great programming language and its testing module.
 
    You need to be able to:
 
    - code and debug python modules
-   - test your code, ideally using pytest
+   - test your code, ideally using *pytest*
 
    |rarr| https://python.org |br|
    |rarr| https://pytest.org
 
-Fastapi
+*FastAPI*
    The framework in which our HTTP APIs are developed.
 
    You need to be able to:
 
-   - understand fastapi
+   - understand *FastAPI*
    - understand dependency injection
-   - understand pydantic models
+   - understand *pydantic* models
 
    |rarr| https://fastapi.tiangolo.com/
 
@@ -81,14 +83,14 @@ Docker
 
    You need to be able to:
 
-   - understand Dockerfile basics
+   - understand *Dockerfile* basics
    - run containers
    - understand mounts
 
    |rarr| https://www.docker.com/
 
-Pluggy
-   Pluggy is the crystallized core of plugin management and hook calling (from pytest).
+*Pluggy*
+   *Pluggy* is the crystallized core of plugin management and hook calling (from *pytest*).
 
    You need to be able to:
 
@@ -113,7 +115,7 @@ UDM REST-API (optional)
 Pre-commit (optional)
    A framework for managing and maintaining multi-language pre-commit hooks.
 
-   This is only needed if you need to commit to the Univention |IDC| repo.
+   This is only needed if you need to commit to the Univention |IDC| repository.
 
    You need to be able to:
 
@@ -141,7 +143,7 @@ Overview, less simplified
 .. include:: legend.txt
 
 
-Ok, isn't this more or less the same as above in `Dev overview`_? Yes, right, you are. The additional
+OK, isn't this more or less the same as above in :ref:`dev-overview`? Yes, right, you are. The additional
 element is the *Large in-queue*. This is a folder which interacts as the interface between the
 *DC Primary* and the |iIDC|. JSON files are written to the folder, and then read out.
 
@@ -169,7 +171,7 @@ DC Primary
 
 * In a first step this data is written to the *small in-queue*. This is a folder containing
   minimal information (in JSON format), namely the type of change (add, update, delete) and
-  the entryUUID of the concerned object. But why not write directly to the *Converter*
+  the ``entryUUID`` of the concerned object. But why not write directly to the *Converter*
   in the next step? The reason is twofold:
 
   1. Speed by decoupling - the LDAP listeners should be able to do their job as fast as possible,
@@ -240,12 +242,12 @@ The complete picture is a bit crowded. If you want see it anyway, here are your 
 
 
 
-Dev setup
-==========
+Setup
+=====
 
 Sadly, you can't develop everything on your developer machine / laptop:
 running the |IDC| requires an LDAP, listeners etc., so you really need a full-blown
-UCS installation. Hence, we rather have a local checkout on the dev machine,
+UCS installation. Hence, we rather have a local checkout on the development machine,
 and then sync the code changes into an |IDC| container that is running on a VM.
 
 .. figure:: images/dev_setup.svg
@@ -260,13 +262,14 @@ We are going to develop with the following setup:
 * which are synced to the corresponding *installation* folder of the |iIDC| docker app.
 
 .. note::
-    If you don't have *devsync* (from the toolshed), you might as well use scp, rsync, or any
-    other transfer mechanism of your liking.
+   If you don't have *devsync* (from the *toolshed*), you might as well use
+   :program:`scp`, :program:`rsync`, or any other transfer mechanism of your
+   liking.
 
 
 
-Dev machine
------------
+Machine
+-------
 
 Setup development environment:
 
@@ -291,7 +294,8 @@ You can later on also "activate" the ``venv`` using:
 
 .. warning::
 
-    All other commands in the Makefile assume that the virtualenv is activated.
+    All other commands in the :file:`Makefile` assume that the *virtualenv* is
+    activated.
 
 Run ``make`` without argument to see more useful commands:
 
@@ -313,8 +317,8 @@ Run ``make`` without argument to see more useful commands:
     build-docker-img          build docker image locally quickly
     build-docker-img-on-knut  copy source to docker.knut, build and push docker image
 
-Dev VM
-------
+Virtual machine
+---------------
 
 You need to install the |IDC| app through the |AppC| on your development VM.
 
@@ -343,8 +347,8 @@ Inside the container, you can use the system Python:
     In [1]: from ucsschool_id_connector import models
 
 
-Now, in order to sync  your working copy into the running |IDC| container on the dev VM,
-we need to:
+Now, to synchronize your working copy into the running |IDC| container on the
+development virtual machine, we need to:
 
 1. Stop the |IDC| in it's container,
 2. Find out its ID,
@@ -423,9 +427,9 @@ The `pluggy <https://pluggy.readthedocs.io/en/latest/>`_ plugin system is used
 to define, implement and call plugins.
 
 .. hint::
-    To get a quick freshen up on pluggy, best have a look at the
+    To get a quick freshen up on *Pluggy*, best have a look at the
     `toy example <https://pluggy.readthedocs.io/en/latest/#a-toy-example>`_
-    in the pluggy documentation.
+    in the *Pluggy* documentation.
 
 The basic idea:
 
@@ -452,7 +456,7 @@ Search for ``@hook_impl`` in ``src/plugins`` to find them.
 Some of the default plugins are only used if no custom plugins are present (see
 usages of ``filter_plugins`` defined in ``src/src/ucsschool_id_connector/plugins.py``):
 
-- create_request_kwargs
+- create_request_keyword arguments (``kwargs``)
 - school_authority_ping
 - handle_listener_object
 
@@ -684,3 +688,7 @@ https://github.com/univention/univention-corporate-server/blob/5.0-1/test/scenar
 
 If you want to manually set up integration tests, for the moment, you need to look there
 for hints on how to do it.
+
+.. spelling::
+
+   callables
