@@ -76,7 +76,7 @@ LDAP and LDAP listener
    - know the basic structure of UDM objects and their attributes
    - add and manage extended attributes
 
-   |rarr| https://docs.software-univention.de/developer-reference-5.0.html#chap:udm  |br|
+   |rarr| https://docs.software-univention.de/developer-reference/5.0/en/udm/index.html  |br|
 
 .. _UCR:
 
@@ -249,7 +249,7 @@ We assume that you have a current version of |KLV| installed after reading the d
 
 After installation and basic configuration you might want to configure mapped UDM properties.
 
-Beyond the `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html?highlight=password#resource-representation>`_
+Beyond the `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html#users-resource-representation>`_
 you can define additional UDM properties that should be available in the |KLV| API on the target system.
 
 For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``, e.g.:

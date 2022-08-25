@@ -108,7 +108,7 @@ UDM REST-API (optional)
    - understand the structure of UDM objects
    - understand how to read (and maybe write) UDM objects, according to your needs
 
-   |rarr| https://docs.software-univention.de/developer-reference-5.0.html#udm:rest_api
+   |rarr| https://docs.software-univention.de/developer-reference/5.0/en/udm/rest-api.html
 
 Pre-commit (optional)
    A framework for managing and maintaining multi-language pre-commit hooks.
