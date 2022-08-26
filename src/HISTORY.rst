@@ -6,10 +6,12 @@ Changelog
 ---------
 
 **v2.2.4 (2022-08-25)**
+
 * Kelvin REST API versions up to ``1.7.0`` are now supported.
 * Remote school (OU) names are now compared case sensitively.
 
 **v2.2.3 (2022-04-11)**
+
 * Users with multiple schools are now updated correctly if the Kelvin REST API is installed in version ``1.5.4`` or above on the school authority side.
 * The permissions of the school authority configuration files was fixed.
 
