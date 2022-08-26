@@ -9,7 +9,7 @@ Changelog
 
 * Users with multiple schools are now updated correctly if the Kelvin REST API is installed in version ``1.5.4`` or above on the school authority side.
 * The permissions of the school authority configuration files was fixed.
-* Kelvin REST API versions up to ``1.7.0`` are now supported. **Warning** Kelvin REST API version ``1.7.0`` will break ID Connector versions below ``2.2.4``.
+* Kelvin REST API versions up to ``1.7.0`` are now supported. **Warning**: Kelvin REST API version ``1.7.0`` will break ID Connector versions below ``2.2.4``.
 * Remote school (OU) names are now compared case sensitively.
 
 
