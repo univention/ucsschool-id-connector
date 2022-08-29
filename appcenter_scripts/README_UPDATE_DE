@@ -12,7 +12,7 @@
         Kelvin REST API versions up to <code>1.7.0</code> are now supported (Bug #54966).<b>Warning</b>: Kelvin REST API version <code>1.7.0</code> and above will break ID Connector versions below <code>2.2.4</code>.
     </li>
      <li>
-        Remote school (OU) names are now compared case sensitively.
+        Remote school (OU) names are now compared case insensitively.
     </li>
 </ul>
 
