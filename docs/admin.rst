@@ -58,7 +58,9 @@ LDAP and LDAP listener
 
    - understand the basic concepts of LDAP
 
-   |rarr| https://docs.software-univention.de/manual/5.0/en/index.html#introduction-ldap-directory-service
+   .. seealso::
+
+      See :ref:`introduction-ldap-directory-service` in :cite:t:`uv-manual`.
 
 .. _UDM:
 
@@ -76,7 +78,9 @@ LDAP and LDAP listener
    - know the basic structure of UDM objects and their attributes
    - add and manage extended attributes
 
-   |rarr| https://docs.software-univention.de/developer-reference/5.0/en/udm/index.html  |br|
+   .. seealso::
+
+      See :ref:`chap-udm` in :cite:t:`uv-developer-reference`.
 
 .. _UCR:
 
@@ -90,8 +94,11 @@ LDAP and LDAP listener
    - understand basic UCR concepts
    - set and read UCR variables.
 
-   |rarr| `<https://docs.software-univention.de/manual/5.0/en/computers/ucr.html#administration-of-local-system-configuration-with-univention-configuration-registry>`_
+   .. seealso::
 
+      See
+      :ref:`computers-administration-of-local-system-configuration-with-univention-configuration-registry`
+      in :cite:t:`uv-manual`.
 
 |AppC| settings
    The |AppC| is an ecosystem similar to the app stores known from mobile platforms
@@ -102,8 +109,10 @@ LDAP and LDAP listener
 
    Within the app center, you can configure settings for the individual apps.
 
-   - https://docs.software-univention.de/app-center/5.0/en/configurations.html#app-settings
-   - https://docs.software-univention.de/manual/5.0/en/software/app-center.html#appcenter-configure
+   .. seealso::
+
+      * :ref:`app-settings` in :cite:t:`uv-appcenter`
+      * :ref:`appcenter-configure` in :cite:t:`uv-manual`
 
 
 |UAS| basics
@@ -121,9 +130,11 @@ LDAP and LDAP listener
    - know about |UAS| objects
    - know the difference between |UAS|-objects and UDM objects
 
-   |rarr| https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630 |br|
-   |rarr|  https://help.univention.com/t/ucs-school-work-groups-and-school-classes/16925 |br|
-   |rarr|  https://docs.software-univention.de/ucsschool-handbuch-5.0.html (german only) |br|
+   .. seealso::
+
+      * :uv:kb:`How a UCS\@school user should look like <15630>`
+      * :uv:kb:`UCS\@school work groups and school classes <16925>`
+      * :external+uv-ucsschool-manual:doc:`index`
 
 |UAS| |KLV| REST API
    The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
@@ -133,8 +144,12 @@ LDAP and LDAP listener
 
    You need to be able to install and configure Kelvin.
 
-   |rarr| https://docs.software-univention.de/ucsschool-kelvin-rest-api/overview.html |br|
-   |rarr| https://docs.software-univention.de/ucsschool-handbuch-5.0.html#structure:ldap
+   .. seealso::
+
+      * :external+uv-ucsschool-kelvin-rest-api:doc:`overview` in
+        :cite:t:`uv-ucsschool-kelvin-rest-api`
+      * :ref:`structure-ldap` in
+        :cite:t:`uv-ucsschool-manual`
 
 If you want to also develop for the |IDC|, please also see the next chapter :doc:`development`.
 
@@ -150,7 +165,7 @@ The app is available in the |AppC|. You can install it with:
 
     $ univention-app install ucsschool-id-connector
 
-This runs the  join script ``50ucsschool-id-connector.inst``, which creates:
+This runs the join script ``50ucsschool-id-connector.inst``, which creates:
 
 * the file ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret``
   containing the key with which JWT tokens are signed.
@@ -173,7 +188,7 @@ Use of both is explained later on in `Authentication`_
    Join scripts are registered in LDAP and then executed on any UCS system
    either before/during/after the join process.
 
-   |rarr| https://help.univention.com/t/a-script-shall-be-executed-on-each-or-a-certain-ucs-systems-before-during-after-the-join-process/13034
+   |rarr| :uv:kb:`A script shall be executed on each or a certain UCS systems before/during/after the join process <13034>`
 
 If the above didn't get created, run:
 
@@ -204,8 +219,7 @@ To allow the |iIDC| app on the sender system to access the Kelvin-API on the rec
 it needs an authorized user account.
 By default, the Administrator account on the receiving system is the only authorized user.
 To add a dedicated |KLV| API user for the |UAS| |IDC|
-consult the `Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_
-on how to do that.
+consult :cite:t:`uv-ucsschool-kelvin-rest-api` on how to do that.
 
 Configuration
 =============
@@ -216,8 +230,8 @@ because we need auth credentials used on the receiving system later on the sendi
 Configure receiving system - HTTP-API (|KLV|)
 ---------------------------------------------
 
-You need to install and configure the |KLV| API. This is documented in the
-`Kelvin documentation <https://docs.software-univention.de/ucsschool-kelvin-rest-api/>`_.
+You need to install and configure the |KLV| API. This is documented in
+:cite:t:`uv-ucsschool-kelvin-rest-api`.
 
 We assume that you have a current version of |KLV| installed after reading the documentation.
 
@@ -249,7 +263,7 @@ We assume that you have a current version of |KLV| installed after reading the d
 
 After installation and basic configuration you might want to configure mapped UDM properties.
 
-Beyond the `standard object properties in UCS@school <https://docs.software-univention.de/ucsschool-kelvin-rest-api/resource-users.html#users-resource-representation>`_
+Beyond the :ref:`standard object properties in UCS@school <users-resource-repr>`
 you can define additional UDM properties that should be available in the |KLV| API on the target system.
 
 For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``, e.g.:
@@ -303,7 +317,7 @@ They can be visited with a browser at their respective URLs:
 .. _swagger_ui:
 
 * `Swagger UI <https://github.com/swagger-api/swagger-ui>`_: ``https://FQDN/ucsschool-id-connector/api/v1/docs``
-* `ReDoc <https://github.com/Rebilly/ReDoc>`_: ``https://FQDN/ucsschool-id-connector/api/v1/redoc``
+* `ReDoc <https://github.com/Redocly/redoc>`_: ``https://FQDN/ucsschool-id-connector/api/v1/redoc``
 
 The Swagger UI page is especially helpful as it allows sending queries directly from the browser.
 The equivalent ``curl`` command lines are then displayed.
@@ -428,7 +442,7 @@ These are the keys in the configuration:
 - We also have a mapping for *school_classes*, which sets up the sync for those groups.
 - *sync_password_hashes* - if password hashed should be synced.
 - *ssl_context* - contains values that are passed to the
-  `ssl context object <https://docs.python.org/3.8/library/ssl.html#ssl.SSLContext>`_
+  :py:class:`ssl.SSLContext` object
   which is used to communicate with the receiving system.
 - *active* - configures if this configuration for a an out queue for a school authority is active (
   so you don't have to delete it).
@@ -620,7 +634,8 @@ Time has come to try it out. What we want to do:
 The slow way would be to  `create a user`_   individually (and make sure to amend the
 required properties),
 or to use the |UAS| import.
-You can read all about importing users in the `Import CLI manual (german only)`_.
+You can read all about importing users in :cite:t:`uv-ucsschool-import` (German
+only).
 
 We however do it the fast way, creating and importing the user in one step:
 
@@ -741,9 +756,3 @@ To retrieve a list of the extended attributes on the old school authority server
 
 
 .. _create a user: https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630#a-sample-command-9
-
-.. _Import CLI manual (german only): https://docs.software-univention.de/ucsschool-import-handbuch-5.0.html
-
-.. spelling::
-
-   Schulbetreiber

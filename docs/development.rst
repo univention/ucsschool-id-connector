@@ -64,7 +64,7 @@ Python & *pytest*
    - code and debug python modules
    - test your code, ideally using *pytest*
 
-   |rarr| https://python.org |br|
+   |rarr| https://www.python.org |br|
    |rarr| https://pytest.org
 
 *FastAPI*
@@ -688,7 +688,3 @@ https://github.com/univention/univention-corporate-server/blob/5.0-1/test/scenar
 
 If you want to manually set up integration tests, for the moment, you need to look there
 for hints on how to do it.
-
-.. spelling::
-
-   callables

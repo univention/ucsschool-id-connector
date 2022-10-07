@@ -74,6 +74,7 @@ Contents
    file_locations
    example_json
    HISTORY
+   bibliography
 
 
 Indices and tables
@@ -81,7 +82,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
-
-.. spelling::
-
-   Traeger

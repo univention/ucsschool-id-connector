@@ -37,7 +37,24 @@ extensions = [
     "sphinx_copybutton",
     "univention_sphinx_extension",
     "sphinxcontrib.spelling",
+    "sphinxcontrib.bibtex",
+    "sphinx.ext.intersphinx",
 ]
+
+bibtex_bibfiles = ["bibliography.bib"]
+bibtex_encoding = "utf-8"
+bibtex_default_style = "unsrt"
+bibtex_reference_style = "label"
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3.8", None),
+    "uv-appcenter": ("https://docs.software-univention.de/app-center/5.0/en", None),
+    "uv-developer-reference": ("https://docs.software-univention.de/developer-reference/5.0/en", None),
+    "uv-manual": ("https://docs.software-univention.de/manual/5.0/en", None),
+    "uv-ucsschool-import": ("https://docs.software-univention.de/ucsschool-import/5.0/de", None),
+    "uv-ucsschool-kelvin-rest-api": ("https://docs.software-univention.de/ucsschool-kelvin-rest-api", None),
+    "uv-ucsschool-manual": ("https://docs.software-univention.de/ucsschool-manual/5.0/de", None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -100,5 +117,9 @@ if "spelling" in sys.argv:
     spelling_lang = "en_US"
     spelling_show_suggestions = True
     spelling_warning = True
-    spelling_word_list_filename = list()
-#    spelling_word_list_filename = ["spelling_wordlist"]
+    spelling_word_list_filename = ["spelling_wordlist"]
+
+linkcheck_allowed_redirects = {
+    r"https://pytest\.org": r"https://docs\.pytest\.org/en/.*",
+    r"https://help\.univention\.com/t/\d+": r"https://help\.univention\.com/t/[\w-]+/\d+",
+}
