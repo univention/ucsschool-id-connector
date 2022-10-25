@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2019-2020 Univention GmbH
+# Copyright 2019-2023 Univention GmbH
 #
 # http://www.univention.de/
 #
@@ -85,12 +85,13 @@ def filter_ous(user: Dict[str, Any], auth: str, mapping: Dict[str, str]) -> Dict
     that belong to auth other than `auth`.
     """
     result_user = copy.deepcopy(user)
+    _mapping = {k.lower(): v for k, v in mapping.items()}
     for school_url in user["schools"]:
         school = school_url.rstrip("/").split("/")[-1]
-        if mapping[school] != auth:
+        if _mapping[school.lower()] != auth:
             result_user["schools"].remove(school_url)
     for class_ou in user["school_classes"].keys():
-        if mapping[class_ou] != auth:
+        if _mapping[class_ou.lower()] != auth:
             del result_user["school_classes"][class_ou]
     return result_user
 
@@ -101,7 +102,7 @@ def assert_equal_password_hashes(school_auth_host_configs):
         print(f"Comparing password hashes of user {username!r} on host {host1!r} and {host2!r}...")
         ldap_access1 = LDAPAccess(host=host1, ldap_base=school_auth_host_configs["base_dn_traeger1"])
         ldap_access2 = LDAPAccess(host=host2, ldap_base=school_auth_host_configs["base_dn_traeger2"])
-        timeout = 20
+        timeout = 300
         remaining_time = timeout
 
         # sambaPwdLastSet may need a few seconds to sync
@@ -133,6 +134,7 @@ def assert_equal_password_hashes(school_auth_host_configs):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("ou_case_correct", (True, False))
 async def test_create_user(
     make_school_authority,
     make_sender_user,
@@ -146,6 +148,8 @@ async def test_create_user(
     school_auth_host_configs,
     wait_for_kelvin_object_exists,
     assert_equal_password_hashes,
+    scramble_case,
+    ou_case_correct: bool,
 ):
     """
     Tests if ucsschool_id_connector distributes a newly created User to the correct school
@@ -156,9 +160,20 @@ async def test_create_user(
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
     auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
-    ou_auth1 = auth_school_mapping[school_auth1.name][0]
-    ou_auth1_2 = auth_school_mapping[school_auth1.name][1]
-    ou_auth2 = auth_school_mapping[school_auth2.name][0]
+    ou_auth1 = ou_auth1_original = auth_school_mapping[school_auth1.name][0]
+    ou_auth1_2 = ou_auth1_2_original = auth_school_mapping[school_auth1.name][1]
+    ou_auth2 = ou_auth2_original = auth_school_mapping[school_auth2.name][0]
+    if not ou_case_correct:
+        print("===> Wrong OU case!")
+        ou_auth1 = scramble_case(ou_auth1_original)
+        assert ou_auth1 != ou_auth1_original
+        print(f"===> original: {ou_auth1_original!r} scrambled: {ou_auth1!r}")
+        ou_auth1_2 = scramble_case(ou_auth1_2_original)
+        assert ou_auth1_2 != ou_auth1_2_original
+        print(f"===> original: {ou_auth1_2_original!r} -> scrambled: {ou_auth1_2!r}")
+        ou_auth2 = scramble_case(ou_auth2_original)
+        assert ou_auth2 != ou_auth2_original
+        print(f"===> original: {ou_auth2_original!r} -> scrambled: {ou_auth2!r}")
     mapping = {
         ou_auth1: school_auth1.name,
         ou_auth1_2: school_auth1.name,
@@ -174,7 +189,7 @@ async def test_create_user(
         sender_user: Dict[str, Any] = await make_sender_user(ous=ous)
         # verify user on sender system
         await UserResource(session=kelvin_session(docker_hostname)).get(name=sender_user["name"])
-        check_password(sender_user["name"], sender_user["password"], docker_hostname)
+        # check_password(sender_user["name"], sender_user["password"], docker_hostname)
         print(f"Created user {sender_user['name']!r} on sender, looking for it in auth1...")
         user_remote: User = await wait_for_kelvin_object_exists(
             resource_cls=UserResource,
@@ -379,7 +394,7 @@ async def test_modify_user(
         new_value["udm_properties"], user_on_host.as_dict()["udm_properties"], udm_keys_to_check
     )
     # Check if user was modified on target host
-    timeout = 40
+    timeout = 300
     while timeout > 0:
         await asyncio.sleep(5)
         timeout -= 5
@@ -683,7 +698,7 @@ async def test_add_additional_schools(
     role,
 ):
     """
-    Tests if a user is receives an additional school, the values are properly distributed by
+    Tests if for a user receiving an additional school, the values are properly distributed by
     the ucsschool-id-connector (Bug 54411)
     """
     target_ip_1 = school_auth_host_configs["IP_traeger1"]

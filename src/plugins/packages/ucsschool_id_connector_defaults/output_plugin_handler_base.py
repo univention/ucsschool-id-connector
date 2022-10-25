@@ -116,6 +116,9 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
     async def school_2_school_authority_mapping(cls) -> School2SchoolAuthorityMapping:
         if cls._school2authority_mapping is None:
             cls._school2authority_mapping = await ConfigurationStorage.load_school2target_mapping()
+            cls._school2authority_mapping.mapping = {
+                k.lower(): v for k, v in cls._school2authority_mapping.mapping.items()
+            }
         return cls._school2authority_mapping
 
     async def handled_schools(self) -> List[str]:
@@ -125,7 +128,7 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
         """
         school_authority_name = self.school_authority.name
         mapping = (await self.school_2_school_authority_mapping()).mapping
-        return [school for school in mapping if mapping[school] == school_authority_name]
+        return [school for school in mapping if mapping[school.lower()] == school_authority_name]
 
     async def handle_create_or_update(self, obj: AddModifyObject) -> None:
         """Create or modify object."""

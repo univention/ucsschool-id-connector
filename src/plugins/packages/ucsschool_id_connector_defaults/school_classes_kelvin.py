@@ -104,7 +104,7 @@ class KelvinPerSASchoolClassDispatcher(PerSchoolAuthorityGroupDispatcherBase):
     ):
         m = self.class_dn_regex.match(obj.dn)
         ou = m.groupdict()["ou"]
-        return ou in await self.schools_ids_on_target
+        return ou.lower() in {o.lower() for o in await self.schools_ids_on_target}
 
     async def fetch_schools(self) -> Dict[str, str]:
         """Fetch all schools from API of school authority."""
@@ -195,11 +195,11 @@ class KelvinPerSASchoolClassDispatcher(PerSchoolAuthorityGroupDispatcherBase):
 
     async def _handle_attr_school(self, obj: ListenerGroupAddModifyObject) -> str:
         """Name of school for this school class on the target."""
-        target_schools = await self.schools_ids_on_target
+        target_schools = {k.lower(): v for k, v in (await self.schools_ids_on_target).items()}
         params = await self.search_params(obj)
         group_ou = params["school"]
         try:
-            return target_schools[group_ou]
+            return target_schools[group_ou.lower()]
         except KeyError:
             raise UnknownSchool(
                 f"The groups school ({group_ou!r}) is not known on the target server.",

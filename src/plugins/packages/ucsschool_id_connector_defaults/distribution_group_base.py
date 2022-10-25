@@ -97,11 +97,11 @@ class GroupDistributionImplBase(abc.ABC):
             return []
 
         our_school_authority_names = {school_authority.name for school_authority in school_authorities}
-        school_authority_mapping_filtered = dict(
-            (ou.lower(), s_a)
+        school_authority_mapping_filtered = {
+            ou.lower(): s_a
             for ou, s_a in in_queue.school_authority_mapping.items()
             if s_a in our_school_authority_names
-        )
+        }
         group_ou = group_match.groupdict()["ou"]
 
         try:

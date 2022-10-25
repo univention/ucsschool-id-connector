@@ -31,10 +31,11 @@ import asyncio
 import datetime
 import json
 import os
+import random
 import re
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
 
 import faker
@@ -154,7 +155,7 @@ def school_auth_host_configs(docker_hostname: str, http_request) -> Dict[str, st
 
 
 @pytest.fixture(scope="session")
-def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_host_configs):
+def school_auth_config_kelvin(school_auth_host_configs):
     """
     Fixture to create configurations for school authorities using Kelvin.
     It expects a specific environment for the integration tests and can provide a maximum
@@ -702,7 +703,8 @@ def kelvin_session_kwargs(ca_cert):
             "username": KELVIN_API_USERNAME,
             "password": KELVIN_API_PASSWORD,
             "host": host,
-            "verify": False if is_ip(host) else str(ca_cert(host)),
+            "verify": False,
+            "timeout": 300,
         }
 
     return _func
@@ -770,7 +772,7 @@ def wait_for_kelvin_object_exists():
         resource_cls: Type[KelvinResource],
         method: str,
         session: Session,
-        wait_timeout: int = 100,
+        wait_timeout: int = 300,
         **method_kwargs,
     ) -> KelvinObject:
         end = datetime.datetime.now() + datetime.timedelta(seconds=wait_timeout)
@@ -782,9 +784,14 @@ def wait_for_kelvin_object_exists():
                 return await func(**method_kwargs)
             except NoObject as exc:
                 error = exc
-                print(f"Waiting for {resource_cls.__name__}.{method}({method_kwargs!r}): {exc!s}")
+                print(
+                    f"Waiting for {resource_cls.__name__}.{method}({method_kwargs!r}) on"
+                    f" {session.host!r}: {exc!s}"
+                )
                 await asyncio.sleep(1)
-        raise AssertionError(f"No object found after {wait_timeout} seconds: {error!s}")
+        raise AssertionError(
+            f"No object found on {session.host!r} after {wait_timeout} seconds: {error!s}"
+        )
 
     return _func
 
@@ -800,7 +807,7 @@ def wait_for_kelvin_object_not_exists():
         resource_cls: Type[KelvinResource],
         method: str,
         session: Session,
-        wait_timeout: int = 100,
+        wait_timeout: int = 300,
         **method_kwargs,
     ) -> None:
         end = datetime.datetime.now() + datetime.timedelta(seconds=wait_timeout)
@@ -817,3 +824,16 @@ def wait_for_kelvin_object_not_exists():
         raise AssertionError(f"Still finding {obj!r} after {wait_timeout} seconds.")
 
     return _func
+
+
+@pytest.fixture(scope="session")
+def scramble_case() -> Callable[[str], str]:
+    def _scramble_case(a_string: str) -> str:
+        result = []
+        for s in a_string:
+            if random.choice([True, False]):
+                s = s.upper() if s.islower() else s.lower()
+            result.append(s)
+        return "".join(result)
+
+    return _scramble_case

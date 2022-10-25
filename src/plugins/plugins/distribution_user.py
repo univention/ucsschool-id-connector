@@ -84,7 +84,7 @@ class UserDistributionImpl:
         if isinstance(obj, ListenerUserAddModifyObject):
             for school in obj.schools:
                 try:
-                    s_a_names.add(in_queue.school_authority_mapping[school])
+                    s_a_names.add(in_queue.school_authority_mapping[school.lower()])
                 except KeyError:
                     self.logger.info(
                         "School missing in school authority mapping, ignoring: %r",
@@ -99,7 +99,7 @@ class UserDistributionImpl:
             old_schools = []
         for school in old_schools:
             try:
-                s_a_names.add(in_queue.school_authority_mapping[school])
+                s_a_names.add(in_queue.school_authority_mapping[school.lower()])
             except KeyError:
                 self.logger.info(
                     "School from 'old_data' missing in school authority" " mapping, ignoring: %r",

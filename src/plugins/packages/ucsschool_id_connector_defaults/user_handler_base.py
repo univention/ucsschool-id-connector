@@ -263,7 +263,7 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         """
         Get URL of primary school for this user.
         """
-        target_schools = await self.schools_ids_on_target
+        target_schools = {k.lower(): v for k, v in (await self.schools_ids_on_target).items()}
         schools = sorted(set([obj.school] + obj.schools))
         # 1st test if primary school exists on target, so source and target can have same primary school
         # if not found try in alphanum order, same as the ucsschool.lib does, when removing users pri. OU
@@ -271,7 +271,7 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         schools.insert(0, obj.school)
         for school in schools:
             try:
-                return target_schools[school]
+                return target_schools[school.lower()]
             except KeyError:
                 self.logger.warning("Ignoring unknown OU %r in 'school[s]' of %r.", school, obj)
         else:
@@ -286,11 +286,11 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         currently a member of.
         """
         res = []
-        api_schools_cache = await self.schools_ids_on_target
+        api_schools_cache = {k.lower(): v for k, v in (await self.schools_ids_on_target).items()}
         schools = sorted(set([obj.school] + obj.schools))
         for school in schools:
             try:
-                res.append(api_schools_cache[school])
+                res.append(api_schools_cache[school.lower()])
             except KeyError:
                 self.logger.warning("Ignoring unknown OU %r in 'school[s]' of %r.", school, obj)
         if res:
@@ -305,13 +305,13 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         self, obj: ListenerUserAddModifyObject
     ) -> Dict[str, List[str]]:
         """Get school classes the user is in this school authority."""
-        known_schools = (await self.schools_ids_on_target).keys()
+        known_schools = {ou.lower() for ou in (await self.schools_ids_on_target).keys()}
         groups_dns = obj.object.get("groups", [])
         res = defaultdict(list)
         for group_dn in groups_dns:
             group_match = self.class_dn_regex.match(group_dn)
             if group_match:
-                if group_match["ou"] in known_schools:
+                if group_match["ou"].lower() in known_schools:
                     res[group_match["ou"]].append(group_match["name"])
                 else:
                     self.logger.warning(

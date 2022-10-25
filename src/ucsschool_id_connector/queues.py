@@ -139,7 +139,7 @@ class FileQueue:
         """May raise SchoolMappingLoadingError."""
         mapping_obj = await ConfigurationStorage.load_school2target_mapping()
         cls.school_authority_mapping.clear()
-        cls.school_authority_mapping.update(mapping_obj.mapping)
+        cls.school_authority_mapping.update({k.lower(): v for k, v in mapping_obj.mapping.items()})
         return cls.school_authority_mapping
 
     def as_queue_model(self):

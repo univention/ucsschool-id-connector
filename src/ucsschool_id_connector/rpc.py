@@ -167,10 +167,12 @@ class SimpleRPCServer:
         await ConfigurationStorage.save_school2target_mapping(obj)
         # update class attribute inplace
         self.in_queue.school_authority_mapping.clear()
-        self.in_queue.school_authority_mapping.update(request.school_to_authority_mapping["mapping"])
+        self.in_queue.school_authority_mapping.update(
+            {k.lower(): v for k, v in request.school_to_authority_mapping["mapping"].items()}
+        )
         self.logger.info(
-            "School2SchoolAuthorityMapping was updated. New mapping: %r",
-            self.in_queue.school_authority_mapping,
+            "School2SchoolAuthorityMapping was updated. New mapping:\n%s",
+            pprint.pformat(self.in_queue.school_authority_mapping.items()),
         )
         return RPCResponseModel(result=obj)
 
