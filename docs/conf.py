@@ -56,6 +56,8 @@ intersphinx_mapping = {
     "uv-ucsschool-manual": ("https://docs.software-univention.de/ucsschool-manual/5.0/de", None),
 }
 
+language = "en"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
