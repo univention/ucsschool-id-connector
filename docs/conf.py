@@ -123,3 +123,9 @@ linkcheck_allowed_redirects = {
     r"https://pytest\.org": r"https://docs\.pytest\.org/en/.*",
     r"https://help\.univention\.com/t/\d+": r"https://help\.univention\.com/t/[\w-]+/\d+",
 }
+
+# See Univention Sphinx Extension for its options and information about the
+# feedback link.
+# https://git.knut.univention.de/univention/documentation/univention_sphinx_extension
+univention_feedback = True
+univention_doc_basename = "ucsschool-id-connector"
