@@ -96,6 +96,11 @@ html_show_sourcelink = False
 
 html_theme = "univention_sphinx_book_theme"
 
+doc_basename = "ucsschool-id-connector"
+html_context = {
+    "pdf_download_filename": f"{doc_basename}.pdf",
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -123,7 +128,6 @@ if "spelling" in sys.argv:
     spelling_word_list_filename = ["spelling_wordlist"]
 
 root_doc = "index"
-doc_basename = "ucsschool-id-connector"
 
 latex_engine = 'lualatex'
 latex_show_pagerefs = True
