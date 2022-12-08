@@ -43,113 +43,109 @@ of the UCS environment:
 
 .. glossary::
 
-LDAP and LDAP listener
-   LDAP is used because it is optimized for reading in a hierarchical structure.
-   It shouldn't be accessed directly, instead UDM_ should be used.
-   OpenLDAP can have plugins, notifier being one of them that is heavily used in UCS.
-   Upon changes in the LDAP directory, the notifier triggers listeners locally
-   and on remote systems.
+   LDAP and LDAP listener
+      LDAP is used because it is optimized for reading in a hierarchical structure.
+      It shouldn't be accessed directly, instead :term:`UDM` should be used.
+      OpenLDAP can have plugins, notifier being one of them that is heavily used in UCS.
+      Upon changes in the LDAP directory, the notifier triggers listeners locally
+      and on remote systems.
 
-   The listener service connects to all local or remote notifiers in the domain.
-   The listener, when notified, calls listener modules,
-   which are scripts (in shell and python)
+      The listener service connects to all local or remote notifiers in the domain.
+      The listener, when notified, calls listener modules,
+      which are scripts (in shell and python)
 
-   You need to be able to:
+      You need to be able to:
 
-   - understand the basic concepts of LDAP
+      - understand the basic concepts of LDAP
 
-   .. seealso::
+      .. seealso::
 
-      See :ref:`introduction-ldap-directory-service` in :cite:t:`uv-manual`.
+         See :ref:`introduction-ldap-directory-service` in :cite:t:`uv-manual`.
 
-.. _UDM:
+   |UDM|
+      |UDM| (**UDM**) is used for handling user data
+      (and other data) that is stored in the LDAP server,
+      one of two core storage places (the other one is :term:`UCR`).
+      Examples for data are users, roles or machine info.
+      UDM adds a layer of functionality and logic on top of LDAP,
+      hence LDAP shouldn't be used directly, but only through UDM.
 
-|UDM|
-   |UDM| (**UDM**) is used for handling user data
-   (and other data) that is stored in the LDAP server,
-   one of two core storage places (the other one is `UCR`_).
-   Examples for data are users, roles or machine info.
-   UDM adds a layer of functionality and logic on top of LDAP,
-   hence LDAP shouldn't be used directly, but only through UDM.
+      You need to be able to:
 
-   You need to be able to:
+      - understand the concept of UDM
+      - know the basic structure of UDM objects and their attributes
+      - add and manage extended attributes
 
-   - understand the concept of UDM
-   - know the basic structure of UDM objects and their attributes
-   - add and manage extended attributes
+      .. seealso::
 
-   .. seealso::
+         See :ref:`chap-udm` in :cite:t:`uv-developer-reference`.
 
-      See :ref:`chap-udm` in :cite:t:`uv-developer-reference`.
+   |UCR|
+      The |UCR| (**UCR**) stores configuration variables and settings to run the system,
+      and creates and changes actual Linux configuration files
+      as configured by these variables upon setting said variables.
 
-.. _UCR:
+      You need to be able to:
 
-|UCR|
-   The |UCR| (**UCR**) stores configuration variables and settings to run the system,
-   and creates and changes actual Linux configuration files
-   as configured by these variables upon setting said variables.
+      - understand basic UCR concepts
+      - set and read UCR variables.
 
-   You need to be able to:
+      .. seealso::
 
-   - understand basic UCR concepts
-   - set and read UCR variables.
+         See
+         :ref:`computers-administration-of-local-system-configuration-with-univention-configuration-registry`
+         in :cite:t:`uv-manual`.
 
-   .. seealso::
+   |AppC| settings
+      The |AppC| is an ecosystem similar to the app stores known from mobile platforms
+      like Apple or Google.
+      It provides an infrastructure to build, deploy and run enterprise applications
+      on |UCS| (UCS).
+      The |AppC| uses well-known technologies like Docker.
 
-      See
-      :ref:`computers-administration-of-local-system-configuration-with-univention-configuration-registry`
-      in :cite:t:`uv-manual`.
+      Within the app center, you can configure settings for the individual apps.
 
-|AppC| settings
-   The |AppC| is an ecosystem similar to the app stores known from mobile platforms
-   like Apple or Google.
-   It provides an infrastructure to build, deploy and run enterprise applications
-   on |UCS| (UCS).
-   The |AppC| uses well-known technologies like Docker.
+      .. seealso::
 
-   Within the app center, you can configure settings for the individual apps.
-
-   .. seealso::
-
-      * :ref:`app-settings` in :cite:t:`uv-appcenter`
-      * :ref:`appcenter-configure` in :cite:t:`uv-manual`
+         * :ref:`app-settings` in :cite:t:`uv-appcenter`
+         * :ref:`appcenter-configure` in :cite:t:`uv-manual`
 
 
-|UAS| basics
-   Schools have special requirements for managing what is going on inside them
-   (teachers, students, staff, computer rooms, exams, etc.),
-   and for managing the relation between multiple schools,
-   their operator organizations ("Schulbetreiber"), and possibly
-   ministerial departments above them.
+   |UAS| basics
+      Schools have special requirements for managing what is going on inside them
+      (teachers, students, staff, computer rooms, exams, etc.),
+      and for managing the relation between multiple schools,
+      their operator organizations ("Schulbetreiber"), and possibly
+      ministerial departments above them.
 
-   There are several components used within |UAS|,
-   |KLV| (see below) being one of them.
+      There are several components used within |UAS|,
+      |KLV| (see below) being one of them.
 
-   You need to be able to:
+      You need to be able to:
 
-   - know about |UAS| objects
-   - know the difference between |UAS|-objects and UDM objects
+      - know about |UAS| objects
+      - know the difference between |UAS|-objects and UDM objects
 
-   .. seealso::
+      .. seealso::
 
-      * :uv:kb:`How a UCS\@school user should look like <15630>`
-      * :uv:kb:`UCS\@school work groups and school classes <16925>`
-      * :external+uv-ucsschool-manual:doc:`index`
+         * :uv:kb:`How a UCS\@school user should look like <15630>`
+         * :uv:kb:`UCS\@school work groups and school classes <16925>`
+         * :external+uv-ucsschool-manual:doc:`index`
 
-|UAS| |KLV| REST API
-   The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
-   to create and manage individual |UAS| domain objects
-   like school users, school classes and schools (OUs).
-   It is written in FastAPI, hence in Python 3.
+   |UAS| |KLV| REST API
+      The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
+      to create and manage individual |UAS| domain objects
+      like school users, school classes and schools (OUs).
+      It is written in FastAPI, hence in Python 3.
 
-   You need to be able to install and configure Kelvin.
+      You need to be able to install and configure Kelvin.
 
-   .. seealso::
+      .. seealso::
 
-      * :external+uv-ucsschool-kelvin-rest-api:doc:`overview` in
-        :cite:t:`uv-ucsschool-kelvin-rest-api`
-      * :ref:`structure-ldap` in
-        :cite:t:`uv-ucsschool-manual`
+         * :external+uv-ucsschool-kelvin-rest-api:doc:`overview` in
+           :cite:t:`uv-ucsschool-kelvin-rest-api`
+         * :ref:`structure-ldap` in
+           :cite:t:`uv-ucsschool-manual`
 
 If you want to also develop for the |IDC|, please also see the next chapter :doc:`development`.
 
