@@ -1,39 +1,20 @@
+include:
+  - project: 'univention/documentation/sphinx-docker'
+    file: 'pipeline/sphinx.yml'
+
 stages:
   - build
+  - merge
   - review
   - staging
-  - production
+  - deploy
 
 variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-  SPHINX_DOC: docker-registry.knut.univention.de/sphinx
-  GIT_SYNC: docker-registry.knut.univention.de/knut/git-sync
+  # Check the README for more information about the variables:
+  # https://git.knut.univention.de/univention/documentation/sphinx-docker/-/blob/main/README.rst
   DOCS_DIR: "docs"
-
-cache:
-  paths:
-    - .cache/pip
-
-.prep:
-  image: $SPHINX_DOC
-  artifacts:
-    expire_in: 1 week
-  rules:
-    - changes:
-      - "docs/**/*"
-      - "src/HISTORY.rst"
-
-.publish:
-  variables:
-    GIT_STRATEGY: none
-    GIT_STRATEGY: none
-    GIT_AUTHOR_NAME: $GITLAB_USER_NAME
-    GIT_AUTHOR_EMAIL: $GITLAB_USER_EMAIL
-    GIT_COMMITTER_NAME: $GITLAB_USER_NAME
-    GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
-  interruptible: false
-  resource_group: prod
-  image: $GIT_SYNC
+  DOC_TARGET_NAME: "ucsschool-id-connector"
+  DOC_TARGET_PATH: "$DOC_TARGET_NAME"
 
 .omar:
   variables:
@@ -41,49 +22,70 @@ cache:
   tags:
     - omar
 
-
 linkcheck:
-  extends: .prep
-  stage: build
-  script:
-    - make -C "$DOCS_DIR" -e SPHINXOPTS="-W --keep-going" linkcheck
-  artifacts:
-    paths:
-      - $DOCS_DIR/_build/linkcheck
+  extends: .sphinx-linkcheck-template
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 spelling:
-  extends: .prep
-  stage: build
-  script:
-    - make -C "$DOCS_DIR" -e SPHINXOPTS="-W --keep-going" spelling
-  artifacts:
-    paths:
-      - $DOCS_DIR/_build/spelling
+  extends: .sphinx-spelling-template
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 html:
-  extends: .prep
-  stage: build
-  script:
-    - make -C "$DOCS_DIR" html
-    - mkdir -p "$CI_PROJECT_DIR"/out
-    - rsync -av --delete --exclude-from="$CI_PROJECT_DIR"/"$DOCS_DIR"/pipeline-rsync-exclude.txt "$DOCS_DIR"/_build/html/ "$CI_PROJECT_DIR"/out
-  artifacts:
-    paths:
-      - $DOCS_DIR/_build/html
-      - out
+  extends: .sphinx-html-template
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+pdf:
+  extends: .sphinx-pdf-template
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+docs-merge:
+  extends: .sphinx-merge-template
+  needs:
+    - job: html
+      artifacts: true
+    - job: pdf
+      artifacts: true
+    - job: spelling
+      artifacts: false
+    - job: linkcheck
+      artifacts: false
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
 
 review:
   stage: review
   rules:
     - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
   extends: .omar
+  needs:
+    - job: docs-merge
+      artifacts: true
   script:
-    - rsync -av --delete "$CI_PROJECT_DIR"/out /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_BUILD_REF_SLUG
+    - rsync -av --delete "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_BUILD_REF_SLUG
   environment:
     name: review/$CI_BUILD_REF_NAME
     url: http://apt.knut.univention.de/download/docs-ucs-school-id-connector.$CI_BUILD_REF_SLUG/
     on_stop: stop_review
     auto_stop_in: 1 week
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 stop_review:
   stage: staging
@@ -99,6 +101,10 @@ stop_review:
   environment:
     name: review/$CI_BUILD_REF_NAME
     action: stop
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 
 pages:
@@ -106,16 +112,22 @@ pages:
   rules:
       - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image: $GIT_SYNC
+  needs:
+    - job: docs-merge
+      artifacts: true
   script:
-    - mkdir public
-    - rsync -av --delete "$CI_PROJECT_DIR"/out/ public
+    - mv "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" public
   environment:
     name: pages/$CI_BUILD_REF_NAME
-    url: https://univention.gitpages.knut.univention.de/components/ucsschool-id-connector/
+    url: https://univention.gitpages.knut.univention.de/components/$DOC_TARGET_NAME/
   artifacts:
     paths:
       - public
     expire_in: 1 week
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 staging:
   stage: staging
@@ -123,20 +135,38 @@ staging:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   script:
-      - rsync -av --delete "$CI_PROJECT_DIR"/out/ /var/univention/buildsystem2/test_mirror/ftp/download/docs/ucsschool-id-connector/
+      - rsync -av --delete "$CI_PROJECT_DIR"/out/ /var/univention/buildsystem2/test_mirror/ftp/download/docs/"$DOC_TARGET_NAME"/
   environment:
     name: staging
-    url: http://apt.knut.univention.de/download/docs/ucsschool-id-connector/
+    url: http://apt.knut.univention.de/download/docs/$DOC_TARGET_NAME/
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 production:
-  stage: production
-  extends: .publish
+  stage: deploy
   cache:
     key: docs-$CI_COMMIT_REF_SLUG
     paths:
       - univention-docs
+  interruptible: false
+  variables:
+    GIT_STRATEGY: none
+    GIT_AUTHOR_NAME: $GITLAB_USER_NAME
+    GIT_AUTHOR_EMAIL: $GITLAB_USER_EMAIL
+    GIT_COMMITTER_NAME: $GITLAB_USER_NAME
+    GIT_COMMITTER_EMAIL: $GITLAB_USER_EMAIL
+  needs:
+    - job: docs-merge
+      artifacts: true
+  resource_group: prod
+  image: $GIT_SYNC
   rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+      if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       when: manual
   script:
     - git config --global credential.$CI_SERVER_URL.username ucsschool-id-connector-docs-deployment
@@ -146,10 +176,10 @@ production:
     - git clean --force -d
     - git fetch --no-tags origin
     - git reset --hard origin/master
-    - rsync -av --delete "$CI_PROJECT_DIR"/out/ ./ucsschool-id-connector/
+    - rsync -av --delete "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME"/ ./"$DOC_TARGET_NAME"/
     - git add -- .
     - git commit -m "Automatic doc deployment from $CI_PROJECT_PATH by GitLab commit $CI_COMMIT_SHA"
     - git push
   environment:
     name: production
-    url: http://updates.knut.univention.de/download/docs/
+    url: http://updates.knut.univention.de/download/docs/$DOC_TARGET_NAME
