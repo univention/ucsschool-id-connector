@@ -10,7 +10,7 @@ Administration
 Admin overview
 ==============
 
-.. figure:: images/ucsschool-id-connector_overview_extended.svg
+.. figure:: images/ucsschool-id-connector_overview_extended.*
    :width: 700
 
    Simplified overview of the |IDC|

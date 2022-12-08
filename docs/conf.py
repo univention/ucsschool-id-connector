@@ -39,6 +39,7 @@ extensions = [
     "sphinxcontrib.spelling",
     "sphinxcontrib.bibtex",
     "sphinx.ext.intersphinx",
+    "sphinxcontrib.inkscapeconverter",
 ]
 
 bibtex_bibfiles = ["bibliography.bib"]
@@ -120,6 +121,18 @@ if "spelling" in sys.argv:
     spelling_show_suggestions = True
     spelling_warning = True
     spelling_word_list_filename = ["spelling_wordlist"]
+
+root_doc = "index"
+doc_basename = "ucsschool-id-connector"
+
+latex_engine = 'lualatex'
+latex_show_pagerefs = True
+latex_show_urls = "footnote"
+latex_documents = [(root_doc, f'{doc_basename}.tex', project, author, "manual", False)]
+latex_elements = {
+    "papersize": "a4paper",
+}
+
 
 linkcheck_allowed_redirects = {
     r"https://pytest\.org": r"https://docs\.pytest\.org/en/.*",

@@ -10,7 +10,7 @@ Development
 Overview
 ========
 
-.. figure:: images/id-connector-containers-simplified.svg
+.. figure:: images/id-connector-containers-simplified.*
    :width: 400
 
    |IDC| - Containers (`C4 Style <https://c4model.com/>`_)
@@ -137,7 +137,7 @@ Overview, less simplified
 -------------------------
 
 
-.. figure:: images/id-connector-containers.svg
+.. figure:: images/id-connector-containers.*
    :width: 400
 
 .. include:: legend.txt
@@ -156,7 +156,7 @@ DC Primary
 ----------
 
 
-.. figure:: images/id-connector-container-ucs.svg
+.. figure:: images/id-connector-container-ucs.*
    :width: 700
 
 .. include:: legend.txt
@@ -192,7 +192,7 @@ ID Connector
 ------------
 
 
-.. figure:: images/id-connector-container-docker.svg
+.. figure:: images/id-connector-container-docker.*
    :width: 700
 
 
@@ -227,7 +227,7 @@ The complete picture is a bit crowded. If you want see it anyway, here are your 
 
 .. collapse:: Complete overview, C4 style
 
-    .. figure:: images/id-connector-unified.svg
+    .. figure:: images/id-connector-unified.*
        :width: 800
 
     .. include:: legend.txt
@@ -235,7 +235,7 @@ The complete picture is a bit crowded. If you want see it anyway, here are your 
 
 .. collapse:: Overview, manually drawn, with file locations
 
-    .. figure:: images/ucsschool-id-connector_details2.svg
+    .. figure:: images/ucsschool-id-connector_details2.*
        :width: 800
 
        The |IDC|, *not* simplified.
@@ -250,7 +250,7 @@ running the |IDC| requires an LDAP, listeners etc., so you really need a full-bl
 UCS installation. Hence, we rather have a local checkout on the development machine,
 and then sync the code changes into an |IDC| container that is running on a VM.
 
-.. figure:: images/dev_setup.svg
+.. figure:: images/dev_setup.*
    :width: 700
 
 .. include:: legend.txt

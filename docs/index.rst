@@ -11,10 +11,11 @@ Welcome to |UAS| ID Connector's documentation!
 ****************************************************
 
 
-.. image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
+.. image:: /images/License-AGPL-v3-orange.*
     :alt: GNU AGPL V3 license
     :target: https://www.gnu.org/licenses/agpl-3.0
-.. image:: https://img.shields.io/badge/python-3.8-blue.svg
+
+.. image:: /images/python-3.8-blue.*
     :alt: Python 3.8
     :target: https://www.python.org/downloads/release/python-382/
 
@@ -29,7 +30,7 @@ For this a configuration is necessary in advance to create an assignment
 "Which school users should be transferred to which remote instance?"
 Then these users are created, updated and deleted.
 
-.. figure:: images/ucsschool-id-connector_overview_extended.svg
+.. figure:: images/ucsschool-id-connector_overview_extended.*
    :width: 600
    :align: center
 
