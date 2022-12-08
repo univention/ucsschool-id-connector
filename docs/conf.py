@@ -19,8 +19,8 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = "UCS@school ID Connector"
-copyright = "2021, univention"
-author = "univention"
+copyright = "2021, Univention GmbH"
+author = "Univention GmbH"
 
 # The full version, including alpha/beta/rc tags
 release = "2.2.4"
