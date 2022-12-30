@@ -1,10 +1,5 @@
 FROM alpine:3.12
 
-ARG app_id
-ARG commit
-ARG date
-ARG version
-
 VOLUME /var/log
 
 WORKDIR /ucsschool-id-connector
@@ -13,11 +8,6 @@ EXPOSE 8911
 
 CMD ["/sbin/init"]
 
-LABEL "description"="Image of UCS app 'UCS@school ID Connector' ('$app_id')." \
-    "url"="https://www.univention.com/products/univention-app-center/app-catalog/$app_id/" \
-    "version"="$version" \
-    "release date"="$date" \
-    "commit"="$commit"
 
 # package and Python dependency installation, base system configuration,
 # and uninstallation - all in one step to keep image small
@@ -71,3 +61,14 @@ RUN cd /ucsschool-id-connector/src && \
     rst2html5-3 README.rst README.html && \
     rst2html5-3 HISTORY.rst HISTORY.html && \
     rm -rf /ucsschool-id-connector/src/.eggs/ /ucsschool-id-connector/src/.pytest_cache/ /root/.cache/ /tmp/pip*
+
+ARG app_id
+ARG commit
+ARG date
+ARG version
+
+LABEL "description"="Image of UCS app 'UCS@school ID Connector' ('$app_id')." \
+    "url"="https://www.univention.com/products/univention-app-center/app-catalog/$app_id/" \
+    "version"="$version" \
+    "release date"="$date" \
+    "commit"="$commit"
