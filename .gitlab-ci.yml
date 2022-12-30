@@ -4,6 +4,7 @@ include:
   - project: univention/dist/docker-services
     file:
     - pre-commit.yml
+    - kaniko.yml
 
 workflow:
   rules:
@@ -38,6 +39,13 @@ run_pre_commit:
   extends: .pre-commit
   variables:
     PRE_COMMIT_IMAGE: "docker-registry.knut.univention.de/knut/pre-commit-opa-python3.8"
+
+build_docker_image:
+  stage: build
+  extends: .kaniko
+  variables:
+      KANIKO_BUILD_CONTEXT: "$CI_PROJECT_DIR/"
+      KANIKO_ARGS: --build-arg app_id="$APP_ID" --build-arg commit="$CI_COMMIT_SHA" --build-arg date="$CI_JOB_STARTED_AT" --cache=true --cache-repo $CI_REGISTRY_IMAGE/cache --cache-copy-layers
 
 # docu pipelines
 

@@ -133,12 +133,10 @@ Build release
 
 * Update the apps version in ``VERSION.txt``.
 * Add an entry to ``src/HISTORY.rst``.
-* Build and push Docker image to Docker registry
 
-To upload ("push") a new Docker image to Univentions Docker registry (``docker-test.software-univention.de``), run::
+Docker images are build in merge requests and when pushing to main.
+When releasing the App, make sure to update the docker tags, e.g. via the [docker-update jenkins job](https://univention-dist-jenkins.k8s.knut.univention.de/job/UCS-5.0/job/Apps/job/ucsschool-id-connector/job/App%20Autotest%20MultiEnv/)
 
-    $ cd ~/git/ucsschool-id-connector
-    $ make build-docker-img-on-knut
 
 Automatic documentation build
 -----------------------------
