@@ -82,7 +82,10 @@ docs-merge:
 review:
   stage: review
   rules:
-    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+      if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
   extends: .omar
   needs:
     - job: docs-merge
@@ -94,15 +97,15 @@ review:
     url: http://apt.knut.univention.de/download/docs-ucs-school-id-connector.$CI_BUILD_REF_SLUG/
     on_stop: stop_review
     auto_stop_in: 1 week
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+
 
 stop_review:
   stage: staging
   rules:
-    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+      if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
       when: manual
   needs:
     - review
@@ -113,16 +116,15 @@ stop_review:
   environment:
     name: review/$CI_BUILD_REF_NAME
     action: stop
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
 
 
 pages:
   stage: staging
   rules:
-      - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      - changes:
+          - $DOCS_DIR/**/*
+          - "src/HISTORY.rst"
+        if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image: $GIT_SYNC
   needs:
     - job: docs-merge
@@ -136,25 +138,22 @@ pages:
     paths:
       - public
     expire_in: 1 week
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+
 
 staging:
   stage: staging
   extends: .omar
   rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+      if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   script:
       - rsync -av --delete "$CI_PROJECT_DIR"/out/ /var/univention/buildsystem2/test_mirror/ftp/download/docs/"$DOC_TARGET_NAME"/
   environment:
     name: staging
     url: http://apt.knut.univention.de/download/docs/$DOC_TARGET_NAME/
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+
 
 production:
   stage: deploy
