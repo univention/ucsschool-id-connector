@@ -67,7 +67,6 @@ COPY src/ /ucsschool-id-connector/src/
 COPY VERSION.txt /ucsschool-id-connector
 COPY examples/ /ucsschool-id-connector/examples/
 RUN cd /ucsschool-id-connector/src && \
-    python3 -m pytest -l -v --color=yes tests/unittests && \
     python3 -m pip install --no-cache-dir --compile --editable . && \
     rst2html5-3 README.rst README.html && \
     rst2html5-3 HISTORY.rst HISTORY.html && \
