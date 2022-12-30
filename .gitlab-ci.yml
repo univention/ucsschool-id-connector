@@ -1,8 +1,12 @@
 include:
   - project: 'univention/documentation/sphinx-docker'
     file: 'pipeline/sphinx.yml'
+  - project: univention/dist/docker-services
+    file:
+    - pre-commit.yml
 
 stages:
+  - lint
   - build
   - merge
   - review
@@ -21,6 +25,14 @@ variables:
     GIT_STRATEGY: none
   tags:
     - omar
+
+run_pre_commit:
+  stage: lint
+  extends: .pre-commit
+  variables:
+    PRE_COMMIT_IMAGE: "docker-registry.knut.univention.de/knut/pre-commit-opa-python3.8"
+
+# docu pipelines
 
 linkcheck:
   extends: .sphinx-linkcheck-template
