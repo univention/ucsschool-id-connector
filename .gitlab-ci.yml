@@ -146,8 +146,8 @@ pages:
   stage: staging
   rules:
       - changes:
-          - $DOCS_DIR/**/*
-          - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
         if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image: $GIT_SYNC
   needs:
