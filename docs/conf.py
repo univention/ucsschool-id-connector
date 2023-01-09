@@ -55,7 +55,7 @@ intersphinx_mapping = {
     "uv-ucsschool-import": ("https://docs.software-univention.de/ucsschool-import/5.0/de", None),
     "uv-ucsschool-kelvin-rest-api": (
         "https://docs.software-univention.de/ucsschool-kelvin-rest-api",
-        None
+        None,
     ),
     "uv-ucsschool-manual": ("https://docs.software-univention.de/ucsschool-manual/5.0/de", None),
 }
