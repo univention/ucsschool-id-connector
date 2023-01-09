@@ -53,7 +53,10 @@ intersphinx_mapping = {
     "uv-developer-reference": ("https://docs.software-univention.de/developer-reference/5.0/en", None),
     "uv-manual": ("https://docs.software-univention.de/manual/5.0/en", None),
     "uv-ucsschool-import": ("https://docs.software-univention.de/ucsschool-import/5.0/de", None),
-    "uv-ucsschool-kelvin-rest-api": ("https://docs.software-univention.de/ucsschool-kelvin-rest-api", None),
+    "uv-ucsschool-kelvin-rest-api": (
+        "https://docs.software-univention.de/ucsschool-kelvin-rest-api",
+        None
+    ),
     "uv-ucsschool-manual": ("https://docs.software-univention.de/ucsschool-manual/5.0/de", None),
 }
 
@@ -129,10 +132,10 @@ if "spelling" in sys.argv:
 
 root_doc = "index"
 
-latex_engine = 'lualatex'
+latex_engine = "lualatex"
 latex_show_pagerefs = True
 latex_show_urls = "footnote"
-latex_documents = [(root_doc, f'{doc_basename}.tex', project, author, "manual", False)]
+latex_documents = [(root_doc, f"{doc_basename}.tex", project, author, "manual", False)]
 latex_elements = {
     "papersize": "a4paper",
 }
