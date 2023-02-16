@@ -233,7 +233,8 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
     @staticmethod
     async def _handle_attr_disabled(obj: ListenerUserAddModifyObject) -> bool:
         """Pass on state of 'disabled'."""
-        return obj.object["disabled"] == "1"
+        # second operand is for backwards compatibility (ListenerUDMVersion=1)
+        return obj.object["disabled"] is True or obj.object["disabled"] == "1"
 
     async def _handle_attr_password(self, obj: ListenerUserAddModifyObject) -> str:
         """Generate a random password, unless password hashes are to be sent."""

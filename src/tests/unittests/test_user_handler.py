@@ -97,7 +97,7 @@ async def test_map_attributes(
     roles_on_target = await user_handler.roles_on_target
     school_uri = schools_ids_on_target[school]
     exp = {
-        "disabled": user_obj.object["disabled"] == "1",
+        "disabled": user_obj.object["disabled"],
         "firstname": user_obj.object["firstname"],
         "lastname": user_obj.object["lastname"],
         "name": user_obj.username,
@@ -107,6 +107,7 @@ async def test_map_attributes(
         "school_classes": user_obj.object.get("school_classes", {}),
         "schools": list(schools_ids_on_target.values()),
         "source_uid": user_obj.source_uid,
+        "udm_properties": {"pwdChangeNextLogin": user_obj.object["pwdChangeNextLogin"]},
     }
     if api == "kelvin":
         kelvin_password_hashes = user_obj.user_passwords.dict_krb5_key_base64_encoded()

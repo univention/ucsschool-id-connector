@@ -27,6 +27,7 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import asyncio
 import copy
 import time
 import traceback
@@ -99,19 +100,33 @@ def assert_equal_password_hashes(school_auth_host_configs):
     async def _func(username: str, host1: str, host2: str) -> None:
         print(f"Comparing password hashes of user {username!r} on host {host1!r} and {host2!r}...")
         ldap_access1 = LDAPAccess(host=host1, ldap_base=school_auth_host_configs["base_dn_traeger1"])
-        hashes1 = await ldap_access1.get_passwords(
-            username,
-            base=school_auth_host_configs["base_dn_traeger1"],
-            bind_dn=school_auth_host_configs["administrator_dn_traeger1"],
-            bind_pw="univention",
-        )
         ldap_access2 = LDAPAccess(host=host2, ldap_base=school_auth_host_configs["base_dn_traeger2"])
-        hashes2 = await ldap_access2.get_passwords(
-            username,
-            base=school_auth_host_configs["base_dn_traeger2"],
-            bind_dn=school_auth_host_configs["administrator_dn_traeger2"],
-            bind_pw="univention",
-        )
+        timeout = 20
+        remaining_time = timeout
+
+        # sambaPwdLastSet may need a few seconds to sync
+        while True:
+            hashes1 = await ldap_access1.get_passwords(
+                username,
+                base=school_auth_host_configs["base_dn_traeger1"],
+                bind_dn=school_auth_host_configs["administrator_dn_traeger1"],
+                bind_pw="univention",
+            )
+            hashes2 = await ldap_access2.get_passwords(
+                username,
+                base=school_auth_host_configs["base_dn_traeger2"],
+                bind_dn=school_auth_host_configs["administrator_dn_traeger2"],
+                bind_pw="univention",
+            )
+
+            if hashes1 == hashes2:
+                break
+            elif remaining_time <= 0:
+                break
+
+            await asyncio.sleep(1)
+            remaining_time -= 1
+
         assert hashes1 == hashes2
 
     return _func
@@ -273,6 +288,9 @@ async def test_delete_user(
 async def change_properties(session: Session, username: str, changes: Dict[str, Any]) -> User:
     user: User = await UserResource(session=session).get(name=username)
     for property, value in changes.items():
+        if property == "udm_properties":
+            for udm_property, udm_value in value.items():
+                user.udm_properties[udm_property] = udm_value
         assert hasattr(user, property)
         setattr(user, property, value)
     return await user.save()
@@ -288,6 +306,7 @@ async def test_modify_user(
     docker_hostname,
     check_password,
     compare_user,
+    compare_dicts,
     school_auth_host_configs,
     kelvin_session,
     wait_for_kelvin_object_exists,
@@ -338,18 +357,31 @@ async def test_modify_user(
         "birthday": fake.date_of_birth(minimum_age=6, maximum_age=67),
         "expiration_date": fake.date_between(start_date="+1y", end_date="+10y"),
         "password": new_password,
+        "udm_properties": {
+            "pwdChangeNextLogin": not sender_user["udm_properties"]["pwdChangeNextLogin"],
+            "title": fake.first_name(),
+        },
     }
     await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
     user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]
     )
 
+    # compare without password and udm properties
     del new_value["password"]
-    compare_user(new_value, user_on_host.as_dict(), new_value.keys())
+    keys_to_check = set(new_value.keys())
+    keys_to_check.remove("udm_properties")
+    compare_dicts(new_value, user_on_host.as_dict(), keys_to_check)
+
+    # compare udm_properties
+    udm_keys_to_check = new_value["udm_properties"].keys()
+    compare_dicts(
+        new_value["udm_properties"], user_on_host.as_dict()["udm_properties"], udm_keys_to_check
+    )
     # Check if user was modified on target host
     timeout = 40
     while timeout > 0:
-        time.sleep(5)
+        await asyncio.sleep(5)
         timeout -= 5
         remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
             name=sender_user["name"]
@@ -362,14 +394,35 @@ async def test_modify_user(
     remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
         name=sender_user["name"]
     )
+
     compare_user(user_on_host.as_dict(), remote_user.as_dict())
 
+    # jkoeniger/22.02.2023: Check also keys from keys_to_check and udm_properties
+    compare_dicts(user_on_host.as_dict(), remote_user.as_dict(), keys_to_check)
+    compare_dicts(
+        user_on_host.as_dict()["udm_properties"],
+        remote_user.as_dict()["udm_properties"],
+        udm_keys_to_check,
+    )
+
+    # we need to enable the user and allow login via the old password before the check
+    # changing pwdChangeNextLogin back to False/0 also sets sambaPwdLastSet
+    await change_properties(
+        kelvin_session(docker_hostname),
+        sender_user["name"],
+        {"disabled": False, "udm_properties": {"pwdChangeNextLogin": False}},
+    )
+
     print("Checking password change...")
-    await change_properties(kelvin_session(docker_hostname), sender_user["name"], {"disabled": False})
     check_password(sender_user["name"], new_password, docker_hostname)
+
+    # same for the remote user1
     remote_user.disabled = False
+    remote_user.udm_properties["pwdChangeNextLogin"] = False
+
     await remote_user.save()
     check_password(sender_user["name"], new_password, target_ip_1)
+
     await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
 
 

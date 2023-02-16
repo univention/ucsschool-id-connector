@@ -204,6 +204,7 @@ def school_auth_config_kelvin(docker_hostname: str, http_request, school_auth_ho
                             "userexpiry": "expiration_date",
                             "phone": "phone",
                             "ucsschoolRecordUID": "record_uid",
+                            "pwdChangeNextLogin": "pwdChangeNextLogin",
                         },
                     },
                     "password": "univention",
