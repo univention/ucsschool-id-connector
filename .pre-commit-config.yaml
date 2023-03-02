@@ -57,7 +57,7 @@ repos:
     -   id: seed-isort-config
         args: [--application-directories, src]
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
     -   id: isort
         entry: isort --check-only --diff
