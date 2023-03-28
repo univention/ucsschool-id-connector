@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+**v2.2.5 (2023-03-29)**
+
+* The boolean attribute ``disabled`` is now synced correctly (Bug #54307).
+
 **v2.2.4 (2022-08-25)**
 
 * Users with multiple schools are now updated correctly if the Kelvin REST API is installed in version ``1.5.4`` or above on the school authority side.

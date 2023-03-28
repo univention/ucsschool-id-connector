@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.2.5 (2023-03-29)</h2>
+<ul>
+    <li>
+        The boolean attribute <code>disabled</code> is now synced correctly (Bug #54307).
+    </li>
+</ul>
+
 <h2>v2.2.4 (2022-08-25)</h2>
 <ul>
     <li>
