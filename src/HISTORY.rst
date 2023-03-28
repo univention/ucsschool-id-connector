@@ -7,7 +7,7 @@ Changelog
 
 **v2.2.5 (2023-03-29)**
 
-* The boolean attribute ``disabled`` is now synced correctly (Bug #54307).
+* Boolean attributes are now synced correctly (Bug #54307).
 
 **v2.2.4 (2022-08-25)**
 
