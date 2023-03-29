@@ -92,7 +92,7 @@ A HTTP-API is required for the integration tests (running in the container) to b
 
     $ univention-app install ucsschool-kelvin-rest-api
     $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json /var/lib/ucs-school-import/configs/user_import.json
-    $ python -c 'import json; fp = open("/var/lib/ucs-school-import/configs/user_import.json", "r+w"); config = json.load(fp); config["configuration_checks"] = ["defaults", "mapped_udm_properties"]; config["mapped_udm_properties"] = ["displayName", "e-mail", "organisation", "phone"]; fp.seek(0); json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
+    $ python -c 'import json; fp = open("/etc/ucsschool/kelvin/mapped_udm_properties.json", "w"); config = {"user": ["pwdChangeNextLogin", "displayName", "e-mail", "organisation", "phone", "title"]}; json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
 
 To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses. Username "Administrator" and password "univention" is assumed. To be executed on the sender system::
 

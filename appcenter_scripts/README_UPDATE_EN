@@ -4,6 +4,8 @@
 <ul>
     <li>
         Boolean attributes are now synced correctly (Bug #54307).
+        The format of objects which are written by the listener and read by the ID Connector plugins changed from version <code>2.2.4</code> and <code>2.2.5</code> (cf. Bug #54773).
+        It now has the format of the UDM Rest API objects (e.g. users and groups). Customized plugins might have to be adapted.
     </li>
 </ul>
 

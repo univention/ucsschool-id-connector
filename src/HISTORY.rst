@@ -7,7 +7,7 @@ Changelog
 
 **v2.2.5 (2023-03-29)**
 
-* Boolean attributes are now synced correctly (Bug #54307).
+* Boolean attributes are now synced correctly (Bug #54307). **Info**: The format of objects which are written by the listener and read by the ID Connector plugins changed from version ``2.2.4`` and ``2.2.5`` (cf. Bug #54773). It now has the format of the UDM Rest API objects (e.g. users and groups). Customized plugins might have to be adapted.
 
 **v2.2.4 (2022-08-25)**
 
