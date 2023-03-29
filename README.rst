@@ -42,15 +42,22 @@ Run ``make`` without argument to see more useful commands::
     coverage             check code coverage with the Python interpreter from 'venv'
     coverage-html        generate HTML coverage report
     install              install the package to the active Python's site-packages
-    build-docker-img     build docker image locally quickly
-    build-docker-img-on-knut copy source to docker.knut, build and push docker image
+
 
 *All commands in the Makefile assume that the virtualenv is active.*
 
-Build Docker image::
 
-    $ cd ~/git/ucsschool-id-connector
-    $ make build-docker-img
+The docker image is built every time something connected to it is pushed. This way you can exchange the docker image on a vm, assuming the ID Connector is installed.
+
+```
+$ image="gitregistry.knut.univention.de/univention/components/ucsschool-id-connector:branch-mybranchname"
+$ app_name="ucsschool-id-connector"
+$ univention-app install $app_name
+$ docker pull "$image"
+$ univention-app dev-set $app_name "DockerImage=$image"
+$ univention-app reinitialize $app_name
+```
+
 
 The Docker image can be started on its own (but won't receive JSON files in the in queue from the listener in the host) by running::
 
