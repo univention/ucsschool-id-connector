@@ -145,6 +145,26 @@ Docker images are build in merge requests and when pushing to main.
 When releasing the App, make sure to update the docker tags, e.g. via the [docker-update jenkins job](https://univention-dist-jenkins.k8s.knut.univention.de/job/UCS-5.0/job/Apps/job/ucsschool-id-connector/job/App%20Autotest%20MultiEnv/)
 
 
+Release the app to the production app center:
+
+```
+@omar
+cd /var/univention/buildsystem2/mirror/appcenter
+./copy_from_appcenter.test.sh 4.4
+./copy_from_appcenter.test.sh 4.4 ucsschool-id-connector_20230109125312
+sudo update_mirror.sh -v appcenter
+```
+
+Close the bugs which are released.
+
+```
+Updates for UCS@school ID Connector 2.2.5 have been released.
+
+https://docs.software-univention.de/ucsschool-id-connector/HISTORY.html
+
+If this error occurs again, please clone this bug.
+```
+
 Automatic documentation build
 -----------------------------
 
