@@ -28,7 +28,7 @@ at the top of the last chapter :doc:`admin`:
   format, e.g. CSV
 * |iUAS| *import* which is a python script to import users into a *DC Primary UCS* System
 * The *DC Primary UCS*  system passes on the user/group data to the actual |iIDC| running
-  in a docker container
+  in a Docker container
 * The |iIDC| finally writes user/group data to the school authorities
 
 This, of course, is a simplification. It is on a container level (in the sense used by
@@ -307,19 +307,17 @@ Run ``make`` without argument to see more useful commands:
 
    $ make
 
-   clean                     remove all build, test, coverage and Python artifacts
-   clean-build               remove build artifacts
-   clean-pyc                 remove Python file artifacts
-   clean-test                remove test and coverage artifacts
-   setup_devel_env           setup development environment (virtualenv)
-   lint                      check style (requires Python interpreter activated from venv)
-   format                    format source code (requires Python interpreter activated from venv)
-   test                      run tests with the Python interpreter from 'venv'
-   coverage                  check code coverage with the Python interpreter from 'venv'
-   coverage-html             generate HTML coverage report
-   install                   install the package to the active Python's site-packages
-   build-docker-img          build docker image locally quickly
-   build-docker-img-on-knut  copy source to docker.knut, build and push docker image
+    clean                     remove all build, test, coverage and Python artifacts
+    clean-build               remove build artifacts
+    clean-pyc                 remove Python file artifacts
+    clean-test                remove test and coverage artifacts
+    setup_devel_env           setup development environment (virtualenv)
+    lint                      check style (requires Python interpreter activated from venv)
+    format                    format source code (requires Python interpreter activated from venv)
+    test                      run tests with the Python interpreter from 'venv'
+    coverage                  check code coverage with the Python interpreter from 'venv'
+    coverage-html             generate HTML coverage report
+    install                   install the package to the active Python's site-packages
 
 Virtual machine
 ---------------
@@ -623,11 +621,8 @@ Building
 Build docker image
 ------------------
 
-Build the docker image:
+The repository contains a ``Dockerfile`` which can be used to build a Docker container.
 
-.. code-block:: bash
-
-   $ make build-docker-img
 
 The image can't easily be used productively, so this only for testing and development purposes:
 
@@ -676,15 +671,8 @@ Build release image
 
 * Update the apps version in ``VERSION.txt``.
 * Add an entry to ``src/HISTORY.rst``.
-* Build and push Docker image to Docker registry
-
-To upload ("push") a new Docker image to the Univention Docker registry
-(``docker-test.software-univention.de``), run:
-
-.. code-block:: bash
-
-   $ cd ~/git/ucsschool-id-connector
-   $ make build-docker-img-on-knut
+* The Docker image is built inside a pipeline.
+* The Docker image has to be tagged adapted in the provider portal.
 
 
 Integration tests
