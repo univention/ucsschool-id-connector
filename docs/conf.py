@@ -35,7 +35,6 @@ release = "2.2.5"
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "sphinxcontrib.mermaid",
     "sphinx.ext.autosectionlabel",
     "sphinx_toolbox.collapse",
     "sphinx_copybutton",

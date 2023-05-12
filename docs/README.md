@@ -14,7 +14,7 @@ https://univention.gitpages.knut.univention.de/components/ucsschool-id-connector
 # Build and install of the documentation
 
 ```bash
-  pip install sphinx livereload myst-parser sphinxcontrib-mermaid sphinx-toolbox sphinx-copybutton
+  pip install sphinx livereload myst-parser sphinx-toolbox sphinx-copybutton
   mkdir -p ~/tmp
   # do the following if you trust nissedals cert, otherwise download in your browser
   curl -k -o ~/tmp/ucs-root-ca.crt https://nissedal.knut.univention.de/ucs-root-ca.crt
