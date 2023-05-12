@@ -180,7 +180,7 @@ Use of both is explained later on in `Authentication`_
 
    .. code-block:: bash
 
-         $ udm groups/group list --filter cn=ucsschool-id-connector-admins
+      $ udm groups/group list --filter cn=ucsschool-id-connector-admins
 
 
 .. note::
@@ -268,7 +268,7 @@ you can define additional UDM properties that should be available in the |KLV| A
 
 For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``, e.g.:
 
-.. code-block::
+.. code-block:: json
 
    {
        "user": ["title", "phone", "e-mail"],
@@ -379,9 +379,8 @@ to properties on the receiving side.
 
 Here is what the mapping related part of an example configuration looks like:
 
-.. code-block::
+.. code-block:: json
 
-   ...
     {
         "plugin_configs": {
             "kelvin": {
@@ -395,7 +394,6 @@ Here is what the mapping related part of an example configuration looks like:
             }
         }
     }
-   ...
 
 This configures a mapping for the |KLV| plugin that sends the three defined properties to the
 receiving school:
@@ -410,7 +408,9 @@ receiving school:
 
 .. warning::
 
-   When creating users via Kelvin, some attributes are required and therefore have to be present within the mapping::
+   When creating users via Kelvin, some attributes are required and therefore have to be present within the mapping:
+
+   .. code-block:: json
 
       {
         "firstname": "firstname",
@@ -423,11 +423,10 @@ receiving school:
         "ucsschoolSourceUID": "source_uid"
       }
 
-
-
 Here is a complete example that you can also find in the section  :ref:`school-authority-mapping`.
 
 .. literalinclude:: ../examples/school_authority_kelvin.json
+   :language: json
 
 .. _auth_config:
 
@@ -463,13 +462,12 @@ sync to which authority - an authority could handle more than one school, so it'
 
 The format is:
 
-.. code-block::
+.. code-block:: json
 
    {
      "mapping": {
        "NAME_OF_SCHOOL": "NAME_OF_RECIPIENT",
        "ANOTHER_SCHOOL": "OTHER_OR_SAME_RECIPIENT",
-       ...
       }
    }
 
@@ -478,7 +476,7 @@ You can have one or more schools in the mapping.
 So assuming you have a ``DEMOSCHOOL`` on your sending system, and you used the above configuration
 to define ``Traeger1`` as a recipient system, you could do:
 
-.. code-block::
+.. code-block:: json
 
    {
      "mapping": {
@@ -547,8 +545,6 @@ An example for such a configuration can be found in :ref:`role-specific-kelvin-p
 
 .. warning::
 
-
-
    Users have the field ``school_classes``, which describes which school classes they belong to.
    You might want to prevent certain user roles from being added or removed to school classes.
    Please be aware that leaving out the ``school_classes`` from the mapping is not sufficient to achieve this:
@@ -594,6 +590,7 @@ This results in school classes having only members with roles not configured to 
 + any users added on the target system which are unknown to the ID Connector.
 
 .. warning::
+
    To achieve this behavior, several additional LDAP queries on the |IDC|
    and one additional request to the target system are necessary.
    This affects performance.
@@ -607,6 +604,7 @@ which holds the list of user roles to ignore for school class changes.
 See :ref:`partial-groupsync` for an example configuration.
 
 .. warning::
+
    Please be aware that this plugin can only alter the handling of dedicated school class change events.
    Due to the technical situation, changing the members of a school class often results in two events,
    a school class change and a user change.

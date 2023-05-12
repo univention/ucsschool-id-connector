@@ -63,7 +63,7 @@ and we hope to teach you how to develop plugins for |IDC| as well.
 
    .. code-block:: bash
 
-       $ echo "hello world"
+      $ echo "hello world"
 
    (Hover with your mouse over the code to see the icon)
 

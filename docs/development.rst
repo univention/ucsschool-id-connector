@@ -277,23 +277,23 @@ Machine
 
 Setup development environment:
 
-.. code-block:: bash
+.. code-block:: console
 
-    $ # clone ucsschool-id-connector
-    $ cd ucsschool-id-connector
-    $ make setup_devel_env
-    $ . venv/bin/activate
-    $ make install
-    $ pre-commit run -a
+   # clone ucsschool-id-connector
+   $ cd ucsschool-id-connector
+   $ make setup_devel_env
+   $ . venv/bin/activate
+   $ make install
+   $ pre-commit run -a
 
 
 This will create a directory ``venv`` with a Python virtual environment with the app and all its dependencies in it.
 
 You can later on also "activate" the ``venv`` using:
 
-.. code-block:: bash
+.. code-block:: console
 
-    $ . venv/bin/activate
+   $ . venv/bin/activate
 
 
 .. warning::
@@ -303,23 +303,23 @@ You can later on also "activate" the ``venv`` using:
 
 Run ``make`` without argument to see more useful commands:
 
-.. code-block::
+.. code-block:: console
 
-    $ make
+   $ make
 
-    clean                     remove all build, test, coverage and Python artifacts
-    clean-build               remove build artifacts
-    clean-pyc                 remove Python file artifacts
-    clean-test                remove test and coverage artifacts
-    setup_devel_env           setup development environment (virtualenv)
-    lint                      check style (requires Python interpreter activated from venv)
-    format                    format source code (requires Python interpreter activated from venv)
-    test                      run tests with the Python interpreter from 'venv'
-    coverage                  check code coverage with the Python interpreter from 'venv'
-    coverage-html             generate HTML coverage report
-    install                   install the package to the active Python's site-packages
-    build-docker-img          build docker image locally quickly
-    build-docker-img-on-knut  copy source to docker.knut, build and push docker image
+   clean                     remove all build, test, coverage and Python artifacts
+   clean-build               remove build artifacts
+   clean-pyc                 remove Python file artifacts
+   clean-test                remove test and coverage artifacts
+   setup_devel_env           setup development environment (virtualenv)
+   lint                      check style (requires Python interpreter activated from venv)
+   format                    format source code (requires Python interpreter activated from venv)
+   test                      run tests with the Python interpreter from 'venv'
+   coverage                  check code coverage with the Python interpreter from 'venv'
+   coverage-html             generate HTML coverage report
+   install                   install the package to the active Python's site-packages
+   build-docker-img          build docker image locally quickly
+   build-docker-img-on-knut  copy source to docker.knut, build and push docker image
 
 Virtual machine
 ---------------
@@ -328,27 +328,31 @@ You need to install the |IDC| app through the |AppC| on your development VM.
 
 When started through the |AppC| use the following to enter the container of the app:
 
-.. code-block:: bash
+.. code-block:: console
 
-    $ univention-app shell ucsschool-id-connector
+   $ univention-app shell ucsschool-id-connector
 
 
 Inside the container, you can use the system Python:
 
-.. code-block:: bash
+.. code-block::
 
-    /ucsschool-id-connector$ python3
-    Python 3.8.2 (default, Feb 29 2020, 17:03:31)
-    [GCC 9.2.0] on linux
-    Type "help", "copyright", "credits" or "license" for more information.
-    >>> from ucsschool_id_connector import models
+   # in the directory ucsschool-id-connector
+   $ python3
+   Python 3.8.2 (default, Feb 29 2020, 17:03:31)
+   [GCC 9.2.0] on linux
+   Type "help", "copyright", "credits" or "license" for more information.
+   >>> from ucsschool_id_connector import models
 
-    /ucsschool-id-connector$ ipython
-    Python 3.8.2 (default, Feb 29 2020, 17:03:31)
-    Type 'copyright', 'credits' or 'license' for more information
-    IPython 7.13.0 -- An enhanced Interactive Python. Type '?' for help.
+.. code-block::
 
-    In [1]: from ucsschool_id_connector import models
+   # in the directory ucsschool-id-connector
+   $ ipython
+   Python 3.8.2 (default, Feb 29 2020, 17:03:31)
+   Type 'copyright', 'credits' or 'license' for more information
+   IPython 7.13.0 -- An enhanced Interactive Python. Type '?' for help.
+
+   In [1]: from ucsschool_id_connector import models
 
 
 Now, to synchronize your working copy into the running |IDC| container on the
@@ -414,10 +418,10 @@ To start them manually in the installed apps running Docker container, run:
 
 .. code-block:: bash
 
-    root@ucs-host:# univention-app shell ucsschool-id-connector
-    $ cd src/
-    $ python3 -m pytest -l -v tests/unittests
-    $ exit
+   root@ucs-host:# univention-app shell ucsschool-id-connector
+   $ cd src/
+   $ python3 -m pytest -l -v tests/unittests
+   $ exit
 
 
 Plugin development
@@ -431,9 +435,10 @@ The `pluggy <https://pluggy.readthedocs.io/en/latest/>`_ plugin system is used
 to define, implement and call plugins.
 
 .. hint::
-    To get a quick freshen up on *Pluggy*, best have a look at the
-    `toy example <https://pluggy.readthedocs.io/en/latest/#a-toy-example>`_
-    in the *Pluggy* documentation.
+
+   To get a quick freshen up on *Pluggy*, best have a look at the
+   `toy example <https://pluggy.readthedocs.io/en/latest/#a-toy-example>`_
+   in the *Pluggy* documentation.
 
 The basic idea:
 
@@ -481,30 +486,32 @@ E.g. save the following into a file called ``myplugin.py``:
 
 .. code-block:: python
 
-    from ucsschool_id_connector.utils import ConsoleAndFileLogging
-    from ucsschool_id_connector.plugins import hook_impl, plugin_manager
-    logger = ConsoleAndFileLogging.get_logger(__name__)
+   from ucsschool_id_connector.utils import ConsoleAndFileLogging
+   from ucsschool_id_connector.plugins import hook_impl, plugin_manager
+   logger = ConsoleAndFileLogging.get_logger(__name__)
 
-    class MyPlugin:
+   class MyPlugin:
 
-        @hook_impl
-        def get_listener_object(self, obj_dict):
-            logger.info("Myplugin runs get_listener_obj with %r", obj_dict)
+       @hook_impl
+       def get_listener_object(self, obj_dict):
+           logger.info("Myplugin runs get_listener_obj with %r", obj_dict)
 
-    plugin_manager.register(MyPlugin())
+   plugin_manager.register(MyPlugin())
 
 Restart the |IDC|:
 
 .. code-block:: bash
 
-    $ univention-app  restart ucsschool-id-connector
+   $ univention-app restart ucsschool-id-connector
 
 Now check the queues log in ``/var/log/univention/ucsschool-id-connector/queues.log``
-and find entries like this::
+and find entries like this:
 
-    2021-12-13 14:32:52 INFO  [ucsschool_id_connector.plugin_loader.load_plugins:79] Loaded plugins:
-    [...]
-    2021-12-13 14:32:52 INFO  [ucsschool_id_connector.plugin_loader.load_plugins:81]     'myplugin.MyPlugin': ['get_listener_object']
+.. code-block::
+
+   2021-12-13 14:32:52 INFO  [ucsschool_id_connector.plugin_loader.load_plugins:79] Loaded plugins:
+   [...]
+   2021-12-13 14:32:52 INFO  [ucsschool_id_connector.plugin_loader.load_plugins:81]     'myplugin.MyPlugin': ['get_listener_object']
 
 This tells you that ``MyPlugin`` was found and the hook implementation for ``get_listener_object`` was found.
 
@@ -521,84 +528,81 @@ below ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/`` looks 
 
 .. code-block:: bash
 
-    .../plugins/
-    .../plugins/packages
-    .../plugins/packages/example_package
-    .../plugins/packages/example_package/__init__.py
-    .../plugins/packages/example_package/example_module.py
-    .../plugins/plugins
-    .../plugins/plugins/dummy.py
+   .../plugins/
+   .../plugins/packages
+   .../plugins/packages/example_package
+   .../plugins/packages/example_package/__init__.py
+   .../plugins/packages/example_package/example_module.py
+   .../plugins/plugins
+   .../plugins/plugins/dummy.py
 
 .. note::
 
-    Putting the ``example_package`` into the ``packages`` directory solves
-    an import problem. As the ``packages`` directory is appended to the ``sys.path`` by
-    the module loader in ``plugin_loader.py``, packages herein can be imported
-    easily without being 'properly' installed.
+   Putting the ``example_package`` into the ``packages`` directory solves
+   an import problem. As the ``packages`` directory is appended to the ``sys.path`` by
+   the module loader in ``plugin_loader.py``, packages herein can be imported
+   easily without being 'properly' installed.
 
 
 Content of ``plugins/packages/example_package/example_module.py``:
 
 .. code-block:: python
 
-    #
-    # An example Python module that will be loadable as "example_package.example_module"
-    # if stored in 'plugins/packages/example_package/example_module.py'.
-    # Do not forget to create 'plugins/packages/example_package/__init__.py'.
-    #
+   #
+   # An example Python module that will be loadable as "example_package.example_module"
+   # if stored in 'plugins/packages/example_package/example_module.py'.
+   # Do not forget to create 'plugins/packages/example_package/__init__.py'.
+   #
 
-    from ucsschool_id_connector.utils import ConsoleAndFileLogging
+   from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
-    logger = ConsoleAndFileLogging.get_logger(__name__)
-
-
-    class ExampleClass:
-        def add(self, arg1, arg2):
-            logger.info("Running ExampleClass.add() with arg1=%r arg2=%r.", arg1, arg2)
-            return arg1 + arg2
+   logger = ConsoleAndFileLogging.get_logger(__name__)
 
 
-
+   class ExampleClass:
+       def add(self, arg1, arg2):
+           logger.info("Running ExampleClass.add() with arg1=%r arg2=%r.", arg1, arg2)
+           return arg1 + arg2
 
 Content of ``plugins/plugins/dummy.py``:
 
 .. code-block:: python
 
-    #
-    # An example plugin that will be usable as "plugin_manager.hook.dummy_func()".
-    # It uses a class from a module in a custom package:
-    # plugins/packages/example_package/example_module.py
-    #
+   #
+   # An example plugin that will be usable as "plugin_manager.hook.dummy_func()".
+   # It uses a class from a module in a custom package:
+   # plugins/packages/example_package/example_module.py
+   #
 
-    from ucsschool_id_connector.utils import ConsoleAndFileLogging
-    from ucsschool_id_connector.plugins import hook_impl, hook_spec, plugin_manager
-    from example_package.example_module import ExampleClass
+   from ucsschool_id_connector.utils import ConsoleAndFileLogging
+   from ucsschool_id_connector.plugins import hook_impl, hook_spec, plugin_manager
+   from example_package.example_module import ExampleClass
 
-    logger = ConsoleAndFileLogging.get_logger(__name__)
+   logger = ConsoleAndFileLogging.get_logger(__name__)
 
-    class DummyPluginSpec:
-        @hook_spec(firstresult=True)
-        def dummy_func(self, arg1, arg2):
-            """An example hook."""
+   class DummyPluginSpec:
+       @hook_spec(firstresult=True)
+       def dummy_func(self, arg1, arg2):
+           """An example hook."""
 
-    class DummyPlugin:
-        @hook_impl
-        def dummy_func(self, arg1, arg2):  # <-- this must match the specification!
-            """
-            Example plugin function.
+   class DummyPlugin:
+       @hook_impl
+       def dummy_func(self, arg1, arg2):  # <-- this must match the specification!
+           """
+           Example plugin function.
 
-            Returns the sum of its arguments.
-            Uses a class from a custom package.
-            """
-            logger.info("Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
-            example_obj = ExampleClass()
-            res = example_obj.add(arg1, arg2)
-            assert res == arg1 + arg2
-            return res
+           Returns the sum of its arguments.
+           Uses a class from a custom package.
+           """
+           logger.info("Running DummyPlugin.dummy_func() with arg1=%r arg2=%r.", arg1, arg2)
+           example_obj = ExampleClass()
+           res = example_obj.add(arg1, arg2)
+           assert res == arg1 + arg2
+           return res
 
 
-    # register plugins
-    plugin_manager.register(DummyPlugin())
+   # register plugins
+   plugin_manager.register(DummyPlugin())
 
 
 When the app starts, all plugins will be discovered and logged:
@@ -623,43 +627,43 @@ Build the docker image:
 
 .. code-block:: bash
 
-    $ make build-docker-img
+   $ make build-docker-img
 
 The image can't easily be used productively, so this only for testing and development purposes:
 
 .. code-block:: bash
 
-    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
-      docker-test-upload.software-univention.de/ucsschool-id-connector:$(cat VERSION.txt)
+   $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
+     docker-test-upload.software-univention.de/ucsschool-id-connector:$(cat VERSION.txt)
 
 .. note::
 
-    When the container is started that way (not through the |AppC|)
-    it must be accessed through ``https://FQDN:8911/ucsschool-id-connector/api/v1/docs``
-    after stopping the firewall (``service univention-firewall stop``).
+   When the container is started that way (not through the |AppC|)
+   it must be accessed through ``https://FQDN:8911/ucsschool-id-connector/api/v1/docs``
+   after stopping the firewall (``service univention-firewall stop``).
 
 
 You can also:
 
 .. code-block:: bash
 
-    # let it run in the background.
-    $ docker run -d ...
+   # let it run in the background.
+   $ docker run -d ...
 
-    # see the stdout
-    $ docker logs ucsschool_id_connector
+   # see the stdout
+   $ docker logs ucsschool_id_connector
 
-    # stop the running container
-    $ docker stop ucsschool_id_connector
+   # stop the running container
+   $ docker stop ucsschool_id_connector
 
-    # remove the container
-    $ docker rm ucsschool_id_connector
+   # remove the container
+   $ docker rm ucsschool_id_connector
 
 To enter the running container run:
 
 .. code-block:: bash
 
-    $ docker exec -it ucsschool_id_connector /bin/ash
+   $ docker exec -it ucsschool_id_connector /bin/ash
 
 
 
@@ -668,7 +672,7 @@ Build release image
 
 .. warning::
 
-    You need to be an Univention developer to use this section
+   You need to be an Univention developer to use this section
 
 * Update the apps version in ``VERSION.txt``.
 * Add an entry to ``src/HISTORY.rst``.
@@ -679,8 +683,8 @@ To upload ("push") a new Docker image to the Univention Docker registry
 
 .. code-block:: bash
 
-    $ cd ~/git/ucsschool-id-connector
-    $ make build-docker-img-on-knut
+   $ cd ~/git/ucsschool-id-connector
+   $ make build-docker-img-on-knut
 
 
 Integration tests

@@ -126,8 +126,10 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 
-copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: | +"
+copybutton_prompt_text = r"\$ |.+# |In \[\d*\]: |>>> |"
 copybutton_prompt_is_regexp = True
+copybutton_line_continuation_character = "\\"
+copybutton_here_doc_delimiter = "EOT"
 
 if "spelling" in sys.argv:
     spelling_lang = "en_US"
