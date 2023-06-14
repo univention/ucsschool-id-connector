@@ -15,3 +15,15 @@ Type = String
 Description = Value that will be transmit as the "source_uid" for all users (see https://docs.software-univention.de/ucsschool-import-handbuch-4.4.html#procedure:assignment). If unset: "TESTID".
 Description[de] = Wert der für alle User als "source_uid" übertragen wird (https://docs.software-univention.de/ucsschool-import-handbuch-4.4.html#procedure:assignment). Wenn nicht gesetzt: "TESTID".
 InitialValue = TESTID
+
+[ucsschool-id-connector/trash_delete_state]
+Type = Int
+Description = Toggle whether the listeners "Trash" directory should be cleaned up periodically (1) or not (0). See also "ucsschool-id-connector/trash_delete_offset". Defaults to: 1
+Description[de] = Schalter um das "Trash" Verzeichnis des Listeners zu bereinigen (1) oder nicht (0). Standard: 1
+InitialValue = 1
+
+[ucsschool-id-connector/trash_delete_offset]
+Type = Int
+Description = Number of days a file stays in the "Trash" directory of the listener without being deleted. Defaults to: 30
+Description[de] = Anzahl der Tage die eine Datei im "Trash" Verzeichnis des Listeners verbringt ohne gelöscht zu werden. Standard: 30
+InitialValue = 30

@@ -1,5 +1,21 @@
 <h1>Changelog</h1>
 
+<h2>v2.2.6 (2023-06-14)</h2>
+<ul>
+    <li>
+        The ID Connector can now be configured to automatically clean up its <code>trash</code> directory periodically (Bug #53048).
+        Two new app settings where created:
+        <ul>
+            <li>
+                <code>trash_delete_state</code> will terminate, whether the automatic clean up should be run periodically or not at all,
+            </li>
+            <li>
+                <code>trash_delete_offset</code> will determine after how many days old listener files will be cleaned up.
+            </li>
+        </ul>
+    </li>
+</ul>
+
 <h2>v2.2.4 (2022-08-25)</h2>
 <ul>
     <li>

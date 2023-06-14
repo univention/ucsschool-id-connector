@@ -53,6 +53,7 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
     apk del --no-cache mybuilddeps
 
 # install app
+COPY src/listener_trash_cleaner.py /etc/periodic/daily/listener_trash_cleaner
 COPY src/ /ucsschool-id-connector/src/
 COPY VERSION.txt /ucsschool-id-connector
 COPY examples/ /ucsschool-id-connector/examples/

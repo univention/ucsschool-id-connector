@@ -5,6 +5,13 @@
 Changelog
 ---------
 
+**v2.2.6 (2023-06-14)**
+
+* The ID Connector can now be configured to automatically clean up its <code>trash</code> directory periodically (Bug #53048).
+  Two new app settings where created:
+  - ``trash_delete_state`` will terminate, whether the automatic clean up should be run periodically or not at all,
+  - ``trash_delete_offset`` will determine after how many days old listener files will be cleaned up.
+
 **v2.2.5 (2023-03-29)**
 
 * Boolean attributes are now synced correctly (Bug #54307). **Info**: The format of objects which are written by the listener and read by the ID Connector plugins changed from version ``2.2.4`` and ``2.2.5`` (cf. Bug #54773). It now has the format of the UDM Rest API objects (e.g. users and groups). Customized plugins might have to be adapted.

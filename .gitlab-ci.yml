@@ -124,10 +124,10 @@ review:
     - job: docs-merge-to-one-artifact
       artifacts: true
   script:
-    - rsync -av --delete "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_BUILD_REF_SLUG
+    - rsync -av --delete "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_COMMIT_REF_SLUG
   environment:
-    name: review/$CI_BUILD_REF_NAME
-    url: http://apt.knut.univention.de/download/docs-ucs-school-id-connector.$CI_BUILD_REF_SLUG/
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://apt.knut.univention.de/download/docs-ucs-school-id-connector.$CI_COMMIT_REF_SLUG/
     on_stop: stop_review
     auto_stop_in: 1 week
 
@@ -145,9 +145,9 @@ stop_review:
   allow_failure: true
   extends: .omar
   script:
-    - rm -rf /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_BUILD_REF_SLUG
+    - rm -rf /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_COMMIT_REF_SLUG
   environment:
-    name: review/$CI_BUILD_REF_NAME
+    name: review/$CI_COMMIT_REF_NAME
     action: stop
 
 
@@ -164,7 +164,7 @@ pages:
   script:
     - mv "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" public
   environment:
-    name: pages/$CI_BUILD_REF_NAME
+    name: pages/$CI_COMMIT_REF_NAME
     url: https://univention.gitpages.knut.univention.de/components/$DOC_TARGET_NAME/
   artifacts:
     paths:
