@@ -10,8 +10,8 @@ Changelog
 * The ID Connector can now be configured to automatically clean up its ``trash`` directory periodically (Bug #53048).
   Two new app settings where created:
 
-  - ``trash_delete_state`` will terminate, whether the automatic clean up should be run periodically or not at all,
-  - ``trash_delete_offset`` will determine after how many days old listener files will be cleaned up.
+  - ``trash_delete_state`` determines if the clean up should be run periodically,
+  - ``trash_delete_offset`` determines after how many days old listener files are be cleaned up.
 
 **v2.2.5 (2023-03-29)**
 

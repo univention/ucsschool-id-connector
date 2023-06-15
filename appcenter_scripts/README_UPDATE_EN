@@ -7,10 +7,10 @@
         Two new app settings where created:
         <ul>
             <li>
-                <code>trash_delete_state</code> will terminate, whether the automatic clean up should be run periodically or not at all,
+                <code>trash_delete_state</code> determines if the clean up should be run periodically,
             </li>
             <li>
-                <code>trash_delete_offset</code> will determine after how many days old listener files will be cleaned up.
+                <code>trash_delete_offset</code> determines after how many days old listener files are be cleaned up.
             </li>
         </ul>
     </li>
