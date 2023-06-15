@@ -172,20 +172,6 @@ pages:
     expire_in: 1 week
 
 
-staging:
-  stage: staging
-  extends: .omar
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
-      if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-  script:
-      - rsync -av --delete "$CI_PROJECT_DIR"/out/ /var/univention/buildsystem2/test_mirror/ftp/download/docs/"$DOC_TARGET_NAME"/
-  environment:
-    name: staging
-    url: http://apt.knut.univention.de/download/docs/$DOC_TARGET_NAME/
-
 
 # The template has inherit:variables:false to prevent the passing of pipeline
 # variables to downstream, and therefore $DOCS_DIR is not available here.
