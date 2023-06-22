@@ -35,7 +35,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Type, Union
 
 import lazy_object_proxy
-from pydantic import BaseModel, PydanticValueError, SecretStr, UrlStr, validator
+from pydantic import AnyUrl, BaseModel, PydanticValueError, SecretStr, validator
 
 if TYPE_CHECKING:  # pragma: no cover
     from pydantic.main import Model
@@ -387,7 +387,7 @@ class SchoolAuthorityConfiguration(SecretsMixin, BaseModel):
     """name of school authority"""
     active: bool = False
     """(de)activate sending updates to this school authority"""
-    url: UrlStr
+    url: AnyUrl
     """target HTTP API URL"""
     plugins: List[str] = []
     """the plugins that should be executed for this specific school
@@ -409,7 +409,7 @@ class SchoolAuthorityConfiguration(SecretsMixin, BaseModel):
 class SchoolAuthorityConfigurationPatchDocument(SecretsMixin, BaseModel):
     active: bool = None
     """(de)activate sending updates to this school authority"""
-    url: UrlStr = None
+    url: AnyUrl = None
     """target HTTP API URL"""
     plugins: List[str] = None
     """the plugins that should be executed for this specific school

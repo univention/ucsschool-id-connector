@@ -41,7 +41,7 @@ import faker
 import pytest
 import pytest_asyncio
 import requests
-from pydantic import UrlStr
+from pydantic import AnyUrl
 from urllib3.exceptions import InsecureRequestWarning
 
 from ucsschool.kelvin.client import (
@@ -371,7 +371,7 @@ async def make_school_authority(
     async def _make_school_authority(
         name: str,
         active: bool,
-        url: UrlStr,
+        url: AnyUrl,
         plugins: List[str],
         plugin_configs: Dict[str, Dict[str, Any]],
         plugin_name: str = "kelvin",
