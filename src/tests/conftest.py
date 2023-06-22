@@ -523,8 +523,10 @@ def mock_plugin_impls(temp_dir_session):
 
     yield mock_plugin_dirs, mock_package_dirs
 
-    ucsschool_id_connector.plugins.plugin_manager.unregister("DummyPlugin")
-    ucsschool_id_connector.plugins.plugin_manager.unregister("DefaultDummyPlugin")
+    if ucsschool_id_connector.plugins.plugin_manager.is_registered("DummyPlugin"):
+        ucsschool_id_connector.plugins.plugin_manager.unregister("DummyPlugin")
+    if ucsschool_id_connector.plugins.plugin_manager.is_registered("DefaultDummyPlugin"):
+        ucsschool_id_connector.plugins.plugin_manager.unregister("DefaultDummyPlugin")
     default_plugin_path.unlink()
     for path in (default_plugin_dir / "__pycache__").glob(f"{default_plugin_name}.*.pyc"):
         path.unlink()
