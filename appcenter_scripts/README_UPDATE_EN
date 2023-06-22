@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.2.7 (2023-06-22)</h2>
+<ul>
+    <li>
+        Updated upstream dependencies. A security vulnerability in Starlette (CVE-2023-30798) was fixed (Bug #56265).
+    </li>
+</ul>
+
 <h2>v2.2.6 (2023-06-14)</h2>
 <ul>
     <li>
@@ -34,10 +41,24 @@
         Users with multiple schools are now updated correctly if the Kelvin REST API is installed in version <code>1.5.4</code> or above on the school authority side (Bug #54411).
     </li>
     <li>
-        Kelvin REST API versions up to <code>1.7.0</code> are now supported (Bug #54966). <b>Warning</b>: Kelvin REST API version <code>1.7.0</code> and above  will break ID Connector versions below <code>2.2.4</code>.
+        Kelvin REST API versions up to <code>1.7.0</code> are now supported (Bug #54966). <b>Warning</b>: Kelvin REST API version <code>1.7.0</code> and above will break ID Connector versions below <code>2.2.4</code>.
     </li>
      <li>
         Remote school (OU) names are now compared case insensitively.
+    </li>
+</ul>
+
+
+<h2>v2.2.2 (2022-03-03)</h2>
+<ul>
+    <li>
+        The ID Broker plugin was removed from the app and can be installed separately by a Debian package (Bug #54488).
+    </li>
+    <li>
+    	The ID Broker partial group sync plugin now safely handles group names with hyphen (Bug #54464).
+    </li>
+    <li>
+        Users with multiple schools are now created with the correct primary OU (Bug #54439).
     </li>
 </ul>
 

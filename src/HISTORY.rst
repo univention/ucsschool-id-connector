@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+**v2.2.7 (2023-06-22)**
+
+* Updated upstream dependencies. A security vulnerability in ``starlette`` (CVE-2023-30798) was fixed (Bug #56265).
+
 **v2.2.6 (2023-06-14)**
 
 * The ID Connector can now be configured to automatically clean up its ``trash`` directory periodically (Bug #53048).
