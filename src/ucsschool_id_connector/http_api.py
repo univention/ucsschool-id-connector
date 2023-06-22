@@ -38,8 +38,8 @@ import ujson
 import zmq
 import zmq.asyncio
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi.responses import HTMLResponse, Response, UJSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from starlette.responses import HTMLResponse, Response, UJSONResponse
 from starlette.staticfiles import StaticFiles
 from starlette.status import (
     HTTP_200_OK,
