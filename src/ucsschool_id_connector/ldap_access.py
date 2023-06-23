@@ -192,7 +192,7 @@ class LDAPAccess:
             or ldap_result["krb5KDCFlags"].value == 254
             or (
                 "shadowExpire" in ldap_result
-                and ldap_result["shadowExpire"].value
+                and bool(ldap_result["shadowExpire"].value)
                 and ldap_result["shadowExpire"].value < datetime.now().timestamp() / 3600 / 24
             )
         )
