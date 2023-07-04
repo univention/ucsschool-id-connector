@@ -35,8 +35,7 @@ import ujson
 import zmq
 import zmq.asyncio
 from aiojobs._job import Job
-from pydantic import DictError, ValidationError
-from pydantic.error_wrappers import ErrorWrapper
+from pydantic import ValidationError
 
 from .config_storage import ConfigurationStorage
 from .constants import LOG_FILE_PATH_QUEUES
@@ -109,14 +108,28 @@ class SimpleRPCServer:
                 req["cmd"] = RPCCommand(req.get("cmd"))
                 request = RPCRequest(**req)
                 response = yield from self.handle_request(request)
-            except TypeError:
-                response = RPCResponseModel(errors=[ErrorWrapper(DictError(), loc=("body",)).dict()])
+            except TypeError as exc:
+                response = RPCResponseModel(
+                    errors=[
+                        {
+                            "loc": ("errors", 0),
+                            "msg": f"TypeError: {exc}",
+                            "type": "general",
+                        }
+                    ]
+                )
             except ValidationError as exc:
                 response = RPCResponseModel(errors=exc.errors())
             except (ObjectExistsError, NoObjectError) as exc:
-                ew = ErrorWrapper(exc, loc=("name",)).dict()
-                del ew["ctx"]
-                response = RPCResponseModel(errors=[ew])
+                response = RPCResponseModel(
+                    errors=[
+                        {
+                            "loc": ("errors", 0),
+                            "msg": f"{type(exc).__name__}: {exc}",
+                            "type": "general",
+                        }
+                    ]
+                )
             except UnknownRPCCommand as exc:
                 self.logger.exception(exc)
                 response = RPCResponseModel(
