@@ -27,9 +27,15 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import pytest
 from pydantic import SecretStr
 
-from ucsschool_id_connector.models import SchoolAuthorityConfiguration
+from ucsschool_id_connector.models import (
+    ListenerActionEnum,
+    ListenerUserAddModifyObject,
+    SchoolAuthorityConfiguration,
+    UnknownSchoolUserRole,
+)
 
 
 def test_school_authority_configuration_password_is_secret_str(
@@ -67,3 +73,38 @@ def test_school_authority_configuration_as_dict_pw_is_str(
     sac_as_dict_with_pw_as_str = sac.dict_secrets_as_str()
     assert isinstance(sac_as_dict_with_pw_as_str["plugin_configs"]["kelvin"]["password"], str)
     assert sac_as_dict_with_pw_as_str["plugin_configs"]["kelvin"]["password"] == password
+
+
+def test_listener_file_attribute_errors():
+    with pytest.raises(ValueError) as excinfo:
+        ListenerUserAddModifyObject(
+            dn="", id="", udm_object_type="", action=ListenerActionEnum.add_mod, object={}, options=[]
+        )
+    msg = str(excinfo.value)
+    assert "Unsupported UDM object type" in msg
+    assert 'Missing or empty "school" attribute' in msg
+    assert 'Missing "default" in UDM options' in msg
+
+    with pytest.raises(ValueError, match="No UCS@school user object class"):
+        ListenerUserAddModifyObject(
+            dn="",
+            id="",
+            udm_object_type="",
+            action=ListenerActionEnum.add_mod,
+            object={},
+            options=["default"],
+        )
+
+
+def test_unknown_school_user_role():
+    obj = ListenerUserAddModifyObject(
+        dn="",
+        id="",
+        udm_object_type="users/user",
+        action=ListenerActionEnum.add_mod,
+        object={"school": "DEMOSCHOOL"},
+        options=["default", "ucsschoolStudent"],
+    )
+    obj.options.remove("ucsschoolStudent")
+    with pytest.raises(UnknownSchoolUserRole, match="Unknown or missing school user type in options"):
+        _ = obj.school_user_roles

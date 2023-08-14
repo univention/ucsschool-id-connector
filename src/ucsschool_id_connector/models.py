@@ -50,16 +50,21 @@ class ListenerFileAttributeError(PydanticValueError):
     code = "invalid_listener_file"
     msg_template = 'Missing or empty value in listener file: "{key}"="{value}"'
 
-    def __init__(self, *args, **kwargs):
-        try:
-            self.code = kwargs.pop("code")
-        except KeyError:
-            pass
-        try:
-            self.msg_template = kwargs.pop("msg_template")
-        except KeyError:
-            pass
-        super().__init__(*args, **kwargs)
+
+class MissingDefaultUdmOptionError(ListenerFileAttributeError):
+    msg_template = 'Missing "default" in UDM options: "{key}"="{value}"'
+
+
+class MissingSchoolUserObjectClassError(ListenerFileAttributeError):
+    msg_template = 'No UCS@school user object class: "{key}"="{value}"'
+
+
+class MissingSchoolAttributeError(ListenerFileAttributeError):
+    msg_template = 'Missing or empty "school" attribute: "{key}"="{value}"'
+
+
+class UnsupportedUdmObjectTypeError(ListenerFileAttributeError):
+    msg_template = 'Unsupported UDM object type: "{key}"="{value}"'
 
 
 class MissingArgumentError(PydanticValueError):
@@ -192,11 +197,7 @@ class ListenerGroupAddModifyObject(ListenerAddModifyObject):
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
         if value != "groups/group":
-            raise ListenerFileAttributeError(
-                key="udm_object_type",
-                value=value,
-                msg_template='Unsupported UDM object type: "{key}"="{value}"',
-            )
+            raise UnsupportedUdmObjectTypeError(key="udm_object_type", value=value)
         return value
 
     @property
@@ -215,34 +216,22 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
     @validator("udm_object_type")
     def supported_udm_object_type(cls, value):
         if value != "users/user":
-            raise ListenerFileAttributeError(
-                key="udm_object_type",
-                value=value,
-                msg_template='Unsupported UDM object type: "{key}"="{value}"',
-            )
+            raise UnsupportedUdmObjectTypeError(key="udm_object_type", value=value)
         return value
 
     @validator("options", whole=True)
     def has_required_oc(cls, value):
         options = set(value)
         if not {"default"}.intersection(options):
-            raise ListenerFileAttributeError(key="options", value=value)
+            raise MissingDefaultUdmOptionError(key="options", value=value)
         if not {"ucsschoolStaff", "ucsschoolStudent", "ucsschoolTeacher"}.intersection(options):
-            raise ListenerFileAttributeError(
-                key="options",
-                value=value,
-                msg_template='No UCS@school user object class: "{key}"="{value}"',
-            )
+            raise MissingSchoolUserObjectClassError(key="options", value=value)
         return value
 
     @validator("object", whole=True)
     def has_required_attrs(cls, value):
         if not value.get("school"):
-            raise ListenerFileAttributeError(
-                key="object",
-                value=value,
-                msg_template='Missing or empty "school" attribute: "{key}"="{value}"',
-            )
+            raise MissingSchoolAttributeError(key="object", value=value)
         return value
 
     @property

@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+**v2.2.8 (2023-08-14)**
+
+* Upgrade ``Pydantic``, improve ``ListenerFileAttributeError`` exceptions (Bug #56399).
+
 **v2.2.7 (2023-06-22)**
 
 * Updated upstream dependencies. A security vulnerability in ``starlette`` (CVE-2023-30798) was fixed (Bug #56265).
