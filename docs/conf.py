@@ -27,7 +27,7 @@ copyright = "2021, Univention GmbH"
 author = "Univention GmbH"
 
 # The full version, including alpha/beta/rc tags
-release = "2.2.7"
+release = "2.2.8"
 
 # -- General configuration ---------------------------------------------------
 
@@ -106,6 +106,7 @@ doc_basename = "ucsschool-id-connector"
 html_theme_options = {
     "pdf_download_filename": f"{doc_basename}.pdf",
     "show_source_license": True,
+    "typesense_search": False,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
