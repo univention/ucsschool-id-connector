@@ -106,7 +106,6 @@ doc_basename = "ucsschool-id-connector"
 html_theme_options = {
     "pdf_download_filename": f"{doc_basename}.pdf",
     "show_source_license": True,
-    "typesense_search": False,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
