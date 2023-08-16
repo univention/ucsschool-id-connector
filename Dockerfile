@@ -18,6 +18,7 @@ RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/c
     mv -v /tmp/ucsschool-id-connector.initd /etc/init.d/ucsschool-id-connector && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.final /etc/init.d/ucsschool-id-connector-rest-api && \
     mv -v /tmp/ucsschool-id-connector-rest-api.initd.dev /etc/init.d/ucsschool-id-connector-rest-api-dev && \
+    rc-update add crond default && \
     rc-update add ucsschool-id-connector default && \
     rc-update add ucsschool-id-connector-rest-api default && \
     cp -v /usr/share/zoneinfo/Europe/Berlin /etc/localtime && \
@@ -62,6 +63,9 @@ RUN cd /ucsschool-id-connector/src && \
     rst2html5-3 README.rst README.html && \
     rst2html5-3 HISTORY.rst HISTORY.html && \
     rm -rf /ucsschool-id-connector/src/.eggs/ /ucsschool-id-connector/src/.pytest_cache/ /root/.cache/ /tmp/pip*
+
+# make trash_cleaner executeable
+RUN chmod +x /etc/periodic/daily/listener_trash_cleaner
 
 ARG app_id
 ARG commit

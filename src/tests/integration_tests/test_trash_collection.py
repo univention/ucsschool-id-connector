@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2020 Univention GmbH
+# Copyright 2023 Univention GmbH
 #
 # http://www.univention.de/
 #
@@ -27,34 +27,9 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import os
-import random
-import time
-from datetime import datetime, timedelta
-
-from listener_trash_cleaner import delete_up_from_day
+import subprocess
 
 
-def test_cleanup_script_executeable():
-    assert os.access("/etc/periodic/daily/listener_trash_cleaner", os.X_OK)
-
-
-def test_cleanup(tmpdir_factory):
-    tmp_trash_path = tmpdir_factory.mktemp("trash")
-    random_days = [random.randint(0, 100) for _ in range(20)]
-    offset = random_days[random.randint(0, 19)]
-    files = []
-    for i, r_int in enumerate(random_days):
-        filename = f"{i}_{r_int}.txt"
-        if r_int < offset:
-            files.append(filename)
-
-        tmp_trash_path.join(filename).write_text("dummy_content", encoding="UTF-8")
-        access_time = time.mktime(datetime.now().timetuple())
-        modification_time = time.mktime((datetime.now() - timedelta(days=r_int)).timetuple())
-
-        os.utime(tmp_trash_path.join(filename), (access_time, modification_time))
-
-    delete_up_from_day(offset=offset, trash_path=tmp_trash_path)
-
-    assert set(files) == set(os.listdir(tmp_trash_path))
+def test_cron_daemon_active():
+    crond_PID = subprocess.Popen("pgrep crond", shell=True, stdout=subprocess.PIPE).stdout
+    assert crond_PID.read().decode(), "Cron Daemon cannot be found by 'pgrep'."

@@ -5,6 +5,18 @@
     <li>
         Upgrade <code>Pydantic</code>, improve <code>ListenerFileAttributeError</code> exceptions (Bug #56399).
     </li>
+    <li>
+        The automatic clean up of the ID Connector's <code>trash</code> directory now works as intended (Bug #56235).
+        The following issues were fixed:
+        <ul>
+            <li>
+                The <code>listener_trash_cleaner</code> file is now executable,
+            </li>
+            <li>
+                the <code>cron daemon</coed>  within the Docker-Container runs on startup of the container.
+            </li>
+        </ul>
+    </li>
 </ul>
 
 
