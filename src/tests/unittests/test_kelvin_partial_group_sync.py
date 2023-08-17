@@ -38,10 +38,10 @@ from ucsschool_id_connector.plugins import plugin_manager
 class LDAPAccessMock:
     def __init__(self):
         self._users = {}
-        self._make_user("user1", ["student:school:School1"])
-        self._make_user("user2", ["teacher:school:School1"])
-        self._make_user("user3", ["student:school:School1"])
-        self._make_user("user4", ["student:school:School2"])
+        self._make_user("user1", ["student:school:school1"])
+        self._make_user("user2", ["teacher:school:school1"])
+        self._make_user("user3", ["student:school:school1"])
+        self._make_user("user4", ["student:school:school2"])
 
     def _make_user(self, username, roles):
         new_user = MagicMock()
@@ -81,12 +81,12 @@ def school_class_handler(idc_defaults, school_auth_config):
 @pytest.mark.parametrize(
     "ignore_roles,roles,expected",
     [
-        ([], ["student:school:School1"], False),
-        (["student"], ["student:school:School1"], True),
+        ([], ["student:school:school1"], False),
+        (["student"], ["student:school:school1"], True),
         ([], ["some:weird:role"], False),
         ([], ["invalid_role_str"], False),
-        (["student", "teacher"], ["teacher:school:School1"], True),
-        (["student"], ["student:school:School2"], False),
+        (["student", "teacher"], ["teacher:school:school1"], True),
+        (["student"], ["student:school:school2"], False),
     ],
 )
 @pytest.mark.asyncio
@@ -106,21 +106,21 @@ async def test__check_user_ignore(ignore_roles, roles, expected, school_class_ha
         (
             ["user1", "user2", "user3"],
             ["user1", "user2", "user3"],
-            ["School1"],
+            ["school1"],
             ["user1", "user2", "user3"],
             [],
         ),
         (
             ["user1", "user2", "user3"],
             ["user1", "user2"],
-            ["School1"],
+            ["school1"],
             ["user1", "user2", "user3"],
             [],
         ),
         (
             ["user1", "user2"],
             ["user1", "user2", "user3"],
-            ["School1"],
+            ["school1"],
             ["user1", "user2"],
             [],
         ),
@@ -128,21 +128,21 @@ async def test__check_user_ignore(ignore_roles, roles, expected, school_class_ha
         (
             ["user1", "user2"],
             ["user1", "user2", "unkown"],
-            ["School1"],
+            ["school1"],
             ["unkown", "user1", "user2"],
             [],
         ),
         (
             ["user1", "user2", "user3"],
             ["user2", "user3"],
-            ["School1"],
+            ["school1"],
             ["user2", "user3"],
             ["student"],
         ),
-        ([], ["user2", "user3"], ["School1"], ["user3"], ["student"]),
+        ([], ["user2", "user3"], ["school1"], ["user3"], ["student"]),
         # Users from other schools are removed, regardless of their role
-        (["user2"], ["user4"], ["School1"], ["user2"], []),
-        ([], ["user4"], ["School1"], [], ["student"]),
+        (["user2"], ["user4"], ["school1"], ["user2"], []),
+        ([], ["user4"], ["school1"], [], ["student"]),
     ],
 )
 @pytest.mark.asyncio
@@ -164,7 +164,7 @@ async def test__handle_attr_users(
     sc_handler._get_remote_usernames = AsyncMock(return_value=remote_users)
     sc_handler._ldap_access = LDAPAccessMock()
     obj = MagicMock()
-    obj.object = {"name": "School1-1a"}
+    obj.object = {"name": "school1-1a"}
     sc_handler.handled_schools = AsyncMock(return_value=handled_schools)
     actual_users = await sc_handler._handle_attr_users(obj)
     actual_users.sort()
