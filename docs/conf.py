@@ -27,7 +27,7 @@ copyright = "2021, Univention GmbH"
 author = "Univention GmbH"
 
 # The full version, including alpha/beta/rc tags
-release = "2.2.7"
+release = "2.2.8"
 
 # -- General configuration ---------------------------------------------------
 
