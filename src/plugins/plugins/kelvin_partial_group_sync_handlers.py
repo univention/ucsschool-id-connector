@@ -73,13 +73,11 @@ class KelvinPartialGroupSyncPerSASchoolClassDispatcher(KelvinPerSASchoolClassDis
         role_dicts = [
             match.groupdict() for match in (role_pattern.search(role) for role in roles) if match
         ]
-        user_roles = set(
-            [
-                obj["role"]
-                for obj in role_dicts
-                if obj["context_type"] == "school" and obj["context"] in handled_schools
-            ]
-        )
+        user_roles = {
+            obj["role"]
+            for obj in role_dicts
+            if obj["context_type"] == "school" and obj["context"].lower() in handled_schools
+        }
         return not roles_to_ignore.isdisjoint(user_roles)
 
     async def _get_remote_usernames(self, name: str, school: str) -> List[str]:

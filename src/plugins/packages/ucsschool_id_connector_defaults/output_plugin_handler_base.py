@@ -128,7 +128,7 @@ class PerSchoolAuthorityDispatcherBase(abc.ABC):
         """
         school_authority_name = self.school_authority.name
         mapping = (await self.school_2_school_authority_mapping()).mapping
-        return [school for school in mapping if mapping[school.lower()] == school_authority_name]
+        return [school.lower() for school in mapping if mapping[school.lower()] == school_authority_name]
 
     async def handle_create_or_update(self, obj: AddModifyObject) -> None:
         """Create or modify object."""
