@@ -45,16 +45,15 @@ all_roles_mapping = {
     "mapping,expected",
     [
         (
-            {"School1": "auth1", "School2": "auth2", "School3": "auth1"},
-            ["School1", "School3"],
+            {"school1": "auth1", "school2": "auth2", "school3": "auth1"},
+            ["school1", "school3"],
         ),
         ({}, []),
-        ({"School1": "auth2"}, []),
+        ({"school1": "auth2"}, []),
     ],
 )
 @pytest.mark.asyncio
 async def test_handled_schools(mapping, expected, idc_defaults, school_authority_configuration):
-
     school_auth = school_authority_configuration()
     school_auth.name = "auth1"
     school2school_auth_mapping = School2SchoolAuthorityMapping(mapping=mapping)

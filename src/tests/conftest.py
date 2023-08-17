@@ -318,7 +318,7 @@ class School2SchoolAuthorityMappingFactory(factory.Factory):
         model = ucsschool_id_connector.models.School2SchoolAuthorityMapping
 
     mapping = factory.LazyFunction(
-        lambda: dict((fake.domain_word(), fake.domain_word()) for _ in range(fake.pyint(2, 10)))
+        lambda: dict((fake.domain_word().lower(), fake.domain_word()) for _ in range(fake.pyint(2, 10)))
     )
 
 

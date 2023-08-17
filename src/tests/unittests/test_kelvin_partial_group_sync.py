@@ -94,7 +94,7 @@ async def test__check_user_ignore(ignore_roles, roles, expected, school_class_ha
     sc_handler = school_class_handler(ignore_roles)
     with patch.object(sc_handler, "school_2_school_authority_mapping") as mapping_mock:
         mapping_mock.return_value = School2SchoolAuthorityMapping(
-            mapping={"School1": "auth1", "School2": "auth2", "School3": "auth1"}
+            mapping={"school1": "auth1", "school2": "auth2", "school3": "auth1"}
         )
         assert await sc_handler._check_user_ignore(roles) == expected
 
