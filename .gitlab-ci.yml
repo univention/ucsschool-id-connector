@@ -29,12 +29,6 @@ variables:
   DOC_TARGET_NAME: "ucsschool-id-connector"
   DOC_TARGET_PATH: "$DOC_TARGET_NAME"
 
-.omar:
-  variables:
-    GIT_STRATEGY: none
-  tags:
-    - omar
-
 run_pre_commit:
   stage: lint
   extends: .pre-commit
@@ -112,46 +106,27 @@ docs-merge-to-one-artifact:
       - "src/HISTORY.rst"
       when: manual
 
-review:
+pages-review-url:
   stage: review
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
-      if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
-  extends: .omar
-  needs:
-    - job: docs-merge-to-one-artifact
-      artifacts: true
   script:
-    - rsync -av --delete "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_COMMIT_REF_SLUG
-  environment:
-    name: review/$CI_COMMIT_REF_NAME
-    url: http://apt.knut.univention.de/download/docs-ucs-school-id-connector.$CI_COMMIT_REF_SLUG/
-    on_stop: stop_review
-    auto_stop_in: 1 week
+    - echo "DOC_REVIEW_URL=${CI_SERVER_PROTOCOL}://${CI_PROJECT_ROOT_NAMESPACE}.${CI_PAGES_DOMAIN}/-/${CI_PROJECT_PATH#${CI_PROJECT_ROOT_NAMESPACE}/}/-/jobs/$CI_JOB_ID/artifacts/out/$DOC_TARGET_NAME/index.html" > pages_review_url.env
+  artifacts:
+    reports:
+      dotenv: pages_review_url.env
+    paths:
+      - $CI_PROJECT_DIR/out
 
-
-stop_review:
-  stage: staging
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
-      if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
-      when: manual
+pages-review:
+  stage: review
   needs:
-    - review
-  allow_failure: true
-  extends: .omar
+    - job: pages-review-url
   script:
-    - rm -rf /var/univention/buildsystem2/test_mirror/ftp/download/docs-ucsschool-id-connector.$CI_COMMIT_REF_SLUG
+    - "true"
   environment:
-    name: review/$CI_COMMIT_REF_NAME
-    action: stop
+    name: review/docs/$CI_COMMIT_REF_NAME
+    url: $DOC_REVIEW_URL
 
-
-pages:
+pages-staging:
   stage: staging
   rules:
       - changes:
@@ -164,14 +139,24 @@ pages:
   script:
     - mv "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" public
   environment:
-    name: pages/$CI_COMMIT_REF_NAME
-    url: https://univention.gitpages.knut.univention.de/components/$DOC_TARGET_NAME/
+    name: staging/docs
+    url: $CI_PAGES_URL
   artifacts:
     paths:
       - public
-    expire_in: 1 week
 
-
+pages-production:
+  stage: production
+  script:
+    - "true"
+  environment:
+    name: production/docs
+    url: https://docs.software-univention.de/ucsschool-id-connector/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+      - docs/**/*
+      - "src/HISTORY.rst"
 
 # The template has inherit:variables:false to prevent the passing of pipeline
 # variables to downstream, and therefore $DOCS_DIR is not available here.
