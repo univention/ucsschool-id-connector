@@ -115,6 +115,11 @@ pages-review-url:
       dotenv: pages_review_url.env
     paths:
       - $CI_PROJECT_DIR/out
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 pages-review:
   stage: review
@@ -125,6 +130,11 @@ pages-review:
   environment:
     name: review/docs/$CI_COMMIT_REF_NAME
     url: $DOC_REVIEW_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 pages-staging:
   stage: staging
