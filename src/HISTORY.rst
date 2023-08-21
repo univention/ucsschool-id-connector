@@ -5,15 +5,15 @@
 Changelog
 ---------
 
-**v2.2.8 (2023-08-14)**
+**v2.2.8 (2023-08-21)**
 
 * ID Connector Kelvin plugin compares OU names case insensitive (Bug #55344).
 * Upgrade ``Pydantic``, improve ``ListenerFileAttributeError`` exceptions (Bug #56399).
 * The automatic clean up of the ID Connector's ``trash`` directory now works as intended (Bug #56235).
   The following issues were fixed:
 
-  - The ``listener_trash_cleaner`` file is now executable,
-  - the ``cron daemon`` within the Docker-Container runs on startup of the container.
+  - The ``listener_trash_cleaner`` file is now executable.
+  - The ``cron daemon`` within the Docker-Container runs on startup of the container.
 
 
 **v2.2.7 (2023-06-22)**
