@@ -312,6 +312,7 @@ async def change_properties(session: Session, username: str, changes: Dict[str, 
 
 
 @pytest.mark.asyncio
+@pytest.mark.not_44_compatible
 async def test_modify_user(
     make_school_authority,
     make_sender_user,
