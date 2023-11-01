@@ -672,8 +672,6 @@ These log files are also a good starting point for debugging in case something w
    3. ``mapped_udm_properties.json`` on the receiving system has all extra attributes that are
       defined in the school authority mapping.
 
-Good luck! :-)
-
 
 Starting / Stopping services
 ============================
