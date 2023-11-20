@@ -1,0 +1,12 @@
+Type: file
+File: etc/logrotate.d/ucsschool-id-connector
+Variables: logrotate/ucsschool-id-connector/queues/.*
+Variables: logrotate/ucsschool-id-connector/http/.*
+Variables: logrotate/compress
+Variables: logrotate/rotate/weeks
+Variables: logrotate/rotates
+Variables: logrotate/rotate/count
+Variables: logrotate/rotate
+Variables: logrotate/rotate/create
+Variables: logrotate/rotate/missingok
+Variables: logrotate/rotate/notifempty

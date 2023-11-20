@@ -54,3 +54,4 @@ venv/
 .idea
 .dockerignore
 .last_git_commit
+./appcenter_scripts/preinst

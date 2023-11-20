@@ -31,7 +31,7 @@ import logging
 import os
 import re
 from functools import lru_cache
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import WatchedFileHandler
 from pathlib import Path
 from typing import Any, Dict, NamedTuple, Pattern, TextIO, Union
 from uuid import UUID
@@ -133,7 +133,7 @@ class ConsoleAndFileLogging:
             path.parent.mkdir(mode=0o750, parents=True)
         except FileExistsError:
             pass
-        handler = TimedRotatingFileHandler(path, when="W0", backupCount=15)
+        handler = WatchedFileHandler(path)
         handler.setFormatter(cls.get_formatter())
         return handler
 
@@ -142,7 +142,7 @@ class ConsoleAndFileLogging:
         logger = logging.getLogger(name or SERVICE_NAME)
         if not any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers):
             logger.addHandler(cls.get_stream_handler())
-        if not any(isinstance(handler, TimedRotatingFileHandler) for handler in logger.handlers):
+        if not any(isinstance(handler, WatchedFileHandler) for handler in logger.handlers):
             logger.addHandler(cls.get_file_handler(path))
         logger.setLevel(get_log_level())
         return logger

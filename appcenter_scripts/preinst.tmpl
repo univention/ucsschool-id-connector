@@ -1,0 +1,20 @@
+#!/bin/bash
+
+id_connector_logrotate_configuration=/etc/univention/templates/files/etc/logrotate.d/ucsschool-id-connector
+echo "Installing logrotate configuration template"
+
+	cat <<%EOF >"$id_connector_logrotate_configuration"
+%LOGROTATE-TEMPLATE%
+%EOF
+chmod 644 "$id_connector_logrotate_configuration"
+
+
+id_connector_logrotate_info=/etc/univention/templates/info/ucsschool-id-connector.info
+echo "Installing ucsschool-id-connector template info"
+	cat <<%EOF >"$id_connector_logrotate_info"
+%ID-CONNECTOR-INFO%
+%EOF
+chmod 644 "$id_connector_logrotate_info"
+
+
+ucr commit /etc/logrotate.d/ucsschool-id-connector
