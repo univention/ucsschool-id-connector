@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+**v2.3.1 (2023-11-30)**
+
+* #TODO
+
 **v2.3.0 (2023-11-30)**
 
 * The rotation of log files is now managed by the UCS host systems ``logrotate``. This is also fixing a bug that could lead to missing log entries. (Bug #55983).
