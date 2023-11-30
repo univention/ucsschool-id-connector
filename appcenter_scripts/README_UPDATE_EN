@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.3.0 (2023-11-30)</h2>
+<ul>
+    <li>
+	The rotation of log files is now managed by the UCS host systems ``logrotate``. This is also fixing a bug that could lead to missing or incorrectly ordered log entries (Bug #55983).
+    </li>
+</ul>
+
 <h2>v2.2.8 (2023-08-21)</h2>
 <ul>
     <li>

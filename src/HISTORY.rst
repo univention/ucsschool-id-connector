@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+**v2.3.0 (2023-11-30)**
+
+* The rotation of log files is now managed by the UCS host systems ``logrotate``. This is also fixing a bug that could lead to missing log entries. (Bug #55983).
+
 **v2.2.8 (2023-08-21)**
 
 * ID Connector Kelvin plugin compares OU names case insensitive (Bug #55344).

@@ -24,7 +24,17 @@ The directory contains:
 * ``http.log``: log of the HTTP-API (both ASGI server and API application)
 * ``queues.log``: log of the queue management daemon
 * Old versions of above log files with timestamps appended to the file name.
-  Log file rotation happens on Mondays and 15 copies are kept.
+
+Log file rotation is controlled by the systems ``logrotate`` settings.
+For example, the rotation cycle for the ``queues.log`` can be changed to daily with:
+
+.. code-block:: bash
+
+    $ ucr set logrotate/ucsschool-id-connector/queues/rotate=daily
+
+.. seealso::
+
+   See :ref:`computers-logging-retrieval-of-system-messages-and-system-status` in :cite:t:`uv-manual`.
 
 Log output can also be seen running::
 
