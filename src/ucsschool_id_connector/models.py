@@ -492,6 +492,12 @@ class User(BaseModel):
     attributes: Dict[str, List[Any]] = None
 
 
+class Group(BaseModel):
+    groupname: str
+    dn: str
+    attributes: Dict[str, List[Any]] = None
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

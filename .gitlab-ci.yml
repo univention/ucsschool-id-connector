@@ -63,6 +63,7 @@ upload_appcenter_scripts_to_test_appcenter:
         - files/**
     - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'
       when: manual
+      allow_failure: true  # Allow to skip pipeline in merge request
   script:
     - APP_VERSION="$(cat VERSION.txt)"
     - cd appcenter_scripts/

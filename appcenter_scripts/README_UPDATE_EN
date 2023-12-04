@@ -3,7 +3,7 @@
 <h2>v2.3.1 (2023-11-30)</h2>
 <ul>
     <li>
-        #TODO
+        A new <code>schedule_group</code> command has been added. It can be used to force a group to be synced again (Issue #41).
     </li>
 </ul>
 

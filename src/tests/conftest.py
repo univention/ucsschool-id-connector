@@ -209,6 +209,17 @@ class UserFactory(factory.Factory):
     attributes = factory.Dict({"entryUUID": factory.List([factory.Faker("uuid4")])})
 
 
+class GroupFactory(factory.Factory):
+    class Meta:
+        model = ucsschool_id_connector.models.Group
+
+    groupname = factory.Faker("name")
+    dn = factory.LazyFunction(
+        lambda: f"cn={fake.first_name()},cn=groups,dc={fake.first_name()},dc={fake.first_name()}"
+    )
+    attributes = factory.Dict({"entryUUID": factory.List([factory.Faker("uuid4")])})
+
+
 class UserPasswordsFactory(factory.Factory):
     class Meta:
         model = ucsschool_id_connector.models.UserPasswords
@@ -550,14 +561,19 @@ def db_path(temp_dir_session):
 @pytest.fixture(scope="session")
 def ldap_access_mock():
     user = UserFactory()
+    group = GroupFactory()
     password = UserPasswordsFactory()
 
     class LDAPAccess(MagicMock):
         _user = user
+        _group = group
         _password = password
 
         async def get_user(self, *args, **kwargs):
             return user
+
+        async def get_group(self, *args, **kwargs):
+            return group
 
         async def get_passwords(self, username):
             return password

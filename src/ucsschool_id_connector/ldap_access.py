@@ -39,7 +39,7 @@ from ldap3.core.exceptions import LDAPBindError, LDAPExceptionError
 from ldap3.utils.conv import escape_filter_chars
 
 from .constants import ADMIN_GROUP_NAME, LOG_FILE_PATH_HTTP, MACHINE_PASSWORD_FILE
-from .models import User, UserPasswords
+from .models import Group, User, UserPasswords
 from .utils import ConsoleAndFileLogging
 
 MachinePWCache = namedtuple("MachinePWCache", ["mtime", "password"])
@@ -243,6 +243,47 @@ class LDAPAccess:
                 username=result["uid"].value,
                 full_name=result["displayName"].value,
                 disabled=self.user_is_disabled(result),
+                dn=result.entry_dn,
+                attributes=result.entry_attributes_as_dict,
+            )
+        elif len(results) > 1:
+            raise RuntimeError(
+                f"More than 1 result when searching LDAP with filter {filter_s!r}: {results!r}."
+            )
+        else:
+            return None
+
+    async def get_group(
+        self,
+        groupname: str,
+        bind_dn: str = None,
+        bind_pw: str = None,
+        attributes: List[str] = None,
+        school_only=True,
+    ) -> Optional[User]:
+        if attributes:
+            attributes = attributes + [
+                "cn",
+            ]
+        else:
+            attributes = [
+                "displayName",
+                "cn",
+            ]
+        filter_s = f"(cn={escape_filter_chars(groupname)})"
+        if school_only:
+            filter_s = f"(&{filter_s}(|(objectClass=ucsschoolGroup)))"
+        results = await self.search(
+            filter_s,
+            attributes,
+            bind_dn=bind_dn,
+            bind_pw=bind_pw,
+            raise_on_bind_error=False,
+        )
+        if len(results) == 1:
+            result = results[0]
+            return Group(
+                groupname=result["cn"].value,
                 dn=result.entry_dn,
                 attributes=result.entry_attributes_as_dict,
             )
