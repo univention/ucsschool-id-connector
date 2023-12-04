@@ -184,6 +184,7 @@ DC Primary
   2. The folder can also act as an entry point for debugging and manual insertion of user data. E.g.
      you want to reschedule a user without import the user again? Use the ``schedule_user`` script,
      and this will write some JSON into this folder. Or use the ``schedule_group`` script for groups.
+     To do this for all school users and school groups, use the ``schedule_school`` script.
 
 * The *Converter* runs as a daemon script, picks up the JSON files from the *small in-queue*,
   and fetches the actual data from the *LDAP* using the ``python-ldap``. It then puts a JSON
@@ -402,6 +403,9 @@ Lets do it!
 
     # [in container] schedule a group
     $ src/schedule_group demo_class
+
+    # [in container] schedule a school with number of parallel tasks
+    $ src/schedule_school DEMOSCHOOL 32
 
     # DEBUG: Searching LDAP for user with username 'demo_teacher'...
     # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.

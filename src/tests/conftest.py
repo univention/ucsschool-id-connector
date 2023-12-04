@@ -42,7 +42,8 @@ import factory
 import pytest
 import ujson
 from faker import Faker
-from pydantic import SecretStr
+from pydantic import BaseModel, SecretStr
+
 
 import ucsschool_id_connector.constants
 import ucsschool_id_connector.models
@@ -558,6 +559,15 @@ def db_path(temp_dir_session):
     return temp_dir_session()
 
 
+class FakeGroup(BaseModel):
+    cn: str
+    entry_dn: str
+
+
+class FakeUser(BaseModel):
+    uid: str
+
+
 @pytest.fixture(scope="session")
 def ldap_access_mock():
     user = UserFactory()
@@ -568,6 +578,13 @@ def ldap_access_mock():
         _user = user
         _group = group
         _password = password
+
+        async def search(self, *args, **kwargs):
+
+            if "cn=" in kwargs.get("filter_s", ""):
+                return [FakeGroup(cn=group.groupname, entry_dn=group.dn)]
+            else:
+                return [FakeUser(uid=user.username)]
 
         async def get_user(self, *args, **kwargs):
             return user

@@ -53,7 +53,7 @@ setuptools.setup(
     url="https://www.univention.de/",
     install_requires=requirements,
     packages=setuptools.find_packages(),
-    scripts=["queue_management", "schedule_user", "schedule_group"],
+    scripts=["queue_management", "schedule_user", "schedule_group", "schedule_school"],
     license="GNU Affero General Public License v3",
     classifiers=[
         "Programming Language :: Python :: 3",
