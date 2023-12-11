@@ -8,6 +8,7 @@ Changelog
 **v2.3.1 (2023-11-30)**
 
 * A new ``schedule_group`` command has been added. It can be used to force a group to be synced again (Issue #41).
+* A new ``schedule_school`` command has been added. It can be used to force a school to be synced again (Issue #41).
 * The ID Connector API patch endpoint for school authorities was fixed (Issue #44).
 
 **v2.3.0 (2023-11-30)**
