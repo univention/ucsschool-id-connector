@@ -8,6 +8,9 @@
     <li>
         A new <code>schedule_school</code> command has been added. It can be used to force a school to be synced again (Issue #41).
     </li>
+    <li>
+        The ID Connector API patch endpoint for school authorities was fixed (Issue #44).
+    </li>
 </ul>
 
 <h2>v2.3.0 (2023-11-30)</h2>

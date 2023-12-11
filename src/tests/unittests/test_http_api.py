@@ -259,6 +259,64 @@ def test_create_school_authorities(zmq_context_mock, random_name, random_int, zm
 
 
 @patch("ucsschool_id_connector.http_api.zmq_context")
+def test_patch_school_authorities(zmq_context_mock, random_name, zmq_socket):
+    # order matters in this dict, as socket.send_string.assert_called_with() below
+    # compares the json representation
+    sa_name = random_name()
+    patch_school_authority_data = {
+        "active": True,
+        "plugin_configs": {
+            "kelvin": {
+                "mapping": {
+                    "users": {"key": "value"},
+                },
+                "password": "NEW_PASSWORD",
+            },
+        },
+    }
+    expected_school_authority_data = {
+        "name": sa_name,
+        "url": f"http://{random_name()}.{random_name()}/",
+        "active": True,
+        "plugins": ["kelvin"],
+        "plugin_configs": {
+            "kelvin": {
+                "mapping": {
+                    "school_classes": {random_name(): random_name()},
+                    "users": {"key": "value"},
+                },
+                "password": "NEW_PASSWORD",
+            },
+        },
+    }
+    socket = zmq_socket({"result": expected_school_authority_data})
+    zmq_context_mock.socket.return_value = socket
+    client = TestClient(ucsschool_id_connector.http_api.app)
+    res = client.patch(
+        f"{ucsschool_id_connector.constants.URL_PREFIX}/school_authorities/{sa_name}",
+        json=patch_school_authority_data,
+        timeout=4.0,
+        headers={"Authorization": "Bearer TODO da token"},
+    )
+    args, kwargs = socket.send_string.call_args_list[0]
+    call_kargs = json.loads(args[0])
+    req_str = ucsschool_id_connector.models.RPCRequest(
+        cmd=ucsschool_id_connector.models.RPCCommand.patch_school_authority,
+        name=sa_name,
+        school_authority=patch_school_authority_data,
+    ).json()
+    req_obj = json.loads(req_str)
+    req_obj["school_authority"]["url"] = None
+    req_obj["school_authority"]["plugins"] = None
+    assert call_kargs == req_obj
+    assert res.status_code == 200
+    expected_school_authority_data["plugin_configs"]["kelvin"]["password"] = SecretStr(
+        "NEW_PASSWORD"
+    ).display()
+    assert res.json() == expected_school_authority_data
+
+
+@patch("ucsschool_id_connector.http_api.zmq_context")
 def test_read_school_to_school_authority_mapping(
     zmq_context_mock, zmq_socket, school2school_authority_mapping
 ):

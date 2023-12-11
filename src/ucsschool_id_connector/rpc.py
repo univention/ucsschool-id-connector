@@ -51,7 +51,7 @@ from .models import (
     SchoolAuthorityConfigurationPatchDocument,
 )
 from .queues import InQueue, OutQueue
-from .utils import ConsoleAndFileLogging
+from .utils import ConsoleAndFileLogging, recursive_dict_update
 
 
 class UnknownRPCCommand(Exception):
@@ -255,6 +255,7 @@ class SimpleRPCServer:
 
     async def patch_school_authority(self, request: RPCRequest) -> RPCResponseModel:
         name = request.name
+
         school_authority_doc = SchoolAuthorityConfigurationPatchDocument(**request.school_authority)
 
         # find and update school_authority_doc and out queue
@@ -267,10 +268,10 @@ class SimpleRPCServer:
                     pprint.pformat(school_authority_doc.dict()),
                 )
                 await out_queue.stop_task()
-                for field in school_authority_doc.fields.keys():
-                    value = getattr(school_authority_doc, field)
-                    if value is not None:
-                        setattr(out_queue.school_authority, field, value)
+                patch_data = school_authority_doc.dict()
+                old_data = out_queue.school_authority.dict()
+                recursive_dict_update(ori=old_data, updater=patch_data, update_none_values=False)
+                out_queue.school_authority = SchoolAuthorityConfiguration(**old_data)
                 self.logger.info("Updated school authority %r.", out_queue.school_authority.name)
                 break
         else:

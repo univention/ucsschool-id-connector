@@ -260,7 +260,7 @@ class LDAPAccess:
         bind_pw: str = None,
         attributes: List[str] = None,
         school_only=True,
-    ) -> Optional[User]:
+    ) -> Optional[Group]:
         if attributes:
             attributes = attributes + [
                 "cn",

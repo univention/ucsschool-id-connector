@@ -206,13 +206,6 @@ async def patch_school_authority(
     return SchoolAuthorityConfiguration(**res["result"])
 
 
-# TODO: resources ProfS needs for setup/testing:
-# TODO: sync_user(uid)
-# TODO: sync_school_class(ou, class_name)
-# TODO: sync_school(ou)
-# TODO: sync_school_authority(s_a_c)
-
-
 async def query_service(
     cmd: str,
     name: str = None,

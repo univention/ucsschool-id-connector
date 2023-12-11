@@ -219,7 +219,6 @@ def test_recursive_dict_update():
         "4": 5,
     }
     assert ucsschool_id_connector.utils.recursive_dict_update(result, updater) == result
-
     updater["f"] = {"g": {"h": "HAHA"}}
     result["f"] = {"g": {"h": "HAHA", "i": "I"}}
     assert ucsschool_id_connector.utils.recursive_dict_update(result, updater) == result
@@ -234,6 +233,48 @@ def test_recursive_dict_update():
     with pytest.raises(ValueError):
         ucsschool_id_connector.utils.recursive_dict_update(result, updater)
     assert result == unchanged_result
+
+
+def test_recursive_dict_update_only_changed():
+    my_updater = {"plugin_configs": {"id_broker": {"schools": ["ou2"]}}}
+
+    my_ori = {
+        "name": "Traeger2",
+        "active": True,
+        "url": "https://provisioning1.broker.test/",
+        "plugins": ["id_broker-users", "id_broker-groups"],
+        "plugin_configs": {
+            "id_broker": {
+                "password": "mypassword",
+                "schools": [],
+                "username": "provisioning-Traeger2",
+                "version": 1,
+            }
+        },
+    }
+    for key in my_ori:
+        if key not in my_updater:
+            my_updater[key] = None
+    my_updater["plugin_configs"]["id_broker"]["version"] = None
+    my_updater["plugin_configs"]["id_broker"]["username"] = None
+    my_updater["plugin_configs"]["id_broker"]["password"] = None
+    res = ucsschool_id_connector.utils.recursive_dict_update(
+        ori=my_ori, updater=my_updater, update_none_values=False
+    )
+    assert res == {
+        "name": "Traeger2",
+        "active": True,
+        "url": "https://provisioning1.broker.test/",
+        "plugins": ["id_broker-users", "id_broker-groups"],
+        "plugin_configs": {
+            "id_broker": {
+                "password": "mypassword",
+                "schools": ["ou2"],
+                "username": "provisioning-Traeger2",
+                "version": 1,
+            }
+        },
+    }
 
 
 def test_get_version():

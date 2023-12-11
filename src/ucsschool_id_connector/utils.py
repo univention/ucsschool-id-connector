@@ -295,7 +295,9 @@ def base58_to_entry_uuid(b58_s: str) -> str:
     return str(uuid)
 
 
-def recursive_dict_update(ori: Dict[Any, Any], updater: Dict[Any, Any]) -> Dict[Any, Any]:
+def recursive_dict_update(
+    ori: Dict[Any, Any], updater: Dict[Any, Any], update_none_values: bool = True
+) -> Dict[Any, Any]:
     """
     *In-place* update the dict `ori` with the content of `updater`.
 
@@ -306,11 +308,13 @@ def recursive_dict_update(ori: Dict[Any, Any], updater: Dict[Any, Any]) -> Dict[
     :raises ValueError: if an existing dict in `ori` should be overwritten by a
         non-dict
     """
+
     for k, v in updater.items():
         if isinstance(ori.get(k), dict):
             if not isinstance(v, dict):
                 raise ValueError(f"Cannot update dict from non-dict: k={k!r} ori={ori!r} v={v!r}")
-            recursive_dict_update(ori[k], v)
+            recursive_dict_update(ori=ori[k], updater=v, update_none_values=update_none_values)
         else:
-            ori[k] = v
+            if v is not None or update_none_values:
+                ori[k] = v
     return ori
