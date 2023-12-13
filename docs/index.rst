@@ -3,17 +3,13 @@
 .. SPDX-License-Identifier: AGPL-3.0-only
 
 .. ID Connector documentation main file, created by
-   sphinx-quickstart on Tue Nov  2 14:56:07 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root toctree directive.
-.. include:: <isonum.txt>
+
 .. include:: univention_rst_macros.txt
 .. title:: ID-Connector - Welcome to UCS@School ID Connector Documentation
 
-****************************************************
-Welcome to |UAS| ID Connector's documentation!
-****************************************************
-
+********************************
+|UAS| ID Connector documentation
+********************************
 
 .. image:: /images/License-AGPL-v3-orange.*
     :alt: GNU AGPL V3 license
@@ -23,55 +19,62 @@ Welcome to |UAS| ID Connector's documentation!
     :alt: Python 3.8
     :target: https://www.python.org/downloads/release/python-382/
 
+The |IDC| connects an |UAS| directory
+to any number of other |UAS| directories in a 1:n relation.
+It's designed to connect state directories with school districts,
+but you can also use it in other contexts.
+The connection takes place unidirectional.
+The connector transfers user data such as user,
+school affiliation, class affiliations from a central directory,
+for example a country directory,
+to district or school directories.
 
-The |IDC| connects an |UAS| directory to any number of other |UAS| directories (1:n).
-It is designed to connect state directories with school districts,
-but can also be used in other contexts.
-The connection takes place unidirectional: user data (user, school affiliation, class affiliations)
-is transferred from a central directory (e.g. country directory) to district or school directories.
-Prerequisite is the use of the |iUAS| |iKLV| API on the school authorities.
-For this a configuration is necessary in advance to create an assignment
-"Which school users should be transferred to which remote instance?"
-Then these users are created, updated and deleted.
+Prerequisite is the |iUAS| |iKLV| API in the school authority environments.
+This requires a configuration in advance to create an assignment
+*"Which remote instance needs which school users?"*
+Then the connector creates, updates, or deletes these users.
 
 .. figure:: images/ucsschool-id-connector_overview_extended.*
-   :width: 600
-   :align: center
 
-In this documentation, you will learn how to administer an |IDC| setup,
-and we hope to teach you how to develop plugins for |IDC| as well.
+   Topology of the |UAS| ID Connector
+
+In this documentation, you learn how to manage an |IDC| setup,
+and how to develop plugins for |IDC|.
 
 .. _l10n:
 
-.. note::
+.. tip::
 
-   At the moment, the |IDC| setup is only used in German-speaking countries. Hence, you will
-   encounter a few German terms in this documentation.
+   The |IDC| setup is primarily used in German-speaking countries.
+   Hence, you encounter a few German terms in this documentation.
 
    Sender
-      An easy one to guess - it actually refers to the sending side of the sync process,
+      Refers to the sending side of the sync process,
       which in Germany most likely is a state department.
 
    Traeger
-      This is the organization managing schools. In the |IDC| context it can be thought
-      of as the *recipient* of sync data.
+      This is the organization managing schools.
+      In the |IDC| context it's the *recipient* of sync data.
 
-.. note::
+.. tip::
 
    You can use the clipboard icon on the top right of code examples
-   to easily copy the code without python and bash prompts:
+   to copy the code without Python and Bash prompts:
 
    .. code-block:: bash
 
       $ echo "hello world"
 
-   (Hover with your mouse over the code to see the icon)
+   Hover with your mouse over the code to see the icon.
 
-Contents
-========
+.. Missing elements in the introduction:
+
+   FIXME : Who is the audience?
+   FIXME : What know-how is required from the reader to follow along?
 
 .. toctree::
-   :maxdepth: 4
+   :caption: Table of contents
+   :maxdepth: 2
    :numbered: 3
 
    admin
@@ -80,10 +83,3 @@ Contents
    example_json
    HISTORY
    bibliography
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
