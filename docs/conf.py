@@ -94,7 +94,6 @@ pygments_style = "sphinx"
 
 # html_theme = "sphinx-univention"
 # html_theme_path = ["."]
-html_last_updated_fmt = "%Y-%m-%d"
 html_show_copyright = False
 html_show_sphinx = False
 html_show_sourcelink = False
@@ -110,6 +109,7 @@ html_theme_options = {
     "typesense_document": doc_basename,
     "typesense_document_version": "latest",
     "univention_matomo_tracking": True,
+    "univention_docs_deployment": True,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -141,6 +141,8 @@ if "spelling" in sys.argv:
     spelling_word_list_filename = ["spelling_wordlist"]
 
 root_doc = "index"
+
+numfig = True
 
 latex_engine = "lualatex"
 latex_show_pagerefs = True

@@ -23,9 +23,9 @@
 .. |ADC| replace:: Univention AD Connector
 .. |iADC| replace:: *Univention AD Connector*
 .. |AppC| replace:: Univention App Center
-.. |iAppC| replace:: *Univention App Center*
+.. |iAppC| replace:: :program:`Univention App Center`
 .. |UAS| replace:: UCS\@school
-.. |iUAS| replace:: *UCS\@school*
+.. |iUAS| replace:: :program:`UCS\@school`
 .. |PrimaryDN| replace:: Primary Directory Node
 .. |iPrimaryDN| replace:: *Primary Directory Node*
 .. |BackupDN| replace:: Backup Directory Node
@@ -37,9 +37,9 @@
 .. |UCRV| replace:: Univention Configuration Registry-Variable
 .. |iUCRV| replace:: *Univention Configuration Registry-Variable*
 .. |OX| replace:: Open-Xchange Advanced Server Edition
-.. |iOX| replace:: *Open-Xchange Advanced Server Edition*
+.. |iOX| replace:: :program:`Open-Xchange Advanced Server Edition`
 .. |OXS| replace:: OXASE
-.. |iOXS| replace:: *OXASE*
+.. |iOXS| replace:: :program:`OXASE`
 .. |UCS| replace:: Univention Corporate Server
 .. |iUCS| replace:: *Univention Corporate Server*
 .. |UVMM| replace:: UCS Virtual Machine Manager
@@ -53,16 +53,16 @@
 .. |Member| replace:: Memberserver
 .. |iMember| replace:: *Memberserver*
 .. |UCC| replace:: Univention Corporate Client
-.. |iUCC| replace:: *Univention Corporate Client*
+.. |iUCC| replace:: :program:`Univention Corporate Client`
 .. |UCD| replace:: Univention Corporate Desktop
-.. |iUCD| replace:: *Univention Corporate Desktop*
+.. |iUCD| replace:: :program:`Univention Corporate Desktop`
 .. |DVS| replace:: UCS Desktop Virtualization Services
-.. |iDVS| replace:: *UCS Desktop Virtualization Services*
+.. |iDVS| replace:: :program:`UCS Desktop Virtualization Services`
 .. |TCS| replace:: Univention Thin Client Services
-.. |iTCS| replace:: *Univention Thin Client Services*
+.. |iTCS| replace:: :program:`Univention Thin Client Services`
 
 .. |IDC|     replace:: ID Connector
-.. |iIDC|    replace:: *ID Connector*
+.. |iIDC|    replace:: :program:`ID Connector`
 .. |UASIDC|  replace:: |UAS| |IDC|
 .. |iUASIDC| replace:: |iUAS| |iIDC|
 .. |IDCS|    replace:: |IDC| Service
