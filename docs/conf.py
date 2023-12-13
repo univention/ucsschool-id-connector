@@ -43,6 +43,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "sphinx.ext.intersphinx",
     "sphinxcontrib.inkscapeconverter",
+    "sphinx_inline_tabs",
 ]
 
 bibtex_bibfiles = ["bibliography.bib"]
