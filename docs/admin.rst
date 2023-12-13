@@ -3,103 +3,108 @@
 .. SPDX-License-Identifier: AGPL-3.0-only
 
 .. This file is formatted in the spirit of
-   https://rhodesmill.org/brandon/2012/one-sentence-per-line/
+   https://sembr.org/
+
 .. include:: <isonum.txt>
 .. include:: univention_rst_macros.txt
+
+.. _admin:
 
 **************
 Administration
 **************
 
-Admin overview
-==============
+This section describes the administration tasks for the |IDC|.
+It covers the topics installation,
+configuration of the sending system and the receiving systems
+and lifecycle tasks for the connector.
+
+The |IDC| replication system consists of the following components
+as shown in :numref:`fig-connector-overview`:
+
+1. An *LDAP server* containing user data.
+
+2. A process on the data source UCS server,
+   receiving user creation/modification/deletion events from
+   the LDAP server and relaying them to multiple recipients through HTTP,
+   called the  |iIDCS|.
+
+3. A process on the data source UCS server to monitor and configure
+   the |UAS| |IDC| service,
+   called the |iIDCH|.
+
+4. Multiple recipients of the directory data relayed by the |iIDCS|.
+   They run an HTTP-API service, that the |iIDCS| pushes updates to.
+
+.. _fig-connector-overview:
 
 .. figure:: images/ucsschool-id-connector_overview_extended.*
    :width: 700
 
    Simplified overview of the |IDC|
 
-The |IDC| replication system is composed of four components:
+.. _admin-definitions:
 
-1. An *LDAP server* containing user data.
-2. A process on the data source UCS server,
-   receiving user creation/modification/deletion events from
-   the LDAP server and relaying them to multiple recipients via HTTP,
-   called the  |iIDCS|.
-3. A process on the data source UCS server to monitor and configure
-   the |UAS| |IDC| service,
-   called the  |iIDCH|.
-4. Multiple recipients of the directory data relayed by the
-   |iIDCS|.
-   They run an HTTP-API service, that the
-   |iIDCS| pushes updates to.
+Definitions
+===========
 
-
-
-
-Admin prerequisites
-===================
-
-This administration chapter is useful when you need to administer an |IDC| setup,
-or you need to integrate |IDC|.
-To follow this text, you should be familiar with the following aspects
-of the UCS environment:
+For the administration of and |IDC| setup or the integration with |IDC|,
+you need to make sure to know about the following aspects of a UCS environment.
 
 .. glossary::
 
    LDAP and LDAP listener
-      LDAP is used because it is optimized for reading in a hierarchical structure.
-      It shouldn't be accessed directly, instead :term:`UDM` should be used.
-      OpenLDAP can have plugins, notifier being one of them that is heavily used in UCS.
+      UCS uses LDAP because of its optimization for reading in a hierarchical structure.
+      Don't accessed directly, use :term:`UDM` instead.
+      OpenLDAP can have plugins, such as the notifier UCS heavily uses.
       Upon changes in the LDAP directory, the notifier triggers listeners locally
       and on remote systems.
 
       The listener service connects to all local or remote notifiers in the domain.
-      The listener, when notified, calls listener modules,
-      which are scripts (in shell and python)
+      When notified, the listener calls listener modules, which are scripts in shell and Python.
 
-      You need to be able to:
-
-      - understand the basic concepts of LDAP
+      You need to understand the basic concepts of LDAP.
 
       .. seealso::
 
-         See :ref:`introduction-ldap-directory-service` in :cite:t:`uv-manual`.
+         For more information, see :ref:`introduction-ldap-directory-service` in :cite:t:`uv-manual`.
 
    |UDM|
-      |UDM| (**UDM**) is used for handling user data
-      (and other data) that is stored in the LDAP server,
-      one of two core storage places (the other one is :term:`UCR`).
-      Examples for data are users, roles or machine info.
+      UCS uses |UDM| (**UDM**) for handling user data and other data stored in the LDAP server.
+      The LDAP server is one of two core storage locations.
+      The other storage location is :term:`UCR`.
+      Examples for data are users, roles, or machine info.
+
       UDM adds a layer of functionality and logic on top of LDAP,
-      hence LDAP shouldn't be used directly, but only through UDM.
+      hence don't use LDAP directly, but only through UDM.
 
-      You need to be able to:
+      You need to:
 
-      - understand the concept of UDM
-      - know the basic structure of UDM objects and their attributes
-      - add and manage extended attributes
+      * understand the concept of UDM.
+      * know the basic structure of UDM objects and their attributes.
+      * add and manage extended attributes.
 
       .. seealso::
 
-         See :ref:`chap-udm` in :cite:t:`uv-developer-reference`.
+         For more information in a developer context, see :ref:`chap-udm` in
+         :cite:t:`uv-developer-reference`.
 
          For an architecture overview, see :external+uv-architecture:ref:`services-udm`
          in :cite:t:`uv-architecture`.
 
    |UCR|
-      The |UCR| (**UCR**) stores configuration variables and settings to run the system,
-      and creates and changes actual Linux configuration files
+      |UCR| (**UCR**) stores configuration variables and settings to run the system,
+      creates and changes actual configuration text files
       as configured by these variables upon setting said variables.
 
-      You need to be able to:
+      You need to:
 
-      - understand basic UCR concepts
-      - set and read UCR variables.
+      * understand basic UCR concepts.
+      * know how to set and read UCR variables.
 
       .. seealso::
 
-         See
+         For more information, see
          :ref:`computers-administration-of-local-system-configuration-with-univention-configuration-registry`
          in :cite:t:`uv-manual`.
 
@@ -107,36 +112,42 @@ of the UCS environment:
          in :cite:t:`uv-architecture`.
 
    |AppC| settings
-      The |AppC| is an ecosystem similar to the app stores known from mobile platforms
-      like Apple or Google.
-      It provides an infrastructure to build, deploy and run enterprise applications
+      |AppC| is an ecosystem similar to app stores known from mobile platforms
+      such as Apple or Google.
+      It provides an infrastructure to deploy and run enterprise applications
       on |UCS| (UCS).
       The |AppC| uses well-known technologies like Docker.
 
-      Within the app center, you can configure settings for the individual apps.
+      Within the App Center, you can configure settings for the individual apps.
 
       .. seealso::
+
+         For more information, see the following resources:
 
          * :ref:`app-settings` in :cite:t:`uv-appcenter`
          * :ref:`appcenter-configure` in :cite:t:`uv-manual`
 
 
    |UAS| basics
-      Schools have special requirements for managing what is going on inside them
-      (teachers, students, staff, computer rooms, exams, etc.),
-      and for managing the relation between multiple schools,
+      Schools have special requirements for managing entities about what is going on inside them,
+      such as teachers, students, staff, computer rooms, exams, and more.
+      For managing the relation between multiple schools,
       their operator organizations ("Schulbetreiber"), and possibly
       ministerial departments above them.
 
+      .. FIXME : The sentence above is unclear to me.
+
       There are several components used within |UAS|,
-      |KLV| (see below) being one of them.
+      and |KLV| is one of them.
 
-      You need to be able to:
+      You need to:
 
-      - know about |UAS| objects
-      - know the difference between |UAS|-objects and UDM objects
+      * know about |UAS| objects.
+      * know the difference between |UAS| objects and UDM objects.
 
       .. seealso::
+
+         For more information, see the following resources:
 
          * :uv:kb:`How a UCS\@school user should look like <15630>`
          * :uv:kb:`UCS\@school work groups and school classes <16925>`
@@ -145,109 +156,117 @@ of the UCS environment:
    |UAS| |KLV| REST API
       The |UAS| |KLV| REST API (Kelvin) provides HTTP endpoints
       to create and manage individual |UAS| domain objects
-      like school users, school classes and schools (OUs).
-      It is written in FastAPI, hence in Python 3.
+      such as school users, school classes and schools (OUs).
+      It uses :program:`FastAPI`, hence in :program:`Python 3`.
 
       You need to be able to install and configure Kelvin.
 
       .. seealso::
 
+         For more information, see the following resources:
+
          * :external+uv-ucsschool-kelvin-rest-api:doc:`overview` in
            :cite:t:`uv-ucsschool-kelvin-rest-api`
+
          * :ref:`structure-ldap` in
            :cite:t:`uv-ucsschool-manual`
 
-If you want to also develop for the |IDC|, please also see the next chapter :doc:`development`.
+If you want to also develop for the |IDC|, please also see the following section :ref:`dev`.
+
+.. _admin-install:
 
 Installation
 ============
 
+This section describes the installation of the |UAS| |IDC| app.
+For a working setup,
+you need a sending system with the |IDC| app,
+and receiving systems with the |UAS| |KLV| REST API.
+
 Sending system
 --------------
 
-The app is available in the |AppC|. You can install it with:
+The |UAS| |IDC| app is available in the |AppC|.
+You can install it with the following command:
 
 .. code-block:: bash
 
     $ univention-app install ucsschool-id-connector
 
-This runs the join script ``50ucsschool-id-connector.inst``, which creates:
+The installation process runs the join script ``50ucsschool-id-connector.inst``
+and creates the following:
 
-* the file ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret``
-  containing the key with which JWT tokens are signed.
+* a key for signing the JWT tokens in the file
+  :file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret`.
+
 * the group ``ucsschool-id-connector-admins``
-  (with DN ``cn=ucsschool-id-connector-admins,cn=groups,$ldap_base``)
-  who's members are allowed to access the |IDC| HTTP-API.
+  with the distinguished name (DN) ``cn=ucsschool-id-connector-admins,cn=groups,$ldap_base``,
+  whose members can access the |IDC| HTTP-API.
 
-Use of both is explained later on in `Authentication`_
+The section :ref:`auth` explains both files in detail.
 
-.. note::
-   You can check the existence of the group with:
-
-   .. code-block:: bash
-
-      $ udm groups/group list --filter cn=ucsschool-id-connector-admins
-
-
-.. note::
-
-   Join scripts are registered in LDAP and then executed on any UCS system
-   either before/during/after the join process.
-
-   |rarr| :uv:kb:`A script shall be executed on each or a certain UCS systems before/during/after the join process <13034>`
-
-If the above didn't get created, run:
+If the installation process didn't create the files listed before,
+you can re-run the join script with the following command.
 
 .. code-block:: bash
 
     $ univention-run-join-scripts --run-scripts --force 50ucsschool-id-connector.inst
 
-This forces the (re-)running of the join script.
+.. tip::
+
+   You can validate the existence of the group with:
+
+   .. code-block:: bash
+
+      $ udm groups/group list --filter cn=ucsschool-id-connector-admins
+
+.. tip::
+
+   The installation process registers join scripts in the LDAP
+   and runs them on any UCS system before, during, or after the join process.
+
+   For more information,
+   see :uv:kb:`A script shall be executed on each or a certain UCS systems before/during/after the join process <13034>`
 
 Receiving system
 ----------------
 
-In order for the |iIDC| app to be able to create/modify/delete users
-on the target systems an HTTP-API is required on the target system.
-Currently only the Kelvin API is supported.
+The |UAS| |IDC| app needs an HTTP-API on the target system
+to create, modify, and delete users.
+The |IDC| supports |UAS| |KLV| REST API.
 
-.. note::
-  This only makes sense if the sender and target systems are in different domains,
-  because in the same domain, users and groups already get synced using other UCS mechanisms.
+The |UAS| |IDC| app synchronizes users for different domains
+between a sender and receiving systems.
+UCS takes care of the user synchronization within the domain.
 
-Install the |KLV| API on each target system:
+To install the |KLV| API on each receiving system, run the following command:
 
 .. code-block:: bash
 
     $ univention-app install ucsschool-kelvin-rest-api
 
-To allow the |iIDC| app on the sender system to access the Kelvin-API on the receiving system,
+To allow the |UAS| |IDC| app on the sender system to access the Kelvin-API on the receiving system,
 it needs an authorized user account.
-By default, the Administrator account on the receiving system is the only authorized user.
-To add a dedicated |KLV| API user for the |UAS| |IDC|
-consult :cite:t:`uv-ucsschool-kelvin-rest-api` on how to do that.
+By default, the ``Administrator`` account on the receiving system is the only authorized user.
+To add a dedicated |KLV| API user for the |UAS| |IDC|,
+consult :cite:t:`uv-ucsschool-kelvin-rest-api`.
 
-Configuration
-=============
-
-Now that everything is installed, let's configure the setups. We configure the receiving system first,
-because we need auth credentials used on the receiving system later on the sending system.
+.. _configure-receiver:
 
 Configure receiving system - HTTP-API (|KLV|)
----------------------------------------------
+=============================================
 
-You need to install and configure the |KLV| API. This is documented in
+You need to install and configure the |KLV| API as described in
 :cite:t:`uv-ucsschool-kelvin-rest-api`.
-
-We assume that you have a current version of |KLV| installed after reading the documentation.
+The following sections assume that you have installed the current version of |KLV|.
 
 .. _kelvin_credentials:
 
 .. note::
    For the authorization of the |iUASIDC| at the target system
    it needs credentials with special privileges.
-   Create a user with the name and password of your choice and add him to the group
-   ``ucsschool-kelvin-rest-api-admins``.
+   Create a user account with the name and password of your choice
+   and add them to the group ``ucsschool-kelvin-rest-api-admins``.
 
    .. code-block:: bash
 
@@ -258,163 +277,179 @@ We assume that you have a current version of |KLV| installed after reading the d
       $ udm groups/group modify --dn "cn=ucsschool-kelvin-rest-api-admins,cn=groups,$(ucr get ldap/base)" \
         --append users="uid=USERNAME-OF-YOUR-CHOICE,cn=users,$(ucr get ldap/base)"
 
-   Note down the credentials, they are needed for the
-   :ref:`school authority configuration on the sending system <auth_config>` further down.
+   Write down the credentials.
+   You need them for the
+   :ref:`school authority configuration on the sending system <auth-config>`.
 
-   **WARNING**: the password is now in the command history. You might want to delete this using e.g:
+   .. warning::
 
-   .. code-block:: bash
+      You used the password before as input to a command.
+      It's now in the command history.
+      It's recommended to delete the command with the password from the command history.
+      Run the following command:
 
-      $ history -d -2
+      .. code-block:: bash
 
-After installation and basic configuration you might want to configure mapped UDM properties.
+         $ history -d -2
 
-Beyond the :ref:`standard object properties in UCS@school <users-resource-repr>`
-you can define additional UDM properties that should be available in the |KLV| API on the target system.
+After installation and basic configuration you can configure mapped UDM properties.
 
-For this you would define a configuration in ``/etc/ucsschool/kelvin/mapped_udm_properties.json``, e.g.:
+Beyond the :ref:`standard object properties in UCS\@school <users-resource-repr>`,
+you can define additional UDM properties
+and make them available in the |KLV| API on the target system.
 
-.. code-block:: json
+#. To define additional UDM properties, you first create a mapping in the
+   configuration file :file:`/etc/ucsschool/kelvin/mapped_udm_properties.json`.
+   The following example makes the listed properties additionally available for
+   the resources ``user`` and ``school``.
 
-   {
-       "user": ["title", "phone", "e-mail"],
-       "school": ["description"]
-   }
+   .. code-block:: json
 
-This would make the listed properties available for the ``user`` and ``school`` resources.
+      {
+          "user": ["title", "phone", "e-mail"],
+          "school": ["description"]
+      }
 
-|KLV| needs to be restarted after changes to its configuration::
+#. Restart |KLV| with the following command,
+   for the configuration changes to take effect:
 
-   $ univention-app restart ucsschool-kelvin-rest-api
+   .. code-block:: console
 
-.. note::
-   When configuring |KLV| in detail, remember that the password hashes for LDAP and Kerberos
+      $ univention-app restart ucsschool-kelvin-rest-api
+
+.. caution::
+
+   When configuring |KLV| in detail, the password hashes for LDAP and Kerberos
    authentication are collectively transmitted in one JSON object to one target attribute.
    This means it's all or nothing: all hashes are synced, even if empty.
    You can't select individual hashes.
 
-.. note::
-   Please make sure that you configure all the mapped properties that the sending system sends, e.g.
-   ``displayName``. If the sender sends more than the receiver is configured to process,
-   you will end up with unexpected errors, e.g. ``404`` in the log.
+.. caution::
 
+   Ensure that you configure all the mapped properties that the sending system sends,
+   for example ``displayName``.
+   If the sender sends more than the receiver is configured to process,
+   you experience unexpected errors, for example ``404`` in the log file.
 
-
+.. _configure-sender:
 
 Configure sending system
-------------------------
+========================
 
 The school authorities configuration must be done through the  |iIDCH|.
-Do not edit configuration files directly.
+Don't edit configuration files directly.
 
-.. _ucs_school_id_connector_http_api:
+.. _ucs-school-id-connector-http-api:
 
 UCS\@school ID Connector HTTP API
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The HTTP-API of the |iIDC| app offers three resources:
+---------------------------------
 
 * *queues*: monitoring of queues
 * *school_authorities*: configuration of school authorities
 * *school_to_authority_mapping*:  configuration of which school we sync to which authority
 
 You can discover the API interactively using one of two web interfaces.
-They can be visited with a browser at their respective URLs:
+You can visit them with a browser at their respective URLs:
 
-.. _swagger_ui:
+.. _swagger-ui:
 
-* `Swagger UI <https://github.com/swagger-api/swagger-ui>`_: ``https://FQDN/ucsschool-id-connector/api/v1/docs``
-* `ReDoc <https://github.com/Redocly/redoc>`_: ``https://FQDN/ucsschool-id-connector/api/v1/redoc``
+* `Swagger UI <https://github.com/swagger-api/swagger-ui>`_: :samp:`https://{FQDN}/ucsschool-id-connector/api/v1/docs`
+* `ReDoc <https://github.com/Redocly/redoc>`_: :samp:`https://{FQDN}/ucsschool-id-connector/api/v1/redoc`
 
 The Swagger UI page is especially helpful as it allows sending queries directly from the browser.
 The equivalent ``curl`` command lines are then displayed.
+You can download an `OpenAPI v3 (formerly "Swagger") schema <https://swagger.io/docs/specification/about/>`_
+from :samp:`https://{FQDN}/ucsschool-id-connector/api/v1/openapi.json`.
 
-An `OpenAPI v3 (formerly "Swagger") schema <https://swagger.io/docs/specification/about/>`_
-can be downloaded from ``https://FQDN/ucsschool-id-connector/api/v1/openapi.json``
-
+.. _auth:
 
 Authentication
-~~~~~~~~~~~~~~
+--------------
 
-Only members of the group ``ucsschool-id-connector-admins`` are allowed to access the HTTP-API.
+Only users being member of the group ``ucsschool-id-connector-admins`` are allowed to access the HTTP-API.
 
 The user ``Administrator`` is automatically added to this group for testing purposes.
-In production, only the regular admin user accounts should be used.
+In production, you should only use the regular administration user accounts.
 
-You can authorize yourself in e.g. the Swagger UI using the ``Authorize`` button.
+You can authorize yourself, for example in the Swagger UI using the :guilabel:`Authorize` button.
 
-To use the  |iIDCH| from a script, a `JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
-must be retrieved from ``https://FQDN/ucsschool-id-connector/api/token``.
-The token will be valid for a configurable amount of time (default 60 minutes),
-after which it must be renewed.
-To change the TTL of the token, open the corresponding *app settings* in the |AppC|.
-
-Example ``curl`` command to retrieve a token:
+To use the |iIDCH| from a script,
+the script must retrieve a
+`JSON Web Token (JWT) <https://en.wikipedia.org/wiki/JSON_Web_Token>`_
+from :samp:`https://FQDN/ucsschool-id-connector/api/token`.
+The token is valid for a configurable amount of time,
+the default value for the time to life (TTL) is 60 minutes.
+To change the TTL of the token,
+open the corresponding *app settings* in the |AppC|.
 
 .. code-block:: bash
+   :caption: Example :command:`curl` command to retrieve a token:
 
     $ curl -i -k -X POST --data 'username=Administrator&password=s3cr3t' \
       https://FQDN/ucsschool-id-connector/api/token
 
-
+.. _school-authorities-mapping:
 
 School authorities mapping
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
-.. _Mappings:
+You need to configure the following things:
 
-We now need to configure two things:
+1. What school authorities do you want to send data to,
+   and what data can they receive?
+   This section describes the procedure.
 
-1. What school authorities do we send data to, and what data can they receive? This is described in this section.
-2. What actual schools are handled by which receiving system (school authority)? This is described in the
-   following section: :ref:`School to authority mapping`.
+2. What actual schools does the receiving system handle, meaning the school authority?
+   The following section: :ref:`School to authority mapping` describes the procedure.
 
-We start with the first mapping, the one for school authorities.
+Start with the first mapping, for school authorities.
 
-In order to send user data to the target system, it must be decided
-which properties of which objects to send, and more important,
-which properties *not* to send.
+To send user data to the target system,
+you must decide which properties of which objects the system needs to send,
+and more important, which properties **not** to send.
 
-.. _phone_numbers_example:
+.. _phone-numbers-example:
 
-E.g. there might be telephone numbers for students in the system on the sending side,
-but those should not be made available to the receiving school system.
-Instead of forbidding properties, we "map" properties on the sending side
-to properties on the receiving side.
+For example, there might be telephone numbers for students in the system on the sending side,
+but you don't want them available to the receiving school system.
+Instead of forbidding properties,
+you *map* properties on the sending side to properties on the receiving side.
 
-.. _example_kelvin_config:
+.. _kelvin-config-example:
 
 Here is what the mapping related part of an example configuration looks like:
 
 .. code-block:: json
 
     {
-        "plugin_configs": {
-            "kelvin": {
-                "mapping": {
-                    "users": {
-                        "ucsschoolRecordUID": "record_uid",
-                        "ucsschoolSourceUID": "source_uid",
-                        "roles": "roles"
-                    }
-                }
+      "plugin_configs": {
+        "kelvin": {
+          "mapping": {
+            "users": {
+              "ucsschoolRecordUID": "record_uid",
+              "ucsschoolSourceUID": "source_uid",
+              "roles": "roles"
             }
+          }
         }
+      }
     }
 
 This configures a mapping for the |KLV| plugin that sends the three defined properties to the
 receiving school:
 
-* The UDM ``ucsschoolRecordUID`` property should be synced to an |UAS| system as ``record_uid``.
-* The UDM ``ucsschoolSourceUID`` property should be synced to an |UAS| system as ``source_uid``.
-* The *virtual* ``roles`` property should be synced to an |UAS| system as ``roles``
+* Synchronize the UDM ``ucsschoolRecordUID`` property to an |UAS| system as ``record_uid``.
+* Synchronize the UDM ``ucsschoolSourceUID`` property to an |UAS| system as ``source_uid``.
+* Synchronize the *virtual* ``roles`` property to an |UAS| system as ``roles``.
 
 .. note::
-   ``roles`` is *virtual* because there is special handling by the |iIDC| app
+   ``roles`` is *virtual* because there is special handling by the |UAS| |IDC| app
    mapping ``ucsschoolRole`` to ``roles``.
 
 .. warning::
 
-   When creating users via Kelvin, some attributes are required and therefore have to be present within the mapping:
+   When creating users through Kelvin, it requires some attributes.
+   The following attributes must be present in the mapping:
 
    .. code-block:: json
 
@@ -432,41 +467,68 @@ receiving school:
 Here is a complete example that you can also find in the section  :ref:`school-authority-mapping`.
 
 .. literalinclude:: ../examples/school_authority_kelvin.json
+   :caption: Example of an ID Connector configuration for a school authority
    :language: json
 
-.. _auth_config:
+.. _auth-config:
 
-These are the keys in the configuration:
+The mapping configuration uses the following keys:
 
-- *name* identifies a specific receiving system. It is a free-form string. Adapt
-  to your needs - and remember it, we need it in the next step.
-- *username* and *password* are the credentials that are needed on the receiving system. Use the
-  :ref:`credentials you created when configuring the receiving system <kelvin_credentials>`.
-- The systems address is specified using *url*.
-- The users *mapping* inside *plugin_configs["kevlin"]* is as described above, only a bit longer.
-- We also have a mapping for *school_classes*, which sets up the sync for those groups.
-- *sync_password_hashes* - if password hashed should be synced.
-- *ssl_context* - contains values that are passed to the
-  :py:class:`ssl.SSLContext` object
-  which is used to communicate with the receiving system.
-- *active* - configures if this configuration for a an out queue for a school authority is active (
-  so you don't have to delete it).
-- *plugins* - which plugins are going to be used for this school authority. Usually just "kelvin".
+``name``
+   identifies a specific receiving system.
+   It's a free-form string.
+   Adapt to your needs and remember it.
+   You need it in the next step.
 
-Please adapt this to your needs, of course. The complete and adapted configuration needs to be posted
-to the ``school_authorities`` resource in the :ref:`Swagger UI <swagger_ui>`.
+``username`` and ``password``
+   are the credentials that the receiving system needs.
+   Use the
+   :ref:`credentials you created when configuring the receiving system <kelvin_credentials>`.
 
-.. _school_to_authority_mapping:
+``url``
+   specifies the address of the receiving system.
+
+``mapping``
+   For a detailed description of the users' ``mapping`` inside
+   ``plugin_configs["kelvin"]``, see :ref:`school-authorities-mapping`.
+
+``school_classes``
+   A mapping to setup the synchronization for school class groups.
+
+``sync_password_hashes``
+   Set to ``true``, if you want to synchronize the password hashes.
+
+``ssl_context``
+   contains the values that the connector passes to the :py:class:`ssl.SSLContext` object.
+   The connector uses this object to communicate with the receiving system.
+
+``active``
+   set to ``true`` to activate the configuration for an out queue for a school authority.
+   To deactivate the configuration, set the value to ``false``.
+
+``plugins``
+   Lists the plugins that the connector uses for this school authority.
+   The list usually just has the element ``"kelvin"``.
+
+Adapt the configuration to your needs.
+You need to post the complete and adapted configuration
+to the ``school_authorities`` resource using the :ref:`Swagger UI <swagger-ui>`.
+
+.. _school-to-authority-map:
 
 School to authority mapping
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
-This is the second of the two :ref:`mappings <Mappings>` we need.
+This section describes the second and last
+:ref:`mapping <school-authorities-mapping>`
+to setup the |UAS| ID Connector.
 
-While the above mapping defines which school authorities we have, we now need to map which school we
-sync to which authority - an authority could handle more than one school, so it's an 1:n mapping.
+The before described mappings describe which school authorities you have.
+This section describes how to map which school you want to synchronize to which authority.
+A school authority can handle more than one school.
+You therefore have a ``1:n`` mapping.
 
-The format is:
+The format for the mapping is:
 
 .. code-block:: json
 
@@ -479,8 +541,10 @@ The format is:
 
 You can have one or more schools in the mapping.
 
-So assuming you have a ``DEMOSCHOOL`` on your sending system, and you used the above configuration
-to define ``Traeger1`` as a recipient system, you could do:
+So assuming you have a ``DEMOSCHOOL`` on your sending system,
+and you used the configuration before
+to define ``Traeger1`` as a recipient system,
+you could do:
 
 .. code-block:: json
 
@@ -492,108 +556,135 @@ to define ``Traeger1`` as a recipient system, you could do:
 
 .. note::
 
-   :ref:`Remember?<l10n>` ``Traeger`` refers to the receiving side of the sync process
+   :ref:`Remember? <l10n>` ``Traeger`` refers to the receiving side of the synchronization process.
 
-You can also find this example in :ref:`school-to-authority-mapping`.
+You also find this example in :ref:`school-to-authority-map`.
 
-
-
-Please "PUT" this configuration JSON to the ``school_to_authority_mapping`` resource
-in the :ref:`Swagger UI<swagger_ui>`.
-
-
-
-
+``PUT`` this configuration JSON to the ``school_to_authority_mapping`` resource
+in the :ref:`Swagger UI<swagger-ui>`.
 
 Role specific attribute mapping
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
+
+.. warning::
+
+   This section describes an advanced scenario.
+   If you don't explicitly need it, jump to the next section :ref:`try-out`.
+
+Back to the :ref:`example about telephone numbers <phone-numbers-example>`.
+Imagine you don't want to transfer telephone numbers for students,
+you actually need them for teachers.
+This means, that you need to define per role which properties you want to transfer.
+
+.. versionadded:: 2.1.0
+
+   The default |KLV| plugin version ``2.1.0`` received the role specific
+   attribute mapping feature.
+   This allows to define additional user mappings for each
+   role such as ``student``, ``teacher``, ``staff`` and ``school_admin`` by adding a
+   mapping next to the ``users`` mapping suffixed by ``_$ROLE``,
+   for example ``users_student: {}``.
+
+If the |KLV| plugin handles a user object,
+the mapping looks like the following:
+
+#. In the current school authority configuration, determine the schools that the authority handles.
+
+#. Determine all roles the user has in these schools.
+
+#. Order the roles by priority:
+
+   * ``school_admin`` being the highest
+   * ``staff``
+   * ``teacher``
+   * and then ``student`` with the lowest priority.
+
+#. Find a ``users_$ROLE`` mapping from the ones configured in the plugin settings,
+   pick the one with the highest priority.
+
+#. If you couldn't fine any, fall back to the ``users`` mapping as the default.
+
+.. _school-classes-problem-0:
+
+You find an example for such a configuration in :ref:`role-specific-kelvin-plugin-mapping`.
 
 .. note::
-  This is an advanced scenario. If you don't need this,
-  jump to the :ref:`next section <Trying it out>`.
 
-Back to our  :ref:`example about telephone numbers <phone_numbers_example>`.
-Imagine that while telephone numbers should not be transferred for students,
-they are actually needed for teachers.
-This means, that we have a need to define per role which properties should be transferred.
+   The priority order for the roles aligns with the order of common specificity in |UAS|.
 
-With version ``2.1.0`` role specific attribute mapping was added to the default |KLV| plugin.
-This allows to define additional user mappings for each role (``student``, ``teacher``, ``staff``
-and ``school_admin``)
-by adding a new mapping next to the ``users`` mapping suffixed by ``_$ROLE``,
-e.g. ``users_student: {}``.
-
-If a user object is handled by the |KLV| plugin, the mapping is determined as follows:
-
-1. Determine the schools the current school authority is configured to handle.
-2. Determine all roles the user has in these schools.
-3. Order the roles by priority: ``school_admin`` being the highest, followed by ``staff``, ``teacher``
-   and then ``student``.
-4. Find a ``users_$ROLE`` mapping from the ones configured in the plugin settings, pick the one
-   with the highest priority (from step 3).
-5. If none was found, fall back to the ``users`` mapping as the default.
-
-.. _school_classes_problem_0:
-
-An example for such a configuration can be found in :ref:`role-specific-kelvin-plugin-mapping`
-
-.. note::
-   The priority order for the roles was chosen in order of common specificity in |UAS|.
    A student only ever has the role ``student``.
-   But teachers, staff and school admins can have multiple roles.
+
+   ``teachers``, ``staff``, and ``school_admin`` can have multiple roles.
 
 .. note::
-   The mappings for the different roles are not additive
-   because that approach would complicate the option to remove mappings from a specific role.
-   Therefore, only *one* mapping is chosen by the rules just described.
 
-.. _school_classes_problem_1:
+   The mappings for the different roles aren't additive,
+   because that approach would complicate the option to remove mappings from a specific role.
+   Therefore, choose only *one* mapping by the rules just described.
+
+.. _school-classes-problem-1:
 
 .. warning::
 
    Users have the field ``school_classes``, which describes which school classes they belong to.
-   You might want to prevent certain user roles from being added or removed to school classes.
-   Please be aware that leaving out the ``school_classes`` from the mapping is not sufficient to achieve this:
-   changing the school classes of a user does not only result in a user change event
-   but also a school class change event, which needs to be handled separately. You therefore need to use
-   a derivative of the |KLV| plugin, which is described in the next section.
+   You might want to prevent certain user roles from adding to or removing from school classes.
 
+   Be aware that leaving out the ``school_classes`` from the mapping isn't sufficient to achieve this.
+   Changing the school classes of a user doesn't only result in a user change event,
+   but also a school class change event, which you need to handle separately.
+
+   You therefore need to use a derivative of the |KLV| plugin, as described in :ref:`partial-group-sync`.
+
+.. _partial-group-sync:
 
 Partial group sync mapping
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
-.. note::
-  This is an advanced scenario. If you don't need this,
-  jump to the :ref:`next section <Trying it out>`.
+.. warning::
 
-Remember that in the last examples we had a property
-that we would send for some users, but not others, depending on their role?
-Turns out that we can have the same problem for groups.
+   This section describes an advanced scenario.
+   If you don't explicitly need it, jump to the next section :ref:`try-out`.
+
+Remember that in the last examples you had a property
+that you would send for some users,
+but not others,
+depending on their role?
+Turns out that you can have the same problem for groups.
 
 Imagine that a school manages locally which teachers belong to which class.
-In the role specific mapping we would *not* sync the classes attribute ``school_classes``,
-preventing overwriting the local managed settings (:ref:`see above <school_classes_problem_1>`).
-This is not enough though: we would also need to make sure that we don't sync
-the property ``users`` of groups which contains those teachers.
+In the role specific mapping you would **not** synchronize the classes attribute ``school_classes``,
+to prevent overwriting the local managed settings, :ref:`see above <school-classes-problem-1>`.
 
-With version ``2.1.0`` a new derivative of the |KLV| plugin was added:
-``kelvin-partial-group-sync``. This plugin alters the handling of school class changes
-by allowing you to specify a list of roles that should be ignored when syncing groups.
-The following steps determine which members are sent to a school authority
-when a school class is added:
+This isn't enough though. You would also need to make sure
+that you don't synchronize the property ``users`` of groups
+which contains those teachers.
 
-1. Add all users that are members of the school class locally (Normal |KLV| plugin behavior).
+.. versionadded:: 2.1.0
+
+   |KLV| plugin version ``2.1.0`` adds the derivative ``kelvin-partial-group-sync``.
+   This plugin alters the handling of school class changes
+   by allowing you to specify a list of roles that you want to ignore when
+   synchronizing groups.
+
+The following steps determine which members the connector sends to a school authority,
+when an administrator adds a school class:
+
+1. Add all users that are members of the school class locally.
+   This is the default normal |KLV| plugin behavior.
+
 2. Remove all users that have a configured role to ignore in any school
    handled by the school authority configuration.
+
 3. Get all members of the school class on the target system that have one of the configured roles
    and add them.
+
 4. Get all members of the school class on the target system that are unknown to the |IDC|
    and add them.
 
-This results in school classes having only members with roles not configured to ignore, |br|
+This results in school classes that have only members with roles not configured to ignore:
 
-+ members with roles to ignore that were added on the target system, |br|
-+ any users added on the target system which are unknown to the ID Connector.
+* members with roles to ignore that were added on the target system,
+* any users added on the target system which are unknown to the |IDC|.
 
 .. warning::
 
@@ -601,89 +692,104 @@ This results in school classes having only members with roles not configured to 
    and one additional request to the target system are necessary.
    This affects performance.
 
-To activate this alternative behavior replace the ``kelvin`` plugin in a school authority configuration
-with ``kelvin-partial-group-sync``.
+To activate this alternative behavior,
+replace the ``kelvin`` plugin in a school authority configuration with the ``kelvin-partial-group-sync`` plugin.
 The configuration options are exactly the same as for the ``kelvin`` plugin,
 except for the addition of ``school_classes_ignore_roles``,
 which holds the list of user roles to ignore for school class changes.
 
-See :ref:`partial-groupsync` for an example configuration.
+For an example configuration, see :ref:`partial-groupsync`.
 
 .. warning::
 
-   Please be aware that this plugin can only alter the handling of dedicated school class change events.
-   Due to the technical situation, changing the members of a school class often results in two events,
-   a school class change and a user change.
-   To actually prevent users of certain roles being added to school classes at all,
-   it is necessary to leave out the mapping of the users ``school_class`` field
-   in the configuration as well - :ref:`see above <school_classes_problem_0>`.
+   Be aware that this plugin can only alter the handling of dedicated school class change events.
+   Due to the technical situation, changing the members of a school class often results in two events:
+
+   * a school class change
+   * a user change
+
+   To actually prevent the |IDC| to add users of certain roles to school classes at all,
+   it's necessary to leave out the mapping of the users ``school_class`` field
+   in the configuration as well - :ref:`see the previous section <school-classes-problem-0>`.
+
+.. _try-out:
 
 Trying it out
 =============
 
-Time has come to try it out. What we want to do:
+Time has come to verify the setup.
+In this section, you go through the following steps:
 
-1. Create a test user
-2. Import the test user on the sending side
-3. and watch the user being synced to the receiving side.
+1. Create a test user.
+2. Import the test user on the sending side.
+3. Watch the synchronization of the test user to the receiving side.
 
-.. note:
+.. caution::
 
-  Only users with the properties  "ucsschoolRecordUID" and "ucsschoolSourceUID"
-  are synced. We need to make sure that the user(s) we use for testing have
-  these properties.
+   The |IDC| only synchronizes users with the properties ``ucsschoolRecordUID``
+   and ``ucsschoolSourceUID``.
+   You need to ensure that the user accounts used for testing have these properties.
 
-
-
-The slow way would be to  `create a user`_   individually (and make sure to amend the
-required properties),
+The slow way is to
+`create a user <https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630#a-sample-command-9>`_
+individually and to ensure to amend the required properties,
 or to use the |UAS| import.
-You can read all about importing users in :cite:t:`uv-ucsschool-import` (German
-only).
+For more information about user import in |UAS|,
+see :cite:t:`uv-ucsschool-import`, German only.
 
-We however do it the fast way, creating and importing the user in one step:
+With the fast way, you create and import the user in one step.
+The following command creates a user within a class in the school ``DEMOSCHOOL``.
 
 .. code-block:: bash
 
    $ /usr/share/ucs-school-import/scripts/ucs-school-testuser-import \
      --students 1  --classes 1 DEMOSCHOOL
 
-This will create a user within a class in the school ``DEMOSCHOOL``.
-
-Now watch the log file to see the sync action on the *sender system*:
+To see the synchronization action on the *sender system*,
+you can watch the log file with the following command:
 
 .. code-block:: bash
 
    $ tail -f /var/log/univention/ucsschool-id-connector/queues.log
 
-In another terminal on the *receiving system* you can see the user being received by the
-|KLV| API:
+To see the synchronization action on the *receiving system*,
+you can watch the log file of |KLV| with the following command:
 
 .. code-block:: bash
 
    $ tail -f /var/log/univention/ucsschool-kelvin-rest-api/http.log # kelvin log
 
-You might need to wait a short moment before the queue picks up the new user. If everything went fine,
-you should see some messages in the kelvin log, and you can confirm that the user was created in
-either the |KLV| web interface at ``https://FQDN/ucsschool/kelvin/v1/docs`` or in the UMC.
+You may need to wait a short moment before the queue picks up the created user.
+If everything went fine,
+you see some messages in the |KLV| log file on the receiving system.
+You can confirm that the |IDC| created the user
+in either the |KLV| web interface at :samp:`https://{FQDN}/ucsschool/kelvin/v1/docs`,
+or in the UMC.
 
-These log files are also a good starting point for debugging in case something went wrong.
+The following log files are also a good starting point for debugging in case something went wrong:
 
-.. hint::
+* On the sending system: :file:`/var/log/univention/ucsschool-id-connector/queues.log`
 
-   When debugging always make sure that the following is correct and matches:
+* On the receiving system: :file:`/var/log/univention/ucsschool-kelvin-rest-api/http.log`
 
-   1. school authority configuration on the sender system (including auth credentials)
-   2. school to  authority mapping on the sender system
-   3. ``mapped_udm_properties.json`` on the receiving system has all extra attributes that are
-      defined in the school authority mapping.
+.. important::
+
+   During debugging, you must always ensure that the following is correct and matches:
+
+   1. School authority configuration on the sender system,
+      including authentication credentials.
+
+   2. School to authority mapping on the sender system.
+
+   3. :file:`mapped_udm_properties.json` on the receiving system has all extra attributes
+      that are defined in the school authority mapping.
 
 
 Starting / Stopping services
 ============================
 
-Both services (|iIDCS| and  |iIDCH|) run in a Docker container.
-The container can be started/stopped by using the regular service facility of the host system:
+Both services, |iIDCS| and  |iIDCH|, run in a Docker container.
+You can start or stop the container by using the regular service facility of the UCS system:
 
 .. code-block:: bash
 
@@ -692,69 +798,75 @@ The container can be started/stopped by using the regular service facility of th
     $ univention-app stop ucsschool-id-connector
     $ univention-app restart ucsschool-id-connector
 
-To restart individual services, the init scripts *inside* the Docker container can be used.
-The ``univention-app`` program has a command that makes it easy to execute commands *inside*
-the Docker container:
+To restart individual services, you can use the init scripts *inside* the Docker container.
+:program:`univention-app` has the ``shell`` command that allows to run commands *inside* the Docker container:
 
 .. code-block:: bash
 
-    # UCS@School ID Connector service
-    $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart
+    # UCS@school ID Connector service
+    $ univention-app shell \
+         ucsschool-id-connector \
+         /etc/init.d/ucsschool-id-connector \
+         restart
 
-    # UCS@School ID Connector HTTP API
-    $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector-rest-api start
-
+    # UCS@school ID Connector HTTP API
+    $ univention-app shell \
+         ucsschool-id-connector \
+         /etc/init.d/ucsschool-id-connector-rest-api \
+         start
 
 Updates
 =======
-Updates are installed in one of the two usual UCS ways. Either via UMC or on the command line:
 
-.. code-block:: bash
+To install updates for |IDC|, use one of the two usual UCS ways.
+Either through UMC or on the command line:
 
-    $ univention-upgrade
-
-    # or just:
+.. code-block:: console
 
     $ univention-app upgrade ucsschool-id-connector
 
 Extra: setting up a second school authority
 =============================================
 
-If we already have a school authority set up and want to set up a second one
-(by copying its configuration) we can do the following:
+If you already have a school authority set up
+and you want to set up another one by copying its configuration,
+you can do the following:
 
-1. Make sure the new school authority server has the |KLV| app installed and running.
+1. Make sure the school authority server that you want to add has the |KLV| app
+   installed and running.
 
-2. Retrieve the configuration for our old school authority.
+2. Retrieve the configuration for the old school authority.
 
-   For this we open the HTTP-API Swagger UI ( ``https://FQDN/ucsschool-id-connector/api/v1/docs``)
-   and authenticate ourselves. The button can be found in the top right corner of the page.
+   For this you open the HTTP-API Swagger UI at
+   :samp:`https://{FQDN}/ucsschool-id-connector/api/v1/docs`
+   and :ref:`authenticate yourself <authentication>`.
 
-   Then we retrieve a list of the available school authorities
-   by using the ``GET /ucsschool-id-connector/api/v1/school_authorities`` tab,
-   by clicking on ``Try it out`` and ``Execute``.
+   To retrieve a list of the available school authorities,
+   use the ``GET /ucsschool-id-connector/api/v1/school_authorities`` tab in the Swagger UI,
+   click :guilabel:`Try it out` and :guilabel:`Execute`.
 
-   In the response body, we get a JSON list of the school authorities that are currently configured.
-   We need to copy the one we want to replicate and save it for later.
+   In the response body, you receive a list of school authorities in JSON format,
+   that the |IDC| has configured.
+   You need to copy the school authority that you want to replicate and save it for later.
 
-3. Under ``POST /ucsschool-id-connector/api/v1/school_authorities`` we can create the new school authority.
+3. At the tab ``POST /ucsschool-id-connector/api/v1/school_authorities`` in the Swagger UI
+   you can create the school authority.
 
-   Click *try it out* and insert the copied JSON object from before into the request body.
+   Click :guilabel:`Try it out` and insert the copied JSON object from before into the request body.
 
-   Now we just have to alter the name, URL, and login credentials before executing the request.
+   **Before** you execute the request,
+   you must alter the name, URL, and login credentials:
 
-   - The URL has to point to the new school authorities HTTP-API.
-   - The name can be chosen at your leisure
-   - The password is the authentication token of the school authorities HTTP-API (retrieved earlier).
+   * The URL must point to the school authority's |KLV| HTTP-API.
+   * You can choose the name at your leisure.
+   * The password is the authentication token of the school authority's HTTP-API that you retrieved earlier.
 
-The tab ``PATCH /ucsschool-id-connector/api/v1/school_authorities/{name}`` can be used
+Use the tab :samp:`PATCH /ucsschool-id-connector/api/v1/school_authorities/{name}`
 to change an already existing configuration.
 
-To retrieve a list of the extended attributes on the old school authority server, one can use:
+To retrieve a list of the extended attributes on the old school authority server,
+use the following command:
 
 .. code-block:: bash
 
     $ udm settings/extended_attribute list
-
-
-.. _create a user: https://help.univention.com/t/how-a-ucs-school-user-should-look-like/15630#a-sample-command-9

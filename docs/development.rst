@@ -222,7 +222,7 @@ ID Connector
 
 .. hint::
 
-    You have learned about *Management REST API* in :ref:`ucs_school_id_connector_http_api`.
+    To read more about *Management REST API*, see :ref:`ucs-school-id-connector-http-api`.
 
 
 Complete picture

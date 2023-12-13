@@ -66,7 +66,7 @@
 .. |UASIDC|  replace:: |UAS| |IDC|
 .. |iUASIDC| replace:: |iUAS| |iIDC|
 .. |IDCS|    replace:: |IDC| Service
-.. |iIDCS|   replace:: |iIDC| *Service*
+.. |iIDCS|   replace:: |IDC| *Service*
 .. |IDCH|    replace:: |IDC| HTTP API
 .. |iIDCH|   replace:: |IDC| *HTTP API*
 .. |KLV|     replace:: Kelvin
