@@ -58,8 +58,8 @@ def filter_plugins(hook_name: str, plugins: List[str]) -> Any:
 
     :param hook_name: The hook to be executed
     :param plugins: The plugins to be filtered for
-    :return: A _HookCaller instance that can be used just like
-        `plugin_manager.hook.hook_name`
+    :return: A ``_HookCaller`` instance that can be used just like
+        ``plugin_manager.hook.hook_name``.
     """
     all_hcaller_names = set()
     for plugin_name in plugins:
@@ -206,7 +206,7 @@ class Distribution:
 
 class Postprocessing:
     """
-    Pluggy hook specifications for all hooks modifying data in postprocessing.
+    Pluggy hook specifications for all hooks modifying data in post processing.
     The implementations of these hooks need to be registered with a name, since
     the set of plugins executed can be configured for every school authority
     individually.
@@ -217,17 +217,18 @@ class Postprocessing:
         self, http_method: str, url: str, school_authority: SchoolAuthorityConfiguration
     ) -> Dict[Any, Any]:
         """
-        Creates a dictionary the kwargs for the http request should be updated with.
+        Creates a dictionary the keyword arguments for the http request should be updated with.
 
         The configured ``create_request_kwargs`` hooks for a given school authority will
-        be executed. The returned dictionaries are used to update the kwargs for
+        be executed. The returned dictionaries are used to update the keyword arguments for
         aiohttp with. Common use cases would be the addition of headers or authentication
         strategies.
+
         :param http_method: The HTTP method used, e.g. POST
-        :param url: The complete url this request goes to
+        :param url: The complete URL this request goes to
         :param school_authority: The school authority configuration that this request
             targets
-        :return: The dictionary to update the request kwargs with
+        :return: The dictionary to update the request keyword arguments with
         """
 
     @hook_spec
@@ -241,6 +242,7 @@ class Postprocessing:
         authority configuration are executed.
         If no registered hook handles the object and thus none returned ``True``, an
         error will be logged.
+
         :param school_authority: The school authority this object is handled for
         :param obj: The ListenerObject to handle
         :return: True if this hook handled the object, otherwise False

@@ -14,10 +14,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
+import os
 import sys
 
-# sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("../src"))
 
 
 # -- Project information -----------------------------------------------------
@@ -44,6 +44,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinxcontrib.inkscapeconverter",
     "sphinx_inline_tabs",
+    "sphinx.ext.autodoc",
 ]
 
 bibtex_bibfiles = ["bibliography.bib"]
@@ -63,6 +64,7 @@ intersphinx_mapping = {
         None,
     ),
     "uv-ucsschool-manual": ("https://docs.software-univention.de/ucsschool-manual/5.0/de", None),
+    "pluggy": ("https://pluggy.readthedocs.io/en/latest/", None),
 }
 
 language = "en"

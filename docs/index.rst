@@ -82,4 +82,5 @@ and how to develop plugins for |IDC|.
    file_locations
    example_json
    HISTORY
+   source-docs
    bibliography

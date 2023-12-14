@@ -75,36 +75,51 @@ upload_appcenter_scripts_to_test_appcenter:
 
 # docu pipelines
 
+.docs-before-script:
+  before_script:
+    - apt-get update; apt-get install --assume-yes --no-install-recommends gcc g++
+    - pip install -r src/requirements.txt
+
 docs-linkcheck:
-  extends: .sphinx-linkcheck-template
+  extends:
+    - .sphinx-linkcheck-template
+    - .docs-before-script
   rules:
     - changes:
       - $DOCS_DIR/**/*
       - "src/HISTORY.rst"
 
 docs-spelling:
-  extends: .sphinx-spelling-template
+  extends:
+    - .sphinx-spelling-template
+    - .docs-before-script
   rules:
     - changes:
       - $DOCS_DIR/**/*
       - "src/HISTORY.rst"
 
 docs-html:
-  extends: .sphinx-html-template
+  extends:
+    - .sphinx-html-template
+    - .docs-before-script
   rules:
     - changes:
       - $DOCS_DIR/**/*
       - "src/HISTORY.rst"
 
 docs-pdf:
-  extends: .sphinx-pdf-template
+  extends:
+    - .sphinx-pdf-template
+    - .docs-before-script
   rules:
     - changes:
       - $DOCS_DIR/**/*
       - "src/HISTORY.rst"
 
 docs-warnings:
-  extends: .sphinx-warnings-template
+  extends:
+    - .sphinx-warnings-template
+    - .docs-before-script
   rules:
     - changes:
       - $DOCS_DIR/**/*
