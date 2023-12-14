@@ -5,28 +5,32 @@
 File locations
 ==============
 
-This section lists relevant directories and files. Configuration file *must not* be edited by hand.
-All configuration is done either through the *app settings* in the UCS app center or through the
-*UCS\@school ID Connector HTTP API*.
+This section lists relevant directories and files.
+**Don't** edit configuration files by hand.
+*App settings* in the UCS App Center
+or the *UCS\@school ID Connector HTTP API* take care of all configuration.
 
-Nothing needs to be backed up and restored before and after an app update,
-because all important data is persisted in files on volumes
-mounted from the UCS host into the docker container.
+All important data persists in files on volumes
+mounted from the UCS host into the Docker container.
+Therefore, there is no need for distinct backup before an update
+and a restore afterwards.
 
 Log files
 ---------
 
-``/var/log/univention/ucsschool-id-connector`` is a volume mounted into the docker container,
-so it can be accessed from the host.
+The directory :file:`/var/log/univention/ucsschool-id-connector`
+is a volume mounted into the Docker container,
+so that you can access it from the host.
 
-The directory contains:
+The directory contains the following files:
 
-* ``http.log``: log of the HTTP-API (both ASGI server and API application)
-* ``queues.log``: log of the queue management daemon
-* Old versions of above log files with timestamps appended to the file name.
+* :file:`http.log`: log file of the HTTP-API, both ASGI server and API application.
+* :file:`queues.log`: log file of the queue management daemon.
+* Previous versions of before mentioned log files with timestamps appended to the filename.
 
-Log file rotation is controlled by the systems ``logrotate`` settings.
-For example, the rotation cycle for the ``queues.log`` can be changed to daily with:
+The systems :program:`logrotate` settings control log file rotation.
+For example, to change the rotation cycle to daily for :file:`queues.log`,
+use the following command:
 
 .. code-block:: bash
 
@@ -36,56 +40,62 @@ For example, the rotation cycle for the ``queues.log`` can be changed to daily w
 
    See :ref:`computers-logging-retrieval-of-system-messages-and-system-status` in :cite:t:`uv-manual`.
 
-Log output can also be seen running::
+To view log file output, run the following command:
+
+.. code-block:: bash
 
     $ docker logs <container name>
 
 School authority configuration files
 ------------------------------------
 
-The configuration of the replication targets (*school authorities / Schulträger*) is stored
-in one JSON file per configured school authority under
-``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities``.
-The JSON configuration files must not be created by hand.
-The HTTP-API should be used for that instead.
-
-Each school authority configuration has a queue associated.
+The configuration of the replication targets, such as *school authorities / Schulträger*,
+locates in one JSON file per configured school authority in the directory
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities`.
+Don't create the JSON configuration by hand.
+Use the *UCS\@school ID Connector HTTP API* instead.
 
 Queue files
 -----------
 
+Each school authority configuration has an associated queue.
+
 The LDAP listener process on the UCS host creates a JSON file
-for each creation/modification/move/deletion of a user object.
-Those JSON files are written to
-``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/listener``.
-That is the directory of the *in queue*.
+for each create, modify, move, and delete action of a user object.
+The listener writes those JSON files to the directory
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/listener`.
+That's the directory of the *in queue*.
 
 The process handling the *in queue* copies files from there to a directory
 for each school authority that it can associate with the user account in the file.
 Each *out queue* handles a directory below
-``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues``.
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues`.
 
-When a school authority configuration is deleted, its associated queue directory is moved to
-``/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues_trash``.
+When you delete a school authority configuration,
+the connector moves its associated queue directory to
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues_trash`.
 
 Token signature key
 -------------------
 
-The key with which the JWTs are signed is in the file
-``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret``.
-The file is created by the apps join script (see *Install* above).
+The key for signing the JWTs locates in the file
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret`.
+The app join script creates this file.
+For more information, see :ref:`admin-install`.
 
 SSL certificates for Kelvin client plugin
 -----------------------------------------
 
 The plugin that connects to the Kelvin API on the school authority side looks for and stores
-SSL certificates as
-``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/ssl_certs/HOSTNAME``.
-In case the certificate cannot be downloaded automatically, it can be saved there manually.
+SSL certificates as file
+:samp:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/ssl_certs/{HOSTNAME}`.
+If the *Kelvin client plugin* can't download the certificate automatically,
+you can manually save it to the preceding location.
 
 Volumes
 -------
-The following directories are mounted from the host into the container:
 
-* ``/var/lib/univention-appcenter/listener``
-* ``/var/log/univention/ucsschool-id-connector``
+The Docker container mounts the following host directories as volumes:
+
+* :file:`/var/lib/univention-appcenter/listener`
+* :file:`/var/log/univention/ucsschool-id-connector`
