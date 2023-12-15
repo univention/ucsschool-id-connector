@@ -1,0 +1,163 @@
+# docu pipelines
+
+include:
+  - project: 'univention/documentation/sphinx-docker'
+    file: 'pipeline/sphinx.yml'
+
+stages:
+  - build
+  - merge
+  - review
+  - staging
+  - production
+
+variables:
+  # Check the README for more information about the variables:
+  # https://git.knut.univention.de/univention/documentation/sphinx-docker/-/blob/main/README.rst
+  DOCS_DIR: "docs"
+  DOC_TARGET_NAME: "ucsschool-id-connector"
+  DOC_TARGET_PATH: "$DOC_TARGET_NAME"
+
+.docs-before-script:
+  before_script:
+    - apt-get update; apt-get install --assume-yes --no-install-recommends gcc g++
+    - pip install -r src/requirements.txt
+
+docs-linkcheck:
+  extends:
+    - .sphinx-linkcheck-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+docs-spelling:
+  extends:
+    - .sphinx-spelling-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+docs-html:
+  extends:
+    - .sphinx-html-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+docs-pdf:
+  extends:
+    - .sphinx-pdf-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+docs-warnings:
+  extends:
+    - .sphinx-warnings-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+docs-merge-to-one-artifact:
+  extends: .sphinx-merge-template
+  needs:
+    - job: docs-html
+    - job: docs-pdf
+    - job: docs-spelling
+      artifacts: false
+    - job: docs-linkcheck
+      artifacts: false
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+      when: manual
+
+pages-review-url:
+  stage: review
+  script:
+    - echo "DOC_REVIEW_URL=${CI_SERVER_PROTOCOL}://${CI_PROJECT_ROOT_NAMESPACE}.${CI_PAGES_DOMAIN}/-/${CI_PROJECT_PATH#${CI_PROJECT_ROOT_NAMESPACE}/}/-/jobs/$CI_JOB_ID/artifacts/out/$DOC_TARGET_NAME/index.html" > pages_review_url.env
+  artifacts:
+    reports:
+      dotenv: pages_review_url.env
+    paths:
+      - $CI_PROJECT_DIR/out
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+pages-review:
+  stage: review
+  needs:
+    - job: pages-review-url
+  script:
+    - "true"
+  environment:
+    name: review/docs/$CI_COMMIT_REF_NAME
+    url: $DOC_REVIEW_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
+
+pages-staging:
+  stage: staging
+  rules:
+      - changes:
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
+        if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  image: $GIT_SYNC
+  needs:
+    - job: docs-merge-to-one-artifact
+  script:
+    - mv "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" public
+  environment:
+    name: staging/docs
+    url: $CI_PAGES_URL
+  artifacts:
+    paths:
+      - public
+
+pages-production:
+  stage: production
+  script:
+    - "true"
+  environment:
+    name: production/docs
+    url: https://docs.software-univention.de/ucsschool-id-connector/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+      - docs/**/*
+      - "src/HISTORY.rst"
+
+# The template has inherit:variables:false to prevent the passing of pipeline
+# variables to downstream, and therefore $DOCS_DIR is not available here.
+docs-create-production-merge-request:
+  extends: .sphinx-docs-merge-request-template
+  needs:
+    - job: docs-merge-to-one-artifact
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+      - docs/**/*
+      - "src/HISTORY.rst"
