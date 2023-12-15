@@ -4,8 +4,12 @@
 
 .. _biblio:
 
-************
-Bibliography
-************
+.. Without this block, the title appears twice in the PDF build.
+
+.. only:: html
+
+   ************
+   Bibliography
+   ************
 
 .. bibliography::
