@@ -5,15 +5,18 @@
 .. This file is formatted in the spirit of
    https://rhodesmill.org/brandon/2012/one-sentence-per-line/
 .. include:: <isonum.txt>
-
+.. include:: univention_rst_macros.txt
 
 ***************************
 Example json configurations
 ***************************
 
+This section provides some example configurations.
 
 Sending system examples
 =======================
+
+Here you find example configurations for the sending system of an |IDC| setup.
 
 .. _school-authority-mapping:
 
@@ -21,7 +24,6 @@ School authority configuration
 ------------------------------
 
 .. literalinclude:: ../examples/school_authority_kelvin.json
-
 
 
 .. _school-to-authority-mapping:
@@ -32,16 +34,12 @@ School to authority mapping example
 .. literalinclude:: ../examples/mapping.json
 
 
-
 .. _role-specific-kelvin-plugin-mapping:
 
 Role specific Kelvin plugin mapping
 -----------------------------------
 
 .. literalinclude:: ../examples/school_authority_role_specific_kelvin_mapping.json
-
-
-
 
 
 .. _partial-groupsync:
@@ -55,11 +53,12 @@ This uses the ``kelvin-partial-group-sync`` plugin instead of the ``kelvin`` plu
 .. literalinclude:: ../examples/school_authority_kelvin_partial_group_sync.json
 
 
-
 Receiving system examples
 =========================
 
-.. _mapped_udm_properties_json:
+Here you find example configurations for the receiving system of an |IDC| setup.
+
+.. _mapped-udm-properties-json:
 
 Mapped UDM properties
 ---------------------
