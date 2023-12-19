@@ -1,0 +1,12 @@
+FROM docker-registry.knut.univention.de/knut/sphinx-base
+ENV LANG C.UTF-8
+LABEL maintainer="Nico Gulden <gulden@univention.de>" description="Build UCS@school ID Connector documentation based on Sphinx"
+
+RUN apt-get -qq update && \
+    apt-get install -qq --assume-yes --no-install-recommends \
+    gcc \
+    g++
+
+COPY ["src/requirements.txt", "/env"]
+RUN python -m pip install --upgrade pip && \
+    pip install -r /env/requirements.txt --retries 3 --no-cache-dir
