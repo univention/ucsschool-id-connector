@@ -3,11 +3,8 @@
 include:
   - project: 'univention/documentation/sphinx-docker'
     file: 'pipeline/sphinx.yml'
-  - project: 'univention/dist/docker-services'
-    file: 'kaniko.yml'
 
 stages:
-  - prepare
   - build
   - merge
   - review
@@ -27,22 +24,40 @@ variables:
     - pip install -r src/requirements.txt
 
 docs-linkcheck:
-  extends: .sphinx-linkcheck-template
-  image: $IMAGE_TAG
+  extends:
+    - .sphinx-linkcheck-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 docs-spelling:
-  extends: .sphinx-spelling-template
-  image: $IMAGE_TAG
+  extends:
+    - .sphinx-spelling-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 docs-html:
-  extends: .sphinx-html-template
-  image: $IMAGE_TAG
+  extends:
+    - .sphinx-html-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 docs-pdf:
-  extends: .sphinx-pdf-template
-  before_script:
-    - apt-get update; apt-get install --assume-yes --no-install-recommends gcc g++
-    - pip install -r src/requirements.txt
+  extends:
+    - .sphinx-pdf-template
+    - .docs-before-script
+  rules:
+    - changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 docs-warnings:
   extends:
@@ -63,7 +78,13 @@ docs-merge-to-one-artifact:
       artifacts: false
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
       when: manual
 
 pages-review-url:
@@ -77,6 +98,9 @@ pages-review-url:
       - $CI_PROJECT_DIR/out
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 pages-review:
   stage: review
@@ -89,11 +113,17 @@ pages-review:
     url: $DOC_REVIEW_URL
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      changes:
+      - $DOCS_DIR/**/*
+      - "src/HISTORY.rst"
 
 pages-staging:
   stage: staging
   rules:
-      - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      - changes:
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
+        if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
   image: $GIT_SYNC
   needs:
     - job: docs-merge-to-one-artifact
@@ -115,6 +145,9 @@ pages-production:
     url: https://docs.software-univention.de/ucsschool-id-connector/
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+      - docs/**/*
+      - "src/HISTORY.rst"
 
 # The template has inherit:variables:false to prevent the passing of pipeline
 # variables to downstream, and therefore $DOCS_DIR is not available here.
@@ -124,3 +157,6 @@ docs-create-production-merge-request:
     - job: docs-merge-to-one-artifact
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+      - docs/**/*
+      - "src/HISTORY.rst"
