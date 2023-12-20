@@ -344,9 +344,16 @@ Don't edit configuration files directly.
 UCS\@school ID Connector HTTP API
 ---------------------------------
 
-* *queues*: monitoring of queues
-* *school_authorities*: configuration of school authorities
-* *school_to_authority_mapping*:  configuration of which school we sync to which authority
+The HTTP-API of the |iIDC| app offers the following resources:
+
+:samp:`https://{FQDN}/ucsschool-id-connector/api/v1/queues/`
+   ``/queues/`` for the monitoring of queues
+
+:samp:`https://{FQDN}/ucsschool-id-connector/api/v1/school_authorities/`
+   ``/school_authorities/`` for the configuration of school authorities
+
+:samp:`https://{FQDN}/ucsschool-id-connector/api/v1/school_to_authority_mapping/`
+   ``/school_to_authority_mapping/`` for the configuration of which school you want to synchronize to which authority
 
 You can discover the API interactively using one of two web interfaces.
 You can visit them with a browser at their respective URLs:
@@ -385,8 +392,259 @@ open the corresponding *app settings* in the |AppC|.
 .. code-block:: bash
    :caption: Example :command:`curl` command to retrieve a token:
 
-    $ curl -i -k -X POST --data 'username=Administrator&password=s3cr3t' \
-      https://FQDN/ucsschool-id-connector/api/token
+    $ curl --include \
+         --insecure \
+         --request POST
+         --data 'username=Administrator&password=s3cr3t' \
+         https://FQDN/ucsschool-id-connector/api/token
+
+.. _monitor-processing-status:
+
+Monitor processing status
+-------------------------
+
+This section describes how to monitor the processing status of the |IDC| queues.
+The status gives hints about how well the connector performs
+and if it works as intended.
+
+When users and groups change in UCS,
+the |IDC| processes these changes as transactions
+and synchronizes them to the connected |UAS| domains.
+The connector puts the changes into queues
+to increase the robustness of the connector
+and to keep the load at a manageable level.
+
+The |IDC| has an inbound queue that contains data
+coming from the App Center listener converter.
+The data uses a JSON representation of the changed objects.
+The |IDC| transforms the data from the inbound queue
+into transaction requests to the receiving systems.
+It buffers each transaction in an outbound queue.
+The |IDC| has one outbound queue per connected
+school authority (|UAS| domain) for outbound data.
+
+Each queue is a directory
+and each transaction is a file in a queue directory.
+The queues locate at the following directories:
+
+Inbound queue
+  :file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/listener`
+
+Outbound queues
+  :samp:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues/{queue_name}`
+
+The |IDC| provides the resources ``/queues/``
+and :samp:`/queues/{name}/`
+that list the size of each queue.
+With the resource :samp:`/queues/{name}/` you can query a distinct queue and
+monitor it.
+To retrieve the size of a queue, use the following steps:
+
+#. Authenticate yourself with the API as described in :ref:`auth`.
+
+#. Request the data from the |IDC| API.
+
+.. _monitor-processing-status-example:
+
+Example
+~~~~~~~
+
+The following example shows how to query the API for all queue lengths.
+You can choose between a user interface approach with *Swagger UI*,
+or a command-line approach.
+
+.. tab:: Swagger UI
+
+   Use the following steps with the Swagger UI:
+
+   #. To authorize, click :guilabel:`Authorize`
+      and enter the credentials of a legitimate user.
+
+   #. In the *queues* section,
+      open the *GET* ``/ucsschool-id-connector/api/v1/queues`` resource
+      and click :guilabel:`Try it out`.
+
+   #. Click the button :guilabel:`Execute`.
+      In the *Server response* section,
+      in the *Response body* area,
+      you see a result similar to :numref:`monitor-processing-status-example-result`.
+
+.. tab:: Command-line
+
+   Use the following commands for the command line:
+
+   #. Authorize yourself with the API and receive an ``access_token``:
+
+      .. code-block:: console
+
+         $ FQDN='<YOUR_FULLY_QUALIFIED_HOST_NAME>'
+         $ curl \
+               --include \
+               --insecure \
+               --request POST \
+               --data 'username=Administrator&password=s3cr3t' \
+               https://"$FQDN"/ucsschool-id-connector/api/token
+         $ TOKEN='<YOUR_TOKEN>'
+
+   #. Request a list of queues and use the ``access_token`` you retrieved
+      before:
+
+      .. code-block:: console
+
+         $ curl \
+               --insecure \
+               --request 'GET' \
+               'https://"$FQDN"/ucsschool-id-connector/api/v1/queues' \
+               -H 'accept: application/json' \
+               -H "Authorization: Bearer ${TOKEN}"
+
+      You see a result similar to :numref:`monitor-processing-status-example-result`.
+
+      .. hint::
+
+         If you want to use a secure connection,
+         you need download the UCS root certificate
+         and pass it to :program:`curl`:
+
+         .. code-block:: console
+
+            $ F_PATH_CA_CERT="PATH_TO_UCS_ROOT_CERTIFICATE"
+            $ curl \
+                  --cacert "$F_PATH_CA_CERT" \
+                  --request 'GET' \
+                  'https://"$FQDN"/ucsschool-id-connector/api/v1/queues' \
+                  -H 'accept: application/json' \
+                  -H "Authorization: Bearer ${TOKEN}"
+
+
+.. code-block:: json
+   :caption: Example for a result
+   :name: monitor-processing-status-example-result
+
+   [
+     {
+       "name": "InQueue",
+       "head": "",
+       "length": 0,
+       "school_authority": ""
+     },
+     {
+       "name": "auth1",
+       "head": "2024-01-11-13-43-36-196082_ready.json",
+       "length": 2,
+       "school_authority": "auth1"
+     },
+     {
+       "name": "auth2",
+       "head": "",
+       "length": 0,
+       "school_authority": "auth2"
+     }
+   ]
+
+.. _monitor-processing-alerts:
+
+Alerts for monitoring
+~~~~~~~~~~~~~~~~~~~~~
+
+If you want to add the |UAS| |IDC| to your monitoring environment
+and let the monitoring send you alerts,
+you may monitor the following problematic states.
+
+Monotonous growth over a period of time
+   If an |IDC| queue on the sending system grows continuously
+   over a period of time,
+   such as a day,
+   the |IDC| isn't able to process transactions
+   at the required speed as transactions arrive.
+   Under normal circumstances, it may happen
+   that the |IDC| can't process the transactions fast enough.
+   If the queue sizes don't decrease at all for days,
+   this could be a problem.
+
+No change in queue size over a period of time
+   If a queue size greater than ``0`` remains the same over a period of time,
+   such as an hour,
+   it indicates
+   that the |IDC| isn't working
+   or is stopping on corrupt transactions.
+   If nothing changes in a queue and the size remains the same,
+   you need to investigate.
+   For more information, see :ref:`monitor-processing-interruption`.
+
+
+Queues don't reach a size of ``0`` for a period of time
+   If the queues don't run empty over a period of time,
+   such as a week,
+   this can mean that transactions are coming in at the same rate
+   as the connector is processing them.
+   Or, the |IDC| is running too slowly overall.
+   Or, the target system may be unreachable due to
+   network problems or incorrect configuration.
+
+.. hint::
+
+   The right period of time to trigger an alarm
+   depends on your specific environment.
+
+.. _monitor-processing-interruption:
+
+Interrupted processing
+~~~~~~~~~~~~~~~~~~~~~~
+
+If the queue processing doesn't go as planned,
+for example,
+because the service is unavailable,
+the receiving system is unreachable,
+the |IDC| app has crashed,
+transactions are corrupt,
+or for any other reason,
+the queues grow in size or remain at a certain level.
+If the |IDC| app service doesn't run,
+the queues can quickly grow to a considerable size,
+such as more than 1 million files after some days.
+
+If a transaction has a valid JSON format,
+but the receiver can't process it,
+the |IDC| moves the JSON file with the transaction
+from the queue to a trash directory for outgoing queues located at
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues_trash`.
+
+If a transaction in JSON format located in any queue is corrupt,
+it may stay in the queue forever.
+To resolve an interrupted queue, use the following steps:
+
+#. Find out, which transaction is corrupt.
+
+   Have a look at the queue log file
+   of the |IDC| on the sending system at
+   :file:`/var/log/univention/ucsschool-id-connector/queues.log`.
+
+#. Resolve the error in the |IDC| setup.
+
+   If other errors caused the corrupt transaction,
+   you need to look at other parts.
+   The |IDC| either logs a qualitative error happening on the sending system,
+   or a generic error if a receiving system has an error with its |KLV| API.
+   Review the configurations on the sending system and the receiving systems:
+
+   * On the sending system, validate the configurations of school authority objects
+     in the |UAS| |IDC|. Have a close look at the URL, credentials, and attribute mappings.
+
+   * On the receiving systems, validate the attribute mapping
+     and the incoming transactions through the |KLV| API.
+     Have a look at the
+     :external+uv-ucsschool-kelvin-rest-api:ref:`Kelvin log files <file locations>`.
+
+   For information about watching the transaction processing,
+   see :ref:`try-out`.
+
+#. Remove the corrupt transaction from the queue.
+
+   Use the transaction you found in the log file,
+   find the JSON file that contains the transaction,
+   and remove the JSON file.
+
 
 .. _school-authorities-mapping:
 
@@ -395,11 +653,11 @@ School authorities mapping
 
 You need to configure the following things:
 
-1. What school authorities do you want to send data to,
-   and what data can they receive?
+1. The school authorities you want to send data to,
+   and what data can they receive.
    This section describes the procedure.
 
-2. What actual schools does the receiving system handle, meaning the school authority?
+2. The actual schools the receiving system handles, meaning the school authority.
    The following section: :ref:`School to authority mapping` describes the procedure.
 
 Start with the first mapping, for school authorities.
@@ -614,7 +872,7 @@ You find an example for such a configuration in :ref:`role-specific-kelvin-plugi
 
    A student only ever has the role ``student``.
 
-   ``teachers``, ``staff``, and ``school_admin`` can have multiple roles.
+   Teachers, staff, and school administrators can have multiple roles.
 
 .. note::
 
@@ -627,7 +885,7 @@ You find an example for such a configuration in :ref:`role-specific-kelvin-plugi
 .. warning::
 
    Users have the field ``school_classes``, which describes which school classes they belong to.
-   You might want to prevent certain user roles from adding to or removing from school classes.
+   You can prevent certain user roles from adding to or removing from school classes.
 
    Be aware that leaving out the ``school_classes`` from the mapping isn't sufficient to achieve this.
    Changing the school classes of a user doesn't only result in a user change event,

@@ -28,7 +28,7 @@ The directory contains the following files:
 * :file:`queues.log`: log file of the queue management daemon.
 * Previous versions of before mentioned log files with timestamps appended to the filename.
 
-The systems :program:`logrotate` settings control log file rotation.
+The system's :program:`logrotate` settings control log file rotation.
 For example, to change the rotation cycle to daily for :file:`queues.log`,
 use the following command:
 
@@ -54,26 +54,6 @@ locates in one JSON file per configured school authority in the directory
 :file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities`.
 Don't create the JSON configuration by hand.
 Use the *UCS\@school ID Connector HTTP API* instead.
-
-Queue files
------------
-
-Each school authority configuration has an associated queue.
-
-The LDAP listener process on the UCS host creates a JSON file
-for each create, modify, move, and delete action of a user object.
-The listener writes those JSON files to the directory
-:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/listener`.
-That's the directory of the *in queue*.
-
-The process handling the *in queue* copies files from there to a directory
-for each school authority that it can associate with the user account in the file.
-Each *out queue* handles a directory below
-:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues`.
-
-When you delete a school authority configuration,
-the connector moves its associated queue directory to
-:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues_trash`.
 
 Token signature key
 -------------------
