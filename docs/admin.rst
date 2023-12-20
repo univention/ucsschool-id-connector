@@ -84,6 +84,9 @@ of the UCS environment:
 
          See :ref:`chap-udm` in :cite:t:`uv-developer-reference`.
 
+         For an architecture overview, see :external+uv-architecture:ref:`services-udm`
+         in :cite:t:`uv-architecture`.
+
    |UCR|
       The |UCR| (**UCR**) stores configuration variables and settings to run the system,
       and creates and changes actual Linux configuration files
@@ -99,6 +102,9 @@ of the UCS environment:
          See
          :ref:`computers-administration-of-local-system-configuration-with-univention-configuration-registry`
          in :cite:t:`uv-manual`.
+
+         For an architecture overview, see :external+uv-architecture:ref:`services-ucr`
+         in :cite:t:`uv-architecture`.
 
    |AppC| settings
       The |AppC| is an ecosystem similar to the app stores known from mobile platforms
