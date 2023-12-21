@@ -7,9 +7,9 @@
 .. include:: univention_rst_macros.txt
 .. title:: ID-Connector - Welcome to UCS@School ID Connector Documentation
 
-********************************
-|UAS| ID Connector documentation
-********************************
+*************************
+|UAS| |IDC| documentation
+*************************
 
 .. image:: /images/License-AGPL-v3-orange.*
     :alt: GNU AGPL V3 license
@@ -18,6 +18,8 @@
 .. image:: /images/python-3.8-blue.*
     :alt: Python 3.8
     :target: https://www.python.org/downloads/release/python-382/
+
+Welcome to the documentation for the |UAS| |IDC|.
 
 The |IDC| connects an |UAS| directory
 to any number of other |UAS| directories in a 1:n relation.
@@ -33,6 +35,24 @@ Prerequisite is the |iUAS| |iKLV| API in the school authority environments.
 This requires a configuration in advance to create an assignment
 *"Which remote instance needs which school users?"*
 Then the connector creates, updates, or deletes these users.
+
+This documentation is for operators and system administrators
+who want to synchronize user identities
+between different school environments operated with |UAS|.
+You need to be familiar with the following topics:
+
+* The concepts of |UAS| and Univention Corporate Server (UCS),
+  such as the domain concept, UDM, and UCR.
+
+* Software deployment on UCS, especially how to use the App Center
+  and app settings
+
+* |UAS| |KLV| REST API
+
+* Work on the Linux command-line,
+  view and edit text files,
+  and examine log files.
+
 
 .. figure:: images/ucsschool-id-connector_overview_extended.*
 
@@ -66,11 +86,6 @@ and how to develop plugins for |IDC|.
       $ echo "hello world"
 
    Hover with your mouse over the code to see the icon.
-
-.. Missing elements in the introduction:
-
-   FIXME : Who is the audience?
-   FIXME : What know-how is required from the reader to follow along?
 
 .. toctree::
    :caption: Table of contents
