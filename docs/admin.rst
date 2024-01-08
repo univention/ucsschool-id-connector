@@ -642,19 +642,19 @@ You can re-schedule the objects after you fixed the issue.
 
   .. code-block:: console
 
-     $ univention-app shell ucsschool-id-connector src/schedule_user USERNAME
+     $ univention-app shell ucsschool-id-connector schedule_user USERNAME
 
 * Reschedule a group:
 
   .. code-block:: console
 
-     $ univention-app shell ucsschool-id-connector src/schedule_group GROUPNAME
+     $ univention-app shell ucsschool-id-connector schedule_group GROUPNAME
 
 * Reschedule a school and all associated objects:
 
   .. code-block:: console
 
-     $ univention-app shell ucsschool-id-connector src/schedule_school SCHOOL
+     $ univention-app shell ucsschool-id-connector schedule_school SCHOOL
 
 The |IDC| moves transactions with invalid or not accepted JSON formats
 to the :file:`trash` directory for the outgoing queue of the respective school authority located below

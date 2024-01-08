@@ -19,8 +19,10 @@ variables:
 
 .docs-before-script:
   before_script:
-    - apt-get update; apt-get install --assume-yes --no-install-recommends gcc g++
-    - pip install -r src/requirements.txt
+    - apt-get update; apt-get install --assume-yes --no-install-recommends build-essential python3-dev pipx
+    - PIPX_BIN_DIR="/usr/local/bin" pipx install poetry
+    - poetry --directory=src export -f requirements.txt --output requirements.txt
+    - pip3 install -r requirements.txt
 
 docs-linkcheck:
   extends:

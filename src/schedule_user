@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/venv/bin/python3
 # -*- coding: utf-8 -*-
 
 # Copyright 2019-2020 Univention GmbH
@@ -29,36 +29,17 @@
 # <http://www.gnu.org/licenses/>.
 
 """
+File is for backwards compatibility.
 Find users in LDAP and add them to the in queue.
 """
 
-import asyncio
+import warnings
 
-import click
-
-from ucsschool_id_connector.user_scheduler import UserScheduler
-from ucsschool_id_connector.utils import ConsoleAndFileLogging
-
-
-@click.command(context_settings={"help_option_names": ["-h", "--help"]})
-@click.argument("username")
-def schedule(username: str = None):
-    """Schedule the distribution of a user.
-
-    This command schedules the distribution of a user.
-
-    username is the username of the user which is to be distributed.
-
-    Example:
-
-        # Schedule the distribution of user demo_student
-        schedule_user demo_student
-    """
-    scheduler = UserScheduler()
-    ConsoleAndFileLogging.add_console_handler(scheduler.logger)
-    asyncio.run(scheduler.queue_user(username))
-    scheduler.logger.debug("Done.")
-
+from ucsschool_id_connector.scripts.schedule_user import schedule
 
 if __name__ == "__main__":
+    warnings.warn(
+        "Calling the script from src has been deprecated. Please use the version installed into PATH.",
+        DeprecationWarning,
+    )
     schedule()

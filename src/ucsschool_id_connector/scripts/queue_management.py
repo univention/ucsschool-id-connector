@@ -141,6 +141,6 @@ class IDConnectorService:
         await asyncio.sleep(0.25)  # allow aiohttp SSL connections to close gracefully
 
 
-if __name__ == "__main__":  # noqa: C901
+def main():
     service = IDConnectorService()  # nosec
     service.run()

@@ -40,7 +40,6 @@ import zmq.asyncio
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, Response, UJSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from starlette.staticfiles import StaticFiles
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -279,8 +278,3 @@ def get_readme():
 
 
 app.include_router(router, prefix=URL_PREFIX)
-app.mount(
-    f"{URL_PREFIX}/static",
-    StaticFiles(directory=str(Path(__file__).parent.parent / "static")),
-    name="static",
-)

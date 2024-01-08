@@ -88,7 +88,7 @@ if [ $JS_LAST_EXECUTED_VERSION -lt 3 ] ; then
   fix_school_authority_permissions
 fi
 if [ $JS_LAST_EXECUTED_VERSION -lt 4 ]; then
-  ucr set cron/ucsschool-id-connector-listener-trash-cleaner/command="univention-app shell ucsschool-id-connector /ucsschool-id-connector/src/listener_trash_cleaner.py"
+  ucr set cron/ucsschool-id-connector-listener-trash-cleaner/command="univention-app shell ucsschool-id-connector listener_trash_cleaner"
   ucr set cron/ucsschool-id-connector-listener-trash-cleaner/time="0 5 * * *"
 fi
 univention-app restart "$APP_ID"

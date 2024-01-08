@@ -32,6 +32,7 @@ import os
 import re
 import sys
 from functools import lru_cache
+from importlib import metadata
 from logging.handlers import WatchedFileHandler
 from pathlib import Path
 from typing import Any, Dict, NamedTuple, Pattern, TextIO, Union
@@ -39,14 +40,16 @@ from uuid import UUID
 
 import base58
 import colorlog
-import pkg_resources
+import toml
+
+import ucsschool_id_connector
 
 from .constants import (
-    APP_ID,
     LOG_DATETIME_FORMAT,
     LOG_ENTRY_CMDLINE_FORMAT,
     LOG_ENTRY_DEBUG_FORMAT,
     LOG_FILE_PATH_QUEUES,
+    PYPROJECT_FILE,
     SERVICE_NAME,
     UCR_CONTAINER_CLASS,
     UCR_CONTAINER_PUPILS,
@@ -275,12 +278,14 @@ def ucsschool_role_regex() -> Pattern:
 
 @lru_cache(maxsize=1)
 def get_app_version() -> str:
-    try:
-        return pkg_resources.get_distribution(APP_ID).version
-    except pkg_resources.DistributionNotFound:
-        # not yet installed (running tests prior to installation)
-        with (Path(__file__).parent.parent.parent / "VERSION.txt").open("r") as fp:
-            return fp.read().strip()
+
+    v = metadata.version(ucsschool_id_connector.__name__)
+    # if the module is available but not installed, it is reported as 0.0.0
+    if v == "0.0.0":
+        project_data = toml.load(Path(__file__).parent.parent / PYPROJECT_FILE)
+        return project_data["tool"]["poetry"]["version"]
+    else:
+        return v
 
 
 def entry_uuid_to_base58(entry_uuid: str) -> str:

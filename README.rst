@@ -18,14 +18,15 @@ Development
 
 Setup development environment::
 
-    $ cd ~/git/ucsschool-id-connector
-    $ make setup_devel_env
-    $ make install
-    $ pre-commit run -a
+    $ cd ~/git/ucsschool-id-connector/src
+    $ poetry install --with dev --with tests
 
-This will create a directory ``venv`` with a Python virtualenv with the app and all its dependencies in it. To use it, run::
 
-    $ . venv/bin/activate
+You can ran the unittest::
+
+    $ cd ~/git/ucsschool-id-connector/src
+    $ poetry run pytest tests/unittests
+
 
 Run ``make`` without argument to see more useful commands::
 
@@ -35,13 +36,11 @@ Run ``make`` without argument to see more useful commands::
     clean-build          remove build artifacts
     clean-pyc            remove Python file artifacts
     clean-test           remove test and coverage artifacts
-    setup_devel_env      setup development environment (virtualenv)
     lint                 check style (requires Python interpreter activated from venv)
     format               format source code (requires Python interpreter activated from venv)
     test                 run tests with the Python interpreter from 'venv'
     coverage             check code coverage with the Python interpreter from 'venv'
     coverage-html        generate HTML coverage report
-    install              install the package to the active Python's site-packages
 
 
 *All commands in the Makefile assume that the virtualenv is active.*

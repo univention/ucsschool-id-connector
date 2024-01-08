@@ -1,7 +1,7 @@
-#!/venv/bin/python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# Copyright 2023 Univention GmbH
+# Copyright 2019-2020 Univention GmbH
 #
 # http://www.univention.de/
 #
@@ -29,16 +29,36 @@
 # <http://www.gnu.org/licenses/>.
 
 """
-Find users and groups of school in LDAP and add them to the in queue.
+Find groups in LDAP and add them to the in queue.
 """
 
-import warnings
+import asyncio
 
-from ucsschool_id_connector.scripts.schedule_school import schedule
+import click
+
+from ucsschool_id_connector.group_scheduler import GroupScheduler
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
+
+
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.argument("groupname")
+def schedule(groupname: str = None):
+    """Schedule the distribution of a group.
+
+    This command schedules the distribution of a group.
+
+    groupname is the name of the group which is to be distributed.
+
+    Example:
+
+        # Schedule the distribution of class DEMOSCHOOL-democlass
+        schedule_group DEMOSCHOOL-democlass
+    """
+    scheduler = GroupScheduler()
+    ConsoleAndFileLogging.add_console_handler(scheduler.logger)
+    asyncio.run(scheduler.queue_group(groupname))
+    scheduler.logger.debug("Done.")
+
 
 if __name__ == "__main__":
-    warnings.warn(
-        "Calling the script from src has been deprecated. Please use the version installed into PATH.",
-        DeprecationWarning,
-    )
     schedule()

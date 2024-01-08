@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 # Copyright 2019-2020 Univention GmbH
@@ -27,39 +28,37 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-from pathlib import Path
+"""
+Find users in LDAP and add them to the in queue.
+"""
 
-import setuptools
+import asyncio
 
-from ucsschool_id_connector.constants import APP_ID
+import click
 
-with open("requirements.txt") as fp:
-    requirements = fp.read().splitlines()
+from ucsschool_id_connector.user_scheduler import UserScheduler
+from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
-with open("README.rst", "r") as fh:
-    long_description = fh.read()
 
-with (Path(__file__).parent.parent / "VERSION.txt").open("r") as fp:
-    version = fp.read().strip()
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.argument("username")
+def schedule(username: str = None):
+    """Schedule the distribution of a user.
 
-setuptools.setup(
-    name=APP_ID,
-    version=version,
-    author="Daniel Tröder",
-    author_email="troeder@univention.de",
-    description="UCS@school ID Connector",
-    long_description=long_description,
-    long_description_content_type="text/x-rst",
-    url="https://www.univention.de/",
-    install_requires=requirements,
-    packages=setuptools.find_packages(),
-    scripts=["queue_management", "schedule_user", "schedule_group", "schedule_school"],
-    license="GNU Affero General Public License v3",
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
-        "Operating System :: OS Independent",
-    ],
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest"],
-)
+    This command schedules the distribution of a user.
+
+    username is the username of the user which is to be distributed.
+
+    Example:
+
+        # Schedule the distribution of user demo_student
+        schedule_user demo_student
+    """
+    scheduler = UserScheduler()
+    ConsoleAndFileLogging.add_console_handler(scheduler.logger)
+    asyncio.run(scheduler.queue_user(username))
+    scheduler.logger.debug("Done.")
+
+
+if __name__ == "__main__":
+    schedule()

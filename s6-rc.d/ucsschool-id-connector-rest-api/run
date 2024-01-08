@@ -1,3 +1,3 @@
 #!/command/with-contenv /bin/bash
 
-/usr/local/bin/uvicorn --host 0.0.0.0 --port 8911 ucsschool_id_connector.http_api:app
+uvicorn --host 0.0.0.0 --port 8911 ucsschool_id_connector.http_api:app

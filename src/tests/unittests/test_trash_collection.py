@@ -32,9 +32,12 @@ import random
 import time
 from datetime import datetime, timedelta
 
-from listener_trash_cleaner import delete_up_from_day
+import pytest
+
+from ucsschool_id_connector.scripts.listener_trash_cleaner import delete_up_from_day
 
 
+@pytest.mark.skipif(not os.path.exists("/.dockerenv"), reason="Not run in docker container")
 def test_cleanup_script_executeable():
     assert os.access("/ucsschool-id-connector/src/listener_trash_cleaner.py", os.X_OK)
 
