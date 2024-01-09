@@ -69,9 +69,10 @@ class GroupScheduler:
             "object_type": "groups/group",
             "command": "m",
         }
+        entry_uuid = attrs["entry_uuid"]
         json_s = ujson.dumps(attrs, sort_keys=True, indent=4)
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
-        path = Path(APPCENTER_LISTENER_PATH, f"{timestamp}.json")
+        path = Path(APPCENTER_LISTENER_PATH, f"{timestamp}_{entry_uuid}.json")
         async with aiofiles.open(path, "w") as fp:
             await fp.write(json_s)
 

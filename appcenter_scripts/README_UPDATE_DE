@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.3.2 (2024-01-08)</h2>
+<ul>
+    <li>
+        The scripts to schedule users, groups and schools have been improved to have a help message (Issue #47).
+    </li>
+</ul>
+
 <h2>v2.3.1 (2023-12-06)</h2>
 <ul>
     <li>

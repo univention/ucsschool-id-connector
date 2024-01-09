@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+**v2.3.2 (2024-01-08)**
+
+* The scripts to schedule users, groups and schools have been improved to have a help message (Issue #47).
+
 **v2.3.1 (2023-11-30)**
 
 * A new ``schedule_group`` command has been added. It can be used to force a group to be synced again (Issue #41).

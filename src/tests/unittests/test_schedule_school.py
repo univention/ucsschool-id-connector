@@ -80,14 +80,15 @@ def test_schedule_school(temp_dir_func, ldap_access_mock):
                 assert obj["entry_uuid"] == fake_group_object.attributes["entryUUID"][0]
                 assert obj["dn"] == fake_group_object.dn
                 found_group = True
+                # we split because the part before the underscore is the entry_uuid
                 group_timestamp = datetime.strptime(
-                    entry.name.replace(".json", ""), "%Y-%m-%d-%H-%M-%S-%f"
+                    entry.name.replace(".json", "").split("_")[0], "%Y-%m-%d-%H-%M-%S-%f"
                 )
             else:
                 assert obj["entry_uuid"] == fake_user_object.attributes["entryUUID"][0]
                 assert obj["dn"] == fake_user_object.dn
                 user_timestamp = datetime.strptime(
-                    entry.name.replace(".json", ""), "%Y-%m-%d-%H-%M-%S-%f"
+                    entry.name.replace(".json", "").split("_")[0], "%Y-%m-%d-%H-%M-%S-%f"
                 )
                 found_user = True
             assert obj["command"] == "m"

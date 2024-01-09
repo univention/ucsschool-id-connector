@@ -40,9 +40,20 @@ from ucsschool_id_connector.user_scheduler import UserScheduler
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
-@click.command(help="Schedule distribution of a user.")
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("username")
 def schedule(username: str = None):
+    """Schedule the distribution of a user.
+
+    This command schedules the distribution of a user.
+
+    username is the username of the user which is to be distributed.
+
+    Example:
+
+        # Schedule the distribution of user demo_student
+        schedule_user demo_student
+    """
     scheduler = UserScheduler()
     ConsoleAndFileLogging.add_console_handler(scheduler.logger)
     asyncio.run(scheduler.queue_user(username))

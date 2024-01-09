@@ -40,9 +40,20 @@ from ucsschool_id_connector.group_scheduler import GroupScheduler
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
 
-@click.command(help="Schedule distribution of a group.")
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.argument("groupname")
 def schedule(groupname: str = None):
+    """Schedule the distribution of a group.
+
+    This command schedules the distribution of a group.
+
+    groupname is the name of the group which is to be distributed.
+
+    Example:
+
+        # Schedule the distribution of class DEMOSCHOOL-democlass
+        schedule_group DEMOSCHOOL-democlass
+    """
     scheduler = GroupScheduler()
     ConsoleAndFileLogging.add_console_handler(scheduler.logger)
     asyncio.run(scheduler.queue_group(groupname))
