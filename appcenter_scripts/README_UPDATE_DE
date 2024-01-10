@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.3.3 (2023-01-11)</h2>
+<ul>
+    <li>
+        The python package <code>tenacity</code> has been added as additional dependency to properly support the ID-Broker plugin (Issue #101).
+    </li>
+</ul>
+
 <h2>v2.3.2 (2024-01-08)</h2>
 <ul>
     <li>

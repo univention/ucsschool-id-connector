@@ -21,6 +21,7 @@ pytest-asyncio>=0.21.0,<=0.21.1  # todo fix according to breaking changes in 0.2
 python-multipart==0.0.6
 requests>=2.31.0,<2.32.0
 service
+tenacity==8.2.3
 ujson==2.0.3
 uvicorn
 zmq

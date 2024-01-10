@@ -5,6 +5,10 @@
 Changelog
 ---------
 
+**v2.3.3 (2024-01-11)**
+
+* The python package tenacity has been added as additional dependency to properly support the ID-Broker plugin (Issue #101).
+
 **v2.3.2 (2024-01-08)**
 
 * The scripts to schedule users, groups and schools have been improved to have a help message (Issue #47).
