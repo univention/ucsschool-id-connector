@@ -258,7 +258,7 @@ Complete picture
 
 The complete picture is a bit crowded. If you want see it anyway, here are your choices:
 
-.. collapse:: Complete overview, C4 style
+.. dropdown:: Complete overview, C4 style
 
     .. figure:: images/id-connector-unified.*
        :width: 800
@@ -268,13 +268,12 @@ The complete picture is a bit crowded. If you want see it anyway, here are your 
     .. include:: legend.txt
 
 
-.. collapse:: Overview, manually drawn, with file locations
+.. dropdown:: Overview, manually drawn, with file locations
 
     .. figure:: images/ucsschool-id-connector_details2.*
        :width: 800
 
        The |IDC|, *not* simplified.
-
 
 
 Setup for development

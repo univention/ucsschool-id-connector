@@ -2,7 +2,7 @@
 ..
 .. SPDX-License-Identifier: AGPL-3.0-only
 
-.. collapse:: Legend
+.. dropdown:: Legend
 
     .. figure:: images/legend.svg
       :width: 700

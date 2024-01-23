@@ -36,7 +36,7 @@ release = "2.3.4"
 # ones.
 extensions = [
     "sphinx.ext.autosectionlabel",
-    "sphinx_toolbox.collapse",
+    "sphinx_design",
     "sphinx_copybutton",
     "univention_sphinx_extension",
     "sphinxcontrib.spelling",
