@@ -35,10 +35,12 @@ import random
 import re
 import shutil
 from pathlib import Path
+from time import time
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 from urllib.parse import urljoin
 
 import faker
+import jwt
 import pytest
 import pytest_asyncio
 import requests
@@ -335,39 +337,46 @@ def host_ucsschool_id_connector_token(docker_hostname: str, http_request) -> str
         "accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    response = http_request(
-        "post",
-        urljoin(f"https://{docker_hostname}", f"{APP_ID}/api/token"),
-        verify=False,
-        form_data=dict(username="Administrator", password="univention"),
-        headers=req_headers,
-    )
-    assert response.status_code == 200, (
-        response.status_code,
-        response.reason,
-        response.url,
-    )
-    return response.json()["access_token"]
+    access_token = None
+
+    def _func():
+        nonlocal access_token
+        if (
+            access_token
+            and (jwt.decode(access_token, options={"verify_signature": False})["exp"] - time()) > 3
+        ):
+            return access_token
+        response = http_request(
+            "post",
+            urljoin(f"https://{docker_hostname}", f"{APP_ID}/api/token"),
+            verify=False,
+            form_data=dict(username="Administrator", password="univention"),
+            headers=req_headers,
+        )
+        assert response.status_code == 200, (
+            response.status_code,
+            response.reason,
+            response.url,
+        )
+        access_token = response.json()["access_token"]
+        return access_token
+
+    return _func
 
 
 @pytest_asyncio.fixture()
 async def make_school_authority(
-    host_ucsschool_id_connector_token: str,
     ucsschool_id_connector_api_url,
     req_headers,
     http_request,
     school_authority_configuration,
+    host_ucsschool_id_connector_token,
 ) -> SchoolAuthorityConfiguration:
     """
     Fixture factory to create (and at the same time save) school authorities.
     They will be deleted automatically when the fixture goes out of scope
     """
     created_authorities = list()
-    headers = req_headers(
-        bearer=host_ucsschool_id_connector_token,
-        accept="application/json",
-        content_type="application/json",
-    )
 
     async def _make_school_authority(
         name: str,
@@ -385,6 +394,11 @@ async def make_school_authority(
         :param plugin_configs: configuration of plugins
         :return: A saved school authority
         """
+        headers = req_headers(
+            bearer=host_ucsschool_id_connector_token(),
+            accept="application/json",
+            content_type="application/json",
+        )
         # try to delete possible leftovers from previous failed test
         http_request(
             "delete",
@@ -431,6 +445,11 @@ async def make_school_authority(
 
     yield _make_school_authority
 
+    headers = req_headers(
+        bearer=host_ucsschool_id_connector_token(),  # Fixture might be long running, get a new token
+        accept="application/json",
+        content_type="application/json",
+    )
     for school_authority_name in created_authorities:
         http_request(
             "delete",
@@ -450,19 +469,14 @@ async def make_school_authority(
 @pytest_asyncio.fixture()
 async def save_mapping(
     ucsschool_id_connector_api_url,
+    host_ucsschool_id_connector_token,
     req_headers,
-    host_ucsschool_id_connector_token: str,
     http_request,
 ):
     """
     Fixture to save an ou to school authority mapping in ucsschool-id-connector.
     Mapping gets deleted if the fixture goes out of scope.
     """
-    headers = req_headers(
-        bearer=host_ucsschool_id_connector_token,
-        accept="application/json",
-        content_type="application/json",
-    )
     ori_s2s_mapping = await ConfigurationStorage.load_school2target_mapping()
     print(f"Original s2s mapping: {ori_s2s_mapping.dict()!r}")
 
@@ -471,6 +485,11 @@ async def save_mapping(
         Saves the specified mapping via HTTP-API
         :param mapping: The mapping
         """
+        headers = req_headers(
+            bearer=host_ucsschool_id_connector_token(),
+            accept="application/json",
+            content_type="application/json",
+        )
         response = http_request(
             "put",
             ucsschool_id_connector_api_url("school_to_authority_mapping"),
@@ -487,6 +506,12 @@ async def save_mapping(
         print(f"Set new s2s mapping: {s2s_mapping.dict()!r}")
 
     yield _save_mapping
+
+    headers = req_headers(
+        bearer=host_ucsschool_id_connector_token(),  # Fixture might be long running, get a new token
+        accept="application/json",
+        content_type="application/json",
+    )
 
     response = http_request(
         "put",
