@@ -28,6 +28,16 @@ run_pre_commit:
   variables:
     PRE_COMMIT_IMAGE: "docker-registry.knut.univention.de/knut/pre-commit-opa-python3.8"
 
+validate_version_strings:
+  stage: lint
+  image: "python:3.11-slim-bookworm"
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+  script:
+    - pip install packaging
+    - ./.gitlab-ci/validate_version
+
+
 build_docker_image:
   stage: build
   extends: .kaniko

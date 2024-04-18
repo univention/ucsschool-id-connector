@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import re
+import sys
+
+CONF_PY = "docs/conf.py"
+INI_FILE = "appcenter_scripts/ucsschool-id-connector.ini"
+VERSION_TXT_FILE = "VERSION.txt"
+
+
+def validate_version():
+    with open(VERSION_TXT_FILE) as fin:
+        version_text_version = fin.read().strip()
+    with open(CONF_PY) as fin:
+        text = fin.read()
+        conf_py_version = re.search(r'release = "([^\"].+)"', text).group(1)
+    with open(INI_FILE) as fin:
+        text = fin.read()
+        ini_file_version = re.search(r"Version = ([^\n].+)", text).group(1)
+
+    coherent_versions = version_text_version == conf_py_version == ini_file_version
+    if not coherent_versions:
+        print(
+            f"\033[1mNOK: Version strings do not match\033[0m: \n"
+            f"{VERSION_TXT_FILE}: {version_text_version}\n"
+            f"{CONF_PY}: {conf_py_version}\n"
+            f"{INI_FILE}: {ini_file_version}"
+        )
+        sys.exit(1)
+    else:
+        print(
+            f"OK: Version strings do match: \n"
+            f"{VERSION_TXT_FILE}: {version_text_version}\n"
+            f"{CONF_PY}: {conf_py_version}\n"
+            f"{INI_FILE}: {ini_file_version}"
+        )
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    validate_version()
