@@ -6,7 +6,7 @@
 
 .. Without this block, the title appears twice in the PDF build.
 
-.. only:: html
+.. only:: html or linkcheck or spelling
 
    ************
    Bibliography
