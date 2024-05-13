@@ -16,7 +16,6 @@ variables:
   # https://git.knut.univention.de/univention/documentation/sphinx-docker/-/blob/main/README.rst
   DOCS_DIR: "docs"
   DOC_TARGET_NAME: "ucsschool-id-connector"
-  DOC_TARGET_PATH: "$DOC_TARGET_NAME"
 
 .docs-before-script:
   before_script:
