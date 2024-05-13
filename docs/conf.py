@@ -86,22 +86,9 @@ exclude_patterns = [
 
 pygments_style = "sphinx"
 # -- Options for HTML output -------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-# import stanford_theme
-# html_theme = "stanford_theme"
-# html_theme_path = [stanford_theme.get_html_theme_path()]
-
-# html_theme = "sphinx_book_theme"
-
-# html_theme = "sphinx-univention"
-# html_theme_path = ["."]
 html_show_copyright = False
 html_show_sphinx = False
 html_show_sourcelink = False
-# html_use_index = False
 
 html_theme = "univention_sphinx_book_theme"
 
@@ -168,4 +155,4 @@ univention_feedback = True
 # Information about the license statement for the source files
 univention_pdf_show_source_license = True
 
-univention_doc_basename = "ucsschool-id-connector"
+univention_doc_basename = doc_basename
