@@ -59,14 +59,6 @@ docs-pdf:
       - $DOCS_DIR/**/*
       - "src/HISTORY.rst"
 
-docs-warnings:
-  extends:
-    - .sphinx-warnings-template
-    - .docs-before-script
-  rules:
-    - changes:
-      - $DOCS_DIR/**/*
-
 docs-merge-to-one-artifact:
   extends: .sphinx-merge-template
   needs:
