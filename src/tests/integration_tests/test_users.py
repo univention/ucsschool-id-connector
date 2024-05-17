@@ -29,6 +29,9 @@
 
 import asyncio
 import copy
+import glob
+import json
+import subprocess
 import time
 import traceback
 from typing import Any, Dict, Iterable
@@ -36,6 +39,7 @@ from urllib.parse import urlsplit
 
 import faker
 import pytest
+from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from ucsschool.kelvin.client import NoObject, Session, User, UserResource
 from ucsschool_id_connector.ldap_access import LDAPAccess
@@ -226,6 +230,48 @@ async def test_create_user(
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
             with pytest.raises(NoObject):
                 await UserResource(session=kelvin_session(target_ip_2)).get(name=sender_user["name"])
+
+
+@pytest.mark.asyncio
+async def test_move_to_trash_if_plugin_error_is_raised(
+    make_school_authority,
+    make_sender_user,
+    school_auth_config_kelvin,
+    save_mapping,
+    create_schools,
+):
+    conf = school_auth_config_kelvin(auth_nr=1)
+    # this will raise a KeyError in users_kelvin.py
+    conf["plugin_configs"]["kelvin"]["mapping"].pop("users")
+    school_auth1 = await make_school_authority(**conf, restart_id_connector_after_deletion=True)
+    subprocess.check_call(["/etc/init.d/ucsschool-id-connector", "restart"])
+    auth_school_mapping = await create_schools(
+        [
+            (school_auth1, 2),
+        ]
+    )
+    ou_auth1 = auth_school_mapping[school_auth1.name][0]
+    mapping = {
+        ou_auth1: school_auth1.name,
+    }
+    await save_mapping(mapping)
+    sender_user: Dict[str, Any] = await make_sender_user(ous=[ou_auth1])
+    trash_dir = (
+        f"/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/"
+        f"out_queues/{school_auth1.name}/trash"
+    )
+    found = False
+    for attempt in Retrying(
+        wait=wait_fixed(5), stop=stop_after_attempt(3), retry=retry_if_exception_type(AssertionError)
+    ):
+        with attempt:
+            for filename in glob.glob(rf"{trash_dir}/*.json"):
+                with open(filename) as fin:
+                    data = json.load(fin)
+                    if data.get("object").get("username") == sender_user["name"]:
+                        found = True
+                        break
+            assert found, f"File was not moved to {trash_dir}"
 
 
 @pytest.mark.asyncio

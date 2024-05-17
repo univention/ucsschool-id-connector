@@ -522,9 +522,11 @@ class OutQueue(FileQueue):
                     try:
                         await self.handle(path)
                     except ServerError as exc:
+                        # TODO errors from self.handle are not raised as ServerError
                         self.logger.error(exc)
                         self.discard_file(path)
                     except APICommunicationError as exc:
+                        # TODO errors from self.handle are not raised as APICommunicationError
                         # continue in outer loop where we wait until communication is OK
                         self.logger.error("Error calling school authority API: %s", exc)
                         api_error = True

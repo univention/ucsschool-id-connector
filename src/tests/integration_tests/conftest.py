@@ -329,7 +329,7 @@ def source_uid() -> str:
 
 
 @pytest.fixture(scope="session")
-def host_ucsschool_id_connector_token(docker_hostname: str, http_request) -> str:
+def host_ucsschool_id_connector_token(docker_hostname: str, http_request) -> callable:
     """
     Returns a valid token for the ucsschool-id-connector HTTP-API.
     """
@@ -374,9 +374,11 @@ async def make_school_authority(
 ) -> SchoolAuthorityConfiguration:
     """
     Fixture factory to create (and at the same time save) school authorities.
-    They will be deleted automatically when the fixture goes out of scope
+    They will be deleted automatically when the fixture goes out of scope.
+    Restarting the ID Connector after tests is only needed if the config was wrong.
     """
     created_authorities = list()
+    _restart_after_deletion = False
 
     async def _make_school_authority(
         name: str,
@@ -385,6 +387,7 @@ async def make_school_authority(
         plugins: List[str],
         plugin_configs: Dict[str, Dict[str, Any]],
         plugin_name: str = "kelvin",
+        restart_id_connector_after_deletion: bool = False,
     ) -> SchoolAuthorityConfiguration:
         """
         Creates and saves a school authority
@@ -394,6 +397,8 @@ async def make_school_authority(
         :param plugin_configs: configuration of plugins
         :return: A saved school authority
         """
+        nonlocal _restart_after_deletion
+        _restart_after_deletion = restart_id_connector_after_deletion
         headers = req_headers(
             bearer=host_ucsschool_id_connector_token(),
             accept="application/json",
@@ -462,6 +467,10 @@ async def make_school_authority(
                 raise AssertionError(
                     f"SchoolAuthorityConfiguration(name={school_authority_name!r}) was not deleted."
                 )  # pragma: no cover
+        if _restart_after_deletion:
+            import subprocess
+
+            subprocess.check_call(["/etc/init.d/ucsschool-id-connector", "restart"])
         out_queue_dir = OUT_QUEUE_TOP_DIR / school_authority_name
         assert not out_queue_dir.exists()
 

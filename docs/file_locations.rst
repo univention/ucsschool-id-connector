@@ -2,6 +2,8 @@
 ..
 .. SPDX-License-Identifier: AGPL-3.0-only
 
+.. include:: univention_rst_macros.txt
+
 File locations
 ==============
 
@@ -54,6 +56,19 @@ locates in one JSON file per configured school authority in the directory
 :file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/school_authorities`.
 Don't create the JSON configuration by hand.
 Use the *UCS\@school ID Connector HTTP API* instead.
+
+.. _file-locations-school-authority-out-queues:
+
+School authority outgoing queues
+--------------------------------
+
+The |IDC| internally stores transaction files in :file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues/{SCHOOL_AUTHORITY}`,
+where :samp:`{SCHOOL_AUTHORITY}` is the name of the respective school authority.
+You can use the :file:`trash` directory within the school authority directory for monitoring.
+For more information, see the following sections:
+
+* :ref:`monitor-processing-alerts`
+* :ref:`monitor-processing-interruption`
 
 Token signature key
 -------------------

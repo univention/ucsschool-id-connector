@@ -582,6 +582,12 @@ Queues don't reach a size of ``0`` for a period of time
    Or, the target system may be unreachable due to
    network problems or incorrect configuration.
 
+The amount of files located in the trash directory is rising continuously
+   If the queues can't handle transactions because of internal errors,
+   this can mean that the |KLV| API on the target system may be unreachable
+   or the |KLV| API has an incorrect configuration.
+   For more information, see :ref:`monitor-processing-interruption`.
+
 .. hint::
 
    The right period of time to trigger an alarm
@@ -607,8 +613,48 @@ such as more than 1 million files after some days.
 If a transaction has a valid JSON format,
 but the receiver can't process it,
 the |IDC| moves the JSON file with the transaction
-from the queue to a trash directory for outgoing queues located at
-:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues_trash`.
+from the queue to the :file:`trash` directory for the outgoing queue of the respective school authority located below
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues/{SCHOOL_AUTHORITY}`.
+The value for :samp:`{SCHOOL_AUTHORITY}` reflects your respective school authority name.
+
+The files located in the trash folder contain information that you can use to fix the issues.
+
+#. You can use the DNs of the objects to find and fix the UDM objects:
+
+   .. code-block:: console
+
+      $ jq -r ".dn"  /var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues/SCHOOL_AUTHORITY/trash/*.json | sort | uniq
+
+#. You can use the names of a ``TRANSACTION_FILE`` located in the :file:`trash` directory
+   to find out which error the |IDC| raised and logged in the log file:
+
+   .. code-block:: console
+
+      $ grep -C 3 TRANSACTION_FILE /var/log/univention/ucsschool-id-connector/queues.log
+
+You can re-schedule the objects after you fixed the issue.
+
+* Reschedule a users:
+
+  .. code-block:: console
+
+     $ univention-app shell ucsschool-id-connector src/schedule_user USERNAME
+
+* Reschedule a group:
+
+  .. code-block:: console
+
+     $ univention-app shell ucsschool-id-connector src/schedule_group GROUPNAME
+
+* Reschedule a school and all associated objects:
+
+  .. code-block:: console
+
+     $ univention-app shell ucsschool-id-connector src/schedule_school SCHOOL
+
+The |IDC| moves transactions with invalid or not accepted JSON formats
+to the :file:`trash` directory for the outgoing queue of the respective school authority located below
+:file:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/data/out_queues/{SCHOOL_AUTHORITY}/`.
 
 If a transaction in JSON format located in any queue is corrupt,
 it may stay in the queue forever.

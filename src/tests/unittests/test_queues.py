@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2019-2020 Univention GmbH
 #
 # http://www.univention.de/
@@ -27,6 +26,9 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
+import os
+from unittest.mock import Mock, patch
+
 import pytest
 
 import ucsschool_id_connector.constants
@@ -36,18 +38,14 @@ import ucsschool_id_connector.queues
 
 
 @pytest.mark.asyncio
-async def test_load_listener_file_example_user(
-    monkeypatch, mock_plugins, example_user_json_path_real, temp_dir_func
-):
+async def test_load_listener_file_example_user(example_user_json_path_real, temp_dir_func):
     in_queue = ucsschool_id_connector.queues.InQueue(path=temp_dir_func())
     obj = await in_queue.load_listener_file(example_user_json_path_real)
     assert isinstance(obj, ucsschool_id_connector.models.ListenerUserAddModifyObject)
 
 
 @pytest.mark.asyncio
-async def test_load_listener_file_example_user_remove(
-    monkeypatch, mock_plugins, example_user_remove_json_path_real, temp_dir_func
-):
+async def test_load_listener_file_example_user_remove(example_user_remove_json_path_real, temp_dir_func):
     in_queue = ucsschool_id_connector.queues.InQueue(path=temp_dir_func())
     obj = await in_queue.load_listener_file(example_user_remove_json_path_real)
     assert isinstance(obj, ucsschool_id_connector.models.ListenerUserRemoveObject)
@@ -140,5 +138,55 @@ async def test_preprocess_del_file_with_old_data(
     assert del_obj_new.old_data.schools == add_mod_obj.schools
 
 
-# TODO: test UserHandler
-# TODO: test MvDstEntry
+@pytest.mark.asyncio
+async def test_handle_move_files_to_trash_dir_when_server_error_are_raised(
+    example_user_json_path_copy,
+    temp_dir_func,
+    school_authority_configuration,
+):
+    temp_dir = temp_dir_func()
+    add_mod_json_path = example_user_json_path_copy(temp_dir)
+    out_queue = ucsschool_id_connector.queues.OutQueue(
+        name="test",
+        path=temp_dir,
+        school_authority=school_authority_configuration(),
+    )
+    exception = ValueError()
+
+    def fake_filter_plugins(*args, **kwargs):
+        raise exception
+
+    out_queue.logger.exception = Mock()
+
+    with patch("ucsschool_id_connector.queues.filter_plugins", fake_filter_plugins):
+        await out_queue.handle(add_mod_json_path)
+        assert os.path.exists(os.path.join(out_queue.trash_dir, os.path.basename(add_mod_json_path)))
+        assert not os.path.exists(add_mod_json_path)
+        out_queue.logger.exception.assert_called_with(exception)
+
+
+@pytest.mark.asyncio
+async def test_handle_move_files_to_trash_dir_after_listener_loading_error(
+    example_user_json_path_copy,
+    temp_dir_func,
+    school_authority_configuration,
+):
+    temp_dir = temp_dir_func()
+    add_mod_json_path = example_user_json_path_copy(temp_dir)
+    out_queue = ucsschool_id_connector.queues.OutQueue(
+        name="test",
+        path=temp_dir,
+        school_authority=school_authority_configuration(),
+    )
+
+    def fake_load_listener_file(*args, **kwargs):
+        raise ucsschool_id_connector.queues.ListenerLoadingError()
+
+    out_queue.logger.error = Mock()
+    out_queue.load_listener_file = fake_load_listener_file
+    await out_queue.handle(add_mod_json_path)
+    assert os.path.exists(os.path.join(out_queue.trash_dir, os.path.basename(add_mod_json_path)))
+    assert not os.path.exists(add_mod_json_path)
+    out_queue.logger.error.assert_called_with(
+        "Error loading or invalid listener file %r.", add_mod_json_path.name
+    )
