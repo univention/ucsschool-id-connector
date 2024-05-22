@@ -101,10 +101,10 @@ A HTTP-API is required for the integration tests (running in the container) to b
     $ cp /usr/share/ucs-school-import/configs/ucs-school-testuser-http-import.json /var/lib/ucs-school-import/configs/user_import.json
     $ python -c 'import json; fp = open("/etc/ucsschool/kelvin/mapped_udm_properties.json", "w"); config = {"user": ["pwdChangeNextLogin", "displayName", "e-mail", "organisation", "phone", "title"]}; json.dump(config, fp, indent=4, sort_keys=True); fp.close()'
 
-To allow the integration tests to access the APIs it needs a way to retrieve the IP addresses. Username "Administrator" and password "univention" is assumed. To be executed on the sender system::
+To allow the integration tests to access the APIs it needs a way to retrieve the hostnames. Username "Administrator" and password "univention" is assumed. To be executed on the sender system::
 
-    $ echo IP_TRAEGER1 > /var/www/IP_traeger1.txt
-    $ echo IP_TRAEGER2 > /var/www/IP_traeger2.txt
+    $ echo HOSTNAME_TRAEGER1 > /var/www/traeger1.txt
+    $ echo HOSTNAME_TRAEGER2 > /var/www/traeger2.txt
 
 
 Using devsync with running app container

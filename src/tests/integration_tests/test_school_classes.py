@@ -60,8 +60,8 @@ async def test_create_school_class(
     Tests if ucsschool_id_connector distributes a newly created SchoolClass to the correct school
     authorities.
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
-    target_ip_2 = school_auth_host_configs["IP_traeger2"]
+    target_1 = school_auth_host_configs["traeger1"]
+    target_2 = school_auth_host_configs["traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
     auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -96,7 +96,7 @@ async def test_create_school_class(
     sc1_remote: SchoolClass = await wait_for_kelvin_object_exists(
         resource_cls=SchoolClassResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sc1.name,
         school=sc1.school,
     )
@@ -111,7 +111,7 @@ async def test_create_school_class(
     sc1_2_remote: SchoolClass = await wait_for_kelvin_object_exists(
         resource_cls=SchoolClassResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sc1_2.name,
         school=sc1_2.school,
     )
@@ -126,7 +126,7 @@ async def test_create_school_class(
     sc2_remote: SchoolClass = await wait_for_kelvin_object_exists(
         resource_cls=SchoolClassResource,
         method="get",
-        session=kelvin_session(target_ip_2),
+        session=kelvin_session(target_2),
         name=sc2.name,
         school=sc2.school,
     )

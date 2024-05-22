@@ -159,8 +159,8 @@ async def test_create_user(
     Tests if ucsschool_id_connector distributes a newly created User to the correct school
     authorities.
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
-    target_ip_2 = school_auth_host_configs["IP_traeger2"]
+    target_1 = school_auth_host_configs["traeger1"]
+    target_2 = school_auth_host_configs["traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
     auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -198,7 +198,7 @@ async def test_create_user(
         user_remote: User = await wait_for_kelvin_object_exists(
             resource_cls=UserResource,
             method="get",
-            session=kelvin_session(target_ip_1),
+            session=kelvin_session(target_1),
             name=sender_user["name"],
         )
         print(f"Found {user_remote!r}, checking its attributes...")
@@ -209,13 +209,13 @@ async def test_create_user(
             sender_user["password"],
             urlsplit(school_auth1.url).netloc,
         )
-        await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
+        await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_1)
         if ou_auth2 in ous:
             print(f"User should also be in OU2 ({ou_auth2!r}), checking...")
             user_remote: User = await wait_for_kelvin_object_exists(
                 resource_cls=UserResource,
                 method="get",
-                session=kelvin_session(target_ip_2),
+                session=kelvin_session(target_2),
                 name=sender_user["name"],
             )
             expected_target_user2 = filter_ous(sender_user, school_auth2.name, mapping)
@@ -225,11 +225,11 @@ async def test_create_user(
                 sender_user["password"],
                 urlsplit(school_auth2.url).netloc,
             )
-            await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_2)
+            await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_2)
         else:
             print(f"User should NOT be in OU2 ({ou_auth2!r}), checking...")
             with pytest.raises(NoObject):
-                await UserResource(session=kelvin_session(target_ip_2)).get(name=sender_user["name"])
+                await UserResource(session=kelvin_session(target_2)).get(name=sender_user["name"])
 
 
 @pytest.mark.asyncio
@@ -291,8 +291,8 @@ async def test_delete_user(
     Tests if ucsschool_id_connector distributes the deletion of an existing
     user correctly.
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
-    target_ip_2 = school_auth_host_configs["IP_traeger2"]
+    target_1 = school_auth_host_configs["traeger1"]
+    target_2 = school_auth_host_configs["traeger2"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
     auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -311,14 +311,14 @@ async def test_delete_user(
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sender_user["name"],
     )
     print(f"Found user {sender_user['name']!r} in ou_auth1. Looking for it now in auth2...")
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_2),
+        session=kelvin_session(target_2),
         name=sender_user["name"],
     )
     print(f"Deleting user {sender_user['name']!r} in sender...")
@@ -331,7 +331,7 @@ async def test_delete_user(
     await wait_for_kelvin_object_not_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sender_user["name"],
     )
     print(
@@ -341,7 +341,7 @@ async def test_delete_user(
     await wait_for_kelvin_object_not_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_2),
+        session=kelvin_session(target_2),
         name=sender_user["name"],
     )
 
@@ -378,7 +378,7 @@ async def test_modify_user(
     Tests if the modification of a user is properly distributed to the school
     authority
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    target_1 = school_auth_host_configs["traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     school_auth2 = await make_school_authority(**school_auth_config_kelvin(2))
     auth_school_mapping = await create_schools([(school_auth1, 2), (school_auth2, 1)])
@@ -405,11 +405,11 @@ async def test_modify_user(
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sender_user["name"],
     )
-    check_password(sender_user["name"], sender_user["password"], target_ip_1)
-    await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
+    check_password(sender_user["name"], sender_user["password"], target_1)
+    await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_1)
     # Modify user
     new_password = fake.password(length=15)
     new_value = {
@@ -445,7 +445,7 @@ async def test_modify_user(
     while timeout > 0:
         await asyncio.sleep(5)
         timeout -= 5
-        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+        remote_user: User = await UserResource(session=kelvin_session(target_1)).get(
             name=sender_user["name"]
         )
         if remote_user.firstname == new_value["firstname"]:
@@ -453,7 +453,7 @@ async def test_modify_user(
     else:
         print(f"Waited {timeout}s without the user changing its firstname, continuing...")
 
-    remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+    remote_user: User = await UserResource(session=kelvin_session(target_1)).get(
         name=sender_user["name"]
     )
 
@@ -483,9 +483,9 @@ async def test_modify_user(
     remote_user.udm_properties["pwdChangeNextLogin"] = False
 
     await remote_user.save()
-    check_password(sender_user["name"], new_password, target_ip_1)
+    check_password(sender_user["name"], new_password, target_1)
 
-    await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_ip_1)
+    await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_1)
 
 
 def _check_schools_and_classes(user_kelvin, new_school, new_schools, new_school_classes):
@@ -511,7 +511,7 @@ async def test_class_change(
     Tests if the modification of a users class is properly distributed by
     ucsschool-id-connector.
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    target_1 = school_auth_host_configs["traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     auth_school_mapping = await create_schools([(school_auth1, 1)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
@@ -528,7 +528,7 @@ async def test_class_change(
     user_auth1: User = await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sender_user["name"],
     )
     assert user_auth1.school_classes == sender_user["school_classes"]
@@ -550,7 +550,7 @@ async def test_class_change(
     start = time.time()
     remote_user = None
     while not remote_user:
-        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+        remote_user: User = await UserResource(session=kelvin_session(target_1)).get(
             name=sender_user["name"]
         )
         try:
@@ -584,7 +584,7 @@ async def test_school_change(
     Tests if the modification of a users school is properly distributed by
     ucsschool-id-connector.
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    target_1 = school_auth_host_configs["traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     auth_school_mapping = await create_schools([(school_auth1, 2)])
     ou_auth1 = auth_school_mapping[school_auth1.name][0]
@@ -598,7 +598,7 @@ async def test_school_change(
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sender_user["name"],
     )
     new_school = ou_auth1_2
@@ -628,7 +628,7 @@ async def test_school_change(
     start = time.time()
     remote_user = None
     while not remote_user:
-        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+        remote_user: User = await UserResource(session=kelvin_session(target_1)).get(
             name=sender_user["name"]
         )
         try:
@@ -664,7 +664,7 @@ async def test_change_school_and_schools(
     Tests if the modifications of a users school + schools are properly distributed by
     ucsschool-id-connector. (Bug 54411)
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    target_1 = school_auth_host_configs["traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     auth_school_mapping = await create_schools([(school_auth1, 3)])
     ou_auth1_1 = auth_school_mapping[school_auth1.name][0]
@@ -681,7 +681,7 @@ async def test_change_school_and_schools(
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sender_user["name"],
     )
     new_prim_school = ou_auth1_2
@@ -712,7 +712,7 @@ async def test_change_school_and_schools(
     start = time.time()
     remote_user = None
     while not remote_user:
-        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+        remote_user: User = await UserResource(session=kelvin_session(target_1)).get(
             name=sender_user["name"]
         )
         try:
@@ -748,7 +748,7 @@ async def test_add_additional_schools(
     Tests if for a user receiving an additional school, the values are properly distributed by
     the ucsschool-id-connector (Bug 54411)
     """
-    target_ip_1 = school_auth_host_configs["IP_traeger1"]
+    target_1 = school_auth_host_configs["traeger1"]
     school_auth1 = await make_school_authority(**school_auth_config_kelvin(1))
     auth_school_mapping = await create_schools([(school_auth1, 2)])
     ou_auth1_1 = auth_school_mapping[school_auth1.name][0]
@@ -762,7 +762,7 @@ async def test_add_additional_schools(
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
-        session=kelvin_session(target_ip_1),
+        session=kelvin_session(target_1),
         name=sender_user["name"],
     )
     old_school = ou_auth1_1
@@ -793,7 +793,7 @@ async def test_add_additional_schools(
     start = time.time()
     remote_user = None
     while not remote_user:
-        remote_user: User = await UserResource(session=kelvin_session(target_ip_1)).get(
+        remote_user: User = await UserResource(session=kelvin_session(target_1)).get(
             name=sender_user["name"]
         )
         try:

@@ -27,3 +27,10 @@ Type = Int
 Description = Number of days a file stays in the "Trash" directory of the listener without being deleted. Defaults to: 30
 Description[de] = Anzahl der Tage die eine Datei im "Trash" Verzeichnis des Listeners verbringt ohne gelöscht zu werden. Standard: 30
 InitialValue = 30
+
+[ucsschool-id-connector/update-ca-restart]
+Type = Bool
+Description = The app should restart if certificates are updated.
+Description[de] = Die app soll neu starten, falls Zertifikate aktualisiert wurden.
+InitialValue = true
+Scope = outside

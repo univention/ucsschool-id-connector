@@ -6,6 +6,13 @@
 Changelog
 *********
 
+.. _3.0.0:
+
+v3.0.0 (2024-05-23)
+===================
+
+* Breaking: The ID Connector now trusts all certificates, on the UCS system. If your ID Connector connects to any recipient servers that use a private CA, you need to add that CA to the UCS system before you update (Issue #58).
+
 .. _2.3.3:
 
 v2.3.3 (2024-01-11)

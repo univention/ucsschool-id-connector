@@ -18,3 +18,10 @@ chmod 644 "$id_connector_logrotate_info"
 
 
 ucr commit /etc/logrotate.d/ucsschool-id-connector
+
+ca_certificate_hook_file=/etc/ca-certificates/update.d/ucsschool-id-connector
+echo "Installing ucsschool-id-connector"
+cat <<%EOF >"$ca_certificate_hook_file"
+%CA-CERTIFICATE-HOOK-TEMPLATE%
+%EOF
+chmod +x "$ca_certificate_hook_file"

@@ -228,6 +228,8 @@ you can re-run the join script with the following command.
    For more information,
    see :uv:kb:`A script shall be executed on each or a certain UCS systems before/during/after the join process <13034>`
 
+The app is using the CA trust store from the UCS host system. The app is restarting if the certificates are updated by ``update-ca-certificates``, you can disable the automatic restart in the |AppC| settings.
+
 Receiving system
 ----------------
 
@@ -250,6 +252,8 @@ it needs an authorized user account.
 By default, the ``Administrator`` account on the receiving system is the only authorized user.
 To add a dedicated |KLV| API user for the |UAS| |IDC|,
 consult :cite:t:`uv-ucsschool-kelvin-rest-api`.
+
+If the receiving system is using a private CA, you need to add that CA to the UCS system you installed the |UAS| |IDC| app on.
 
 .. _configure-receiver:
 

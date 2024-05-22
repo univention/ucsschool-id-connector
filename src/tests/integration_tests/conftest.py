@@ -32,12 +32,11 @@ import datetime
 import json
 import os
 import random
-import re
 import shutil
 from pathlib import Path
 from time import time
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import faker
 import jwt
@@ -74,7 +73,6 @@ fake = faker.Faker()
 AUTH_SCHOOL_MAPPING_PATH: Path = Path(__file__).parent / "auth-school-mapping.json"
 KELVIN_API_USERNAME = "Administrator"
 KELVIN_API_PASSWORD = "univention"
-KELVIN_API_CA_CERT_PATH = "/tmp/pytest_cacert_{date:%Y-%m-%d}_{host}.crt"
 
 
 @pytest.fixture(scope="session")
@@ -130,14 +128,13 @@ def http_request():
 def school_auth_host_configs(docker_hostname: str, http_request) -> Dict[str, str]:
     configs = {}
     for i in ("1", "2"):
-        url = urljoin(f"https://{docker_hostname}", f"IP_traeger{i}.txt")
+        url = urljoin(f"https://{docker_hostname}", f"traeger{i}.txt")
         resp = http_request("get", url, verify=False)
         assert resp.status_code == 200, (resp.status_code, resp.reason, url)
-        configs[f"IP_traeger{i}"] = resp.text.strip("\n")
+        configs[f"traeger{i}"] = resp.text.strip("\n")
         resp = http_request(
             "get",
-            f"https://Administrator:univention@{configs[f'IP_traeger{i}']}"
-            f"/univention/udm/ldap/base/",
+            f"https://Administrator:univention@{configs[f'traeger{i}']}" f"/univention/udm/ldap/base/",
             headers={"Accept": "application/json"},
             verify=False,
         )
@@ -145,7 +142,7 @@ def school_auth_host_configs(docker_hostname: str, http_request) -> Dict[str, st
         configs[f"base_dn_traeger{i}"] = resp_json["dn"]
         resp = http_request(
             "get",
-            f"https://Administrator:univention@{configs[f'IP_traeger{i}']}"
+            f"https://Administrator:univention@{configs[f'traeger{i}']}"
             f"/univention/udm/users/user/?query[username]=Administrator",
             headers={"Accept": "application/json"},
             verify=False,
@@ -173,11 +170,11 @@ def school_auth_config_kelvin(school_auth_host_configs):
         :return: The school authority configuration in dictionary form
         """
         assert 0 < auth_nr < 3
-        ip = school_auth_host_configs[f"IP_traeger{auth_nr}"]
+        host = school_auth_host_configs[f"traeger{auth_nr}"]
         return {
             "name": f"auth{auth_nr}",
             "active": True,
-            "url": f"https://{ip}/ucsschool/kelvin/v1/",
+            "url": f"https://{host}/ucsschool/kelvin/v1/",
             "plugins": ["kelvin"],
             "plugin_configs": {
                 "kelvin": {
@@ -212,9 +209,6 @@ def school_auth_config_kelvin(school_auth_host_configs):
                     },
                     "password": "univention",
                     "sync_password_hashes": True,
-                    "ssl_context": {
-                        "check_hostname": False,
-                    },
                     "username": "Administrator",
                 },
             },
@@ -226,11 +220,6 @@ def school_auth_config_kelvin(school_auth_host_configs):
 @pytest.fixture(scope="session")
 def id_connector_host_name(docker_hostname):
     return docker_hostname
-
-
-@pytest.fixture
-def mock_env(monkeypatch):
-    monkeypatch.setenv("UNSAFE_SSL", "1")
 
 
 @pytest.fixture(scope="session")
@@ -598,11 +587,9 @@ def create_schools(docker_hostname, random_name, create_school):
             ous.extend(["ou-{}".format(random_name())[:10] for _ in range(amount - len(ous))])
             print(f"Creating OUs: {ous!r}...")
             for ou in ous:
-                hosts = [docker_hostname]
-                if ip := re.search(r"[\d+\.]+", auth.url).group():
-                    hosts.append(ip)
-                for ip in hosts:
-                    await create_school(host=ip, ou_name=ou)
+                hosts = [docker_hostname, urlparse(auth.url).hostname]
+                for host in hosts:
+                    await create_school(host=host, ou_name=ou)
                 if ou not in auth_school_mapping[auth.name]:
                     auth_school_mapping[auth.name].append(ou)
         with AUTH_SCHOOL_MAPPING_PATH.open("w") as fp:
@@ -667,8 +654,8 @@ async def make_sender_user(
 
     for host in (
         docker_hostname,
-        school_auth_host_configs["IP_traeger1"],
-        school_auth_host_configs["IP_traeger2"],
+        school_auth_host_configs["traeger1"],
+        school_auth_host_configs["traeger2"],
     ):
         for user_dict in created_users:
             print(f"Deleting user {user_dict['name']!r} from host {host!r}...")
@@ -704,40 +691,14 @@ def check_password(http_request):
 
 
 @pytest.fixture(scope="session")
-def ca_cert():
-    """Downloaded CA certificate of UCS server `host`."""
-
-    def _func(host: str) -> Path:
-        path = Path(KELVIN_API_CA_CERT_PATH.format(date=datetime.date.today(), host=host))
-        if not path.is_file():
-            url = f"http://{host}/ucs-root-ca.crt"
-            try:
-                resp = requests.get(url)
-            except requests.RequestException as exc:
-                print(f"Error downloading CA from host {host!r}: {exc!s}")
-                raise
-            path.write_bytes(resp.content)
-        return path
-
-    return _func
-
-
-@pytest.fixture(scope="session")
-def kelvin_session_kwargs(ca_cert):
+def kelvin_session_kwargs():
     """Dict to open a Kelvin API client session to `host`."""
-
-    def is_ip(host: str) -> bool:
-        for c in host:
-            if c != "." and not c.isnumeric():
-                return False
-        return True
 
     def _func(host: str) -> Dict[str, Union[str, bool]]:
         return {
             "username": KELVIN_API_USERNAME,
             "password": KELVIN_API_PASSWORD,
             "host": host,
-            "verify": False,
             "timeout": 300,
         }
 

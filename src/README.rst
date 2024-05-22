@@ -177,11 +177,6 @@ Token signature key
 The key with which the JWTs are signed is in the file ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/tokens.secret``.
 The file is created by the apps join script (see *Install* above).
 
-SSL certificates for Kelvin client plugin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The plugin that connects to the Kelvin API on the school authority side looks for and stores SSL certificates as ``/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/ssl_certs/HOSTNAME``. In case the certificate cannot be downloaded automatically, it can be saved there manually.
-
 Volumes
 ^^^^^^^
 The following directories are mounted from the host into the container:

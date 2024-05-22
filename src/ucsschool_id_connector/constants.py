@@ -44,7 +44,6 @@ OUT_QUEUE_TOP_DIR = Path(APP_DATA_BASE_PATH, "out_queues")
 OUT_QUEUE_TRASH_DIR = Path(APP_DATA_BASE_PATH, "out_queues_trash")
 SCHOOL_AUTHORITIES_CONFIG_PATH = Path(APP_CONFIG_BASE_PATH, "school_authorities")
 SCHOOLS_TO_AUTHORITIES_MAPPING_PATH = Path(APP_CONFIG_BASE_PATH, "schools_authorities_mapping.json")
-SSL_CERTIFICATES = APP_CONFIG_BASE_PATH / "ssl_certs"
 AUTO_CHECK_INTERVAL = 60
 try:
     # Service.files_preserve doesn't work, so acquiring
@@ -73,7 +72,6 @@ UCRV_LOG_LEVEL = (f"{APP_ID}/log_level", "INFO")
 UCRV_SOURCE_UID = (f"{APP_ID}/source_uid", "TESTID")
 UCRV_TOKEN_TTL = (f"{APP_ID}/access_tokel_ttl", 60)
 ADMIN_GROUP_NAME = f"{APP_ID}-admins"
-CHECK_SSL_CERTS = False
 API_SCHOOL_CACHE_TTL = 600
 API_COMMUNICATION_ERROR_WAIT = 600
 SOURCE_UID = "TESTID"

@@ -72,13 +72,9 @@ async def test_map_attributes(
     }[api]
     # can only be imported after load_plugins():
     import ucsschool_id_connector.config_storage
-    import ucsschool_id_connector_defaults.kelvin_connection
     from ucsschool_id_connector_defaults.users_kelvin import KelvinPerSAUserDispatcher
 
-    with patch.object(ucsschool_id_connector_defaults.kelvin_connection, "httpx"), patch.object(
-        ucsschool_id_connector_defaults.kelvin_connection, "fetch_ucs_certificate"
-    ):
-        user_handler: KelvinPerSAUserDispatcher = plugin.per_s_a_handler_class(s_a_config, api)
+    user_handler: KelvinPerSAUserDispatcher = plugin.per_s_a_handler_class(s_a_config, api)
     user_obj: models.ListenerUserAddModifyObject = listener_user_add_modify_object()
     user_handler._school_ids_on_target_cache = dict((ou, fake.uri()) for ou in user_obj.schools)
     user_handler._school_ids_on_target_cache_creation = datetime.datetime.now()

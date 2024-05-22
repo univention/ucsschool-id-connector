@@ -35,7 +35,7 @@ import aiofiles
 import aiohttp
 import lazy_object_proxy
 
-from ucsschool_id_connector.constants import CHECK_SSL_CERTS, HTTP_CLIENT_TIMEOUT, LOG_FILE_PATH_QUEUES
+from ucsschool_id_connector.constants import HTTP_CLIENT_TIMEOUT, LOG_FILE_PATH_QUEUES
 from ucsschool_id_connector.plugins import filter_plugins
 from ucsschool_id_connector.utils import ConsoleAndFileLogging
 
@@ -87,7 +87,7 @@ async def _do_request(  # noqa: C901
         timeout = aiohttp.ClientTimeout(total=HTTP_CLIENT_TIMEOUT)
         session_to_use = aiohttp.ClientSession(timeout=timeout)
     meth = getattr(session_to_use, http_method)
-    request_kwargs = {"url": url, "ssl": CHECK_SSL_CERTS}
+    request_kwargs = {"url": url}
     if http_method in {"patch", "post"} and data is not None:
         request_kwargs["json"] = data
     if params:

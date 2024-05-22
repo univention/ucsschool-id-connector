@@ -1,6 +1,6 @@
-#!/bin/bash
-
-# Copyright 2019-2020 Univention GmbH
+#!/usr/bin/sh
+#
+# Copyright 2024 Univention GmbH
 #
 # http://www.univention.de/
 #
@@ -27,22 +27,8 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-## joinscript api: bindpwdfile
+. /usr/share/univention-lib/ucr.sh
 
-#
-#  Join script that runs on the docker host.
-#
-
-VERSION=1
-
-APP_ID="ucsschool-id-connector"
-
-. /usr/share/univention-join/joinscripthelper.lib
-
-joinscript_init
-
-rm /etc/ca-certificates/update.d/ucsschool-id-connector
-
-joinscript_remove_script_from_status_file "$APP_ID"
-
-exit 0
+if is_ucr_true ucsschool-id-connector/update-ca-restart; then
+    univention-app restart ucsschool-id-connector
+fi

@@ -80,6 +80,7 @@ upload_appcenter_scripts_to_test_appcenter:
     - cp preinst.tmpl preinst
     - sed -i -e "/%LOGROTATE-TEMPLATE%/r ../files/logrotate.d/ucsschool-id-connector" -e "/%LOGROTATE-TEMPLATE%/d" preinst;
     - sed -i -e "/%ID-CONNECTOR-INFO%/r ../files/ucsschool-id-connector.univention-config-registry" -e "/%ID-CONNECTOR-INFO%/d" preinst;
+    - sed -i -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/r ../files/ca-certificates/update.d/ucsschool-id-connector" -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/d" preinst;
     - univention-appcenter-control upload "$APP_NAME=$APP_VERSION" env inst preinst README_UPDATE_DE README_UPDATE_EN settings uinst ucsschool-id-connector.ini
 
 documentation:

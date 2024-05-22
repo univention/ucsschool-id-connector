@@ -29,22 +29,17 @@
 
 import logging
 import ssl
-from pathlib import Path
 from typing import Match
 
 import httpx
 import lazy_object_proxy
 
 from ucsschool.kelvin.client import Session
-from ucsschool_id_connector.constants import HTTP_REQUEST_TIMEOUT, SSL_CERTIFICATES
+from ucsschool_id_connector.constants import HTTP_REQUEST_TIMEOUT
 from ucsschool_id_connector.models import SchoolAuthorityConfiguration
 from ucsschool_id_connector.utils import ConsoleAndFileLogging, kelvin_url_regex
 
 logger: logging.Logger = lazy_object_proxy.Proxy(lambda: ConsoleAndFileLogging.get_logger(__name__))
-
-
-class SSLCACertificateDownloadError(Exception):
-    ...
 
 
 def kelvin_client_session(school_authority: SchoolAuthorityConfiguration, plugin_name: str) -> Session:
@@ -63,8 +58,7 @@ def kelvin_client_session(school_authority: SchoolAuthorityConfiguration, plugin
             f"{school_authority.dict()!r}."
         )
     timeout = httpx.Timeout(timeout=HTTP_REQUEST_TIMEOUT)
-    certificate_path = fetch_ucs_certificate(host)
-    ssl_context: ssl.SSLContext = httpx.create_ssl_context(verify=str(certificate_path))
+    ssl_context: ssl.SSLContext = httpx.create_ssl_context()
     for k, v in school_authority.plugin_configs[plugin_name].get("ssl_context", {}).items():
         logger.info("Applying to SSL context: %r=%r", k, v)
         setattr(ssl_context, k, v)
@@ -75,24 +69,3 @@ def kelvin_client_session(school_authority: SchoolAuthorityConfiguration, plugin
         verify=ssl_context,
         timeout=timeout,
     )
-
-
-def fetch_ucs_certificate(host: str) -> Path:
-    """
-    Retrieve and store UCS SSL CA certificate.
-
-    :raises SSLCACertificateDownloadError
-    """
-    SSL_CERTIFICATES.mkdir(mode=0o755, parents=True, exist_ok=True)
-    cert_path = SSL_CERTIFICATES / host
-    if cert_path.exists():
-        return cert_path
-    resp = httpx.get(f"https://{host}/ucs-root-ca.crt", verify=False)
-    if resp.status_code != 200:
-        raise SSLCACertificateDownloadError(
-            f"Error downloading UCS SSL CA certificate. HTTP status: {resp.status_code!r} message: "
-            f"{resp.reason_phrase!r}."
-        )
-    with open(SSL_CERTIFICATES / host, "w") as fp:
-        fp.write(resp.text)
-    return cert_path

@@ -78,15 +78,6 @@ The key for signing the JWTs locates in the file
 The app join script creates this file.
 For more information, see :ref:`admin-install`.
 
-SSL certificates for Kelvin client plugin
------------------------------------------
-
-The plugin that connects to the Kelvin API on the school authority side looks for and stores
-SSL certificates as file
-:samp:`/var/lib/univention-appcenter/apps/ucsschool-id-connector/conf/ssl_certs/{HOSTNAME}`.
-If the *Kelvin client plugin* can't download the certificate automatically,
-you can manually save it to the preceding location.
-
 Volumes
 -------
 
