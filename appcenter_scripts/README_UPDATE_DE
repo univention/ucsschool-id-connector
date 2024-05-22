@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v2.3.4 (2024-05-22)</h2>
+<ul>
+    <li>
+        The ID Connector now trusts all certificates, present at installation time, on an UCS system by default(Issue #58).
+    </li>
+</ul>
+
 <h2>v2.3.3 (2023-01-11)</h2>
 <ul>
     <li>

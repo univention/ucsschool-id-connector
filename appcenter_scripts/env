@@ -11,3 +11,5 @@ ucsschool_ldap_default_groupprefix_pupils=@%@ucsschool/ldap/default/groupprefix/
 ucsschool_ldap_default_groupprefix_teachers=@%@ucsschool/ldap/default/groupprefix/teachers@%@
 ucsschool_ldap_default_groupprefix_admins=@%@ucsschool/ldap/default/groupprefix/admins@%@
 ucsschool_ldap_default_groupprefix_staff=@%@ucsschool/ldap/default/groupprefix/staff@%@
+REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certifiactes.crt
+SSL_CERT_FILE=/etc/ssl/certs/ca-certifiactes.crt
