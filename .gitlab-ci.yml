@@ -29,16 +29,6 @@ run_pre_commit:
   variables:
     PRE_COMMIT_IMAGE: "docker-registry.knut.univention.de/knut/pre-commit-opa-python3.8"
 
-validate_version_strings:
-  stage: lint
-  image: "python:3.11-slim-bookworm"
-  rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
-  script:
-    - pip install packaging
-    - ./.gitlab-ci/validate_version
-
-
 build_docker_image:
   stage: build
   extends: .kaniko
@@ -81,6 +71,7 @@ upload_appcenter_scripts_to_test_appcenter:
     - sed -i -e "/%LOGROTATE-TEMPLATE%/r ../files/logrotate.d/ucsschool-id-connector" -e "/%LOGROTATE-TEMPLATE%/d" preinst;
     - sed -i -e "/%ID-CONNECTOR-INFO%/r ../files/ucsschool-id-connector.univention-config-registry" -e "/%ID-CONNECTOR-INFO%/d" preinst;
     - sed -i -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/r ../files/ca-certificates/update.d/ucsschool-id-connector" -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/d" preinst;
+    - sed -i "s/%VERSION%/$APP_VERSION/g" ucsschool-id-connector.ini
     - univention-appcenter-control upload "$APP_NAME=$APP_VERSION" env inst preinst README_UPDATE_DE README_UPDATE_EN settings uinst ucsschool-id-connector.ini
 
 documentation:

@@ -27,7 +27,9 @@ copyright = "2021, Univention GmbH"
 author = "Univention GmbH"
 
 # The full version, including alpha/beta/rc tags
-release = "2.3.4"
+with open("../VERSION.txt", "r") as fp:
+    version = fp.read().strip()
+release = version
 
 # -- General configuration ---------------------------------------------------
 
