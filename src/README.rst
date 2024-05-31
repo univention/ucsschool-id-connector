@@ -401,8 +401,8 @@ the mapping of the users ``school_class`` field in the configuration as well.
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
     :alt: GNU AGPL V3 license
     :target: https://www.gnu.org/licenses/agpl-3.0
-.. |python| image:: https://img.shields.io/badge/python-3.8-blue.svg
-    :alt: Python 3.8
+.. |python| image:: https://img.shields.io/badge/python-3-blue.svg
+    :alt: Python 3
     :target: https://www.python.org/downloads/release/python-382/
 .. |diagram_overview| image:: /ucsschool-id-connector/api/v1/static/ucsschool-id-connector_overview.png
     :alt: Diagram with an overview of the master 2 master sync

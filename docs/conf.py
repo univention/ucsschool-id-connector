@@ -55,7 +55,7 @@ bibtex_default_style = "unsrt"
 bibtex_reference_style = "label"
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/3.8", None),
+    "python": ("https://docs.python.org/3", None),
     "uv-architecture": ("https://docs.software-univention.de/architecture/5.0/en/", None),
     "uv-appcenter": ("https://docs.software-univention.de/app-center/5.0/en", None),
     "uv-developer-reference": ("https://docs.software-univention.de/developer-reference/5.0/en", None),

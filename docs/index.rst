@@ -15,9 +15,9 @@
     :alt: GNU AGPL V3 license
     :target: https://www.gnu.org/licenses/agpl-3.0
 
-.. image:: /images/python-3.8-blue.*
-    :alt: Python 3.8
-    :target: https://www.python.org/downloads/release/python-382/
+.. image:: /images/python-3-blue.*
+    :alt: Python 3
+    :target: https://www.python.org/
 
 Welcome to the documentation for the |UAS| |IDC|.
 

@@ -180,9 +180,9 @@ To run integration tests (*not safe, will modify source and target systems!*), r
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
     :alt: GNU AGPL V3 license
     :target: https://www.gnu.org/licenses/agpl-3.0
-.. |python| image:: https://img.shields.io/badge/python-3.8-blue.svg
-    :alt: Python 3.8
-    :target: https://www.python.org/downloads/release/python-382/
+.. |python| image:: https://img.shields.io/badge/python-3-blue.svg
+    :alt: Python 3
+    :target: https://www.python.org/
 .. |code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Code style: black
     :target: https://github.com/psf/black

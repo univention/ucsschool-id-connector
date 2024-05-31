@@ -473,7 +473,6 @@ def random_int():
     return _func
 
 
-# @asyncio.coroutine
 async def recv_string(obj):
     await asyncio.sleep(0.1)
     return ujson.dumps(obj)

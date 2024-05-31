@@ -55,7 +55,7 @@ setup_devel_env: ## setup development environment (virtualenv)
 	@if [ -d venv ]; then \
 		echo "Directory 'venv' exists."; \
 	else \
-		python3.8 -m venv venv && \
+		python3.11 -m venv venv && \
 		. venv/bin/activate && \
 		python3 -m pip install -U pip && \
 		python3 -m pip install -r src/requirements.txt -r src/requirements-dev.txt && \

@@ -27,7 +27,6 @@
 # /usr/share/common-licenses/AGPL-3; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import asyncio
 import pprint
 from typing import Iterator, List, Optional
 
@@ -96,18 +95,17 @@ class SimpleRPCServer:
         )
         await ConfigurationStorage.save_school_authorities([out_queue.school_authority])
 
-    @asyncio.coroutine
-    def simple_rpc_server(self) -> None:
+    async def simple_rpc_server(self) -> None:
         self.socket.bind(self.addr)
         self.logger.info("RPC server listening on %r.", self.addr)
         while True:
-            message = yield from self.socket.recv_string()
+            message = await self.socket.recv_string()
             # self.logger.debug("Received: %r", message)
             try:
                 req = ujson.loads(message)
                 req["cmd"] = RPCCommand(req.get("cmd"))
                 request = RPCRequest(**req)
-                response = yield from self.handle_request(request)
+                response = await self.handle_request(request)
             except TypeError as exc:
                 response = RPCResponseModel(
                     errors=[
@@ -148,7 +146,7 @@ class SimpleRPCServer:
                 )
             response_msg = response.json()
             # self.logger.debug("Sending: %r", response_msg)
-            yield from self.socket.send_string(response_msg)
+            await self.socket.send_string(response_msg)
 
     async def handle_request(self, request: RPCRequest) -> RPCResponseModel:
         try:
