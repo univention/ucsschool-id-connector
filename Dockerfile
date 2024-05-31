@@ -1,4 +1,14 @@
-FROM alpine:3.12
+ARG UCS_BASE_IMAGE_TAG=0.12.0
+ARG UCS_VERSION=520
+
+FROM gitregistry.knut.univention.de/univention/components/ucs-base-image/ucs-base-${UCS_VERSION}:${UCS_BASE_IMAGE_TAG}
+
+ARG app_id
+ARG commit
+ARG date
+ARG version
+
+ARG S6_OVERLAY_VERSION=3.1.6.2
 
 VOLUME /var/log
 
@@ -6,72 +16,37 @@ WORKDIR /ucsschool-id-connector
 
 EXPOSE 8911
 
-CMD ["/sbin/init"]
+# Compile python 3.8
+RUN apt-get install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev libbz2-dev wget ca-certificates xz-utils
+RUN wget https://python.org/ftp/python/3.8.19/Python-3.8.19.tar.xz && tar -xf Python-3.8.19.tar.xz && mv Python-3.8.19 /usr/local/share/python3.8
+RUN cd /usr/local/share/python3.8 && ./configure --enable-optimizations --enable-shared --with-ensurepip=install && make && make altinstall && ldconfig /usr/local/share/python3.8
+RUN ln -s /usr/local/bin/python3.8 /usr/bin/python3
 
+# Install python dependencies
+COPY src/requirements*.txt /tmp/
+RUN python3.8 -m pip install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-dev.txt
 
-# package and Python dependency installation, base system configuration,
-# and uninstallation - all in one step to keep image small
-COPY alpine_apk_list.* init.d/ src/requirements*.txt /tmp/
-RUN echo '@stable-community http://dl-cdn.alpinelinux.org/alpine/latest-stable/community' >> /etc/apk/repositories && \
-    apk add --no-cache --virtual mybuilddeps $(cat /tmp/alpine_apk_list.build) && \
-    apk add --no-cache $(cat /tmp/alpine_apk_list.runtime) && \
-    mv -v /tmp/ucsschool-id-connector.initd /etc/init.d/ucsschool-id-connector && \
-    mv -v /tmp/ucsschool-id-connector-rest-api.initd.final /etc/init.d/ucsschool-id-connector-rest-api && \
-    mv -v /tmp/ucsschool-id-connector-rest-api.initd.dev /etc/init.d/ucsschool-id-connector-rest-api-dev && \
-    rc-update add crond default && \
-    rc-update add ucsschool-id-connector default && \
-    rc-update add ucsschool-id-connector-rest-api default && \
-    cp -v /usr/share/zoneinfo/Europe/Berlin /etc/localtime && \
-    echo "Europe/Berlin" > /etc/timezone && \
-    # Disable getty's
-    sed -i 's/^\(tty\d\:\:\)/#\1/g' /etc/inittab && \
-    sed -i \
-        # Change subsystem type to "docker"
-        -e 's/#rc_sys=".*"/rc_sys="docker"/g' \
-        # Allow all variables through
-        -e 's/#rc_env_allow=".*"/rc_env_allow="\*"/g' \
-        # Start crashed services
-        -e 's/#rc_crashed_stop=.*/rc_crashed_stop=NO/g' \
-        -e 's/#rc_crashed_start=.*/rc_crashed_start=YES/g' \
-        # Define extra dependencies for services
-        -e 's/#rc_provide=".*"/rc_provide="loopback net"/g' \
-        /etc/rc.conf && \
-    # Remove unnecessary services
-    rm -fv /etc/init.d/hwdrivers \
-        /etc/init.d/hwclock \
-        /etc/init.d/modules \
-        /etc/init.d/modules-load \
-        /etc/init.d/modloop && \
-    # Can't do cgroups
-    sed -i 's/\tcgroup_add_service/\t#cgroup_add_service/g' /lib/rc/sh/openrc-run.sh && \
-    sed -i 's/VSERVER/DOCKER/Ig' /lib/rc/sh/init.sh && \
-   # install Python packages
-    python3 -m pip install --no-cache-dir --compile --upgrade pip wheel && \
-    python3 -m pip install --no-cache-dir --compile -r /tmp/requirements.txt -r /tmp/requirements-dev.txt && \
-    rm -rf /root/.cache/ /tmp/* && \
-    apk del --no-cache mybuilddeps
+# Add S6
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
+COPY s6-rc.d/ /etc/s6-overlay/s6-rc.d
+ENTRYPOINT ["/init"]
+CMD ["/command/with-contenv", "/ucsschool-id-connector/src/queue_management"]
 
 # install app
-COPY src/listener_trash_cleaner.py /etc/periodic/daily/listener_trash_cleaner
 COPY src/ /ucsschool-id-connector/src/
 COPY VERSION.txt /ucsschool-id-connector
 COPY examples/ /ucsschool-id-connector/examples/
 RUN cd /ucsschool-id-connector/src && \
-    python3 -m pip install --no-cache-dir --compile --editable . && \
-    rst2html5-3 README.rst README.html && \
-    rst2html5-3 HISTORY.rst HISTORY.html && \
+    python3.8 -m pip install --no-cache-dir --compile --editable . && \
+    rst2html.py README.rst README.html && \
+    rst2html.py HISTORY.rst HISTORY.html && \
     rm -rf /ucsschool-id-connector/src/.eggs/ /ucsschool-id-connector/src/.pytest_cache/ /root/.cache/ /tmp/pip*
 
-# make trash_cleaner executeable
-RUN chmod +x /etc/periodic/daily/listener_trash_cleaner
-
-ARG app_id
-ARG commit
-ARG date
-ARG version
-
-LABEL "description"="Image of UCS app 'UCS@school ID Connector' ('$app_id')." \
-    "url"="https://www.univention.com/products/univention-app-center/app-catalog/$app_id/" \
-    "version"="$version" \
-    "release date"="$date" \
-    "commit"="$commit"
+LABEL "description"="Image of UCS app 'UCS@school ID Connector' ('$app_id')."
+LABEL "url"="https://www.univention.com/products/univention-app-center/app-catalog/$app_id/"
+LABEL "version"="$version"
+LABEL "release date"="$date"
+LABEL "commit"="$commit"

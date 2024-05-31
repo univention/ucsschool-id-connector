@@ -45,13 +45,6 @@ OUT_QUEUE_TRASH_DIR = Path(APP_DATA_BASE_PATH, "out_queues_trash")
 SCHOOL_AUTHORITIES_CONFIG_PATH = Path(APP_CONFIG_BASE_PATH, "school_authorities")
 SCHOOLS_TO_AUTHORITIES_MAPPING_PATH = Path(APP_CONFIG_BASE_PATH, "schools_authorities_mapping.json")
 AUTO_CHECK_INTERVAL = 60
-try:
-    # Service.files_preserve doesn't work, so acquiring
-    # dockers stdour/stderr from init process:
-    DOCKER_LOG_FD = open("/proc/1/fd/2", "w")
-except PermissionError:
-    # not allowed when run by user outside of container (on dev system)
-    DOCKER_LOG_FD = open("/proc/self/fd/2", "w")
 HTTP_REQUEST_TIMEOUT = 20.0
 LOG_DIR = Path(os.environ.get("LOG_DIR", f"/var/log/univention/{APP_ID}"))
 LOG_FILE_PATH_HTTP = Path(LOG_DIR, "http.log")

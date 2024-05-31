@@ -30,6 +30,7 @@
 import logging
 import os
 import re
+import sys
 from functools import lru_cache
 from logging.handlers import WatchedFileHandler
 from pathlib import Path
@@ -42,7 +43,6 @@ import pkg_resources
 
 from .constants import (
     APP_ID,
-    DOCKER_LOG_FD,
     LOG_DATETIME_FORMAT,
     LOG_ENTRY_CMDLINE_FORMAT,
     LOG_ENTRY_DEBUG_FORMAT,
@@ -122,7 +122,7 @@ class ConsoleAndFileLogging:
         return logging.Formatter(fmt=LOG_ENTRY_DEBUG_FORMAT, datefmt=LOG_DATETIME_FORMAT)
 
     @classmethod
-    def get_stream_handler(cls, stream: TextIO = DOCKER_LOG_FD) -> logging.Handler:
+    def get_stream_handler(cls, stream: TextIO = sys.stdout) -> logging.Handler:
         handler = logging.StreamHandler(stream=stream)
         handler.setFormatter(cls.get_formatter())
         return handler

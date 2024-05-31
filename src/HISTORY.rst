@@ -12,6 +12,8 @@ v3.0.0 (2024-05-23)
 ===================
 
 * Breaking: The ID Connector now trusts all certificates, on the UCS system. If your ID Connector connects to any recipient servers that use a private CA, you need to add that CA to the UCS system before you update (Issue #58).
+* Breaking: Cron job for ``listener_trash_cleaner`` was moved from the container to the host (Bug #54640).
+* New image is based on the UCS base image (Bug #54640).
 
 .. _2.3.3:
 

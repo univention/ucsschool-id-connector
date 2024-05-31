@@ -107,34 +107,6 @@ To allow the integration tests to access the APIs it needs a way to retrieve the
     $ echo HOSTNAME_TRAEGER2 > /var/www/traeger2.txt
 
 
-Using devsync with running app container
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Sync your working copy into the running container, enter it and restart the services::
-
-    [test VM] $ docker exec "$(ucr get appcenter/apps/ucsschool-id-connector/container)" /etc/init.d/ucsschool-id-connector stop
-    [test VM] $ docker inspect --format='{{.GraphDriver.Data.MergedDir}}' "$(ucr get appcenter/apps/ucsschool-id-connector/container)"
-    → /var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged
-    [developer machine] ~/git/ucsschool-id-connector $ devsync -v src/ 10.200.3.66:/var/lib/docker/overlay2/8dc58fa1022e173cdd2a08153c1585043f0253b413ac9982a391a74150a2f387/merged/ucsschool-id-connector/
-    [test VM] $ univention-app shell ucsschool-id-connector
-    [in container] $ python3 -m pip install --no-cache-dir -r src/requirements.txt -r src/requirements-dev.txt
-    [in container] $ python3 -m pip install -e src/
-    [in container] $ /etc/init.d/ucsschool-id-connector restart
-    [in container] $ /etc/init.d/ucsschool-id-connector-rest-api stop
-    [in container] $ /etc/init.d/ucsschool-id-connector-rest-api-dev start
-    #                       auto-reload HTTP-API ^^^^
-
-    [in container] $ src/schedule_user demo_teacher
-    # DEBUG: Searching LDAP for user with username 'demo_teacher'...
-    # INFO : Adding user to in-queue: 'uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr'.
-    # DEBUG: Done.
-
-    # Log is in /var/log/univention/ucsschool-id-connector/queues.log
-
-    [in container] $ cd src
-    [in container] $ python3 -m pytest -l -v
-
-
 Build release
 -------------
 

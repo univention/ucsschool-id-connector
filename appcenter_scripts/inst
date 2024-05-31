@@ -33,7 +33,7 @@
 #  Join script that runs on the docker host.
 #
 
-VERSION=3
+VERSION=4
 
 APP_ID="ucsschool-id-connector"
 ADMIN_GROUP="$APP_ID-admins"
@@ -65,10 +65,6 @@ create_id_connector_admin_group () {
 		--append "users=uid=Administrator,cn=users,$ldap_base" || die
 }
 
-restart_id_connector_service () {
-  univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart
-}
-
 fix_school_authority_permissions () {
   CONF_DIR="/var/lib/univention-appcenter/apps/$APP_ID/conf/school_authorities"
   MAPPING_FILE="/var/lib/univention-appcenter/apps/$APP_ID/conf/schools_authorities_mapping.json"
@@ -91,7 +87,11 @@ if [ $JS_LAST_EXECUTED_VERSION -lt 3 ] ; then
   # Bug #54534: ID connector school authority data world readable
   fix_school_authority_permissions
 fi
-restart_id_connector_service
+if [ $JS_LAST_EXECUTED_VERSION -lt 4 ]; then
+  ucr set cron/ucsschool-id-connector-listener-trash-cleaner/command="univention-app shell ucsschool-id-connector /ucsschool-id-connector/src/listener_trash_cleaner.py"
+  ucr set cron/ucsschool-id-connector-listener-trash-cleaner/time="0 5 * * *"
+fi
+univention-app restart "$APP_ID"
 
 joinscript_save_current_version
 exit $?

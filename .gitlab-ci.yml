@@ -19,7 +19,7 @@ stages:
 
 variables:
   APP_ID: "ucsschool-id-connector"
-  APP_NAME: "4.4/$APP_ID"
+  APP_NAME: "5.0/$APP_ID"
   APPCENTER_CONTROL_IMAGE: "docker-registry.knut.univention.de/knut/univention-appcenter-control"
   ID_CONNECTOR_COVERAGE_LIMIT: "73"
 
@@ -42,7 +42,7 @@ tests:
     - job: build_docker_image
   image: $IMAGE_TAG
   script:
-    - pip install pytest-coverage
+    - pip3.8 install pytest-coverage
     - cd ${CI_PROJECT_DIR}/src && python3 -m pytest -lvv --disable-warnings --junitxml=report.xml --cov=.  --cov-report term-missing --color=yes --cov-fail-under="$ID_CONNECTOR_COVERAGE_LIMIT" --cov-report xml:coverage.xml tests/unittests
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:

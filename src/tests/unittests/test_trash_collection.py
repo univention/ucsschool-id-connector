@@ -36,7 +36,7 @@ from listener_trash_cleaner import delete_up_from_day
 
 
 def test_cleanup_script_executeable():
-    assert os.access("/etc/periodic/daily/listener_trash_cleaner", os.X_OK)
+    assert os.access("/ucsschool-id-connector/src/listener_trash_cleaner.py", os.X_OK)
 
 
 def test_cleanup(tmpdir_factory):

@@ -233,6 +233,10 @@ async def test_create_user(
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip(
+    "Disabled due to the new base image and move away from processes within containers. "
+    "Further work is tracked in https://forge.univention.org/bugzilla/show_bug.cgi?id=57372"
+)
 async def test_move_to_trash_if_plugin_error_is_raised(
     make_school_authority,
     make_sender_user,

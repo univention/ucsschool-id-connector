@@ -67,11 +67,6 @@ Both services (*UCS\@school ID Connector service* and *UCS\@school ID Connector 
     $ service docker-app-ucsschool-id-connector status
     $ service docker-app-ucsschool-id-connector stop
 
-To restart individual services, init scripts *inside* the Docker container can be used. The ``univention-app`` program has a command that makes it easy to execute commands *inside* the Docker container::
-
-    $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector restart  # UCS@school ID Connector service
-    $ univention-app shell ucsschool-id-connector /etc/init.d/ucsschool-id-connector-rest-api start # UCS@school ID Connector HTTP API
-
 
 Configuration
 -------------

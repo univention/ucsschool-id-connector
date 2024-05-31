@@ -33,12 +33,9 @@
 import asyncio
 import pprint
 import signal
-import sys
-import time
 from typing import List
 
 import aiojobs
-from service import Service
 
 from ucsschool_id_connector.config_storage import (
     ConfigurationStorage,
@@ -53,18 +50,22 @@ from ucsschool_id_connector.rpc import SimpleRPCServer
 from ucsschool_id_connector.utils import ConsoleAndFileLogging, get_app_version
 
 
-class IDConnectorService(Service):
+class IDConnectorService:
     out_queues: List[OutQueue]
     in_queue: InQueue
     rpc_server: SimpleRPCServer
 
-    def __init__(self, *args, **kwargs):
-        super(IDConnectorService, self).__init__(*args, **kwargs)
-        self.files_preserve.extend((sys.stderr.fileno(), sys.stderr.fileno()))  # doesn't work :/
+    def __init__(self):
         self.logger = ConsoleAndFileLogging.get_logger(self.__class__.__name__, LOG_FILE_PATH_QUEUES)
+
+    def handler(self, signum, frame):
+        self.should_shutdown = True
 
     def run(self) -> None:
         self.logger.info("%s %s starting...", SERVICE_NAME, get_app_version())
+        self.should_shutdown = False
+        signal.signal(signal.SIGINT, self.handler)
+        signal.signal(signal.SIGTERM, self.handler)
         asyncio.run(self.manage_queues())
         self.logger.info("%s %s stopped.", SERVICE_NAME, get_app_version())
 
@@ -125,7 +126,7 @@ class IDConnectorService(Service):
         self.rpc_server.task = await scheduler.spawn(self.rpc_server.simple_rpc_server())
         self.logger.info("Started %d background tasks.", len(scheduler))
         self.logger.info("Sleeping until shutdown is requested (SIGTERM).")
-        while not self.got_sigterm():  # sleep until SIGTERM
+        while not self.should_shutdown:  # sleep until SIGTERM
             await asyncio.sleep(1)
         await self.shutdown(scheduler)
 
@@ -141,43 +142,5 @@ class IDConnectorService(Service):
 
 
 if __name__ == "__main__":  # noqa: C901
-    if len(sys.argv) != 2:
-        sys.exit(f"Syntax: {sys.argv[0]} <start|stop|restart|status|test>")
-
-    cmd = sys.argv[1].lower()
-    service = IDConnectorService(SERVICE_NAME, pid_dir="/tmp", signals=[signal.SIGUSR1])  # nosec
-
-    def _start():
-        service.start()
-        while not service.is_running():
-            time.sleep(0.1)
-        print(f"Started {SERVICE_NAME} daemon.")
-
-    def _stop():
-        try:
-            service.stop()
-        except ValueError as exc:
-            if "not running" in str(exc):
-                print(f"{SERVICE_NAME} daemon is not running.")
-                sys.exit(0)
-            else:
-                raise
-        while service.is_running():
-            time.sleep(0.1)
-        print(f"Stopped {SERVICE_NAME} daemon.")
-
-    if cmd == "start":
-        _start()
-    elif cmd == "stop":
-        _stop()
-    elif cmd == "restart":
-        _stop()
-        _start()
-    elif cmd == "status":
-        if service.is_running():
-            print(f"Service {SERVICE_NAME} is running.")
-        else:
-            print(f"Service {SERVICE_NAME} is not running.")
-    else:
-        print(f"Unknown command {cmd!r}.")
-        sys.exit(1)
+    service = IDConnectorService()  # nosec
+    service.run()

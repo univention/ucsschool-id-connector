@@ -4,3 +4,4 @@ flake8>=3.8.4
 ipython
 isort==5.10.1
 pre-commit
+rst2html
