@@ -3,11 +3,6 @@ ARG UCS_VERSION=520
 
 FROM gitregistry.knut.univention.de/univention/components/ucs-base-image/ucs-base-${UCS_VERSION}:${UCS_BASE_IMAGE_TAG}
 
-ARG app_id
-ARG commit
-ARG date
-ARG version
-
 ARG S6_OVERLAY_VERSION=3.1.6.2
 
 VOLUME /var/log
@@ -40,6 +35,11 @@ RUN cd /ucsschool-id-connector/src && \
     rst2html README.rst README.html && \
     rst2html HISTORY.rst HISTORY.html && \
     rm -rf /ucsschool-id-connector/src/.eggs/ /ucsschool-id-connector/src/.pytest_cache/ /root/.cache/ /tmp/pip*
+
+ARG app_id
+ARG commit
+ARG date
+ARG version
 
 LABEL "description"="Image of UCS app 'UCS@school ID Connector' ('$app_id')."
 LABEL "url"="https://www.univention.com/products/univention-app-center/app-catalog/$app_id/"
