@@ -1,0 +1,22 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":dependencyDashboard"
+  ],
+  "dependencyDashboardApproval": true,
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "*"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "Minor & Patch level from {{datasource}}",
+      "additionalBranchPrefix": "{{datasource}}_",
+      "groupSlug": "minor+patch"
+    }
+  ]
+}
