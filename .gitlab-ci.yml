@@ -1,8 +1,10 @@
-include:
-  - project: univention/dist/docker-services
-    file:
-    - pre-commit.yml
-    - kaniko.yml
+variables:
+  RUN_RENOVATE:
+    value: "no"
+    options:
+      - "yes"
+      - "no"
+    description: "Set to yes if you want to run renovate"
 
 workflow:
   rules:
@@ -10,84 +12,14 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_PROTECTED == "true"
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "webide"
+    - if: $RUN_RENOVATE == "yes"
 
-stages:
-  - lint
-  - build
-  - tests
-  - production
-
-variables:
-  APP_ID: "ucsschool-id-connector"
-  APP_NAME: "5.0/$APP_ID"
-  APPCENTER_CONTROL_IMAGE: "docker-registry.knut.univention.de/knut/univention-appcenter-control"
-  ID_CONNECTOR_COVERAGE_LIMIT: "72"
-  FORCE_APPCENTER:
-    value: "false"
-    options:
-      - "true"
-      - "false"
-    description: "Force appcenter upload"
-
-run_pre_commit:
-  stage: lint
-  extends: .pre-commit
-  variables:
-    PRE_COMMIT_IMAGE: "docker-registry.knut.univention.de/knut/pre-commit-opa"
-
-build_docker_image:
-  stage: build
-  extends: .kaniko
-  variables:
-      KANIKO_BUILD_CONTEXT: "$CI_PROJECT_DIR/"
-      KANIKO_ARGS: --build-arg app_id="$APP_ID" --build-arg commit="$CI_COMMIT_SHA" --build-arg date="$CI_JOB_STARTED_AT" --cache=true --cache-repo $CI_REGISTRY_IMAGE/cache --cache-copy-layers
-
-tests:
-  stage: tests
-  needs:
-    - job: build_docker_image
-  image:
-    name: $IMAGE_TAG
-    entrypoint: [""]
-  script:
-    - cd ${CI_PROJECT_DIR}/src
-    - pip3 install -r /ucsschool-id-connector/requirements-test.txt
-    - python3 -m pytest -lvv --disable-warnings --junitxml=report.xml --cov=. --cov-report term-missing --color=yes --cov-fail-under="$ID_CONNECTOR_COVERAGE_LIMIT" --cov-report xml:coverage.xml tests/unittests
-  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
-  artifacts:
-    reports:
-      junit: src/report.xml
-      coverage_report:
-        coverage_format: cobertura
-        path: src/coverage.xml
-
-upload_appcenter_scripts_to_test_appcenter:
-  stage: production
-  image: $APPCENTER_CONTROL_IMAGE
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - appcenter_scripts/**
-        - files/**
-    - if: $FORCE_APPCENTER == "true"
-  script:
-    - APP_VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('src/pyproject.toml', 'rb'))['tool']['poetry']['version'])")
-    - cd appcenter_scripts/
-    - echo "updating $APP_NAME=$APP_VERSION"
-    - cp preinst.tmpl preinst
-    - sed -i -e "/%LOGROTATE-TEMPLATE%/r ../files/logrotate.d/ucsschool-id-connector" -e "/%LOGROTATE-TEMPLATE%/d" preinst;
-    - sed -i -e "/%ID-CONNECTOR-INFO%/r ../files/ucsschool-id-connector.univention-config-registry" -e "/%ID-CONNECTOR-INFO%/d" preinst;
-    - sed -i -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/r ../files/ca-certificates/update.d/ucsschool-id-connector" -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/d" preinst;
-    - sed -i "s/%VERSION%/$APP_VERSION/g" ucsschool-id-connector.ini
-    - univention-appcenter-control upload "$APP_NAME=$APP_VERSION" env inst preinst README_UPDATE_DE README_UPDATE_EN settings uinst ucsschool-id-connector.ini
-
-documentation:
-  stage: build
-  trigger:
-    include:
-      - local: .gitlab-ci-docs.yml
-    strategy: depend
-  rules:
-    - changes:
-      - docs/**/*
-      - "src/HISTORY.rst"
+include:
+  - local: /.gitlab-ci/gitlab-ci.yml
+    rules:
+      - if: $RUN_RENOVATE != "yes"
+  - project: univention/dist/docker-services
+    file:
+      - renovatebot/renovate.gitlab-ci.yml
+    rules:
+      - if: $RUN_RENOVATE == "yes"

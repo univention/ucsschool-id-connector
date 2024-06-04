@@ -3,7 +3,6 @@ ARG UCS_VERSION=520
 
 FROM gitregistry.knut.univention.de/univention/components/ucs-base-image/ucs-base-${UCS_VERSION}:${UCS_BASE_IMAGE_TAG} AS idc-base
 
-ARG S6_OVERLAY_VERSION=3.1.6.2
 ENV PYTHONUNBUFFERED=1
 ENV POETRY_NO_INTERACTION=1
 ENV POETRY_VIRTUALENVS_CREATE=false
@@ -12,7 +11,11 @@ ENV VIRTUAL_ENV="/venv"
 
 RUN apt-get install -y python3 python3-venv
 
+# renovate: datasource=pypi depName=poetry packageName=poetry
 ENV POETRY_VERSION=1.7.1
+
+# renovate: datasource=github-releases depName=s6-overlay packageName=just-containers/s6-overlay versioning=loose
+ENV S6_OVERLAY_VERSION=v3.1.6.2
 
 RUN python3 -m venv $VIRTUAL_ENV
 # Use the venv enabled python
@@ -27,10 +30,10 @@ RUN apt-get install -y build-essential python3-dev xz-utils pipx
 RUN pipx install poetry=="$POETRY_VERSION"
 
 # Add S6
-ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+ADD https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
 RUN mkdir /s6
 RUN tar -C /s6 -Jxpf /tmp/s6-overlay-noarch.tar.xz
-ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
+ADD https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
 RUN tar -C /s6 -Jxpf /tmp/s6-overlay-x86_64.tar.xz
 
 COPY src/ /ucsschool-id-connector/src/
