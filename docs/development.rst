@@ -601,7 +601,7 @@ The repository contains a :file:`Dockerfile` that you can use to build a Docker 
    :caption: Manually start the |IDC| Docker container
 
    $ docker run -p 127.0.0.1:8911:8911/tcp --name ucsschool_id_connector \
-     docker-test-upload.software-univention.de/ucsschool-id-connector:$(cat VERSION.txt)
+     docker-test-upload.software-univention.de/ucsschool-id-connector:$(python3 -c "import tomllib; print(tomllib.load(open('src/pyproject.toml', 'rb'))['tool']['poetry']['version'])")
 
 .. note::
 
@@ -646,7 +646,7 @@ Build release image
 
 To build a release image, use the following steps:
 
-#. Update the app version in :file:`VERSION.txt`.
+#. Update the app version in :file:`src/pyproject.toml`.
 
 #. Add an entry to the changelog in :file:`src/HISTORY.rst`.
 

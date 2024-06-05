@@ -16,6 +16,7 @@
 #
 import os
 import sys
+import tomllib
 
 sys.path.insert(0, os.path.abspath("../src"))
 
@@ -27,9 +28,8 @@ copyright = "2021, Univention GmbH"
 author = "Univention GmbH"
 
 # The full version, including alpha/beta/rc tags
-with open("../VERSION.txt", "r") as fp:
-    version = fp.read().strip()
-release = version
+with open("../src/pyproject.toml", "rb") as fp:
+    version = tomllib.load(fp)["tool"]["poetry"]["version"]
 
 # -- General configuration ---------------------------------------------------
 

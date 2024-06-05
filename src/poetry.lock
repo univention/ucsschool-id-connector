@@ -2036,17 +2036,6 @@ doc = ["reno", "sphinx"]
 test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
-name = "toml"
-version = "0.10.2"
-description = "Python Library for Tom's Obvious, Minimal Language"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-files = [
-    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
-    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
-]
-
-[[package]]
 name = "traitlets"
 version = "5.14.1"
 description = "Traitlets Python configuration system"
@@ -2287,4 +2276,4 @@ pyzmq = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "8f4728b45b9a90d21279a63e4232c7f0961e6f173c014d4ec68e0840192fead2"
+content-hash = "7a43bc8bd592aa2e48405a77b1fb34c6ec5c03feb22fc2cd24d89979ad85a862"

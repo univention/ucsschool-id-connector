@@ -48,7 +48,6 @@ FROM idc-base as idc-prod
 COPY --from=idc-build $VIRTUAL_ENV $VIRTUAL_ENV
 COPY --from=idc-build /s6 /
 COPY --from=idc-build /ucsschool-id-connector/ /ucsschool-id-connector/
-COPY VERSION.txt /ucsschool-id-connector
 COPY examples/ /ucsschool-id-connector/examples/
 COPY s6-rc.d/ /etc/s6-overlay/s6-rc.d
 VOLUME /var/log

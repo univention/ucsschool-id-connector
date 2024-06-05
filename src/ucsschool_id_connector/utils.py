@@ -31,6 +31,7 @@ import logging
 import os
 import re
 import sys
+import tomllib
 from functools import lru_cache
 from importlib import metadata
 from logging.handlers import WatchedFileHandler
@@ -40,7 +41,6 @@ from uuid import UUID
 
 import base58
 import colorlog
-import toml
 
 import ucsschool_id_connector
 
@@ -282,7 +282,8 @@ def get_app_version() -> str:
     v = metadata.version(ucsschool_id_connector.__name__)
     # if the module is available but not installed, it is reported as 0.0.0
     if v == "0.0.0":
-        project_data = toml.load(Path(__file__).parent.parent / PYPROJECT_FILE)
+        with open(Path(__file__).parent.parent / PYPROJECT_FILE, "rb") as fp:
+            project_data = tomllib.load(fp)
         return project_data["tool"]["poetry"]["version"]
     else:
         return v
