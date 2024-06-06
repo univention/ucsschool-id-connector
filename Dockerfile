@@ -1,4 +1,4 @@
-ARG UCS_BASE_IMAGE_TAG=0.12.0
+ARG UCS_BASE_IMAGE_TAG=0.13.0
 ARG UCS_VERSION=520
 
 FROM gitregistry.knut.univention.de/univention/components/ucs-base-image/ucs-base-${UCS_VERSION}:${UCS_BASE_IMAGE_TAG} AS idc-base
