@@ -12,7 +12,7 @@ ENV VIRTUAL_ENV="/venv"
 RUN apt-get install -y python3 python3-venv
 
 # renovate: datasource=pypi depName=poetry packageName=poetry
-ENV POETRY_VERSION=1.7.1
+ENV POETRY_VERSION=1.8.3
 
 # renovate: datasource=github-releases depName=s6-overlay packageName=just-containers/s6-overlay versioning=loose
 ENV S6_OVERLAY_VERSION=v3.1.6.2
