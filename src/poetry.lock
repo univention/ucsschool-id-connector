@@ -2853,4 +2853,4 @@ pyzmq = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "835529cd33c7784286bc775aa5e4f3de41609fcb6ddb282af55c87a1b0c4b522"
+content-hash = "de74ca0a0743563fbda598051305f0ee0b96036c26def5c77a3d17218dd2d484"

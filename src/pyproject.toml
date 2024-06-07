@@ -29,7 +29,7 @@ kelvin-rest-api-client = ">=1.7.0"
 lazy-object-proxy = ">=1.6.0"
 ldap3 = ">=2.9.1,<2.10.0"
 pluggy = ">=1.0.0"
-pydantic = {version = ">=1.10.9,<1.11.0", extras = ["email"]}
+pydantic = {version = "^1.10.15", extras = ["email"]}
 pyjwt = "^2.8.0"
 python-multipart = "0.0.9"
 requests = ">=2.32.3,<2.33.0"

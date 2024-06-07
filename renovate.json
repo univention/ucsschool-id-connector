@@ -17,9 +17,13 @@
       "groupName": "Minor & Patch level from {{datasource}}",
       "additionalBranchPrefix": "{{datasource}}_",
       "groupSlug": "minor+patch"
+    },
+    {
+      "matchPackageNames": ["pydantic"],
+      "allowedVersions": "<2"
     }
   ],
-    "customManagers": [
+  "customManagers": [
     {
       "customType": "regex",
       "description": "Update _VERSION variables in Dockerfiles",
