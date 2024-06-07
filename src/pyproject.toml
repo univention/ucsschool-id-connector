@@ -40,7 +40,7 @@ zmq = "^0.0.0"
 tenacity = "^8.3.0"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.4.0"
+pytest = "^8.0.0"
 pytest-asyncio = ">=0.23.7,<=0.23.7"
 coverage = "*"
 factory-boy = "^3.3.0"
