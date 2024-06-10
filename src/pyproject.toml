@@ -39,6 +39,8 @@ uvicorn = "^0.30.0"
 zmq = "^0.0.0"
 tenacity = "^8.3.0"
 pyzmq = "^26.0.3"
+python-dateutil = "^2.9.0.post0"
+six = "^1.16.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.0.0"
