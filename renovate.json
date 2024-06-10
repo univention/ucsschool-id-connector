@@ -21,6 +21,10 @@
     {
       "matchPackageNames": ["pydantic"],
       "allowedVersions": "<2"
+    },
+    {
+      "matchPackageNames": ["pytest-asyncio"],
+      "allowedVersions": "<0.22.0"
     }
   ],
   "customManagers": [
