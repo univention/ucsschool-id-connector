@@ -40,8 +40,8 @@ COPY src/ /ucsschool-id-connector/src/
 
 RUN cd /ucsschool-id-connector/src/ && poetry install --compile --with dev,test
 RUN cd /ucsschool-id-connector/src && \
-    poetry run rst2html.py README.rst README.html && \
-    poetry run rst2html.py HISTORY.rst HISTORY.html
+    poetry run rst2html README.rst README.html && \
+    poetry run rst2html HISTORY.rst HISTORY.html
 RUN cd /ucsschool-id-connector/src/ && poetry install --compile --sync --only main
 RUN cd /ucsschool-id-connector/src/ && poetry export --format requirements.txt --with test --output=/ucsschool-id-connector/requirements-test.txt
 
