@@ -36,6 +36,8 @@ import zmq.asyncio
 from aiojobs._job import Job
 from pydantic import ValidationError
 
+from ucsschool_id_connector.plugins import plugin_manager
+
 from .config_storage import ConfigurationStorage
 from .constants import LOG_FILE_PATH_QUEUES
 from .models import (
@@ -247,6 +249,13 @@ class SimpleRPCServer:
                 await out_queue.stop_task()
                 await out_queue.delete_queue()
                 await ConfigurationStorage.delete_school_authority(out_queue.school_authority.name)
+                for plugin_name in out_queue.school_authority.plugins:
+                    plugin = plugin_manager.get_plugin(plugin_name)
+                    key = (out_queue.school_authority.name, plugin_name)
+                    try:
+                        del plugin._per_s_a_handlers[key]
+                    except KeyError:
+                        pass
                 return RPCResponseModel()
         else:
             raise NoObjectError(key="name", value=request.name)
@@ -269,6 +278,13 @@ class SimpleRPCServer:
                 patch_data = school_authority_doc.dict()
                 old_data = out_queue.school_authority.dict()
                 recursive_dict_update(ori=old_data, updater=patch_data, update_none_values=False)
+                for plugin_name in out_queue.school_authority.plugins:
+                    plugin = plugin_manager.get_plugin(plugin_name)
+                    key = (out_queue.school_authority.name, plugin_name)
+                    try:
+                        del plugin._per_s_a_handlers[key]
+                    except KeyError:
+                        pass
                 out_queue.school_authority = SchoolAuthorityConfiguration(**old_data)
                 self.logger.info("Updated school authority %r.", out_queue.school_authority.name)
                 break
