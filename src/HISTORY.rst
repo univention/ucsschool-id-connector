@@ -13,7 +13,10 @@ v3.0.0 (2024-05-23)
 
 * Breaking: The ID Connector now trusts all certificates, on the UCS system. If your ID Connector connects to any recipient servers that use a private CA, you need to add that CA to the UCS system before you update (Issue #58).
 * Breaking: Cron job for ``listener_trash_cleaner`` was moved from the container to the host (Bug #54640).
-* New image is based on the UCS base image (Bug #54640).
+* Breaking: The ID Connector image is now build based on the UCS base image and not Alpine anymore (Issue #15).
+* Breaking: The ID Connector is now using Python 3.11 and not Python 3.8 (Issue #66).
+* Chore: Dependencies have been updated (Issue #68).
+* Fixed: Updating or re-adding previously deleted school authority configuration through the web API, did not take affect until the app had been restarted. This has been fixed and a restart is not necessary anymore (Issue #70).
 
 .. _2.3.3:
 
