@@ -64,7 +64,7 @@ upload_appcenter_scripts_to_test_appcenter:
         - files/**
     - if: $FORCE_APPCENTER == "true"
   script:
-    - APP_VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('src/pyproject.toml', 'rb'))['tool']['poetry']['version'])")
+    - APP_VERSION="3.0.0"
     - cd appcenter_scripts/
     - echo "updating $APP_NAME=$APP_VERSION"
     - cp preinst.tmpl preinst
