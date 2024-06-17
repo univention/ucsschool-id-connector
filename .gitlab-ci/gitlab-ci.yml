@@ -29,6 +29,13 @@ run_pre_commit:
   variables:
     PRE_COMMIT_IMAGE: "docker-registry.knut.univention.de/knut/pre-commit-opa"
 
+build_product_tests:
+  stage: build
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/curlimages/curl:8.8.0
+  script:
+    - tar -czvf product_tests.tar.gz product_tests
+    - 'curl --fail-with-body --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file product_tests.tar.gz "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/product_tests/0.0.1/product_tests.tar.gz"'
+
 build_docker_image:
   stage: build
   extends: .kaniko
