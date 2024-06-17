@@ -9,6 +9,7 @@ stages:
   - build
   - tests
   - production
+  - docs
 
 variables:
   APP_ID: "ucsschool-id-connector"
@@ -75,11 +76,12 @@ upload_appcenter_scripts_to_test_appcenter:
     - univention-appcenter-control upload "$APP_NAME=$APP_VERSION" env inst preinst README_UPDATE_DE README_UPDATE_EN settings uinst ucsschool-id-connector.ini
 
 documentation:
-  stage: build
+  stage: docs
   trigger:
     include:
       - local: .gitlab-ci/gitlab-ci-docs.yml
     strategy: depend
+  needs: ["run_pre_commit"]
   rules:
     - changes:
       - docs/**/*
