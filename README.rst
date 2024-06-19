@@ -1,7 +1,7 @@
 UCS\@school ID Connector developer documentation
 ================================================
 
-|python| |license| |code style|
+|python| |license| |code style| |renovate|
 
 Introduction
 ------------
@@ -175,6 +175,13 @@ To run integration tests (*not safe, will modify source and target systems!*), r
     /ucsschool-id-connector/src # exit
 
 
+Renovate
+--------
+
+See the `Dependency Dashboard <https://git.knut.univention.de/univention/components/ucsschool-id-connector/-/issues/67>`_ for open dependency updates.
+Choose which updates you want to tackle by checking the corresponding checkbox
+and run the `renovate pipeline <https://git.knut.univention.de/univention/components/ucsschool-id-connector/pipelines/new?var[RUN_RENOVATE]=yes>`_ to create merge requests.
+
 
 .. |license| image:: https://img.shields.io/badge/License-AGPL%20v3-orange.svg
     :alt: GNU AGPL V3 license
@@ -185,6 +192,9 @@ To run integration tests (*not safe, will modify source and target systems!*), r
 .. |code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Code style: black
     :target: https://github.com/psf/black
+.. |renovate| image:: https://img.shields.io/badge/renovate-enabled-brightgreen.svg
+   :alt: Renovate enabled
+   :target: https://git.knut.univention.de/univention/components/ucsschool-id-connector/-/issues/67
 .. |diagram_overview| image:: src/static/ucsschool-id-connector_overview.png
     :alt: Diagram with an overview of the master 2 master sync
 .. |diagram_details| image:: src/static/ucsschool-id-connector_details.png
