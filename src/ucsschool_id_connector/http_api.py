@@ -38,8 +38,10 @@ import ujson
 import zmq
 import zmq.asyncio
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, Response, UJSONResponse
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, UJSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 from starlette.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -51,6 +53,7 @@ from starlette.status import (
 )
 
 from .constants import (
+    APP_ID,
     HISTORY_FILE,
     LOG_FILE_PATH_HTTP,
     README_FILE,
@@ -241,12 +244,46 @@ async def query_service(
 app = FastAPI(
     title="UCS@school ID Connector API",
     description="API to monitor queues and manage the configuration.",
+    docs_url=None,
+    redoc_url=None,
     version=get_app_version(),
-    docs_url=f"{URL_PREFIX}/docs",
-    redoc_url=f"{URL_PREFIX}/redoc",
     openapi_url=f"{URL_PREFIX}/openapi.json",
     default_response_class=UJSONResponse,
 )
+
+app.mount(
+    f"{URL_PREFIX}/static", StaticFiles(directory=(Path(__file__).parent / "static")), name="static"
+)
+
+
+@app.get(f"{URL_PREFIX}/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+        swagger_js_url=f"{URL_PREFIX}/static/swagger-ui-bundle-5.17.14.min.js",
+        swagger_css_url=f"{URL_PREFIX}/static/swagger-ui-5.17.14.min.css",
+    )
+
+
+@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
+async def swagger_ui_redirect():
+    return get_swagger_ui_oauth2_redirect_html()
+
+
+@app.get(f"{URL_PREFIX}/redoc", include_in_schema=False)
+async def redoc_html():
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - ReDoc",
+        redoc_js_url=f"{URL_PREFIX}/static/redoc.standalone-2.0.0-rc.75.js",
+    )
+
+
+@app.get(f"/{APP_ID}/api/")
+async def docs_redirect():
+    return RedirectResponse(url=f"{URL_PREFIX}/docs")
 
 
 @app.post(TOKEN_URL, response_model=Token)
