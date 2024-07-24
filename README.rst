@@ -120,8 +120,7 @@ Release the app to the production app center::
 
     @omar
     cd /var/univention/buildsystem2/mirror/appcenter
-    ./copy_from_appcenter.test.sh 4.4
-    ./copy_from_appcenter.test.sh 4.4 ucsschool-id-connector_20230109125312
+    ./copy_from_appcenter.test.sh 5.0 ucsschool-id-connector_12345678901234
     sudo update_mirror.sh -v appcenter
 
 
