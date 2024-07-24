@@ -281,7 +281,7 @@ async def redoc_html():
     )
 
 
-@app.get(f"/{APP_ID}/api/")
+@app.get(f"/{APP_ID}/api/", include_in_schema=False)
 async def docs_redirect():
     return RedirectResponse(url=f"{URL_PREFIX}/docs")
 
