@@ -64,7 +64,7 @@ The Docker image can be started on its own (but won't receive JSON files in the 
 
 Use ``docker run -d ...`` to let it run in the background. Use ``docker logs ucsschool_id_connector`` to see the stdout; ``docker stop ucsschool_id_connector`` and ``docker rm ucsschool_id_connector`` to stop and remove the running container.
 
-Replace version (in above command ``1.0.0``) with current version. See ``APP_VERSION`` in output at the start of the build process.
+Replace version (in above command ``1.0.0``) with current version. See version in the pyproject.toml.
 
 
 When the container is started that way (not through the appcenter) it must be accessed through https://FQDN:8911/ucsschool-id-connector/api/v1/docs after stopping the firewall (``service univention-firewall stop``).
@@ -109,7 +109,7 @@ To allow the integration tests to access the APIs it needs a way to retrieve the
 Build release
 -------------
 
-* Update the apps version in ``VERSION.txt``.
+* Update the apps version in ``src/pyproject.toml``.
 * Add an entry to ``src/HISTORY.rst``.
 
 Docker images are build in merge requests and when pushing to main.
