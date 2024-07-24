@@ -1,5 +1,15 @@
 <h1>Changelog</h1>
 
+<h2>v3.0.1 (2024-07-25)</h2>
+<ul>
+  <li>
+    Chore: Redirect to Docs when clicking on Portal Tile (Issue #25)
+  </li>
+  <li>
+    Chore: Serve swagger and redoc static assets instead of fetching through CDN (Issue #25)
+  </li>
+</ul>
+
 <h2>v3.0.0 (2024-06-13)</h2>
 <ul>
     <li>

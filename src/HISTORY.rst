@@ -6,6 +6,14 @@
 Changelog
 *********
 
+.. _3.0.1:
+
+v3.0.1 (2024-07-25)
+===================
+
+* Chore: Redirect to Docs when clicking on Portal Tile (Issue #25)
+* Chore: Serve :program:`swagger` and :program:`redoc` static assets instead of fetching through CDN (Issue #25)
+
 .. _3.0.0:
 
 v3.0.0 (2024-06-13)
