@@ -6,6 +6,13 @@
 Changelog
 *********
 
+.. _3.0.3:
+
+v3.0.3 ()
+===================
+
+* Fixed: Automatic restart of :program:`ucsschool-id-connector` after update-ca-certificates doesn't work as expected on systems upgraded from 4.4 (Bug #57426).
+
 .. _3.0.1:
 
 v3.0.1 (2024-07-25)

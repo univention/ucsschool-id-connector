@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ucsschool-id-connector"
-version = "3.0.2"
+version = "3.0.3"
 description = "UCS@school ID Connector"
 authors = ["UCS School Maintainers <ucsschool-maintainers@univention.de>"]
 license = "GNU Affero General Public License v3"
