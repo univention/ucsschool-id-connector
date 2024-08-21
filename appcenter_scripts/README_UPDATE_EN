@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v3.0.2 (2024-08-21)</h2>
+<ul>
+  <li>
+    Fixed: Automatic restart of ucsschool-id-connector after update-ca-certificates doesn't work as expected on systems upgraded from 4.4 (Bug #57426).
+  </li>
+</ul>
+
 <h2>v3.0.1 (2024-07-25)</h2>
 <ul>
   <li>
