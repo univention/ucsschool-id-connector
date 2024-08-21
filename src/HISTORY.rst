@@ -11,7 +11,7 @@ Changelog
 v3.0.2 (2024-08-21)
 ===================
 
-* Fixed: Automatic restart of :program:`ucsschool-id-connector` after update-ca-certificates doesn't work as expected on systems upgraded from 4.4 (Bug #57426).
+* Fixed: Automatic restart of :program:`ucsschool-id-connector` after update-ca-certificates doesn't work as expected on systems upgraded from 4.4 (:uv:bug:`57426`).
 
 .. _3.0.1:
 
@@ -27,7 +27,7 @@ v3.0.0 (2024-06-13)
 ===================
 
 * Breaking: The ID Connector now trusts all certificates, on the UCS system. If your ID Connector connects to any recipient servers that use a private CA, you need to add that CA to the UCS system before you update (Issue #58).
-* Breaking: Cron job for ``listener_trash_cleaner`` was moved from the container to the host (Bug #54640).
+* Breaking: Cron job for ``listener_trash_cleaner`` was moved from the container to the host (:uv:bug:`54640`).
 * Breaking: The ID Connector image is now build based on the UCS base image and not Alpine anymore (Issue #15).
 * Breaking: The ID Connector is now using Python 3.11 and not Python 3.8 (Issue #66).
 * Chore: Dependencies have been updated (Issue #68).
@@ -62,7 +62,7 @@ v2.3.0 (2023-11-30)
 ===================
 
 * The rotation of log files is now managed by the UCS host systems ``logrotate``.
-  This is also fixing a bug that could lead to missing log entries. (:uv:bug:`55983`).
+  This is also fixing a bug that could lead to missing log entries (:uv:bug:`55983`).
 
 .. _2.2.8:
 
@@ -132,7 +132,7 @@ v2.2.2 (2022-03-03)
 ===================
 
 * The ID Broker plugin was removed from the app and can be installed separately by a Debian package.
-* The ID Broker partial group sync plugin now safely handles group names with hyphen).
+* The ID Broker partial group sync plugin now safely handles group names with hyphen.
 * Fixed users with multiple schools being created in alphabetical first, instead of same as in source domain.
 
 .. _2.2.0:
