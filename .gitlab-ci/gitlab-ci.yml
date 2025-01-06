@@ -31,7 +31,7 @@ run_pre_commit:
 
 build_product_tests:
   stage: build
-  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/curlimages/curl:8.8.0
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/curlimages/curl:8.11.1
   script:
     - tar -czvf product_tests.tar.gz product_tests
     - 'curl --fail-with-body --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file product_tests.tar.gz "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/product_tests/0.0.1/product_tests.tar.gz"'
