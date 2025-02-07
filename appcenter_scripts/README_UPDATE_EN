@@ -2,7 +2,9 @@
 
 <h2>v3.0.3 (t.b.d.)</h2>
 <ul>
-  <li></li>
+  <li>
+   Fixed: school names are compared case insensitive for role specific mappings (Issue #85).
+  </li>
 </ul>
 
 <h2>v3.0.2 (2024-08-21)</h2>

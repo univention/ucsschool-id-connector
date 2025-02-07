@@ -171,12 +171,12 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         based on the given roles and configured mappings in the school authority
         """
         pattern = ucsschool_role_regex()
-        handled_schools = await self.handled_schools()
+        handled_schools = [school.lower() for school in await self.handled_schools()]
         role_dicts = [match.groupdict() for match in (pattern.search(role) for role in roles) if match]
         user_roles = [
             obj["role"]
             for obj in role_dicts
-            if obj["context_type"] == "school" and obj["context"] in handled_schools
+            if obj["context_type"] == "school" and obj["context"].lower() in handled_schools
         ]
         if "school_admin" in user_roles and "users_school_admin" in mapping:
             key = "users_school_admin"
