@@ -1,8 +1,8 @@
 # docu pipelines
 
 include:
-  - project: 'univention/documentation/sphinx-docker'
-    file: 'pipeline/sphinx.yml'
+  - project: "univention/documentation/sphinx-docker"
+    file: "pipeline/sphinx.yml"
 
 stages:
   - build
@@ -20,7 +20,7 @@ variables:
 .docs-before-script:
   before_script:
     - apt-get update; apt-get install --assume-yes --no-install-recommends build-essential python3-dev pipx
-    - PIPX_BIN_DIR="/usr/local/bin" pipx install poetry
+    - PIPX_BIN_DIR="/usr/local/bin" pipx install poetry==1.8.5
     - poetry --directory=src add "docutils<0.21"
     - poetry --directory=src export -f requirements.txt --output requirements.txt
     - pip3 install -r requirements.txt
@@ -31,8 +31,8 @@ docs-linkcheck:
     - .docs-before-script
   rules:
     - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
 
 docs-spelling:
   extends:
@@ -40,8 +40,8 @@ docs-spelling:
     - .docs-before-script
   rules:
     - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
 
 docs-html:
   extends:
@@ -49,8 +49,8 @@ docs-html:
     - .docs-before-script
   rules:
     - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
 
 docs-pdf:
   extends:
@@ -58,8 +58,8 @@ docs-pdf:
     - .docs-before-script
   rules:
     - changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
 
 docs-merge-to-one-artifact:
   extends: .sphinx-merge-template
@@ -73,12 +73,12 @@ docs-merge-to-one-artifact:
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
       when: manual
 
 pages-review-url:
@@ -93,8 +93,8 @@ pages-review-url:
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
 
 pages-review:
   stage: review
@@ -108,16 +108,16 @@ pages-review:
   rules:
     - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       changes:
-      - $DOCS_DIR/**/*
-      - "src/HISTORY.rst"
+        - $DOCS_DIR/**/*
+        - "src/HISTORY.rst"
 
 pages-staging:
   stage: staging
   rules:
-      - changes:
+    - changes:
         - $DOCS_DIR/**/*
         - "src/HISTORY.rst"
-        if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
   image: $GIT_SYNC
   needs:
     - job: docs-merge-to-one-artifact
@@ -138,10 +138,10 @@ pages-production:
     name: production/docs
     url: https://docs.software-univention.de/ucsschool-id-connector/
   rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
       changes:
-      - docs/**/*
-      - "src/HISTORY.rst"
+        - docs/**/*
+        - "src/HISTORY.rst"
 
 # The template has inherit:variables:false to prevent the passing of pipeline
 # variables to downstream, and therefore $DOCS_DIR is not available here.
@@ -150,7 +150,7 @@ docs-create-production-merge-request:
   needs:
     - job: docs-merge-to-one-artifact
   rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
       changes:
-      - docs/**/*
-      - "src/HISTORY.rst"
+        - docs/**/*
+        - "src/HISTORY.rst"

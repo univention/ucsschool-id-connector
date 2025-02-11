@@ -8,10 +8,10 @@ Changelog
 
 .. _3.0.3:
 
-v3.0.3 (t.b.d.)
+v3.0.3 (2025-02-11)
 ===================
 
-*
+* Fixed: The ID Connector now correctly uses the names of schools case insensitive to determine role specific mappings (Issue #85).
 
 .. _3.0.2:
 
