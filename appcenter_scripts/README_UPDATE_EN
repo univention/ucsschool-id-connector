@@ -1,9 +1,9 @@
 <h1>Changelog</h1>
 
-<h2>v3.0.3 (t.b.d.)</h2>
+<h2>v3.0.3 (2025-02-11)</h2>
 <ul>
   <li>
-   Fixed: school names are compared case insensitive for role specific mappings (Issue #85).
+   Fixed: The ID Connector now correctly uses the names of schools case insensitive to determine role specific mappings (Issue #85).
   </li>
 </ul>
 
