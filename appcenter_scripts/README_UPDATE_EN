@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v3.0.4 (2025-03-20)</h2>
+<ul>
+  <li>
+   Fixed: The ID Connector joinscript no longer logs an error when setting Cron related UCR variables.
+  </li>
+</ul>
+
 <h2>v3.0.3 (2025-02-11)</h2>
 <ul>
   <li>
