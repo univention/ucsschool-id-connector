@@ -6,6 +6,14 @@
 Changelog
 *********
 
+.. _3.0.4:
+
+v3.0.4 (2025-03-24)
+===================
+
+* Added: The ID Connector now supports UCS 5.2 and UCS@school 5.2v1.
+* Fixed: The ID Connector joinscript no longer logs an error when setting Cron related UCR variables.
+
 .. _3.0.3:
 
 v3.0.3 (2025-02-11)
