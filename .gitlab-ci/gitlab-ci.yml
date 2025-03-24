@@ -34,7 +34,7 @@ create_app_version:
   stage: prepare
   extends: .create_app_version
 
-update_appcenter:
+.do_not_update_appcenter:
   stage: build
   extends: .update_appcenter
   needs:
@@ -123,7 +123,7 @@ build_product_tests:
     - tar -czvf product_tests.tar.gz product_tests
     - 'curl --fail-with-body --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file product_tests.tar.gz "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/product_tests/0.0.1/product_tests.tar.gz"'
 
-build_docker_image:
+.do_not_build_docker_image:
   stage: build
   extends: .kaniko
   rules:
@@ -137,7 +137,7 @@ build_docker_image:
       KANIKO_BUILD_CONTEXT: "$CI_PROJECT_DIR/"
       KANIKO_ARGS: --build-arg app_id="$APP_ID" --build-arg commit="$CI_COMMIT_SHA" --build-arg date="$CI_JOB_STARTED_AT" --cache=true --cache-repo $CI_REGISTRY_IMAGE/cache --cache-copy-layers
 
-tests:
+.do_not_tests:
   stage: tests
   needs:
     - job: build_docker_image
