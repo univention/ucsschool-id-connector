@@ -91,7 +91,7 @@ announce_app_mail:
     - if: "$CI_COMMIT_TAG"
   extends: .send_mail
   variables:
-    SUBJECT: "App Release: UCS@school Kelvin REST API"
+    SUBJECT: "App Release: UCS@school ID Connector"
     RECIPIENT: "app-announcement@univention.de"
   before_script:
     - |
