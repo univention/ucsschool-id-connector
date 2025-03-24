@@ -60,6 +60,11 @@ create_gitlab_release:
   stage: production
   extends: .create_gitlab_release
   needs: [do_release]
+  release:
+    assets:
+      links:
+        - name: "Changelog"
+          url: "https://docs.software-univention.de/ucsschool-id-connector/HISTORY.html"
 
 check_release:
   stage: production
