@@ -93,6 +93,7 @@ announce_app_mail:
   variables:
     SUBJECT: "App Release: UCS@school ID Connector"
     RECIPIENT: "app-announcement@univention.de"
+    SENDER: "ucsschool-maintainers@univention.de"
   before_script:
     - |
       cat >mail.txt<< EOF
