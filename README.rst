@@ -113,16 +113,11 @@ Build release
 * Add an entry to ``src/HISTORY.rst``.
 
 Docker images are build in merge requests and when pushing to main.
-When releasing the App, make sure to update the docker tags, e.g. via the [docker-update jenkins job](https://univention-dist-jenkins.k8s.knut.univention.de/job/UCS-5.0/job/Apps/job/ucsschool-id-connector/job/App%20Autotest%20MultiEnv/)
 
-
-Release the app to the production app center::
-
-    @omar
-    cd /var/univention/buildsystem2/mirror/appcenter
-    ./copy_from_appcenter.test.sh 5.0 ucsschool-id-connector_12345678901234
-    sudo update_mirror.sh -v appcenter
-
+* Create a new tag with the version number you want to release, e.g.: 1.1.0
+* Wait for the tag pipeline until it reaches the ``do_release`` job
+* Is everything looking good so far? The next will make the new version public!
+* Start the ``do_release`` job
 
 Close the bugs which are released::
 
