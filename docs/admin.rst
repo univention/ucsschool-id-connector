@@ -843,7 +843,7 @@ The format for the mapping is:
    {
      "mapping": {
        "NAME_OF_SCHOOL": "NAME_OF_RECIPIENT",
-       "ANOTHER_SCHOOL": "OTHER_OR_SAME_RECIPIENT",
+       "ANOTHER_SCHOOL": "OTHER_OR_SAME_RECIPIENT"
       }
    }
 
@@ -866,7 +866,7 @@ you could do:
 
    :ref:`Remember? <l10n>` ``Traeger`` refers to the receiving side of the synchronization process.
 
-You also find this example in :ref:`school-to-authority-map`.
+You also find this example in :ref:`school-to-authority-mapping`.
 
 ``PUT`` this configuration JSON to the ``school_to_authority_mapping`` resource
 in the :ref:`Swagger UI<swagger-ui>`.
