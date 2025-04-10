@@ -47,6 +47,7 @@ extensions = [
     "sphinxcontrib.inkscapeconverter",
     "sphinx_inline_tabs",
     "sphinx.ext.autodoc",
+    "sphinx_sitemap",
 ]
 
 bibtex_bibfiles = ["bibliography.bib"]
@@ -158,3 +159,5 @@ univention_feedback = True
 univention_pdf_show_source_license = True
 
 univention_doc_basename = doc_basename
+html_baseurl = "https://docs.software-univention.de/ucsschool-id-connector/"
+sitemap_url_scheme = "{link}"
