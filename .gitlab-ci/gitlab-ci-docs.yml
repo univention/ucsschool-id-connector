@@ -1,7 +1,7 @@
 # docu pipelines
 
 include:
-  - project: "univention/documentation/sphinx-docker"
+  - project: "univention/dev/docs/sphinx-docker"
     file: "pipeline/sphinx.yml"
 
 stages:
@@ -13,7 +13,7 @@ stages:
 
 variables:
   # Check the README for more information about the variables:
-  # https://git.knut.univention.de/univention/documentation/sphinx-docker/-/blob/main/README.rst
+  # https://git.knut.univention.de/univention/dev/docs/sphinx-docker/-/blob/main/README.rst
   DOCS_DIR: "docs"
   DOC_TARGET_NAME: "ucsschool-id-connector"
 
