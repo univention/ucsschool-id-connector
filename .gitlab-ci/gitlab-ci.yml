@@ -1,9 +1,9 @@
 include:
-  - project: univention/dist/docker-services
+  - project: univention/infrastructure/docker-services
     file:
     - pre-commit.yml
     - kaniko.yml
-  - project: univention/internal/ucsschool-ci-utils
+  - project: univention/dev/internal/ucsschool-ci-utils
     file:
     - fragments/misc.yaml
     - fragments/appcenter.yaml
