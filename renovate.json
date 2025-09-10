@@ -3,6 +3,7 @@
   "extends": [
     "local>univention/infrastructure/docker-services//renovatebot/default.json"
   ],
+  "commitBody": "Issue univention/dev/education/ucsschool-id-connector#96",
   "packageRules": [
     {
       "matchPackageNames": ["pydantic"],
