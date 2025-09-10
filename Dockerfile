@@ -1,7 +1,6 @@
-ARG UCS_BASE_IMAGE_TAG=0.13.0
-ARG UCS_VERSION=520
+ARG UCS_VERSION=5.2.2
 
-FROM gitregistry.knut.univention.de/univention/components/ucs-base-image/ucs-base-${UCS_VERSION}:${UCS_BASE_IMAGE_TAG} AS idc-base
+FROM gitregistry.knut.univention.de/univention/dev/projects/ucs-base-image/ucs-base-flex:${UCS_VERSION} AS idc-base
 
 ENV PYTHONUNBUFFERED=1
 ENV POETRY_NO_INTERACTION=1
