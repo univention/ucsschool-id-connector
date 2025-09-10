@@ -8,7 +8,10 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 ENV PIPX_BIN_DIR="/usr/local/bin"
 ENV VIRTUAL_ENV="/venv"
 
-RUN apt-get install -y python3 python3-venv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
 
 # renovate: datasource=pypi depName=poetry packageName=poetry
 ENV POETRY_VERSION=1.8.3
@@ -25,7 +28,12 @@ WORKDIR /ucsschool-id-connector
 # Build steps
 FROM idc-base as idc-build
 
-RUN apt-get install -y build-essential python3-dev xz-utils pipx
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3-dev \
+    xz-utils \
+    pipx \
+    && rm -rf /var/lib/apt/lists/*
 RUN pipx install poetry=="$POETRY_VERSION"
 
 # Add S6
