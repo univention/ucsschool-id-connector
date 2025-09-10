@@ -3,7 +3,7 @@ include:
     file:
     - pre-commit.yml
     - kaniko.yml
-  - project: univention/dev/internal/ucsschool-ci-utils
+  - project: univention/dev/tooling/ci-components
     file:
     - fragments/misc.yaml
     - fragments/appcenter.yaml
