@@ -138,6 +138,7 @@ def assert_equal_password_hashes(school_auth_host_configs):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("roles", [("student",), ("teacher",), ("legal_guardian",)])
 @pytest.mark.parametrize("ou_case_correct", (True, False))
 async def test_create_user(
     make_school_authority,
@@ -154,6 +155,7 @@ async def test_create_user(
     assert_equal_password_hashes,
     scramble_case,
     ou_case_correct: bool,
+    roles,
 ):
     """
     Tests if ucsschool_id_connector distributes a newly created User to the correct school
@@ -190,17 +192,23 @@ async def test_create_user(
     print(f"===> ou_auth2  : OU {ou_auth2!r} @ auth {school_auth2.name!r}")
     for num, ous in enumerate(((ou_auth1,), (ou_auth1, ou_auth1_2), (ou_auth1, ou_auth2)), start=1):
         print(f"===> Case {num}/3: Creating user on sender in ous={ous!r}...")
-        sender_user: Dict[str, Any] = await make_sender_user(ous=ous)
+        sender_user: Dict[str, Any] = await make_sender_user(roles=roles, ous=ous)
         # verify user on sender system
         await UserResource(session=kelvin_session(docker_hostname)).get(name=sender_user["name"])
         # check_password(sender_user["name"], sender_user["password"], docker_hostname)
         print(f"Created user {sender_user['name']!r} on sender, looking for it in auth1...")
-        user_remote: User = await wait_for_kelvin_object_exists(
+        existence_test_task = wait_for_kelvin_object_exists(
             resource_cls=UserResource,
             method="get",
             session=kelvin_session(target_1),
             name=sender_user["name"],
+            wait_timeout=60,
         )
+        if "legal_guardian" in roles:
+            with pytest.raises(AssertionError, match="No object.*"):
+                user_remote: User = await existence_test_task
+            continue
+        user_remote: User = await existence_test_task
         print(f"Found {user_remote!r}, checking its attributes...")
         expected_target_user1 = filter_ous(sender_user, school_auth1.name, mapping)
         compare_user(expected_target_user1, user_remote.as_dict())
