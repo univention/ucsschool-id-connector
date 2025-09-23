@@ -86,6 +86,7 @@ class SchoolUserRole(str, Enum):
     staff = "staff"
     student = "student"
     teacher = "teacher"
+    legal_guardian = "legal_guardian"
 
 
 class UnknownSchoolUserRole(Exception):
@@ -224,7 +225,12 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         options = set(value)
         if not {"default"}.intersection(options):
             raise MissingDefaultUdmOptionError(key="options", value=value)
-        if not {"ucsschoolStaff", "ucsschoolStudent", "ucsschoolTeacher"}.intersection(options):
+        if not {
+            "ucsschoolStaff",
+            "ucsschoolStudent",
+            "ucsschoolTeacher",
+            "ucsschoolLegalGuardian",
+        }.intersection(options):
             raise MissingSchoolUserObjectClassError(key="options", value=value)
         return value
 
@@ -233,6 +239,14 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
         if not value.get("school"):
             raise MissingSchoolAttributeError(key="object", value=value)
         return value
+
+    @property
+    def legal_guardians(self) -> list[str]:
+        return self.object.get("ucsschoolLegalGuardian", [])
+
+    @property
+    def legal_wards(self) -> list[str]:
+        return self.object.get("ucsschoolLegalWard", [])
 
     @property
     def record_uid(self) -> Optional[str]:
@@ -275,6 +289,8 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
             return [SchoolUserRole.staff]
         if "ucsschoolStudent" in options:
             return [SchoolUserRole.student]
+        if "ucsschoolLegalGuardian" in options:
+            return [SchoolUserRole.legal_guardian]
         # administrator and exam_user are not supported
         raise UnknownSchoolUserRole(f"Unknown or missing school user type in options: {self.options!r}")
 

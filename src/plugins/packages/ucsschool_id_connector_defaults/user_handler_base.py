@@ -95,6 +95,7 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         SchoolUserRole.staff: "staff",
         SchoolUserRole.student: "student",
         SchoolUserRole.teacher: "teacher",
+        SchoolUserRole.legal_guardian: "legal_guardian",
     }
 
     def __init__(self, school_authority: SchoolAuthorityConfiguration, plugin_name: str):

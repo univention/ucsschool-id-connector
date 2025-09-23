@@ -92,7 +92,7 @@ class ListenerObjectHandler:
     def get_listener_object(self, obj_dict: Dict[str, Any]) -> Optional[ListenerObject]:
         """
         Analyse `obj_dict` and return an instance of a subclass of
-        `ListenerObject`. If the type cannot by recognized or should be
+        `ListenerObject`. If the type cannot be recognized or should be
         handled by the default code, return `None`.
 
         Multiple `get_listener_object` hook implementations may run, until one

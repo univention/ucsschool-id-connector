@@ -71,6 +71,7 @@ class SchoolScheduler:
             f"(|(ucsschoolRole=teacher:school:{escape_filter_chars(school)})"
             f"(ucsschoolRole=student:school:{escape_filter_chars(school)})"
             f"(ucsschoolRole=staff:school:{escape_filter_chars(school)})"
+            f"(ucsschoolRole=legal_guardian:school:{escape_filter_chars(school)})"
             "))"
         )
         results = await self.ldap_access.search(

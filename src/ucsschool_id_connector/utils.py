@@ -52,10 +52,12 @@ from .constants import (
     PYPROJECT_FILE,
     SERVICE_NAME,
     UCR_CONTAINER_CLASS,
+    UCR_CONTAINER_LEGAL_GUARDIANS,
     UCR_CONTAINER_PUPILS,
     UCR_CONTAINER_TEACHERS,
     UCR_CONTAINER_TEACHERS_AND_STAFF,
     UCR_DB_FILE,
+    UCR_GROUP_PREFIX_LEGAL_GUARDIANS,
     UCR_GROUP_PREFIX_STUDENTS,
     UCR_GROUP_PREFIX_TEACHERS,
     UCR_REGEX,
@@ -161,6 +163,7 @@ class RegExpsGroups(NamedTuple):
     domain_users_ou: Pattern
     lehrer_ou: Pattern
     schueler_ou: Pattern
+    legal_guardian_ou: Pattern
     school_class: Pattern
     workgroup: Pattern
 
@@ -169,6 +172,7 @@ class RegExpsUsers(NamedTuple):
     student: Pattern
     teacher: Pattern
     teacher_and_staff: Pattern
+    legal_guardian: Pattern
 
 
 @lru_cache(maxsize=1)
@@ -206,6 +210,19 @@ def schueler_ou_dn_regex() -> Pattern:
 
 
 @lru_cache(maxsize=1)
+def legal_guardian_ou_dn_regex() -> Pattern:
+    """Regex to match 'cn=sorgeberechtigte-demoschool,cn=groups,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    prefix_legal_guardians = (
+        os.environ.get(UCR_GROUP_PREFIX_LEGAL_GUARDIANS[0]) or UCR_GROUP_PREFIX_LEGAL_GUARDIANS[1]
+    )
+    return re.compile(
+        f"cn={prefix_legal_guardians}(?P<ou>.+?),cn=groups,ou=(?P=ou),{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
 def school_class_dn_regex() -> Pattern:
     """Regex to match 'cn=DEMOSCHOOL-1a,cn=klassen,cn=schueler,cn=groups,ou=DEMOSCHOOL,...'."""
     base_dn = os.environ["ldap_base"]
@@ -216,6 +233,16 @@ def school_class_dn_regex() -> Pattern:
         f"cn={c_class},cn={c_student},cn=groups,"
         f"ou=(?P=ou),"
         f"{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def user_dn_regex() -> Pattern:
+    """Regex to match any user 'uid=demo_student,...,cn=users,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    return re.compile(
+        f"uid=(?P<name>.+?),.*cn=users,ou=(?P<ou>.+?),{base_dn}",
         flags=re.IGNORECASE,
     )
 
@@ -251,6 +278,19 @@ def teacher_and_staff_dn_regex() -> Pattern:
     )
     return re.compile(
         f"uid=(?P<name>.+?),cn={c_teacher_staff},cn=users,ou=(?P<ou>.+?),{base_dn}",
+        flags=re.IGNORECASE,
+    )
+
+
+@lru_cache(maxsize=1)
+def legal_guardian_dn_regex() -> Pattern:
+    """Regex to match 'uid=demo_parent,cn=sorgeberechtigte,cn=users,ou=DEMOSCHOOL,...'."""
+    base_dn = os.environ["ldap_base"]
+    c_legal_guardian = (
+        os.environ.get(UCR_CONTAINER_LEGAL_GUARDIANS[0]) or UCR_CONTAINER_LEGAL_GUARDIANS[1]
+    )
+    return re.compile(
+        f"uid=(?P<name>.+?),cn={c_legal_guardian},cn=users,ou=(?P<ou>.+?),{base_dn}",
         flags=re.IGNORECASE,
     )
 

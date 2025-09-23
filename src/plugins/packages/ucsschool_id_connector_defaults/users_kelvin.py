@@ -184,6 +184,8 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
             key = "users_staff"
         elif "teacher" in user_roles and "users_teacher" in mapping:
             key = "users_teacher"
+        elif "legal_guardian" in user_roles and "users_legal_guardian" in mapping:
+            key = "users_legal_guardian"
         elif "student" in user_roles and "users_student" in mapping:
             key = "users_student"
         else:

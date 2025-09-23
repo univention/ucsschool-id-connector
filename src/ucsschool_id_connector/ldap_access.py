@@ -228,6 +228,7 @@ class LDAPAccess:
                 f"(objectClass=ucsschoolStaff)"
                 f"(objectClass=ucsschoolStudent)"
                 f"(objectClass=ucsschoolTeacher)"
+                f"(objectClass=ucsschoolLegalGuardian)"
                 f"))"
             )
         results = await self.search(
