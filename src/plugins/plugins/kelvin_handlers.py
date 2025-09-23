@@ -75,6 +75,17 @@ class KelvinHandler(DispatcherPluginBase):
         impl for ucsschool_id_connector.plugins.Postprocessing.handle_listener_object
         """
         if isinstance(obj, ListenerUserAddModifyObject) or isinstance(obj, ListenerUserRemoveObject):
+            # Skip Legal Guardian until fully supported with
+            # the Kelvin Plugin and set the guardian attribute on students to empty
+            if not isinstance(obj, ListenerUserRemoveObject):
+                if "ucsschoolLegalGuardian" in obj.options:
+                    self.logger.debug(
+                        f"Skipping synchronization of {obj.id}, as it is a ucsschoolLegalGuardian"
+                    )
+                    return False
+                if "ucsschoolStudent" in obj.options and "ucsschoolLegalGuardian" in obj.object:
+                    self.logger.debug(f"Settting ucsschoolLegalGuardian attribute of {obj.id} to []")
+                    obj.object["ucsschoolLegalGuardian"] = []
             return await self.user_handler.handle_listener_object(school_authority, obj)
         elif isinstance(obj, ListenerGroupAddModifyObject) or isinstance(obj, ListenerGroupRemoveObject):
             return await self.school_class_handler.handle_listener_object(school_authority, obj)
