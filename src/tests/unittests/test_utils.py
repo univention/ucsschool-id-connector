@@ -46,11 +46,14 @@ DN_REGEX = {
     "domain_users_ou_dn_regex": "cn=Domain Users DEMOSCHOOL,cn=groups,ou=DEMOSCHOOL,{ldap_base}",
     "lehrer_ou_dn_regex": "cn=lehrer-demoschool,cn=groups,ou=DEMOSCHOOL,{ldap_base}",
     "schueler_ou_dn_regex": "cn=schueler-demoschool,cn=groups,ou=DEMOSCHOOL,{ldap_base}",
+    "legal_guardian_ou_dn_regex": "cn=sorgeberechtigte-demoschool,cn=groups,ou=DEMOSCHOOL,{ldap_base}",
     "school_class_dn_regex": "cn=DEMOSCHOOL-1a,cn=klassen,cn=schueler,cn=groups,ou=DEMOSCHOOL,"
     "{ldap_base}",
     "student_dn_regex": "uid=demo_student,cn=schueler,cn=users,ou=DEMOSCHOOL,{ldap_base}",
     "teacher_dn_regex": "uid=demo_teacher,cn=lehrer,cn=users,ou=DEMOSCHOOL,{ldap_base}",
     "teacher_and_staff_dn_regex": "uid=demo_teachstaff,cn=lehrer und mitarbeiter,cn=users,ou=DEMOSCHOOL,"
+    "{ldap_base}",
+    "legal_guardian_dn_regex": "uid=demo_legal_guardian,cn=sorgeberechtigte,cn=users,ou=DEMOSCHOOL,"
     "{ldap_base}",
     "workgroup_dn_regex": "cn=DEMOSCHOOL-wg1,cn=schueler,cn=groups,ou=DEMOSCHOOL,{ldap_base}",
 }

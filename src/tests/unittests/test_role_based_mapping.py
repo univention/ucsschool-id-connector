@@ -35,6 +35,7 @@ from ucsschool_id_connector.models import School2SchoolAuthorityMapping
 all_roles_mapping = {
     "users": 1,
     "users_student": 2,
+    "users_legal_guardian": 6,
     "users_teacher": 3,
     "users_staff": 4,
     "users_school_admin": 5,
@@ -77,6 +78,7 @@ async def test_handled_schools(mapping, expected, idc_defaults, school_authority
         ({"users": 1, "users_student": 2}, ["School1"], ["some:weird:role"], 1),
         ({"users": 1, "users_student": 2}, ["School1"], ["invalid_role_str"], 1),
         ({"users": 1, "users_student": 2}, ["School1"], ["student:school:School1"], 2),
+        ({"users": 1, "users_legal_guardian": 2}, ["School1"], ["legal_guardian:school:School1"], 2),
         # school distinction
         ({"users": 1, "users_student": 2}, ["School1"], ["student:school:School2"], 1),
         (
@@ -91,7 +93,7 @@ async def test_handled_schools(mapping, expected, idc_defaults, school_authority
             ["teacher:school:School2", "student:school:School1"],
             3,
         ),
-        # order (users[1]<student[2]<teacher[3]<staff[4]<school_admin[5])
+        # order (users[1]<student[2]<legal_guardian[6]<teacher[3]<staff[4]<school_admin[5])
         (
             all_roles_mapping,
             ["School1"],
@@ -109,6 +111,12 @@ async def test_handled_schools(mapping, expected, idc_defaults, school_authority
             ["School1"],
             ["student:school:School1", "teacher:school:School1"],
             3,
+        ),
+        (
+            all_roles_mapping,
+            ["School1"],
+            ["legal_guardian:school:School1"],
+            6,
         ),
         (all_roles_mapping, ["School1"], ["student:school:School1"], 2),
         (all_roles_mapping, ["School1"], [], 1),

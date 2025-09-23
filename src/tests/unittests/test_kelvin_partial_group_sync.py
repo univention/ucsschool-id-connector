@@ -87,6 +87,7 @@ def school_class_handler(idc_defaults, school_auth_config):
         ([], ["invalid_role_str"], False),
         (["student", "teacher"], ["teacher:school:school1"], True),
         (["student"], ["student:school:school2"], False),
+        (["legal_guardian"], ["legal_guardian:school:school2"], False),
     ],
 )
 @pytest.mark.asyncio
