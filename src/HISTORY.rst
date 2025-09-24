@@ -6,12 +6,19 @@
 Changelog
 *********
 
+.. _3.1.0:
+
+v3.1.0 (t.b.d.)
+===================
+
+* Added: When used in combination with the ID Broker, the UCS\@school ID Connector now supports legal guardians (Issue univention/dev/education/ucsschool-api-plugins/id-broker-plugin#132).
+
 .. _3.0.4:
 
 v3.0.4 (2025-03-24)
 ===================
 
-* Added: The ID Connector now supports UCS 5.2 and UCS@school 5.2v1.
+* Added: The ID Connector now supports UCS 5.2 and UCS\@school 5.2v1.
 * Fixed: The ID Connector joinscript no longer logs an error when setting Cron related UCR variables (Issue #88).
 
 .. _3.0.3:
