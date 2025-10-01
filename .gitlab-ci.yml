@@ -19,6 +19,9 @@ include:
   - local: /.gitlab-ci/gitlab-ci.yml
     rules:
       - if: $RUN_RENOVATE != "yes"
+  - local: .gitlab-ci/SonarQube.yml
+    rules:
+      - if: $RUN_RENOVATE != "yes"
   - project: univention/infrastructure/docker-services
     file:
       - renovatebot/renovate.gitlab-ci.yml
