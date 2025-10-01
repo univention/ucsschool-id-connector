@@ -11,7 +11,7 @@ Changelog
 v3.1.0 (t.b.d.)
 ===================
 
-* Added: When used in combination with the ID Broker, the UCS\@school ID Connector now supports legal guardians (Issue univention/dev/education/ucsschool-api-plugins/id-broker-plugin#132).
+* Added: When used in combination with the ID Broker, the UCS\@school ID Connector now supports legal guardians.
 
 .. _3.0.4:
 
