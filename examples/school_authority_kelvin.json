@@ -26,6 +26,8 @@
           "userexpiry": "expiration_date",
           "phone": "phone",
           "roles": "roles",
+          "ucsschoolLegalWard": "legal_wards",
+          "ucsschoolLegalGuardian": "legal_guardians",
           "ucsschoolRecordUID": "record_uid",
           "ucsschoolSourceUID": "source_uid"
         },

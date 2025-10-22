@@ -29,7 +29,16 @@
 
 from typing import Any, Dict, List, Union
 
-from ucsschool.kelvin.client import PasswordsHashes, RoleResource, SchoolResource, User, UserResource
+from ldap3.utils.dn import parse_dn
+
+from ucsschool.kelvin.client import (
+    InvalidRequest,
+    PasswordsHashes,
+    RoleResource,
+    SchoolResource,
+    User,
+    UserResource,
+)
 from ucsschool_id_connector.models import (
     ListenerUserAddModifyObject,
     ListenerUserRemoveObject,
@@ -59,6 +68,8 @@ KELVIN_API_SCHOOL_ATTRIBUTES = {
     "school_classes",
     "schools",
     "source_uid",
+    "legal_wards",
+    "legal_guardians",
     "ucsschool_roles",
 }
 KELVIN_API_PASSWORD_HASHES_ATTRIBUTE = "kelvin_password_hashes"  # nosec
@@ -131,7 +142,7 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
             session=self.session,
             **request_body,
         )
-        await user.save()
+        await self.save_user_with_retry(user)
         self.logger.info("User created: %r.", user)
 
     async def do_modify(self, request_body: Dict[str, Any], api_user_data: User) -> None:
@@ -140,8 +151,37 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         user: User = await UserResource(session=self.session).get(name=api_user_data.name)
         for k, v in request_body.items():
             setattr(user, k, v)
-        await user.save()
+        await self.save_user_with_retry(user)
         self.logger.info("User modified: %r.", user)
+
+    async def save_user_with_retry(self, user: User) -> None:
+        try:
+            await user.save()
+        except InvalidRequest as exc:
+            # In case the request fails because the connected legal-guardian users doesn't exist yet,
+            # try again with only those that exist
+            if "legal_guardians" in exc.reason:
+                old_legal_guardians = user.legal_guardians
+                user.legal_guardians = []
+                for dn in old_legal_guardians:
+                    uid = parse_dn(dn)[0][1]
+                    if await UserResource(session=self.session).exists(name=uid):
+                        user.legal_guardians.append(dn)
+                    else:
+                        self.logger.info(f"User not found, remove from connected legal-guardians: {uid}")
+                await user.save()
+            elif "legal_wards" in exc.reason:
+                old_legal_wards = user.legal_wards
+                user.legal_wards = []
+                for dn in old_legal_wards:
+                    uid = parse_dn(dn)[0][1]
+                    if await UserResource(session=self.session).exists(name=uid):
+                        user.legal_wards.append(dn)
+                    else:
+                        self.logger.info(f"User not found, remove from connected legal-wards: {uid}")
+                await user.save()
+            else:
+                raise exc
 
     async def do_remove(self, obj: ListenerUserRemoveObject, api_user_data: User) -> None:
         """Delete a user object at the target."""
@@ -207,6 +247,8 @@ class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):
         """`none` can be invalid, for example if a list is expected."""
         if key_here in ("birthday", "userexpiry"):
             return None
+        if key_here in ("ucsschoolLegalGuardian", "ucsschoolLegalWard"):
+            return []
         raise SkipAttribute()
 
     def _update_for_mapping_data(self, key_here: str, key_there: str, value_here: Any) -> Dict[str, Any]:

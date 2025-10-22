@@ -410,6 +410,35 @@ class SchoolAuthorityConfiguration(SecretsMixin, BaseModel):
     Attention: values for keys named `key`, `password` or `token` will be converted to SecretStr.
     """
 
+    @validator("plugin_configs")
+    def has_required_attr_combination(cls, value):
+        # Verify that ucsschoolLegalGuardian is only configured together with ucsschoolLegalGuardian
+        kelvin_plugin_config = value.get("kelvin", {}).get("mapping", {})
+        users_config = kelvin_plugin_config.get("users", {})
+        student_user_config = kelvin_plugin_config.get("users_student", {})
+        legal_guardian_user_config = kelvin_plugin_config.get("users_legal_guardian", {})
+        legal_guardians_configured = (
+            not student_user_config
+            and "ucsschoolLegalGuardian" in users_config
+            or "ucsschoolLegalGuardian" in student_user_config
+        )
+        legal_wards_configured = (
+            not legal_guardian_user_config
+            and "ucsschoolLegalWard" in users_config
+            or "ucsschoolLegalWard" in legal_guardian_user_config
+        )
+        if legal_guardians_configured != legal_wards_configured:
+            error_msg = (
+                "Configuration for legal_guardians and legal_wards must either both be configured,"
+                " or not at all. "
+            )
+            if legal_guardians_configured:
+                error_msg += "legal_guardians has been configured, but not legal_wards."
+            else:
+                error_msg += "legal_wards has been configured, but not legal_guardians."
+            raise ValueError(error_msg)
+        return value
+
 
 class SchoolAuthorityConfigurationPatchDocument(SecretsMixin, BaseModel):
     active: bool = None
