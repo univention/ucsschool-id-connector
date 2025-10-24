@@ -28,13 +28,13 @@
 # <http://www.gnu.org/licenses/>.
 
 import datetime
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from faker import Faker
 
 import ucsschool_id_connector.models as models
-from ucsschool.kelvin.client import PasswordsHashes
+from ucsschool.kelvin.client import InvalidRequest, PasswordsHashes
 from ucsschool_id_connector.plugin_loader import load_plugins
 from ucsschool_id_connector.plugins import plugin_manager
 
@@ -47,6 +47,73 @@ def async_mock_load_school2target_mapping(school2school_authority_mapping):
         return school2school_authority_mapping()
 
     return _func
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("api", ("kelvin",))
+@pytest.mark.parametrize("user_exists", (True, False))
+async def test_modify(
+    api,
+    user_exists,
+    school_authority_configuration,
+):
+    load_plugins()
+    user_handler_class = {
+        "kelvin": "KelvinHandler",
+    }[api]
+    for plugin in plugin_manager.get_plugins():
+        if plugin.__class__.__name__ == user_handler_class:
+            break
+    else:
+        raise AssertionError(f"Cannot find handler class for {api!r} API in plugins.")
+    s_a_config = {
+        "kelvin": school_authority_configuration(),
+    }[api]
+    # can only be imported after load_plugins():
+    from ucsschool_id_connector_defaults.users_kelvin import KelvinPerSAUserDispatcher
+
+    user_handler: KelvinPerSAUserDispatcher = plugin.per_s_a_handler_class(s_a_config, api)
+    user_mock = AsyncMock()
+    with (
+        patch("ucsschool.kelvin.client.UserResource.get", AsyncMock(return_value=user_mock)),
+        patch("ucsschool.kelvin.client.UserResource.exists", AsyncMock(return_value=user_exists)),
+    ):
+        test_dn = "uid=demo_student,cn=schueler,cn=users,ou=DEMOSCHOOL,dc=uni,dc=dtr"
+
+        # Verify that on error only existing users are kept as legal-guardians
+        user_mock.legal_guardians = [test_dn]
+        user_mock.save.side_effect = [
+            InvalidRequest(
+                reason="'Bad Request' ({'legal_guardians':"
+                f" ['The following legal guardians do not exist:\n{test_dn}']}})"
+            ),
+            None,
+        ]
+        await user_handler.do_modify({}, MagicMock())
+        if user_exists:
+            assert user_mock.legal_guardians == [test_dn]
+        else:
+            assert user_mock.legal_guardians == []
+
+        # Verify that on error only existing users are kept as legal-wards
+        user_mock.legal_wards = [test_dn]
+        user_mock.save.side_effect = [
+            InvalidRequest(
+                reason="'Bad Request' ({'legal_wards':"
+                f" ['The following legal wards do not exist:\n{test_dn}']}})"
+            ),
+            None,
+        ]
+        await user_handler.do_modify({}, MagicMock())
+        if user_exists:
+            assert user_mock.legal_wards == [test_dn]
+        else:
+            assert user_mock.legal_wards == []
+
+        # Verify that on other error, this error is returned
+        user_mock.save.side_effect = [InvalidRequest(reason="Other reason"), None]
+        with pytest.raises(InvalidRequest, match="Other reason"):
+            await user_handler.do_modify({}, MagicMock())
 
 
 @pytest.mark.asyncio
