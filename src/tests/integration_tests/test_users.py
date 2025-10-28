@@ -197,18 +197,12 @@ async def test_create_user(
         await UserResource(session=kelvin_session(docker_hostname)).get(name=sender_user["name"])
         # check_password(sender_user["name"], sender_user["password"], docker_hostname)
         print(f"Created user {sender_user['name']!r} on sender, looking for it in auth1...")
-        existence_test_task = wait_for_kelvin_object_exists(
+        user_remote: User = await wait_for_kelvin_object_exists(
             resource_cls=UserResource,
             method="get",
             session=kelvin_session(target_1),
             name=sender_user["name"],
-            wait_timeout=60,
         )
-        if "legal_guardian" in roles:
-            with pytest.raises(AssertionError, match="No object.*"):
-                user_remote: User = await existence_test_task
-            continue
-        user_remote: User = await existence_test_task
         print(f"Found {user_remote!r}, checking its attributes...")
         expected_target_user1 = filter_ous(sender_user, school_auth1.name, mapping)
         compare_user(expected_target_user1, user_remote.as_dict())
