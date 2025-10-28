@@ -371,6 +371,7 @@ async def change_properties(session: Session, username: str, changes: Dict[str, 
 
 @pytest.mark.asyncio
 @pytest.mark.not_44_compatible
+@pytest.mark.parametrize("role", ("student", "legal_guardian"))
 async def test_modify_user(
     make_school_authority,
     make_sender_user,
@@ -385,6 +386,7 @@ async def test_modify_user(
     kelvin_session,
     wait_for_kelvin_object_exists,
     assert_equal_password_hashes,
+    role,
 ):
     """
     Tests if the modification of a user is properly distributed to the school
@@ -404,7 +406,9 @@ async def test_modify_user(
             ou_auth2: school_auth2.name,
         }
     )
-    sender_user: Dict[str, Any] = await make_sender_user(ous=[ou_auth1])
+    sender_user: Dict[str, Any] = await make_sender_user(roles=[role], ous=[ou_auth1])
+    other_role = "legal_guardian" if role == "student" else "student"
+    connected_user: Dict[str, Any] = await make_sender_user(roles=[other_role], ous=[ou_auth1])
     # check user exists on sender
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
@@ -412,13 +416,25 @@ async def test_modify_user(
         session=kelvin_session(docker_hostname),
         name=sender_user["name"],
     )
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(docker_hostname),
+        name=connected_user["name"],
+    )
     check_password(sender_user["name"], sender_user["password"], docker_hostname)
-    # check user exists on auth1
+    # check users exist on auth1
     await wait_for_kelvin_object_exists(
         resource_cls=UserResource,
         method="get",
         session=kelvin_session(target_1),
         name=sender_user["name"],
+    )
+    await wait_for_kelvin_object_exists(
+        resource_cls=UserResource,
+        method="get",
+        session=kelvin_session(target_1),
+        name=connected_user["name"],
     )
     check_password(sender_user["name"], sender_user["password"], target_1)
     await assert_equal_password_hashes(sender_user["name"], docker_hostname, target_1)
@@ -436,6 +452,11 @@ async def test_modify_user(
             "title": fake.first_name(),
         },
     }
+    if role == "student":
+        new_value["legal_guardians"] = [connected_user["name"]]
+    else:
+        new_value["legal_wards"] = [connected_user["name"]]
+
     await change_properties(kelvin_session(docker_hostname), sender_user["name"], new_value)
     user_on_host: User = await UserResource(session=kelvin_session(docker_hostname)).get(
         name=sender_user["name"]

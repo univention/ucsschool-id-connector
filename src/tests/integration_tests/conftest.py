@@ -205,6 +205,8 @@ def school_auth_config_kelvin(school_auth_host_configs):
                             "phone": "phone",
                             "ucsschoolRecordUID": "record_uid",
                             "pwdChangeNextLogin": "pwdChangeNextLogin",
+                            "ucsschoolLegalWard": "legal_wards",
+                            "ucsschoolLegalGuardian": "legal_guardians",
                         },
                     },
                     "password": "univention",
