@@ -1,5 +1,12 @@
 <h1>Changelog</h1>
 
+<h2>v3.1.0 (t.b.d.)</h2>
+<ul>
+  <li>
+   Added: The UCS\@school ID Connector now supports <a href="https://docs.software-univention.de/ucsschool-import/latest/de/scenarios/legal-guardians.html#legal-guardians">legal guardians</a>.
+  </li>
+</ul>
+
 <h2>v3.0.4 (2025-03-24)</h2>
 <ul>
   <li>
