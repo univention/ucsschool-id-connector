@@ -889,7 +889,7 @@ This means, that you need to define per role which properties you want to transf
    The default |KLV| plugin version ``2.1.0`` received the role specific
    attribute mapping feature.
    This allows to define additional user mappings for each
-   role such as ``student``, ``teacher``, ``staff`` and ``school_admin`` by adding a
+   role such as ``student``, ``teacher``, ``staff``, ``legal_guardian`` and ``school_admin`` by adding a
    mapping next to the ``users`` mapping suffixed by ``_$ROLE``,
    for example ``users_student: {}``.
 
@@ -905,6 +905,7 @@ the mapping looks like the following:
    * ``school_admin`` being the highest
    * ``staff``
    * ``teacher``
+   * ``legal_guardian``
    * and then ``student`` with the lowest priority.
 
 #. Find a ``users_$ROLE`` mapping from the ones configured in the plugin settings,
