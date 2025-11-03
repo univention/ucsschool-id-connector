@@ -772,6 +772,18 @@ receiving school:
         "ucsschoolSourceUID": "source_uid"
       }
 
+  .. versionadded:: 3.1.0
+
+    The following legal-guardian attributes are only allowed to be either configured both or not at all:
+
+    .. code-block:: json
+
+      {
+        // ...
+        "ucsschoolLegalGuardian": "legal_guardians",
+        "ucsschoolLegalWard": "legal_wards"
+      }
+
 Here is a complete example that you can also find in the section  :ref:`school-authority-mapping`.
 
 .. literalinclude:: ../examples/school_authority_kelvin.json
