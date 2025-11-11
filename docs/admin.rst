@@ -772,17 +772,27 @@ receiving school:
         "ucsschoolSourceUID": "source_uid"
       }
 
-  .. versionadded:: 3.1.0
+   .. versionadded:: 4.0.0
 
-    The following legal-guardian attributes are only allowed to be either configured both or not at all:
+      With UCS\@school 5.2v4, the new user role "Legal Guardian" has been introduced.
+      The ID-Connector supports this user role with version 4.0.0.
+      Beside the new user role, two new multi-value attributes were added:
+      ``ucsscholLegalGuardian`` for students and ``ucsschoolLegalWard`` for legal guardians.
+      For the ID Connector, these are only allowed to be either both configured or not at all:
 
-    .. code-block:: json
+      .. code-block:: json
 
-      {
-        // ...
-        "ucsschoolLegalGuardian": "legal_guardians",
-        "ucsschoolLegalWard": "legal_wards"
-      }
+        {
+          // ...
+          "ucsschoolLegalGuardian": "legal_guardians",
+          "ucsschoolLegalWard": "legal_wards"
+        }
+
+      When a student is synchronized and his ``ucsschoolLegalGuardian`` attribute
+      contains a legal guardian which does not yet exist on the target system, this legal guardian
+      will be omitted and the attribute will only be partially transferred.
+      The same applies for legal guardians and their ``ucsschoolLegalWard`` attribute.
+
 
 Here is a complete example that you can also find in the section  :ref:`school-authority-mapping`.
 
