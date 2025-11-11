@@ -6,12 +6,12 @@
 Changelog
 *********
 
-.. _3.1.0:
+.. _4.0.0:
 
-v3.1.0 (t.b.d.)
+v4.0.0 (2025-11-13)
 ===================
-
-* Added: The UCS\@school ID Connector now supports legal guardians (`https://docs.software-univention.de/ucsschool-import/latest/de/scenarios/legal-guardians.html#legal-guardians`).
+* Breaking: When users with the role "legal guardian" are used on the sender system, the :program:`UCS@school ID Connector` will synchronize them. This requires that the receiving system has :program:`UCS@school Kelvin REST API` version of at least 3.0.0.
+* Added: The :program:`UCS\@school ID Connector` now supports legal guardians, see `the related manual pages <https://docs.software-univention.de/ucsschool-import/latest/de/scenarios/legal-guardians.html#legal-guardians>`_.
 
 .. _3.0.4:
 
