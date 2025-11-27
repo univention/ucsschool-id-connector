@@ -138,6 +138,9 @@ class ConsoleAndFileLogging:
             path.parent.mkdir(mode=0o750, parents=True)
         except FileExistsError:
             pass
+        if not path.exists():
+            with open(path, "w"):
+                path.chmod(0o640)
         handler = WatchedFileHandler(path)
         handler.setFormatter(cls.get_formatter())
         return handler

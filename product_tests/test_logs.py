@@ -42,6 +42,11 @@ def test_logs_exist():
         assert os.path.exists(os.path.join(LOG_DIR, logfile))
 
 
+def test_log_permissions():
+    for logfile in ["http.log", "queues.log"]:
+        assert os.stat(os.path.join(LOG_DIR, logfile)).st_mode & 0o777 == 0o640
+
+
 def test_log_rotation():
     def _count_gz_files():
         log_stat = {
