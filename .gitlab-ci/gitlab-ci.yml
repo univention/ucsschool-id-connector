@@ -1,7 +1,23 @@
 include:
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/pre-commit@2
+    inputs:
+      commit_msg_hooks: "conventional-pre-commit issue-reference"
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/app-release@2
+    inputs:
+      app_id: "ucsschool-id-connector"
+      mail_sender: "ucsschool-maintainers@univention.de"
+      author_alias: "The ByteBenders"
+      changelog_link: "https://docs.software-univention.de/ucsschool-id-connector/HISTORY.html"
+      mail_recipient: "app-announcement@univention.de"
+      chat_destination: "#ucsschool"
+      ucs_base_version: "5.2"
+      appcenter_file_dir: appcenter
+      additional_update_appcenter_needs:
+        - job: build_docker_image
+          optional: true
+        - job: build_appcenter_dir
   - project: univention/infrastructure/docker-services
     file:
-    - pre-commit.yml
     - kaniko.yml
   - project: univention/dev/tooling/ci-components
     file:
@@ -15,112 +31,26 @@ stages:
   - tests
   - production
   - docs
+  - release
   - cleanup
 
 variables:
-  APP_BASE_VERSION: "999.0.0-staging"
-  APP_UCS_VERSION: "5.0"
-  APP_ID: "ucsschool-id-connector"
-  APP_NAME: "5.0/$APP_ID"
   ID_CONNECTOR_COVERAGE_LIMIT: "72"
-  FORCE_APPCENTER:
-    value: "false"
-    options:
-      - "true"
-      - "false"
-    description: "Force appcenter upload"
 
-create_app_version:
-  stage: prepare
-  extends: .create_app_version
-
-update_appcenter:
+build_appcenter_dir:
   stage: build
-  extends: .update_appcenter
-  needs:
-    - job: create_app_version
-    - job: build_docker_image
-      optional: true
   variables:
     APPCENTER_FILE_DIR: "appcenter_scripts/"
   script:
-    - cd "$APPCENTER_FILE_DIR"
+    - cp -r "$APPCENTER_FILE_DIR" appcenter/
+    - cd appcenter/
     - mv preinst.tmpl preinst
     - sed -i -e "/%LOGROTATE-TEMPLATE%/r ../files/logrotate.d/ucsschool-id-connector" -e "/%LOGROTATE-TEMPLATE%/d" preinst;
     - sed -i -e "/%ID-CONNECTOR-INFO%/r ../files/ucsschool-id-connector.univention-config-registry" -e "/%ID-CONNECTOR-INFO%/d" preinst;
     - sed -i -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/r ../files/ca-certificates/update.d/ucsschool-id-connector" -e "/%CA-CERTIFICATE-HOOK-TEMPLATE%/d" preinst;
-    - cd ..
-    - !reference [.update_appcenter, script]
-
-do_release:
-  stage: production
-  extends: .do_release
-
-create_gitlab_release:
-  stage: production
-  extends: .create_gitlab_release
-  needs: [do_release]
-  release:
-    assets:
-      links:
-        - name: "Changelog"
-          url: "https://docs.software-univention.de/ucsschool-id-connector/HISTORY.html"
-
-check_release:
-  stage: production
-  needs: [do_release, create_app_version]
-  extends: .check_release
-
-delete_app_version:
-  stage: cleanup
-  extends: .delete_app_version
-
-announce_app_chat:
-  stage: cleanup
-  rules:
-    - if: "$CI_COMMIT_TAG"
-  extends: .send_chat_message
-  variables:
-    ALIAS: "UCS@school Team"
-    DESTINATION: "#ucsschool"
-    MESSAGE: "The UCS@school ID Connector app was released in version $APP_VERSION. Changes can be found in the [Changelog](https://docs.software-univention.de/ucsschool-id-connector/HISTORY.html)."
-
-announce_app_mail:
-  stage: cleanup
-  rules:
-    - if: "$CI_COMMIT_TAG"
-  extends: .send_mail
-  variables:
-    SUBJECT: "App Release: UCS@school ID Connector"
-    RECIPIENT: "app-announcement@univention.de"
-    SENDER: "ucsschool-maintainers@univention.de"
-  before_script:
-    - |
-      cat >mail.txt<< EOF
-      Hello,
-      the UCS@school ID Connector has been released in version ${APP_VERSION}.
-
-      For changes, see https://docs.software-univention.de/ucsschool-id-connector/HISTORY.html
-
-      Best regards
-
-      The UCS@school Team
-      EOF
-
-
-run_pre_commit:
-  stage: lint
-  extends: .pre-commit
-  variables:
-    PRE_COMMIT_IMAGE: "docker-registry.knut.univention.de/knut/pre-commit-opa"
-
-lint_commit_messages:
-  stage: lint
-  needs: []
-  variables:
-    HOOK_IDS: "conventional-pre-commit issue-reference"
-  extends: .lint_commit_messages
-
+  artifacts:
+    paths:
+      - appcenter/
 
 build_product_tests:
   stage: build
