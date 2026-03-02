@@ -16,6 +16,7 @@ include:
         - job: build_docker_image
           optional: true
         - job: build_appcenter_dir
+        - job: build_changelog_html
   - project: univention/infrastructure/docker-services
     file:
     - kaniko.yml
@@ -51,6 +52,22 @@ build_appcenter_dir:
   artifacts:
     paths:
       - appcenter/
+
+build_changelog_html:
+  stage: build
+  image: gitregistry.knut.univention.de/univention/dev/docs/sphinx-docker/base:latest
+  before_script:
+    - apt-get update; apt-get install --assume-yes --no-install-recommends build-essential python3-dev pipx
+    - PIPX_BIN_DIR="/usr/local/bin" pipx install poetry==1.8.5
+    - poetry --directory=src export -f requirements.txt --output requirements.txt
+    - pip3 install -r requirements.txt
+  script:
+    - pip3 install lxml
+    - sed -i '/:numbered:/d' docs/index.rst
+    - ./build_appcenter_changelog.py
+  artifacts:
+    paths:
+      - changelog.html
 
 build_product_tests:
   stage: build

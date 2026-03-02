@@ -50,7 +50,7 @@ repos:
     hooks:
     -   id: bandit
         entry: bandit
-        exclude: ^src/tests|product_tests
+        exclude: ^src/tests|product_tests|build_appcenter_changelog.py
 -   repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.0.0
     hooks:
