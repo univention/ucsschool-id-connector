@@ -21,7 +21,7 @@ repos:
     -   id: python-use-type-annotations
     -   id: rst-backticks
 -   repo: https://github.com/PyCQA/doc8
-    rev: 'v1.0.0'
+    rev: 'v2.0.0'
     hooks:
         - id: doc8
           args: ['--ignore=D001']  # D001 Line too long
