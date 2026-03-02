@@ -57,16 +57,16 @@ bibtex_reference_style = "label"
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "uv-architecture": ("https://docs.software-univention.de/architecture/5.0/en/", None),
-    "uv-appcenter": ("https://docs.software-univention.de/app-center/5.0/en", None),
-    "uv-developer-reference": ("https://docs.software-univention.de/developer-reference/5.0/en", None),
-    "uv-manual": ("https://docs.software-univention.de/manual/5.0/en", None),
-    "uv-ucsschool-import": ("https://docs.software-univention.de/ucsschool-import/5.0/de", None),
+    "uv-architecture": ("https://docs.software-univention.de/architecture/5.2/en/", None),
+    "uv-appcenter": ("https://docs.software-univention.de/app-center/5.2/en", None),
+    "uv-developer-reference": ("https://docs.software-univention.de/developer-reference/5.2/en", None),
+    "uv-manual": ("https://docs.software-univention.de/manual/5.2/en", None),
+    "uv-ucsschool-import": ("https://docs.software-univention.de/ucsschool-import/5.2/de", None),
     "uv-ucsschool-kelvin-rest-api": (
         "https://docs.software-univention.de/ucsschool-kelvin-rest-api",
         None,
     ),
-    "uv-ucsschool-manual": ("https://docs.software-univention.de/ucsschool-manual/5.0/de", None),
+    "uv-ucsschool-manual": ("https://docs.software-univention.de/ucsschool-manual/5.2/de", None),
     "pluggy": ("https://pluggy.readthedocs.io/en/latest/", None),
 }
 
