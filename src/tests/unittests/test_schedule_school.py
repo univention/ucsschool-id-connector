@@ -44,7 +44,12 @@ def test_schedule_school(temp_dir_func, ldap_access_mock):
     appcenter_listener_path = temp_dir_func()
 
     module_name = "schedule_school"
-    path = Path(__file__).parent.parent.parent / module_name
+    path = (
+        Path(__file__).parent.parent.parent
+        / "ucsschool_id_connector"
+        / "scripts"
+        / (module_name + ".py")
+    )
     assert path.exists()
     loader = importlib.machinery.SourceFileLoader(module_name, str(path))
     spec = importlib.util.spec_from_loader(module_name, loader)
