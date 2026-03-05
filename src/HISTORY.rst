@@ -8,10 +8,11 @@ Changelog
 
 .. _4.0.0:
 
-v4.0.0 (2025-11-13)
+v4.0.0 (2026-03-05)
 ===================
-* Breaking: When users with the role "legal guardian" are used on the sender system, the :program:`UCS@school ID Connector` will synchronize them. This requires that the receiving system has :program:`UCS@school Kelvin REST API` version of at least 3.0.0.
-* Added: The :program:`UCS\@school ID Connector` now supports legal guardians, see `the related manual pages <https://docs.software-univention.de/ucsschool-import/latest/de/scenarios/legal-guardians.html#legal-guardians>`_.
+* Breaking: When users with the role "legal guardian" are used on the sender system, the :program:`UCS@school ID Connector` will synchronize them. This requires that the receiving system has :program:`UCS@school Kelvin REST API` version of at least 3.0.0 (Issue #97).
+* Breaking: Remove the deprecated symbolic link ``src/schedule_…``, the :program:`schedule_…` tools are now part of the ``PATH`` variable of the container. They can be used without the ``src/`` prefix (Issue #52).
+* Added: The :program:`UCS\@school ID Connector` now supports legal guardians, see `the related manual pages <https://docs.software-univention.de/ucsschool-import/latest/de/scenarios/legal-guardians.html#legal-guardians>`_ (Issue #97).
 
 .. _3.0.4:
 
