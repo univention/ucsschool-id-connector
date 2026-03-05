@@ -95,7 +95,7 @@ def random_school_name():
 def schedule_item():
     def _schedule_item(item_type, item_name):
         subprocess.check_output(
-            ["univention-app", "shell", "ucsschool-id-connector", f"src/schedule_{item_type}", item_name]
+            ["univention-app", "shell", "ucsschool-id-connector", f"schedule_{item_type}", item_name]
         )
 
     return _schedule_item
