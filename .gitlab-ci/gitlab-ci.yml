@@ -1,8 +1,8 @@
 include:
-  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/pre-commit@2
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/pre-commit@2.12.0
     inputs:
       commit_msg_hooks: "conventional-pre-commit issue-reference"
-  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/app-release@2
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/app-release@2.12.0
     inputs:
       app_id: "ucsschool-id-connector"
       mail_sender: "ucsschool-maintainers@univention.de"
