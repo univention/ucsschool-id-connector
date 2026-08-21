@@ -6,11 +6,15 @@
   "commitBody": "Issue univention/dev/education/ucsschool-id-connector#96",
   "packageRules": [
     {
-      "matchPackageNames": ["pydantic"],
+      "matchPackageNames": [
+        "pydantic"
+      ],
       "allowedVersions": "<2"
     },
     {
-      "matchPackageNames": ["pytest-asyncio"],
+      "matchPackageNames": [
+        "pytest-asyncio"
+      ],
       "allowedVersions": "<0.22.0"
     }
   ],
@@ -18,7 +22,10 @@
     {
       "customType": "regex",
       "description": "Update _VERSION variables in Dockerfiles",
-      "fileMatch": ["(^|/|\\.)Dockerfile$", "(^|/)Dockerfile\\.[^/]*$"],
+      "managerFilePatterns": [
+        "/(^|/|\\.)Dockerfile$/",
+        "/(^|/)Dockerfile\\.[^/]*$/"
+      ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s(?:ENV|ARG) .+?_VERSION=(?<currentValue>.+?)\\s"
       ]
