@@ -125,7 +125,7 @@ you need to make sure to know about the following aspects of a UCS environment.
          For more information, see the following resources:
 
          * :ref:`app-settings` in :cite:t:`uv-appcenter`
-         * :ref:`appcenter-configure` in :cite:t:`uv-manual`
+         * :ref:`software-appcenter` in :cite:t:`uv-manual`
 
 
    |UAS| basics
