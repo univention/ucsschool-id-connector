@@ -1,125 +1,63 @@
-# docu pipelines
+# The documentation child pipeline, triggered by the 'documentation' job in
+# '.gitlab-ci/gitlab-ci.yml'.
+#
+# Building and checking the documentation, and publishing it to
+# docs.software-univention.de, come from the 'sphinx-docs' component. The
+# component brings the sphinx templates with it, pinned to a tag, so there is no
+# 'univention/dev/docs/sphinx-docker' include here any more.
 
 include:
-  - project: "univention/dev/docs/sphinx-docker"
-    file: "pipeline/sphinx.yml"
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/sphinx-docs@2.16.0
+    inputs:
+      docs_dir: "docs"
+      doc_target_name: "ucsschool-id-connector"
+      job_rules:
+        - changes: &docs_changes
+            - "docs/**/*"
+            - "src/HISTORY.rst"
+      merge_rules:
+        - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+          changes: *docs_changes
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+          changes: *docs_changes
+          when: manual
+      production_rules:
+        - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+          changes: *docs_changes
+      # The documentation imports the project's own code, so its dependencies
+      # have to be there before sphinx runs.
+      before_script:
+        - apt-get update; apt-get install --assume-yes --no-install-recommends build-essential python3-dev pipx
+        - PIPX_BIN_DIR="/usr/local/bin" pipx install poetry==1.8.5
+        - poetry --directory=src export -f requirements.txt --output requirements.txt
+        - pip3 install -r requirements.txt
 
 stages:
   - build
   - merge
-  - review
   - staging
   - production
 
-variables:
-  # Check the README for more information about the variables:
-  # https://git.knut.univention.de/univention/dev/docs/sphinx-docker/-/blob/main/README.rst
-  DOCS_DIR: "docs"
-  DOC_TARGET_NAME: "ucsschool-id-connector"
-
-.docs-before-script:
-  before_script:
-    - apt-get update; apt-get install --assume-yes --no-install-recommends build-essential python3-dev pipx
-    - PIPX_BIN_DIR="/usr/local/bin" pipx install poetry==1.8.5
-    - poetry --directory=src export -f requirements.txt --output requirements.txt
-    - pip3 install -r requirements.txt
-
-docs-linkcheck:
-  extends:
-    - .sphinx-linkcheck-template
-    - .docs-before-script
-  rules:
-    - changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-
-docs-spelling:
-  extends:
-    - .sphinx-spelling-template
-    - .docs-before-script
-  rules:
-    - changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-
-docs-html:
-  extends:
-    - .sphinx-html-template
-    - .docs-before-script
-  rules:
-    - changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-
-docs-pdf:
-  extends:
-    - .sphinx-pdf-template
-    - .docs-before-script
-  rules:
-    - changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-
-docs-merge-to-one-artifact:
-  extends: .sphinx-merge-template
-  needs:
-    - job: docs-html
-    - job: docs-pdf
-    - job: docs-spelling
-      artifacts: false
-    - job: docs-linkcheck
-      artifacts: false
-  rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
-      changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-      when: manual
-
-pages-review-url:
-  stage: review
-  script:
-    - echo "DOC_REVIEW_URL=${CI_SERVER_PROTOCOL}://${CI_PROJECT_ROOT_NAMESPACE}.${CI_PAGES_DOMAIN}/-/${CI_PROJECT_PATH#${CI_PROJECT_ROOT_NAMESPACE}/}/-/jobs/$CI_JOB_ID/artifacts/out/$DOC_TARGET_NAME/index.html" > pages_review_url.env
-  artifacts:
-    reports:
-      dotenv: pages_review_url.env
-    paths:
-      - $CI_PROJECT_DIR/out
-  rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
-      changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-
-pages-review:
-  stage: review
-  needs:
-    - job: pages-review-url
-  script:
-    - "true"
-  environment:
-    name: review/docs/$CI_COMMIT_REF_NAME
-    url: $DOC_REVIEW_URL
-  rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
-      changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
-
+# Publishing to this project's own Pages site is not part of the component:
+# it is the one thing the projects using it do differently.
+#
+# NOTE: this job does not currently deploy anything. A job publishes to Pages
+# only if it is named 'pages' or carries the 'pages' keyword, and this is
+# neither, so it has produced a 'public' artifact and nothing else since 2023 --
+# the project's only Pages deployment outside the Allure reports is from
+# 2023-08-17. Left as it was rather than fixed here, because starting to deploy
+# would replace what is served at the root of the Pages site.
 pages-staging:
   stage: staging
   rules:
-    - changes:
-        - $DOCS_DIR/**/*
-        - "src/HISTORY.rst"
+    - changes: *docs_changes
       if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
   image: $GIT_SYNC
   needs:
-    - job: docs-merge-to-one-artifact
+    - job: "docs:merge"
+  variables:
+    # The component sets this per job now, not globally.
+    DOC_TARGET_NAME: "ucsschool-id-connector"
   script:
     - mv "$CI_PROJECT_DIR"/out/"$DOC_TARGET_NAME" public
   environment:
@@ -129,6 +67,8 @@ pages-staging:
     paths:
       - public
 
+# Records the deployment of the production documentation. The merge request that
+# actually publishes it is 'docs:production-merge-request', from the component.
 pages-production:
   stage: production
   script:
@@ -138,18 +78,4 @@ pages-production:
     url: https://docs.software-univention.de/ucsschool-id-connector/
   rules:
     - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
-      changes:
-        - docs/**/*
-        - "src/HISTORY.rst"
-
-# The template has inherit:variables:false to prevent the passing of pipeline
-# variables to downstream, and therefore $DOCS_DIR is not available here.
-docs-create-production-merge-request:
-  extends: .sphinx-docs-merge-request-template
-  needs:
-    - job: docs-merge-to-one-artifact
-  rules:
-    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
-      changes:
-        - docs/**/*
-        - "src/HISTORY.rst"
+      changes: *docs_changes
