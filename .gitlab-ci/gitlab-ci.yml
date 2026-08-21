@@ -17,10 +17,7 @@ include:
           optional: true
         - job: build_appcenter_dir
         - job: build_changelog_html
-  # Pinned to the branch the component is developed on, so this pipeline follows
-  # it while it is being tested. Has to become a tag before this is merged:
-  # renovate skips a component reference that is not a full version.
-  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/allure@juern/allure-component
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/allure@2.15.0
     inputs:
       report_stage: report
       publish_stage: publish
