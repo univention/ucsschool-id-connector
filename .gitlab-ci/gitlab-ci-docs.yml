@@ -63,8 +63,25 @@ pages-staging:
     - changes: *docs_changes
       if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
   image: $GIT_SYNC
+  # The two build jobs directly, rather than 'docs:merge'. Both write into
+  # 'out/<target>' -- the HTML from one, the PDF from the other -- so their
+  # artifacts land on top of each other and the directory is complete without
+  # the merge.
+  #
+  # 'docs:merge' is manual on the default branch, and
+  # 'docs:production-merge-request' hangs off it. Needing it here meant the only
+  # way to refresh this site was a click that also opened a merge request
+  # against docs.univention.de. Now the preview publishes by itself and going to
+  # production stays the deliberate act it should be.
+  #
+  # Both jobs are needed, not just the HTML: conf.py sets
+  # 'pdf_download_filename', so the rendered pages carry a download link that
+  # would otherwise 404 here.
   needs:
-    - job: "docs:merge"
+    - job: "docs:html"
+      artifacts: true
+    - job: "docs:pdf"
+      artifacts: true
   variables:
     # The component sets this per job now, not globally.
     DOC_TARGET_NAME: "ucsschool-id-connector"
