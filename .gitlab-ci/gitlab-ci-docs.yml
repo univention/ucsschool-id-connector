@@ -41,14 +41,24 @@ stages:
 # Publishing to this project's own Pages site is not part of the component:
 # it is the one thing the projects using it do differently.
 #
-# NOTE: this job does not currently deploy anything. A job publishes to Pages
-# only if it is named 'pages' or carries the 'pages' keyword, and this is
-# neither, so it has produced a 'public' artifact and nothing else since 2023 --
-# the project's only Pages deployment outside the Allure reports is from
-# 2023-08-17. Left as it was rather than fixed here, because starting to deploy
-# would replace what is served at the root of the Pages site.
+# This job never published anything. A job reaches Pages only if it is named
+# 'pages' or carries the 'pages' keyword, and it was neither, so it built a
+# 'public' artifact that nothing collected. The site kept serving the upload
+# from 2023-08-17 -- documentation for 2.2.7, while the project is on 4.0.0 --
+# and the environment below advertised it as available the whole time.
+#
+# The 'pages' keyword fixes that without renaming the job. Naming it 'pages',
+# which is how ucsschool-kelvin-rest-api does the same thing, is the older form
+# and is deprecated; the keyword is what replaced it.
+#
+# No 'path_prefix', so this is the site's main deployment: it replaces what is
+# at the root, which is the point, and it does not expire. The Allure reports
+# live under 'allure-<ref>' prefixes and are untouched -- a deployment only
+# replaces the ones carrying the same prefix.
 pages-staging:
   stage: staging
+  pages:
+    publish: public
   rules:
     - changes: *docs_changes
       if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
