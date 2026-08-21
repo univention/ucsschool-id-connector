@@ -34,8 +34,12 @@ include:
             REGISTRY_IMAGE: "$REGISTRY/ucsschool/ucsschool-id-connector"
         - if: $CI_MERGE_REQUEST_ID
         - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      # 'app_id' is spelled out rather than passed as '$APP_ID': no job but
+      # 'create_app_version' defines that variable, so the image used to be
+      # labelled with an empty app id. Keep it in step with the 'app_id' input
+      # of the app-release component above.
       build_args: |
-        app_id=$APP_ID
+        app_id=ucsschool-id-connector
         commit=$CI_COMMIT_SHA
         date=$CI_JOB_STARTED_AT
       # Kaniko pushed the build cache to this project's registry even on a tag,
