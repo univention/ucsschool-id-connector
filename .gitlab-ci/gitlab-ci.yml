@@ -112,7 +112,10 @@ tests:
     - pip3 install -r /ucsschool-id-connector/requirements-test.txt
     - python3 -m pytest -lvv --disable-warnings --junitxml=report.xml --alluredir=allure-results --cov=. --cov-report term-missing --color=yes --cov-fail-under="$ID_CONNECTOR_COVERAGE_LIMIT" tests/unittests
     - cd ${CI_PROJECT_DIR}
-    - python3 -m coverage xml --data-file=src/.coverage -o src/coverage.xml
+    # '--ignore-errors' because the tests write a randomly named plugin into
+    # 'plugins/plugins' and delete it again, and generating the report is a
+    # step of its own now: the file is gone by the time it runs.
+    - python3 -m coverage xml --ignore-errors --data-file=src/.coverage -o src/coverage.xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     # A failed test run is the one the Allure report is wanted for, so the
