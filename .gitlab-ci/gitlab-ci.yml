@@ -25,9 +25,23 @@ include:
       # A nightly schedule fills the history faster than the default 20 runs
       # cover: keep about two months of trend instead of three weeks.
       history_limit: "60"
-  - project: univention/infrastructure/docker-services
-    file:
-    - kaniko.yml
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/buildkit@2.15.0
+    inputs:
+      job_rules:
+        - if: "$CI_COMMIT_TAG"
+          variables:
+            REGISTRY: "artifacts.software-univention.de"
+            REGISTRY_IMAGE: "$REGISTRY/ucsschool/ucsschool-id-connector"
+        - if: $CI_MERGE_REQUEST_ID
+        - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      build_args: |
+        app_id=$APP_ID
+        commit=$CI_COMMIT_SHA
+        date=$CI_JOB_STARTED_AT
+      # Kaniko pushed the build cache to this project's registry even on a tag,
+      # where the image itself goes to the public one. Without this the cache
+      # would follow 'REGISTRY_IMAGE' there.
+      cache_image: "$CI_REGISTRY_IMAGE/cache"
   - project: univention/dev/tooling/ci-components
     file:
     - fragments/misc.yaml
@@ -85,20 +99,6 @@ build_product_tests:
   script:
     - tar -czvf product_tests.tar.gz product_tests
     - 'curl --fail-with-body --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file product_tests.tar.gz "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/product_tests/0.0.1/product_tests.tar.gz"'
-
-build_docker_image:
-  stage: build
-  extends: .kaniko
-  rules:
-    - if: "$CI_COMMIT_TAG"
-      variables:
-        REGISTRY: "artifacts.software-univention.de"
-        REGISTRY_IMAGE: "$REGISTRY/ucsschool/ucsschool-id-connector"
-    - if: $CI_MERGE_REQUEST_ID
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  variables:
-      KANIKO_BUILD_CONTEXT: "$CI_PROJECT_DIR/"
-      KANIKO_ARGS: --build-arg app_id="$APP_ID" --build-arg commit="$CI_COMMIT_SHA" --build-arg date="$CI_JOB_STARTED_AT" --cache=true --cache-repo $CI_REGISTRY_IMAGE/cache --cache-copy-layers
 
 tests:
   stage: tests
