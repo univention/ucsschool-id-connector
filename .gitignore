@@ -34,6 +34,8 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+allure-results/
+allure-report/
 .hypothesis/
 .pytest_cache/
 *.mo

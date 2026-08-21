@@ -17,6 +17,14 @@ include:
           optional: true
         - job: build_appcenter_dir
         - job: build_changelog_html
+  # Pinned to the branch the component is developed on, so this pipeline follows
+  # it while it is being tested. Has to become a tag before this is merged:
+  # renovate skips a component reference that is not a full version.
+  - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/allure@juern/allure-component
+    inputs:
+      report_stage: report
+      publish_stage: publish
+      results_paths: "src/allure-results"
   - project: univention/infrastructure/docker-services
     file:
     - kaniko.yml
@@ -30,6 +38,8 @@ stages:
   - lint
   - build
   - tests
+  - report
+  - publish
   - production
   - docs
   - release
@@ -100,13 +110,17 @@ tests:
   script:
     - cd ${CI_PROJECT_DIR}/src
     - pip3 install -r /ucsschool-id-connector/requirements-test.txt
-    - python3 -m pytest -lvv --disable-warnings --junitxml=report.xml --cov=. --cov-report term-missing --color=yes --cov-fail-under="$ID_CONNECTOR_COVERAGE_LIMIT" tests/unittests
+    - python3 -m pytest -lvv --disable-warnings --junitxml=report.xml --alluredir=allure-results --cov=. --cov-report term-missing --color=yes --cov-fail-under="$ID_CONNECTOR_COVERAGE_LIMIT" tests/unittests
     - cd ${CI_PROJECT_DIR}
     - python3 -m coverage xml --data-file=src/.coverage -o src/coverage.xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
+    # A failed test run is the one the Allure report is wanted for, so the
+    # results have to be uploaded then too.
+    when: always
     paths:
       - src/coverage.xml
+      - src/allure-results
     reports:
       junit: src/report.xml
       coverage_report:
