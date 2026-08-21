@@ -22,6 +22,9 @@ include:
       report_stage: report
       publish_stage: publish
       results_paths: "src/allure-results"
+      # A nightly schedule fills the history faster than the default 20 runs
+      # cover: keep about two months of trend instead of three weeks.
+      history_limit: "60"
   - project: univention/infrastructure/docker-services
     file:
     - kaniko.yml
@@ -135,6 +138,12 @@ documentation:
     strategy: depend
   needs: ["run_pre_commit"]
   rules:
+    # 'changes' matches everything in a scheduled pipeline, and on the default
+    # branch the child pipeline republishes the documentation and records a
+    # deployment of the production docs environment. Neither should happen
+    # nightly without a documentation change behind it.
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
     - changes:
       - docs/**/*
       - "src/HISTORY.rst"
