@@ -100,9 +100,13 @@ tests:
   script:
     - cd ${CI_PROJECT_DIR}/src
     - pip3 install -r /ucsschool-id-connector/requirements-test.txt
-    - python3 -m pytest -lvv --disable-warnings --junitxml=report.xml --cov=. --cov-report term-missing --color=yes --cov-fail-under="$ID_CONNECTOR_COVERAGE_LIMIT" --cov-report xml:coverage.xml tests/unittests
+    - python3 -m pytest -lvv --disable-warnings --junitxml=report.xml --cov=. --cov-report term-missing --color=yes --cov-fail-under="$ID_CONNECTOR_COVERAGE_LIMIT" tests/unittests
+    - cd ${CI_PROJECT_DIR}
+    - python3 -m coverage xml --data-file=src/.coverage -o src/coverage.xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
+    paths:
+      - src/coverage.xml
     reports:
       junit: src/report.xml
       coverage_report:

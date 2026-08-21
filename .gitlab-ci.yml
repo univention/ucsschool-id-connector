@@ -22,7 +22,10 @@ include:
   - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/sonarqube@2.12.0
     inputs:
       job_name: "build-sonar"
-      stage: build
+      stage: tests
+      job_needs:
+        - job: tests
+          artifacts: true
     rules:
       - if: $RUN_RENOVATE != "yes"
   - component: $CI_SERVER_FQDN/univention/dev/tooling/ci-components/renovate@2.12.0
