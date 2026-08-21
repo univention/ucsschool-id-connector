@@ -1,0 +1,34 @@
+# Ruff replaces the black, isort, flake8, bandit and seed-isort-config hooks.
+# The settings below are the ones those tools were configured with, in '.black',
+# '.isort.cfg' and '.flake8'.
+line-length = 105
+target-version = "py311"
+extend-exclude = ["venv"]
+
+[lint]
+# E, W: pycodestyle; F: pyflakes; I: isort; S: flake8-bandit.
+# The two single rules replace a pygrep hook each: G010 'python-no-log-warn',
+# PGH004 'python-check-blanket-noqa'. S307 covers 'python-no-eval'.
+select = ["E", "F", "W", "I", "S", "G010", "PGH004"]
+# E203: whitespace before ':', E231: missing whitespace after ',', ';' or ':' --
+# both disagree with the formatter. E266: too many leading '#' for a block
+# comment. C901 and W503 were ignored for flake8 as well; ruff has no W503 and
+# does not check complexity unless C90 is selected.
+ignore = ["E203", "E231", "E266"]
+
+[lint.per-file-ignores]
+# The paths that were excluded from bandit.
+"src/tests/**" = ["S"]
+"product_tests/**" = ["S"]
+"build_appcenter_changelog.py" = ["S"]
+# isort skipped this file: it sets up 'sys.path' before it imports from it.
+"src/tests/conftest.py" = ["I"]
+
+[lint.isort]
+known-first-party = [
+    "ucsschool",
+    "ucsschool_id_connector",
+    "ucsschool_id_connector_defaults",
+    "udm_rest_client",
+]
+combine-as-imports = true

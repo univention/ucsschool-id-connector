@@ -62,20 +62,16 @@ AddModifyObject = TypeVar("AddModifyObject", bound=ListenerAddModifyObject)
 RemoveObject = TypeVar("RemoveObject", bound=ListenerRemoveObject)
 
 
-class ConfigurationError(Exception):
-    ...
+class ConfigurationError(Exception): ...
 
 
-class MissingData(Exception):
-    ...
+class MissingData(Exception): ...
 
 
-class SkipAttribute(Exception):
-    ...
+class SkipAttribute(Exception): ...
 
 
-class UniquenessError(Exception):
-    ...
+class UniquenessError(Exception): ...
 
 
 class UnknownSchool(Exception):
@@ -84,8 +80,7 @@ class UnknownSchool(Exception):
         super().__init__(*args)
 
 
-class ObjectNotFoundError(Exception):
-    ...
+class ObjectNotFoundError(Exception): ...
 
 
 class PerSchoolAuthorityDispatcherBase(abc.ABC):

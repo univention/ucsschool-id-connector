@@ -142,5 +142,5 @@ class IDConnectorService:
 
 
 def main():
-    service = IDConnectorService()  # nosec
+    service = IDConnectorService()
     service.run()

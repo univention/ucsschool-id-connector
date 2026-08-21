@@ -134,7 +134,7 @@ def school_auth_host_configs(docker_hostname: str, http_request) -> Dict[str, st
         configs[f"traeger{i}"] = resp.text.strip("\n")
         resp = http_request(
             "get",
-            f"https://Administrator:univention@{configs[f'traeger{i}']}" f"/univention/udm/ldap/base/",
+            f"https://Administrator:univention@{configs[f'traeger{i}']}/univention/udm/ldap/base/",
             headers={"Accept": "application/json"},
             verify=False,
         )
@@ -569,7 +569,7 @@ def create_schools(docker_hostname, random_name, create_school):
         auth_school_mapping = dict()
 
     async def _create_schools(
-        school_authorities: List[Tuple[SchoolAuthorityConfiguration, int]]
+        school_authorities: List[Tuple[SchoolAuthorityConfiguration, int]],
     ) -> Dict[str, List[str]]:
         """
         Creates a number of OUs per school authority as specified. If OUs are

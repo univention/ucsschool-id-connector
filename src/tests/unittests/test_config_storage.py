@@ -46,8 +46,9 @@ async def test_load_school_authorities_empty(temp_dir_func):
     """handle no configs exist"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
-        "ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir
+    with (
+        patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
     ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         async for read_sac in cs.load_school_authorities():
@@ -70,8 +71,9 @@ async def test_load_school_authorities(api, temp_dir_func, school_authority_conf
     sac_dict["plugin_configs"][api][password] = sac.plugin_configs[api][password].get_secret_value()
     with open(sac_dir / f"{sac.name}.json", "w") as fp:
         json.dump(sac_dict, fp)
-    with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
-        "ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir
+    with (
+        patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
     ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         async for read_sac in cs.load_school_authorities():
@@ -87,8 +89,9 @@ async def test_delete_school_authority_non_existent(temp_dir_func):
     """handle missing file"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
-        "ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir
+    with (
+        patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
     ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         await cs.delete_school_authority(fake.user_name())
@@ -99,8 +102,9 @@ async def test_delete_school_authority_not_a_file(temp_dir_func):
     """handle directory instead of file"""
     log_dir = temp_dir_func()
     sac_dir = temp_dir_func()
-    with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
-        "ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir
+    with (
+        patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
     ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         name = fake.user_name()
@@ -124,8 +128,9 @@ async def test_delete_school_authority(api, temp_dir_func, school_authority_conf
     sac_dict["plugin_configs"][api][password] = sac.plugin_configs[api][password].get_secret_value()
     with open(sac_dir / f"{sac.name}.json", "w") as fp:
         json.dump(sac_dict, fp)
-    with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
-        "ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir
+    with (
+        patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
     ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         await cs.delete_school_authority(sac.name)
@@ -147,8 +152,9 @@ async def test_save_school_authorities(api, temp_dir_func, school_authority_conf
     sac1_dict["plugin_configs"][api][password] = sac1.plugin_configs[api][password].get_secret_value()
     sac2_dict = sac2.dict()
     sac2_dict["plugin_configs"][api][password] = sac2.plugin_configs[api][password].get_secret_value()
-    with patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir), patch(
-        "ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir
+    with (
+        patch("ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH", sac_dir),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
     ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         await cs.save_school_authorities([sac1, sac2])
@@ -169,10 +175,13 @@ async def test_load_school2target_mapping(temp_dir_func):
     s2sam_dict = {"mapping": fake.pydict(100, True, str)}
     with open(s2sam_file, "w") as fp:
         json.dump(s2sam_dict, fp)
-    with patch(
-        "ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH",
-        s2sam_dir,
-    ), patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir):
+    with (
+        patch(
+            "ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH",
+            s2sam_dir,
+        ),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
+    ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         s2sam = await cs.load_school2target_mapping(s2sam_file)
     assert s2sam.dict() == s2sam_dict
@@ -187,10 +196,13 @@ async def test_save_school2target_mapping(temp_dir_func):
     s2sam = ucsschool_id_connector.models.School2SchoolAuthorityMapping(
         mapping=fake.pydict(100, True, str)
     )
-    with patch(
-        "ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH",
-        s2sam_dir,
-    ), patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir):
+    with (
+        patch(
+            "ucsschool_id_connector.config_storage.SCHOOL_AUTHORITIES_CONFIG_PATH",
+            s2sam_dir,
+        ),
+        patch("ucsschool_id_connector.config_storage.LOG_FILE_PATH_QUEUES", log_dir),
+    ):
         cs = ucsschool_id_connector.config_storage.ConfigurationStorage()
         await cs.save_school2target_mapping(s2sam, s2sam_file)
     with open(s2sam_file, "r") as fp:

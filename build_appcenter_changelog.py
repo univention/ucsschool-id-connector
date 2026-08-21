@@ -18,7 +18,7 @@ def extract_changelog_section():
 
 
 def wrap_changelog(changelog):
-    html = "<div>\n" f"{changelog}\n" "</div>"
+    html = f"<div>\n{changelog}\n</div>"
     return html
 
 

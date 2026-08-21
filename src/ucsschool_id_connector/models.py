@@ -95,8 +95,7 @@ class UnknownSchoolUserRole(Exception):
         super().__init__(*args, **kwargs)
 
 
-class ListenerOldDataEntry(BaseModel, abc.ABC):
-    ...
+class ListenerOldDataEntry(BaseModel, abc.ABC): ...
 
 
 class ListenerGroupOldDataEntry(ListenerOldDataEntry):
@@ -267,7 +266,7 @@ class ListenerUserAddModifyObject(ListenerAddModifyObject):
                 return ou_from_dn
             else:
                 logger.error(
-                    "OU found in DN (%r) not in 'school' attribute (%r) of user with " "DN %r.",
+                    "OU found in DN (%r) not in 'school' attribute (%r) of user with DN %r.",
                     ou_from_dn,
                     self.object["school"],
                     self.dn,

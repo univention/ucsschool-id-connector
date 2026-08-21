@@ -118,7 +118,7 @@ async def _do_request(  # noqa: C901
                 response_body = await _get_error_msg(response)
                 logger.error("Response body: %r", response_body)
                 if len(response_body) > 500:
-                    error_file = "/tmp/error.txt"  # nosec
+                    error_file = "/tmp/error.txt"  # noqa: S108
                     async with aiofiles.open(error_file, "w") as fp:
                         await fp.write(response_body)
                     logger.error("Wrote response body to %r", error_file)

@@ -77,8 +77,7 @@ from .output_plugin_handler_base import (
 RemoteUser = TypeVar("RemoteUser", bound=RemoteObject)
 
 
-class UserNotFoundError(ObjectNotFoundError):
-    ...
+class UserNotFoundError(ObjectNotFoundError): ...
 
 
 class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc.ABC):
@@ -130,7 +129,7 @@ class PerSchoolAuthorityUserDispatcherBase(PerSchoolAuthorityDispatcherBase, abc
         else:
             old_record_uid = old_source_uid = old_schools = "<no old_data>"
         self.logger.debug(
-            "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) " "source_uid=(%r->%r).",
+            "User %r has old->new schools=(%r->%r) record_uid=(%r->%r) source_uid=(%r->%r).",
             obj.username,
             old_schools,
             [s for s in obj.schools if s in schools_ids],

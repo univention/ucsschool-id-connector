@@ -15,7 +15,7 @@ import datetime
 
 from ucsschool.importer.utils.user_pyhook import UserPyHook
 
-PASSWORD_TARGET_ATTRIBUT = "ucsschool_id_connector_pw"  # nosec
+PASSWORD_TARGET_ATTRIBUT = "ucsschool_id_connector_pw"  # noqa: S105
 
 
 class PasswordSync(UserPyHook):

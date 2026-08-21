@@ -97,7 +97,7 @@ def setup_for_sync(authority: str, school: str, admin_token: str):
         headers=headers,
         data=json.dumps(mapping),
     )
-    assert mapping_response.status_code == 200, faulty_request_response(mapping_response, 200)  # nosec
+    assert mapping_response.status_code == 200, faulty_request_response(mapping_response, 200)
 
     config_response = requests.post(
         "http://sender/ucsschool-id-connector/api/v1/school_authorities",
@@ -107,4 +107,4 @@ def setup_for_sync(authority: str, school: str, admin_token: str):
     if config_response.status_code == 400:
         assert "already exists" in config_response.text
     else:
-        assert config_response.status_code == 201, faulty_request_response(config_response, 201)  # nosec
+        assert config_response.status_code == 201, faulty_request_response(config_response, 201)

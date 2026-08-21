@@ -54,9 +54,12 @@ def test_schedule_group(temp_dir_func, ldap_access_mock):
     spec = importlib.util.spec_from_loader(module_name, loader)
     module = importlib.util.module_from_spec(spec)
 
-    with patch("ucsschool_id_connector.group_scheduler.LDAPAccess", ldap_access_mock), patch(
-        "ucsschool_id_connector.group_scheduler.APPCENTER_LISTENER_PATH",
-        appcenter_listener_path,
+    with (
+        patch("ucsschool_id_connector.group_scheduler.LDAPAccess", ldap_access_mock),
+        patch(
+            "ucsschool_id_connector.group_scheduler.APPCENTER_LISTENER_PATH",
+            appcenter_listener_path,
+        ),
     ):
         spec.loader.exec_module(module)
         schedule = getattr(module, "schedule")

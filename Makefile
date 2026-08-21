@@ -51,13 +51,12 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr src/.pytest_cache
 
 lint: ## check style (requires Python interpreter activated from venv)
-	isort --check-only src src/queue_management src/schedule_user
-	black --config .black --check src src/queue_management src/schedule_user
-	flake8 src src/queue_management src/schedule_user
+	ruff check .
+	ruff format --check .
 
 format: ## format source code (requires Python interpreter activated from venv)
-	isort src src/schedule_user src/schedule_group src/schedule_school
-	black --config .black src src/schedule_user src/schedule_group src/schedule_school
+	ruff check --fix .
+	ruff format .
 
 test: ## run tests with the Python interpreter from 'venv'
 	python3 -m pytest -l -v src/tests/unittests

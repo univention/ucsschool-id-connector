@@ -56,7 +56,7 @@ def test_admin_api_login(udm, make_dn, hostname):
     response = requests.post(
         f"https://{hostname}/ucsschool-id-connector/api/token", headers=headers, data=data
     )
-    assert response.status_code == 200, faulty_request_response(response, 200)  # nosec
+    assert response.status_code == 200, faulty_request_response(response, 200)
 
 
 @pytest.mark.parametrize(
@@ -84,7 +84,7 @@ def test_api_login_faulty_credentials(hostname, username, password):
     response = requests.post(
         f"https://{hostname}/ucsschool-id-connector/api/token", headers=headers, data=data
     )
-    assert response.status_code == 401, faulty_request_response(response, 401)  # nosec
+    assert response.status_code == 401, faulty_request_response(response, 401)
 
 
 def test_create_and_patch_empty_school_authority(admin_token, hostname, random_school_name):
@@ -109,7 +109,7 @@ def test_create_and_patch_empty_school_authority(admin_token, hostname, random_s
         headers=headers,
         data=create_data,
     )
-    assert post_response.status_code == 201, faulty_request_response(post_response, 201)  # nosec
+    assert post_response.status_code == 201, faulty_request_response(post_response, 201)
 
     patch_data = json.dumps({"plugin_configs": {"foo": {"bar": 123}}})
     patch_response = requests.patch(
@@ -123,7 +123,7 @@ def test_create_and_patch_empty_school_authority(admin_token, hostname, random_s
     queue_response = requests.get(
         f"https://{hostname}/ucsschool-id-connector/api/v1/queues", headers=headers
     )
-    assert queue_response.status_code == 200, faulty_request_response(queue_response, 200)  # nosec
+    assert queue_response.status_code == 200, faulty_request_response(queue_response, 200)
 
     queue_item = {"name": pt_name, "head": "", "length": 0, "school_authority": pt_name}
 

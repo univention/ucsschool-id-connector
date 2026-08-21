@@ -72,11 +72,10 @@ KELVIN_API_SCHOOL_ATTRIBUTES = {
     "legal_guardians",
     "ucsschool_roles",
 }
-KELVIN_API_PASSWORD_HASHES_ATTRIBUTE = "kelvin_password_hashes"  # nosec
+KELVIN_API_PASSWORD_HASHES_ATTRIBUTE = "kelvin_password_hashes"  # noqa: S105
 
 
-class SSLCACertificateDownloadError(Exception):
-    ...
+class SSLCACertificateDownloadError(Exception): ...
 
 
 class KelvinPerSAUserDispatcher(PerSchoolAuthorityUserDispatcherBase):

@@ -183,9 +183,9 @@ and run the `renovate pipeline <https://git.knut.univention.de/univention/compon
 .. |python| image:: https://img.shields.io/badge/python-3-blue.svg
     :alt: Python 3
     :target: https://www.python.org/
-.. |code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :alt: Code style: black
-    :target: https://github.com/psf/black
+.. |code style| image:: https://img.shields.io/badge/code%20style-ruff-000000.svg
+    :alt: Code style: ruff
+    :target: https://github.com/astral-sh/ruff
 .. |renovate| image:: https://img.shields.io/badge/renovate-enabled-brightgreen.svg
    :alt: Renovate enabled
    :target: https://git.knut.univention.de/univention/components/ucsschool-id-connector/-/issues/67

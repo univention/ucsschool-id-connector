@@ -331,8 +331,7 @@ async def test_delete_user(
     user = await UserResource(session=kelvin_session(docker_hostname)).get(name=sender_user["name"])
     await user.delete()
     print(
-        f"User {sender_user['name']!r} was deleted in sender, waiting for it to "
-        f"disappear in ou_auth1..."
+        f"User {sender_user['name']!r} was deleted in sender, waiting for it to disappear in ou_auth1..."
     )
     await wait_for_kelvin_object_not_exists(
         resource_cls=UserResource,
@@ -589,9 +588,9 @@ async def test_class_change(
             )
         except AssertionError:
             time_taken = time.time() - start
-            assert (
-                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
-            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            assert time_taken < WAIT_FOR_REPLICATION_TIMEOUT, (
+                f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            )
 
 
 @pytest.mark.asyncio
@@ -667,9 +666,9 @@ async def test_school_change(
             )
         except AssertionError:
             time_taken = time.time() - start
-            assert (
-                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
-            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            assert time_taken < WAIT_FOR_REPLICATION_TIMEOUT, (
+                f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            )
 
 
 @pytest.mark.parametrize("role", ["student", "teacher"])
@@ -751,9 +750,9 @@ async def test_change_school_and_schools(
             )
         except AssertionError:
             time_taken = time.time() - start
-            assert (
-                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
-            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            assert time_taken < WAIT_FOR_REPLICATION_TIMEOUT, (
+                f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            )
 
 
 @pytest.mark.parametrize("role", ["student", "teacher"])
@@ -832,6 +831,6 @@ async def test_add_additional_schools(
             )
         except AssertionError:
             time_taken = time.time() - start
-            assert (
-                time_taken < WAIT_FOR_REPLICATION_TIMEOUT
-            ), f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            assert time_taken < WAIT_FOR_REPLICATION_TIMEOUT, (
+                f"took more than {WAIT_FOR_REPLICATION_TIMEOUT}s: {traceback.format_exc()}"
+            )

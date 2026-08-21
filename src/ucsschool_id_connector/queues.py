@@ -496,9 +496,7 @@ class OutQueue(FileQueue):
                 self.logger.exception("An exception was thrown during hook collection", exc_info=exc)
                 connection_ok = False
             if not connection_ok:
-                self.logger.error(
-                    "One or more school_authority_ping hooks reported a faulty" "connection!"
-                )
+                self.logger.error("One or more school_authority_ping hooks reported a faultyconnection!")
                 await asyncio.sleep(API_COMMUNICATION_ERROR_WAIT)
                 continue
             # communication is OK, handle queue

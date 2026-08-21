@@ -57,9 +57,9 @@ def override_setup_logging():
 ucsschool_id_connector.http_api.app.dependency_overrides[
     ucsschool_id_connector.token_auth.get_current_active_user
 ] = override_get_current_active_user
-ucsschool_id_connector.http_api.app.dependency_overrides[
-    ucsschool_id_connector.http_api.get_logger
-] = override_setup_logging
+ucsschool_id_connector.http_api.app.dependency_overrides[ucsschool_id_connector.http_api.get_logger] = (
+    override_setup_logging
+)
 
 
 @patch("ucsschool_id_connector.http_api.zmq_context")

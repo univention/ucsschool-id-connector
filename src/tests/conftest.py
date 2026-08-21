@@ -609,12 +609,11 @@ def mock_plugins(
 ):
     mock_plugin_dirs, mock_package_dirs = mock_plugin_impls
 
-    with patch.object(
-        ucsschool_id_connector.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs
-    ), patch.object(ucsschool_id_connector.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs), patch.object(
-        ucsschool_id_connector.constants, "OLD_DATA_DB_PATH", db_path
-    ), patch(
-        "ucsschool_id_connector.ldap_access.LDAPAccess", ldap_access_mock
+    with (
+        patch.object(ucsschool_id_connector.plugin_loader, "PLUGIN_PACKAGE_DIRS", mock_package_dirs),
+        patch.object(ucsschool_id_connector.plugin_loader, "PLUGIN_DIRS", mock_plugin_dirs),
+        patch.object(ucsschool_id_connector.constants, "OLD_DATA_DB_PATH", db_path),
+        patch("ucsschool_id_connector.ldap_access.LDAPAccess", ldap_access_mock),
     ):
         ucsschool_id_connector.plugin_loader.load_plugins()
 

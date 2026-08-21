@@ -232,10 +232,7 @@ def school_class_dn_regex() -> Pattern:
     c_class = os.environ.get(UCR_CONTAINER_CLASS[0]) or UCR_CONTAINER_CLASS[1]
     c_student = os.environ.get(UCR_CONTAINER_PUPILS[0]) or UCR_CONTAINER_PUPILS[1]
     return re.compile(
-        f"cn=(?P<ou>[^,]+?)-(?P<name>[^,]+?),"
-        f"cn={c_class},cn={c_student},cn=groups,"
-        f"ou=(?P=ou),"
-        f"{base_dn}",
+        f"cn=(?P<ou>[^,]+?)-(?P<name>[^,]+?),cn={c_class},cn={c_student},cn=groups,ou=(?P=ou),{base_dn}",
         flags=re.IGNORECASE,
     )
 

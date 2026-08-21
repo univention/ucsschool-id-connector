@@ -144,8 +144,9 @@ def test_get_log_level(tmp_path_factory, val, exp_val):
 def test_get_token_ttl(temp_file_func):
     ucr_file = temp_file_func()
     key, default, exp_val = fake.pystr(), str(fake.pyint()), str(fake.pyint())
-    with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file), patch(
-        "ucsschool_id_connector.utils.UCRV_TOKEN_TTL", (key, default)
+    with (
+        patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file),
+        patch("ucsschool_id_connector.utils.UCRV_TOKEN_TTL", (key, default)),
     ):
         value = ucsschool_id_connector.utils.get_token_ttl()
         assert value == int(default)
@@ -159,8 +160,9 @@ def test_get_token_ttl(temp_file_func):
 def test_get_source_uid(temp_file_func):
     ucr_file = temp_file_func()
     key, default, exp_val = fake.pystr(), fake.pystr(), fake.pystr()
-    with patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file), patch(
-        "ucsschool_id_connector.utils.UCRV_SOURCE_UID", (key, default)
+    with (
+        patch("ucsschool_id_connector.utils.UCR_DB_FILE", ucr_file),
+        patch("ucsschool_id_connector.utils.UCRV_SOURCE_UID", (key, default)),
     ):
         value = ucsschool_id_connector.utils.get_source_uid()
         assert value == default

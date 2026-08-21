@@ -66,8 +66,7 @@ from .output_plugin_handler_base import (
 RemoteGroup = TypeVar("RemoteGroup", bound=RemoteObject)
 
 
-class GroupNotFoundError(ObjectNotFoundError):
-    ...
+class GroupNotFoundError(ObjectNotFoundError): ...
 
 
 class PerSchoolAuthorityGroupDispatcherBase(PerSchoolAuthorityDispatcherBase, abc.ABC):
