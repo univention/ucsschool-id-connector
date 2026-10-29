@@ -1,4 +1,4 @@
-ARG UCS_VERSION=5.2.2
+ARG UCS_VERSION=5.2.7
 
 FROM gitregistry.knut.univention.de/univention/dev/projects/ucs-base-image/ucs-base-flex:${UCS_VERSION} AS idc-base
 
