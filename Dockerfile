@@ -9,6 +9,7 @@ ENV PIPX_BIN_DIR="/usr/local/bin"
 ENV VIRTUAL_ENV="/venv"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     python3 \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
@@ -19,7 +20,11 @@ ENV POETRY_VERSION=1.8.3
 # renovate: datasource=github-releases depName=s6-overlay packageName=just-containers/s6-overlay versioning=loose
 ENV S6_OVERLAY_VERSION=v3.1.6.2
 
-RUN python3 -m venv $VIRTUAL_ENV
+# renovate: datasource=pypi depName=pip packageName=pip
+ENV PIP_VERSION=26.2.2
+
+RUN python3 -m venv $VIRTUAL_ENV && \
+    $VIRTUAL_ENV/bin/pip install --no-cache-dir --upgrade "pip==$PIP_VERSION"
 # Use the venv enabled python
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
