@@ -6,6 +6,14 @@
 Changelog
 *********
 
+.. _4.0.1:
+
+v4.0.1 (2026-10-30)
+===================
+
+* Fixed: The container image is now built on the UCS base image 5.2.7, which fixes security vulnerabilities in GnuTLS, Perl, OpenSSL, and Python 3.11 (Issue ``ucsschool#1583``).
+* Fixed: The Python packages ``certifi``, ``PyJWT``, ``anyio``, and :program:`pip` have been updated to fix security vulnerabilities, among them GHSA-6q48-6c7w-9gw2 in the CA bundles. The system CA certificates are updated as well (Issue ``ucsschool#1583``).
+
 .. _4.0.0:
 
 v4.0.0 (2026-03-05)
