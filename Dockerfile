@@ -21,7 +21,7 @@ ENV POETRY_VERSION=1.8.3
 ENV S6_OVERLAY_VERSION=v3.1.6.2
 
 # renovate: datasource=pypi depName=pip packageName=pip
-ENV PIP_VERSION=26.2.2
+ENV PIP_VERSION=26.3
 
 RUN python3 -m venv $VIRTUAL_ENV && \
     $VIRTUAL_ENV/bin/pip install --no-cache-dir --upgrade "pip==$PIP_VERSION"
